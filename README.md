@@ -55,7 +55,7 @@ for match := range matches {
 
 1.加入智能后台弱口令扫描
 
-2.加入泛微、致远等nday
+2.加入其他nday
 
 ### 6.目前正在做的
 
