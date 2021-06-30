@@ -2,12 +2,13 @@ package main
 
 import (
 	"github.com/projectdiscovery/gologger"
+	naaburunner "github.com/projectdiscovery/naabu/v2/pkg/runner"
 	httpxrunner "github.com/veo/vscan/pkg/httpx/runner"
-	naaburunner "github.com/veo/vscan/pkg/naabu/runner"
 )
 
 func main() {
 	naabuoptions := naaburunner.ParseOptions()
+	naabuoptions.Output = "ips_port.txt"
 	naabuRunner, err := naaburunner.NewRunner(naabuoptions)
 	if err != nil {
 		gologger.Fatal().Msgf("Could not create runner: %s\n", err)
