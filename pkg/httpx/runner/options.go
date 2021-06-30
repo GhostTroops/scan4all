@@ -207,7 +207,7 @@ func ParseOptions() *Options {
 	options.chainInStdout = false
 	options.TLSProbe = false
 	options.CSPProbe = false
-	options.RequestURI = ""
+	options.RequestURI = "/admin"
 	options.RequestURIs = ""
 	options.OutputContentType = false
 	options.OutputMatchStatusCode = ""
