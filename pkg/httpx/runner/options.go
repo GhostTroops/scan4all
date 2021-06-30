@@ -212,7 +212,7 @@ func ParseOptions() *Options {
 	options.OutputContentType = false
 	options.OutputMatchStatusCode = ""
 	options.OutputMatchStatusCode = ""
-	options.OutputFilterStatusCode = "200"
+	options.OutputFilterStatusCode = "404"
 	options.OutputFilterContentLength = ""
 	options.InputRawRequest = ""
 	options.Unsafe = false
