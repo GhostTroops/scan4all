@@ -2,6 +2,11 @@ package wappalyzer
 
 var fingerprints = `{
   "apps" : {
+	"登录页" :{
+      "html" : [
+        "<input.*pass"
+      ]
+	},
     "BugSnag" : {
       "js" : [
         "bugsnag",
