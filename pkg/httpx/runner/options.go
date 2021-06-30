@@ -210,7 +210,7 @@ func ParseOptions() *Options {
 	options.RequestURI = ""
 	options.RequestURIs = "/,/admin"
 	options.OutputContentType = false
-	options.OutputMatchStatusCode = ""
+	options.OutputMatchStatusCode = "200"
 	options.OutputMatchStatusCode = ""
 	options.OutputFilterStatusCode = ""
 	options.OutputFilterContentLength = ""
