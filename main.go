@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	//nabuu
 	naabuoptions := naaburunner.ParseOptions()
 	naabuoptions.Output = "ips_port.txt"
 	naabuRunner, err := naaburunner.NewRunner(naabuoptions)
@@ -19,6 +20,7 @@ func main() {
 		gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
 	}
 
+	//httpx
 	options := httpxrunner.ParseOptions()
 	//options.HTTPProxy="http://127.0.0.1:8080"
 	r, err := httpxrunner.New(options)
