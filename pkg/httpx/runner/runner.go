@@ -795,8 +795,11 @@ retry:
 					technologies = append(technologies, "key:"+key)
 				}
 			}
-			if match == "登录页" {
-				admin_brute.Check(URL.String())
+			if match == "Login_Page" {
+				username, password, loginurl := admin_brute.Check(URL.String())
+				if loginurl != "" {
+					technologies = append(technologies, fmt.Sprintf("爆破成功，账号密码 %s:%s", username, password))
+				}
 			}
 		}
 		if len(technologies) > 0 {
