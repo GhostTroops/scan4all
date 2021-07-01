@@ -50,8 +50,7 @@ func getinput() (usernamekey string, passwordkey string, domainurl string) {
 	}
 	var username = "username"
 	var password = "password"
-	fmt.Println(resp.Location())
-	var loginurl = check_url + "/login"
+	var loginurl = resp.Request.URL.String() + "/login"
 	data, _ := ioutil.ReadAll(resp.Body)
 	userreg := regexp.MustCompile(`<input.*name="(name|user.*?|User.*?)".*>`)
 	usernamelist := userreg.FindStringSubmatch(string(data))
@@ -72,7 +71,7 @@ func getinput() (usernamekey string, passwordkey string, domainurl string) {
 		if strings.Contains(domainx, "http") {
 			loginurl = domainx
 		} else if domainx == "" {
-			loginurl = check_url
+			loginurl = loginurl
 		} else if domainx[0:1] == "/" {
 			u, _ := url.Parse(check_url)
 			loginurl = u.Scheme + "://" + u.Host + domainlist[len(domainlist)-1:][0]
@@ -87,7 +86,7 @@ func getinput() (usernamekey string, passwordkey string, domainurl string) {
 			if strings.Contains(domainx, "http") {
 				loginurl = domainx
 			} else if domainx == "" {
-				loginurl = check_url
+				loginurl = loginurl
 			} else if domainx[0:1] == "/" {
 				u, _ := url.Parse(check_url)
 				loginurl = u.Scheme + "://" + u.Host + domainlist2[len(domainlist2)-1:][0]
@@ -135,7 +134,7 @@ func httpRequset(postContent string, loginurl string) int64 {
 }
 
 func Check(url string) {
-	//httpProxy="http://127.0.0.1:8080"
+	//httpProxy = "http://127.0.0.1:8080"
 	check_url = url
 	usernamekey, passwordkey, loginurl := getinput()
 	if loginurl != "" {
@@ -146,6 +145,7 @@ func Check(url string) {
 					length := httpRequset(fmt.Sprintf("%s=%s&%s=%s", usernamekey, usernames[useri], passwordkey, passwords[passi]), loginurl)
 					if length != wronglength {
 						fmt.Printf("爆破成功，账号:%s，密码:%s，登录地址:%s", usernames[useri], passwords[passi], loginurl)
+						fmt.Println()
 						break
 					}
 				}
