@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/veo/vscan/pkg/exp/admin_brute"
 	"github.com/veo/vscan/pkg/exp/shiro"
 	"io/ioutil"
 	"net/http"
@@ -794,8 +795,10 @@ retry:
 					technologies = append(technologies, "key:"+key)
 				}
 			}
+			if match == "登录页" {
+				admin_brute.Check(URL.String())
+			}
 		}
-
 		if len(technologies) > 0 {
 			technologies := strings.Join(technologies, ",")
 

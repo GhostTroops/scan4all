@@ -208,11 +208,11 @@ func ParseOptions() *Options {
 	options.TLSProbe = false
 	options.CSPProbe = false
 	options.RequestURI = ""
-	options.RequestURIs = "/,/admin"
+	options.RequestURIs = ""
 	options.OutputContentType = false
 	options.OutputMatchStatusCode = ""
 	options.OutputMatchStatusCode = ""
-	options.OutputFilterStatusCode = "404"
+	options.OutputFilterStatusCode = ""
 	options.OutputFilterContentLength = ""
 	options.InputRawRequest = ""
 	options.Unsafe = false
