@@ -43,7 +43,7 @@ func getinput() (usernamekey string, passwordkey string, domainurl string) {
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 	resp, err := client.Do(req)
-	if err != nil {
+	if err == nil {
 		defer resp.Body.Close()
 	}
 	var username = "username"
@@ -124,7 +124,7 @@ func httpRequset(postContent string, loginurl string) int64 {
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
 	resp, err := client.Do(req)
-	if err != nil {
+	if err == nil {
 		defer resp.Body.Close()
 	}
 

@@ -60,7 +60,7 @@ func httpRequset(RememberMe string) int {
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Cookie", "rememberMe="+RememberMe)
 	resp, err := client.Do(req)
-	if err != nil {
+	if err == nil {
 		defer resp.Body.Close()
 	}
 	//判断rememberMe=deleteMe;是否在响应头中
