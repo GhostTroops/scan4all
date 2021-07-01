@@ -44,9 +44,8 @@ func getinput() (usernamekey string, passwordkey string, domainurl string) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		defer resp.Body.Close()
 	}
-	defer resp.Body.Close()
 	var username = "username"
 	var password = "password"
 	var loginurl = check_url + "/login"
@@ -114,7 +113,9 @@ func httpRequset(postContent string, loginurl string) int64 {
 	client := &http.Client{
 		Timeout:   time.Duration(60) * time.Second,
 		Transport: tr,
-	}
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse //不允许跳转
+		}}
 	req, err := http.NewRequest(strings.ToUpper("POST"), loginurl, strings.NewReader(postContent))
 	if err != nil {
 		fmt.Println(err)
@@ -123,9 +124,8 @@ func httpRequset(postContent string, loginurl string) int64 {
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
 	resp, err := client.Do(req)
-	defer resp.Body.Close()
 	if err != nil {
-		fmt.Println(err)
+		defer resp.Body.Close()
 	}
 
 	return resp.ContentLength
