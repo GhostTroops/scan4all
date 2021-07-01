@@ -94,7 +94,6 @@ func getinput() (usernamekey string, passwordkey string, domainurl string) {
 			}
 		}
 	}
-	password = "User[password]"
 	return username, password, loginurl
 }
 
