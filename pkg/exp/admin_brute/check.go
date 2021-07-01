@@ -78,11 +78,14 @@ func getinput() {
 
 	domainreg := regexp.MustCompile(`<form.*action="(.*?)"`)
 	domainlist := domainreg.FindStringSubmatch(string(data))
+	fmt.Println(domainlist)
 	if domainlist != nil {
 		domainx := domainlist[len(domainlist)-1:][0]
-
+		fmt.Println("yes:" + domainx)
 		if strings.Contains(domainx, "http") {
 			domain = domainx
+		} else if domainx == "" {
+			domain = check_url
 		} else if domainx[0:1] == "/" {
 			u, _ := url.Parse(check_url)
 			domain = u.Scheme + "://" + u.Host + domainlist[len(domainlist)-1:][0]
@@ -102,12 +105,9 @@ func getinput() {
 			} else {
 				domain = check_url + domainlist2[len(domainlist2)-1:][0]
 			}
-
 		}
-
 	}
 	fmt.Println(username, password, domain)
-
 }
 
 func httpRequset(RememberMe string) int {
