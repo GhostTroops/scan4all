@@ -114,9 +114,7 @@ func httpRequset(postContent string, loginurl string) int64 {
 	client := &http.Client{
 		Timeout:   time.Duration(60) * time.Second,
 		Transport: tr,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse //不允许跳转
-		}}
+	}
 	req, err := http.NewRequest(strings.ToUpper("POST"), loginurl, strings.NewReader(postContent))
 	if err != nil {
 		fmt.Println(err)
@@ -125,14 +123,16 @@ func httpRequset(postContent string, loginurl string) int64 {
 	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
 	resp, err := client.Do(req)
+	defer resp.Body.Close()
 	if err != nil {
 		fmt.Println(err)
 	}
-	defer resp.Body.Close()
+
 	return resp.ContentLength
 }
 
 func Check(url string) {
+	//httpProxy="http://127.0.0.1:8080"
 	check_url = url
 	usernamekey, passwordkey, loginurl := getinput()
 	wronglength := httpRequset(fmt.Sprintf("%s=admin&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, passwordkey), loginurl)
