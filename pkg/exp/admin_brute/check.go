@@ -99,6 +99,8 @@ func getinput() {
 			domainx := domainlist2[len(domainlist2)-1:][0]
 			if strings.Contains(domainx, "http") {
 				domain = domainx
+			} else if domainx == "" {
+				domain = check_url
 			} else if domainx[0:1] == "/" {
 				u, _ := url.Parse(check_url)
 				domain = u.Scheme + "://" + u.Host + domainlist2[len(domainlist2)-1:][0]
