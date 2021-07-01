@@ -133,7 +133,7 @@ func httpRequset(postContent string, loginurl string) int64 {
 	return 999999
 }
 
-func Check(url string) {
+func Check(url string) (username string, password string, loginurl string) {
 	//httpProxy = "http://127.0.0.1:8080"
 	check_url = url
 	usernamekey, passwordkey, loginurl := getinput()
@@ -144,8 +144,8 @@ func Check(url string) {
 				for passi := range passwords {
 					length := httpRequset(fmt.Sprintf("%s=%s&%s=%s", usernamekey, usernames[useri], passwordkey, passwords[passi]), loginurl)
 					if length != wronglength {
-						fmt.Printf("爆破成功，账号:%s，密码:%s，登录地址:%s", usernames[useri], passwords[passi], loginurl)
-						fmt.Println()
+						//fmt.Printf("爆破成功，账号:%s，密码:%s，登录地址:%s", usernames[useri], passwords[passi], loginurl)
+						return usernames[useri], passwords[passi], loginurl
 						break
 					}
 				}
@@ -153,4 +153,5 @@ func Check(url string) {
 			}
 		}
 	}
+	return "", "", ""
 }
