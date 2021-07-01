@@ -32,7 +32,7 @@ func getinput() (usernamekey string, passwordkey string, domainurl string) {
 		}
 	}
 	client := &http.Client{
-		Timeout:   time.Duration(60) * time.Second,
+		Timeout:   time.Duration(5) * time.Second,
 		Transport: tr,
 	}
 
@@ -50,6 +50,7 @@ func getinput() (usernamekey string, passwordkey string, domainurl string) {
 	}
 	var username = "username"
 	var password = "password"
+	fmt.Println(resp.Location())
 	var loginurl = check_url + "/login"
 	data, _ := ioutil.ReadAll(resp.Body)
 	userreg := regexp.MustCompile(`<input.*name="(name|user.*?|User.*?)".*>`)
@@ -113,7 +114,7 @@ func httpRequset(postContent string, loginurl string) int64 {
 		}
 	}
 	client := &http.Client{
-		Timeout:   time.Duration(60) * time.Second,
+		Timeout:   time.Duration(5) * time.Second,
 		Transport: tr,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse //不允许跳转
@@ -137,7 +138,7 @@ func Check(url string) {
 	//httpProxy="http://127.0.0.1:8080"
 	check_url = url
 	usernamekey, passwordkey, loginurl := getinput()
-	if usernamekey != "" && passwordkey != "" && loginurl != "" {
+	if loginurl != "" {
 		wronglength := httpRequset(fmt.Sprintf("%s=admin&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, passwordkey), loginurl)
 		if wronglength != 999999 {
 			for useri := range usernames {

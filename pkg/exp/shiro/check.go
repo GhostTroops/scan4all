@@ -62,6 +62,8 @@ func httpRequset(RememberMe string) int {
 	resp, err := client.Do(req)
 	if err == nil {
 		defer resp.Body.Close()
+	} else {
+		return 1
 	}
 	//判断rememberMe=deleteMe;是否在响应头中
 	var SetCookieAll string
@@ -99,7 +101,7 @@ func getCommandArgs() {
 	userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36"
 	method = "GET"
 	postContent = ""
-	timeout = 60
+	timeout = 10
 	interval = 0
 	httpProxy = ""
 	pointkey = ""
