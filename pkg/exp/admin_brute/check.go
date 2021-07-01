@@ -45,6 +45,8 @@ func getinput() (usernamekey string, passwordkey string, domainurl string) {
 	resp, err := client.Do(req)
 	if err == nil {
 		defer resp.Body.Close()
+	} else {
+		return "", "", ""
 	}
 	var username = "username"
 	var password = "password"
@@ -126,24 +128,28 @@ func httpRequset(postContent string, loginurl string) int64 {
 	resp, err := client.Do(req)
 	if err == nil {
 		defer resp.Body.Close()
+		return resp.ContentLength
 	}
-
-	return resp.ContentLength
+	return 999999
 }
 
 func Check(url string) {
 	//httpProxy="http://127.0.0.1:8080"
 	check_url = url
 	usernamekey, passwordkey, loginurl := getinput()
-	wronglength := httpRequset(fmt.Sprintf("%s=admin&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, passwordkey), loginurl)
-	for useri := range usernames {
-		for passi := range passwords {
-			length := httpRequset(fmt.Sprintf("%s=%s&%s=%s", usernamekey, usernames[useri], passwordkey, passwords[passi]), loginurl)
-			if length != wronglength {
-				fmt.Printf("爆破成功，账号:%s，密码:%s，登录地址:%s", usernames[useri], passwords[passi], loginurl)
+	if usernamekey != "" && passwordkey != "" && loginurl != "" {
+		wronglength := httpRequset(fmt.Sprintf("%s=admin&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, passwordkey), loginurl)
+		if wronglength != 999999 {
+			for useri := range usernames {
+				for passi := range passwords {
+					length := httpRequset(fmt.Sprintf("%s=%s&%s=%s", usernamekey, usernames[useri], passwordkey, passwords[passi]), loginurl)
+					if length != wronglength {
+						fmt.Printf("爆破成功，账号:%s，密码:%s，登录地址:%s", usernames[useri], passwords[passi], loginurl)
+						break
+					}
+				}
 				break
 			}
 		}
-		break
 	}
 }
