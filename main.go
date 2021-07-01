@@ -21,7 +21,7 @@ func main() {
 
 	//httpx
 	options := httpxrunner.ParseOptions()
-	options.HTTPProxy = "http://127.0.0.1:8080"
+	//options.HTTPProxy = "http://127.0.0.1:8080"
 	r, err := httpxrunner.New(options)
 	if err != nil {
 		gologger.Fatal().Msgf("Could not create runner: %s\n", err)
