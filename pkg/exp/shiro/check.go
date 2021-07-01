@@ -61,9 +61,8 @@ func httpRequset(RememberMe string) int {
 	req.Header.Set("Cookie", "rememberMe="+RememberMe)
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		defer resp.Body.Close()
 	}
-	defer resp.Body.Close()
 	//判断rememberMe=deleteMe;是否在响应头中
 	var SetCookieAll string
 	for i := range resp.Header["Set-Cookie"] {
