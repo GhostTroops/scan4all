@@ -161,10 +161,9 @@ func rememberMeGen() {
 }
 
 func Check(url string) (key string) {
-	return ""
-	//getCommandArgs()
-	//shiro_url = url
+	getCommandArgs()
+	shiro_url = url
 	//httpProxy="http://127.0.0.1:8080"
-	//key = keyCheck(url)
-	//return key
+	key = keyCheck(url)
+	return key
 }
