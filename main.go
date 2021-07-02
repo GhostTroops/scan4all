@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/projectdiscovery/gologger"
-	naaburunner "github.com/projectdiscovery/naabu/v2/pkg/runner"
 	httpxrunner "github.com/veo/vscan/pkg/httpx/runner"
+	naaburunner "github.com/veo/vscan/pkg/naabu/runner"
 )
 
 func main() {

@@ -83,15 +83,15 @@ func findTheKey(key_len int, url string, Shirokeys string, Content []byte) bool 
 	RememberMe1 := aES_CBC_Encrypt(key, Content) //AES CBC加密
 	RememberMe2 := aES_GCM_Encrypt(key, Content) //AES GCM加密
 	if httpRequset(RememberMe1) != key_len {
-		fmt.Println("[+] Url: ", url)
-		fmt.Println("[+] CBC-KEY:", Shirokeys)
-		fmt.Println("[+] rememberMe=", RememberMe1)
+		//fmt.Println("[+] Url: ", url)
+		//fmt.Println("[+] CBC-KEY:", Shirokeys)
+		//fmt.Println("[+] rememberMe=", RememberMe1)
 		return true
 	}
 	if httpRequset(RememberMe2) != key_len {
-		fmt.Println("[+] Url: ", url)
-		fmt.Println("[+] GCM-KEY:", Shirokeys)
-		fmt.Println("[+] rememberMe=", RememberMe2)
+		//fmt.Println("[+] Url: ", url)
+		//fmt.Println("[+] GCM-KEY:", Shirokeys)
+		//fmt.Println("[+] rememberMe=", RememberMe2)
 		return true
 	}
 	return false
