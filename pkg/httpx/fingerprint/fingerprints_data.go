@@ -11656,9 +11656,9 @@ var fingerprints = `{
         "\/aboutus\/magicmail.gif"
       ]
     },
-    "tomcat默认页面" : {
+    "Tomcat登录页" : {
       "html" : [
-        "\/manager\/status"
+        "\/manager\/html"
       ]
     },
     "macrec_dvr" : {

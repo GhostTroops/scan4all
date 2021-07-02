@@ -13,12 +13,11 @@ import (
 
 var (
 	usernames = []string{"admin", "test"}
-	passwords = []string{"admin", "admin123", "password", "admin@123", "admin888", "root", "123456", "a123456", "123456a", "yinghuo", "5201314", "111111", "woaini1314", "qq123456", "123123", "000000", "1qaz2wsx", "1q2w3e4r", "qwe123", "7758521", "123qwe", "a123123", "123456aa", "woaini520", "woaini", "100200", "1314520", "woaini123", "123321", "q123456", "123456789", "123456789a", "5211314", "asd123", "a123456789", "z123456", "asd123456", "a5201314", "aa123456", "zhang123", "aptx4869", "123123a", "1q2w3e4r5t", "1qazxsw2", "5201314a", "1q2w3e", "aini1314", "31415926", "q1w2e3r4", "123456qq", "woaini521", "1234qwer", "a111111", "520520", "iloveyou", "abc123", "110110", "111111a", "123456abc", "w123456", "7758258", "123qweasd", "159753", "qwer1234", "a000000", "qq123123", "zxc123", "123654", "abc123456", "123456q", "qq5201314", "12345678", "000000a", "456852", "as123456", "1314521", "112233", "521521", "qazwsx123", "zxc123456", "abcd1234", "asdasd", "666666", "love1314", "QAZ123", "aaa123", "q1w2e3", "aaaaaa", "a123321", "123000", "11111111", "12qwaszx", "5845201314", "s123456", "nihao123", "caonima123", "zxcvbnm123", "wang123", "159357", "1A2B3C4D", "asdasd123", "584520", "753951", "147258", "1123581321", "110120", "qq1314520"}
-	check_url string
+	passwords = []string{"admin", "test", "admin123", "password", "admin@123", "admin888", "root", "123456", "a123456", "123456a", "5201314", "111111", "woaini1314", "qq123456", "123123", "000000", "1qaz2wsx", "1q2w3e4r", "qwe123", "7758521", "123qwe", "a123123", "123456aa", "woaini520", "woaini", "100200", "1314520", "woaini123", "123321", "q123456", "123456789", "123456789a", "5211314", "asd123", "a123456789", "z123456", "asd123456", "a5201314", "aa123456", "zhang123", "aptx4869", "123123a", "1q2w3e4r5t", "1qazxsw2", "5201314a", "1q2w3e", "aini1314", "31415926", "q1w2e3r4", "123456qq", "woaini521", "1234qwer", "a111111", "520520", "iloveyou", "abc123", "110110", "111111a", "123456abc", "w123456", "7758258", "123qweasd", "159753", "qwer1234", "a000000", "qq123123", "zxc123", "123654", "abc123456", "123456q", "qq5201314", "12345678", "000000a", "456852", "as123456", "1314521", "112233", "521521", "qazwsx123", "zxc123456", "abcd1234", "asdasd", "666666", "love1314", "QAZ123", "aaa123", "q1w2e3", "aaaaaa", "a123321", "123000", "11111111", "12qwaszx", "5845201314", "s123456", "nihao123", "caonima123", "zxcvbnm123", "wang123", "159357", "1A2B3C4D", "asdasd123", "584520", "753951", "147258", "1123581321", "110120", "qq1314520"}
 	httpProxy string
 )
 
-func getinput() (usernamekey string, passwordkey string, domainurl string) {
+func getinput(domainurl string) (usernamekey string, passwordkey string, domainurlx string) {
 	var tr *http.Transport
 	if httpProxy != "" {
 		uri, _ := url.Parse(httpProxy)
@@ -36,7 +35,7 @@ func getinput() (usernamekey string, passwordkey string, domainurl string) {
 		Transport: tr,
 	}
 
-	req, err := http.NewRequest(strings.ToUpper("GET"), check_url, strings.NewReader(""))
+	req, err := http.NewRequest(strings.ToUpper("GET"), domainurl, strings.NewReader(""))
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -73,10 +72,10 @@ func getinput() (usernamekey string, passwordkey string, domainurl string) {
 		} else if domainx == "" {
 			loginurl = loginurl
 		} else if domainx[0:1] == "/" {
-			u, _ := url.Parse(check_url)
+			u, _ := url.Parse(domainurl)
 			loginurl = u.Scheme + "://" + u.Host + domainlist[len(domainlist)-1:][0]
 		} else {
-			loginurl = check_url + "/" + domainlist[len(domainlist)-1:][0]
+			loginurl = domainurl + "/" + domainlist[len(domainlist)-1:][0]
 		}
 	} else {
 		domainreg2 := regexp.MustCompile(`url:.*?"(.*?)"`)
@@ -88,10 +87,10 @@ func getinput() (usernamekey string, passwordkey string, domainurl string) {
 			} else if domainx == "" {
 				loginurl = loginurl
 			} else if domainx[0:1] == "/" {
-				u, _ := url.Parse(check_url)
+				u, _ := url.Parse(domainurl)
 				loginurl = u.Scheme + "://" + u.Host + domainlist2[len(domainlist2)-1:][0]
 			} else {
-				loginurl = check_url + "/" + domainlist2[len(domainlist2)-1:][0]
+				loginurl = domainurl + "/" + domainlist2[len(domainlist2)-1:][0]
 			}
 		}
 	}
@@ -135,8 +134,7 @@ func httpRequset(postContent string, loginurl string) int64 {
 
 func Check(url string) (username string, password string, loginurl string) {
 	//httpProxy = "http://127.0.0.1:8080"
-	check_url = url
-	usernamekey, passwordkey, loginurl := getinput()
+	usernamekey, passwordkey, loginurl := getinput(url)
 	if loginurl != "" {
 		wronglength := httpRequset(fmt.Sprintf("%s=admin&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, passwordkey), loginurl)
 		if wronglength != 999999 {
@@ -146,10 +144,8 @@ func Check(url string) (username string, password string, loginurl string) {
 					if length != wronglength {
 						//fmt.Printf("爆破成功，账号:%s，密码:%s，登录地址:%s", usernames[useri], passwords[passi], loginurl)
 						return usernames[useri], passwords[passi], loginurl
-						break
 					}
 				}
-				break
 			}
 		}
 	}
