@@ -27,7 +27,7 @@ goby是一款已经比较成熟的红队打点扫描器，我目前的开发目�
 同样的，我将它集成到vscan的pkg包里，并赋值一些默认参数，将端口扫描的结果ips_port.txt作为输入
 ![](/img/vscan/2021-06-23-11-40-15.png)
 
-需要注意的是，由于httpx使用了retryablehttp库作为指纹识别，我们需要把retryablehttp库整个下载下来，方便后续的指纹添加,这里我添加了一个shiro指纹，可以快速识别服务器是否使用shiro
+需要注意的是，由于httpx使用了wappalyzergo库作为指纹识别，我们需要把[wappalyzergo](https://github.com/projectdiscovery/wappalyzergo)库整个下载下来，方便后续的指纹添加,这里我添加了一个shiro指纹，可以快速识别服务器是否使用shiro
 ![](/img/vscan/2021-06-23-11-41-59.png)
 
 
