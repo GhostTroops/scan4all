@@ -141,8 +141,10 @@ func Check(url string) (username string, password string, loginurl string) {
 			for useri := range usernames {
 				for passi := range passwords {
 					length := httpRequset(fmt.Sprintf("%s=%s&%s=%s", usernamekey, usernames[useri], passwordkey, passwords[passi]), loginurl)
-					if length != wronglength {
-						//fmt.Printf("爆破成功，账号:%s，密码:%s，登录地址:%s", usernames[useri], passwords[passi], loginurl)
+					if length != wronglength && length != 999999 {
+						fmt.Println()
+						fmt.Printf("admin-brute-sucess|%s:%s--%s", usernames[useri], passwords[passi], loginurl)
+						fmt.Println()
 						return usernames[useri], passwords[passi], loginurl
 					}
 				}

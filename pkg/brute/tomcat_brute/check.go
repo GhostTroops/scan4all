@@ -70,9 +70,8 @@ func Check(url string) (username string, password string) {
 	if httpRequset("", "", url) == 401 {
 		for uspa := range up {
 			code := httpRequset(up[uspa].username, up[uspa].password, url)
-			if code == 999999 {
-				break
-			} else if code != 401 {
+			if code != 999999 && code != 401 {
+				fmt.Println()
 				fmt.Println(code)
 				fmt.Printf("tomcat-brute-sucess|%s:%s--%s", up[uspa].username, up[uspa].password, url)
 				fmt.Println()

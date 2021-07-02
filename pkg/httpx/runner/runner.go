@@ -799,7 +799,7 @@ retry:
 			if match == "Login_Page" {
 				username, password, loginurl := admin_brute.Check(URL.String())
 				if loginurl != "" {
-					technologies = append(technologies, fmt.Sprintf("admin-brute-sucess-%s:%s", username, password))
+					technologies = append(technologies, fmt.Sprintf("admin-brute-sucess|%s:%s", username, password))
 				}
 			}
 			if match == "Tomcat登录页" {
