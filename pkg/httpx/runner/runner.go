@@ -7,7 +7,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/veo/vscan/pkg/exp/admin_brute"
+	"github.com/veo/vscan/pkg/brute/admin_brute"
+	"github.com/veo/vscan/pkg/brute/tomcat_brute"
 	"github.com/veo/vscan/pkg/exp/shiro"
 	"io/ioutil"
 	"net/http"
@@ -798,7 +799,13 @@ retry:
 			if match == "Login_Page" {
 				username, password, loginurl := admin_brute.Check(URL.String())
 				if loginurl != "" {
-					technologies = append(technologies, fmt.Sprintf("爆破成功，账号密码 %s:%s", username, password))
+					technologies = append(technologies, fmt.Sprintf("admin-brute-sucess-%s:%s", username, password))
+				}
+			}
+			if match == "Tomcat登录页" {
+				username, password := tomcat_brute.Check(URL.String())
+				if username != "" {
+					technologies = append(technologies, fmt.Sprintf("tomcat-brute-sucess-%s:%s", username, password))
 				}
 			}
 		}
