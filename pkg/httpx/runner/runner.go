@@ -793,19 +793,19 @@ retry:
 			if match == "Shiro" {
 				key := shiro.Check(URL.String())
 				if key != "" {
-					technologies = append(technologies, "key:"+key)
+					technologies = append(technologies, fmt.Sprintf("exp-shiro|key:%s", key))
 				}
 			}
 			if match == "Login_Page" {
 				username, password, loginurl := admin_brute.Check(URL.String())
 				if loginurl != "" {
-					technologies = append(technologies, fmt.Sprintf("admin-brute-sucess|%s:%s", username, password))
+					technologies = append(technologies, fmt.Sprintf("burte-admin|%s:%s", username, password))
 				}
 			}
 			if match == "Tomcat登录页" {
 				username, password := tomcat_brute.Check(URL.String())
 				if username != "" {
-					technologies = append(technologies, fmt.Sprintf("tomcat-brute-sucess-%s:%s", username, password))
+					technologies = append(technologies, fmt.Sprintf("burte-tomcat|%s:%s", username, password))
 				}
 			}
 		}
