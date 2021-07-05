@@ -7,8 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/veo/vscan/pkg/brute/admin_brute"
-	"github.com/veo/vscan/pkg/brute/tomcat_brute"
+	"github.com/veo/vscan/pkg/brute"
 	"github.com/veo/vscan/pkg/exp/shiro"
 	"io/ioutil"
 	"net/http"
@@ -797,13 +796,14 @@ retry:
 				}
 			}
 			if match == "Login_Page" {
-				username, password, loginurl := admin_brute.Check(URL.String())
+				username, password, loginurl := brute.Admin_brute(URL.String())
 				if loginurl != "" {
 					technologies = append(technologies, fmt.Sprintf("burte-admin|%s:%s", username, password))
 				}
 			}
 			if match == "Tomcat登录页" {
-				username, password := tomcat_brute.Check(URL.String())
+				username, password := brute.Tomcat_brute(URL.String())
+				fmt.Println(username, password)
 				if username != "" {
 					technologies = append(technologies, fmt.Sprintf("burte-tomcat|%s:%s", username, password))
 				}
