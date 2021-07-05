@@ -810,7 +810,11 @@ retry:
 			if match == "weblogic" || match == "bea-weblogic-server" {
 				username, password := brute.Weblogic_brute(URL.String())
 				if username != "" {
-					technologies = append(technologies, fmt.Sprintf("burte-weblogic|%s:%s", username, password))
+					if username == "login_page" {
+						technologies = append(technologies, "weblogic_login_page")
+					} else {
+						technologies = append(technologies, fmt.Sprintf("burte-weblogic|%s:%s", username, password))
+					}
 				}
 			}
 		}
