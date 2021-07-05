@@ -803,9 +803,14 @@ retry:
 			}
 			if match == "Tomcat登录页" {
 				username, password := brute.Tomcat_brute(URL.String())
-				fmt.Println(username, password)
 				if username != "" {
 					technologies = append(technologies, fmt.Sprintf("burte-tomcat|%s:%s", username, password))
+				}
+			}
+			if match == "weblogic" || match == "bea-weblogic-server" {
+				username, password := brute.Weblogic_brute(URL.String())
+				if username != "" {
+					technologies = append(technologies, fmt.Sprintf("burte-weblogic|%s:%s", username, password))
 				}
 			}
 		}
