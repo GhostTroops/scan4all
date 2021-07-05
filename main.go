@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	//brute.HttpProxy = "http://127.0.0.1:8080"
 	naabuoptions := naaburunner.ParseOptions()
 	naabuoptions.Output = "ips_port.txt"
 	naabuRunner, err := naaburunner.NewRunner(naabuoptions)
@@ -20,9 +21,9 @@ func main() {
 	}
 
 	//httpx
-	options := httpxrunner.ParseOptions()
-	//options.HTTPProxy = "http://127.0.0.1:8080"
-	r, err := httpxrunner.New(options)
+	httpxoptions := httpxrunner.ParseOptions()
+	//httpxoptions.HTTPProxy = "http://127.0.0.1:8080"
+	r, err := httpxrunner.New(httpxoptions)
 	if err != nil {
 		gologger.Fatal().Msgf("Could not create runner: %s\n", err)
 	}
