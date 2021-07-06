@@ -62,6 +62,10 @@ func httpRequset(RememberMe string, keylen int) int {
 	resp, err := client.Do(req)
 	if err == nil {
 		defer resp.Body.Close()
+		_, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return keylen
+		}
 	} else {
 		return keylen
 	}
