@@ -199,7 +199,7 @@ func ParseOptions() *Options {
 	options.Silent = false
 	options.Version = false
 	options.Verbose = false
-	options.NoColor = false
+	options.NoColor = true
 	options.OutputServerHeader = false
 	options.OutputWebSocket = false
 	options.responseInStdout = false

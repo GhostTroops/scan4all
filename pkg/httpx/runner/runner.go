@@ -854,6 +854,19 @@ retry:
 		builder.WriteRune(']')
 	}
 
+	file_paths := brute.File_fuzz(URL.String())
+	if len(file_paths) > 0 && len(file_paths) < 8 {
+		file_paths := strings.Join(file_paths, "\",\"")
+
+		builder.WriteString(" [\"")
+		if !scanopts.OutputWithNoColor {
+			builder.WriteString(aurora.Magenta(file_paths).String())
+		} else {
+			builder.WriteString(file_paths)
+		}
+		builder.WriteRune(']')
+	}
+
 	// store responses or chain in directory
 	if scanopts.StoreResponse || scanopts.StoreChain {
 		domainFile := strings.ReplaceAll(urlutil.TrimScheme(URL.String()), ":", ".")
