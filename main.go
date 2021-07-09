@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/projectdiscovery/gologger"
-	"github.com/veo/vscan/pkg/brute"
 	httpxrunner "github.com/veo/vscan/pkg/httpx/runner"
 	naaburunner "github.com/veo/vscan/pkg/naabu/runner"
 )
