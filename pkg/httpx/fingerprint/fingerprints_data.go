@@ -2,7 +2,7 @@ package wappalyzer
 
 var fingerprints = `{
   "apps" : {
-	"Login_Page" :{
+	"登录页" :{
       "html" : [
         "<input.*pass"
       ]

@@ -795,7 +795,7 @@ retry:
 					technologies = append(technologies, fmt.Sprintf("exp-shiro|key:%s", key))
 				}
 			}
-			if match == "Login_Page" {
+			if match == "登录页" {
 				username, password, loginurl := brute.Admin_brute(URL.String())
 				if loginurl != "" {
 					technologies = append(technologies, fmt.Sprintf("burte-admin|%s:%s", username, password))
@@ -807,7 +807,7 @@ retry:
 					technologies = append(technologies, fmt.Sprintf("burte-tomcat|%s:%s", username, password))
 				}
 			}
-			if match == "weblogic" || match == "bea-weblogic-server" {
+			if match == "weblogic登录页" || match == "bea-weblogic-server" {
 				username, password := brute.Weblogic_brute(URL.String())
 				if username != "" {
 					if username == "login_page" {
