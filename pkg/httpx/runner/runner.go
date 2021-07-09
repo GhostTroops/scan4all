@@ -856,11 +856,11 @@ retry:
 
 	file_paths := brute.File_fuzz(URL.String())
 	if len(file_paths) > 0 && len(file_paths) < 8 {
-		file_paths := strings.Join(file_paths, "\",\"")
+		file_paths := strings.Join(file_paths, ",\"")
 
 		builder.WriteString(" [\"")
 		if !scanopts.OutputWithNoColor {
-			builder.WriteString(aurora.Magenta(file_paths).String())
+			builder.WriteString(aurora.Magenta(file_paths).String() + "\"")
 		} else {
 			builder.WriteString(file_paths)
 		}
