@@ -1,16 +1,14 @@
 package brute
 
-import "fmt"
-
-func File_fuzz(url string) (path string) {
-	for urli := range filedic {
-		if req, err := httpRequset(url+filedic[urli], "GET", ""); err == nil {
-			if req.StatusCode == 200 {
-				fmt.Printf("fuzz_file|%s", filedic[urli])
-				fmt.Println()
-				return filedic[urli]
+func File_fuzz(url string) (path []string) {
+	if _, err := httpRequset(url, "GET", ""); err == nil {
+		for urli := range filedic {
+			if req2, err := httpRequset(url+filedic[urli], "GET", ""); err == nil {
+				if req2.StatusCode == 200 && req2.ContentLength != -1 {
+					path = append(path, url+filedic[urli])
+				}
 			}
 		}
 	}
-	return ""
+	return path
 }
