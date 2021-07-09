@@ -97,7 +97,7 @@ func ParseOptions() *Options {
 	//showBanner()
 
 	// write default conf file template if it doesn't exist
-	options.writeDefaultConfig()
+	//options.writeDefaultConfig()
 
 	if options.Version {
 		gologger.Info().Msgf("Current Version: %s\n", Version)

