@@ -856,9 +856,9 @@ retry:
 
 	file_paths := brute.File_fuzz(URL.String())
 	if len(file_paths) > 0 && len(file_paths) < 8 {
-		file_paths := strings.Join(file_paths, ",\"")
+		file_paths := strings.Join(file_paths, "\",\"")
 
-		builder.WriteString(" [\"")
+		builder.WriteString(" [敏感文件：\"")
 		if !scanopts.OutputWithNoColor {
 			builder.WriteString(aurora.Magenta(file_paths).String())
 		} else {
