@@ -860,10 +860,11 @@ retry:
 
 		builder.WriteString(" [\"")
 		if !scanopts.OutputWithNoColor {
-			builder.WriteString(aurora.Magenta(file_paths).String() + "\"")
+			builder.WriteString(aurora.Magenta(file_paths).String())
 		} else {
 			builder.WriteString(file_paths)
 		}
+		builder.WriteRune('"')
 		builder.WriteRune(']')
 	}
 
