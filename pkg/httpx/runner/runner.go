@@ -798,13 +798,13 @@ retry:
 			if match == "登录页" {
 				username, password, loginurl := brute.Admin_brute(URL.String())
 				if loginurl != "" {
-					technologies = append(technologies, fmt.Sprintf("burte-admin|%s:%s", username, password))
+					technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 				}
 			}
 			if match == "Tomcat登录页" {
 				username, password := brute.Tomcat_brute(URL.String())
 				if username != "" {
-					technologies = append(technologies, fmt.Sprintf("burte-tomcat|%s:%s", username, password))
+					technologies = append(technologies, fmt.Sprintf("brute-tomcat|%s:%s", username, password))
 				}
 			}
 			if match == "weblogic登录页" || match == "bea-weblogic-server" {
@@ -813,7 +813,7 @@ retry:
 					if username == "login_page" {
 						technologies = append(technologies, "weblogic_login_page")
 					} else {
-						technologies = append(technologies, fmt.Sprintf("burte-weblogic|%s:%s", username, password))
+						technologies = append(technologies, fmt.Sprintf("brute-weblogic|%s:%s", username, password))
 					}
 				}
 			}
