@@ -851,12 +851,13 @@ retry:
 	}
 
 	if resp.HasChain() {
-		builder.WriteString(" [")
+		builder.WriteString(" [\"")
 		if !scanopts.OutputWithNoColor {
 			builder.WriteString(aurora.Magenta(finalURL).String())
 		} else {
 			builder.WriteString(finalURL)
 		}
+		builder.WriteRune('"')
 		builder.WriteRune(']')
 	}
 
@@ -864,7 +865,7 @@ retry:
 	if len(file_paths) > 0 && len(file_paths) < 15 {
 		file_paths := strings.Join(file_paths, "\",\"")
 
-		builder.WriteString(" [敏感文件：\"")
+		builder.WriteString(" [file_fuzz：\"")
 		if !scanopts.OutputWithNoColor {
 			builder.WriteString(aurora.Magenta(file_paths).String())
 		} else {
