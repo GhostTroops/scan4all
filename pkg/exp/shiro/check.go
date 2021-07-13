@@ -54,9 +54,6 @@ func httpRequset(RememberMe string, keylen int) int {
 		fmt.Println(err)
 	}
 	//设置请求头
-	if strings.ToUpper(method) == "POST" {
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	}
 	req.Header.Set("User-Agent", userAgent)
 	req.Header.Set("Cookie", "rememberMe="+RememberMe)
 	resp, err := client.Do(req)
@@ -100,7 +97,7 @@ func findTheKey(key_len int, url string, Shirokeys string, Content []byte, keyle
 
 func getCommandArgs() {
 	userAgent = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
-	method = "GET"
+	method = "HEAD"
 	postContent = ""
 	timeout = 5
 	interval = 0
