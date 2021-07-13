@@ -807,6 +807,12 @@ retry:
 					technologies = append(technologies, fmt.Sprintf("brute-tomcat|%s:%s", username, password))
 				}
 			}
+			if match == "Basic" {
+				username, password := brute.Basic_brute(URL.String())
+				if username != "" {
+					technologies = append(technologies, fmt.Sprintf("brute-basic|%s:%s", username, password))
+				}
+			}
 			if match == "weblogic登录页" || match == "bea-weblogic-server" {
 				username, password := brute.Weblogic_brute(URL.String())
 				if username != "" {

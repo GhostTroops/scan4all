@@ -3,7 +3,7 @@ package brute
 import "fmt"
 
 func Tomcat_brute(url string) (username string, password string) {
-	if req, err := httpRequsetBasic("", "", url+"/manager/html", "HEAD", ""); err == nil {
+	if req, err := httpRequsetBasic("asdasdascsacacs", "asdasdascsacacs", url+"/manager/html", "HEAD", ""); err == nil {
 		if req.StatusCode == 401 {
 			for uspa := range tomcatuserpass {
 				if req2, err2 := httpRequsetBasic(tomcatuserpass[uspa].username, tomcatuserpass[uspa].password, url+"/manager/html", "HEAD", ""); err2 == nil {
