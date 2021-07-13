@@ -2,13 +2,13 @@ Vscan
 ================================
 Vscan 是一款为红队开发的简单、快速的跨平台打点扫描器。
 
-### 1.目标：翻版goby扫描器
+### 1.目标：开源红队扫描器
 [https://github.com/gobysec/Goby](https://github.com/gobysec/Goby)
 goby是一款已经比较成熟的红队打点扫描器，我目前的开发目标是能达到其同样的效果，虽然有点重复造轮子的嫌疑，但是goby有个缺点是不开源，无法特别灵活的添加自己想要的东西
 
 
 ### 2.功能
-##### 2.1 端口扫描
+#### 2.1 端口扫描
 
 [https://github.com/projectdiscovery/naabu](https://github.com/projectdiscovery/naabu)
 
@@ -19,7 +19,7 @@ goby是一款已经比较成熟的红队打点扫描器，我目前的开发目�
 我将Output的默认输出参数调整为ips_port.txt，输出格式为192.168.1.1:80，可以非常方便的读取并进行下一步扫描，同时，我们可以保留其他输入参数，保留原扫描器的功能
 
 
-##### 2.2 服务识别
+#### 2.2 服务识别
 [https://github.com/projectdiscovery/httpx](https://github.com/projectdiscovery/httpx)
 这是一款http服务快速识别扫描器
 对于外网打点来说，最重要的就是web快速扫描，这款识别扫描器非常好用，可以快速识别网站的标题、网址、状态码、指纹等，还可以保留内容
@@ -31,7 +31,7 @@ goby是一款已经比较成熟的红队打点扫描器，我目前的开发目�
 ![](/img/vscan/2021-06-23-11-41-59.png)
 
 
-##### 2.3 漏洞扫描（nday、0day自动利用）
+#### 2.3 漏洞扫描（nday、0day自动利用）
 我在pkg包里新建了一个exp版块，建立了一个入口函数check，以后其他所有nday也可以使用同样的入口，方便检测
 
 ![](/img/vscan/2021-06-23-11-43-50.png)
@@ -53,17 +53,28 @@ for match := range matches {
 }
 ```
 
-##### 2.4 智能后台弱口令扫描，中间件弱口令扫描
+#### 2.4 智能后台弱口令扫描，中间件弱口令扫描
 
 弱口令其实是打点一个较为关键的部分，需要人工去抓包使用工具爆破
 
 这里我完成了最简单的没有使用验证码，没有使用vue等前端框架的后台智能爆破，可以一定量的减少手工时间，加快打点速度
 
-内置了两个账号 admin/test，密码为top100，如果成功识别后台会标记Login_Page，成功构建登录包会自动爆破出密码
+内置了两个账号 admin/test，密码为top100，如果成功识别后台会标记为\[登录页\]，成功构建登录包会自动爆破出密码
 
 如：
 
 `http://xxx.xxx.xxx.xxx:8080 [302,200] [登录 - 后台] [Shiro,key:Z3VucwAAAAAAAAAAAAAAAA==,Java,Login_Page,爆破成功，账号密码 admin:123456] [http://xxx.xxx.xxx.xxx:8080/login;JSESSIONID=8417fe14-f529-46a7-a67e-bbe96429cbd0]`
+
+包含爆破板块
+1. 智能后台爆破
+2. basic爆破
+3. tomcat登录爆破
+4. weblogic登录爆破
+
+#### 2.5 敏感文件扫描
+
+扫描 备份文件、swagger-ui、spring actuator、上传接口、测试文件等敏感链接
+
 ### 3.演示
 ```
 root@xxx:~/vscan# ./vscan  -iL ../urlx.txt -top-ports top-100
@@ -104,12 +115,10 @@ http://xxx.xxx.xxx.xxx:8080 [302,200] [xxx后台管理系统] [Login_Page,Shiro,
 
 ### 4.TO DO
 
-1.加入weblogic，tomcat等中间件的爆破
+1.加入weblogic，jboss等反序列化检测
 
-2.加入其他nday
+2.加入其他cms nday
 
 ### 5.目前正在做的
 
-1、如何识别中间件
-
-2、加入中间件爆破板块
+1、优化性能，修复BUG，防止误报
