@@ -851,13 +851,13 @@ retry:
 	}
 
 	if resp.HasChain() {
-		builder.WriteString(" [\"")
+		builder.WriteString(" [ ")
 		if !scanopts.OutputWithNoColor {
 			builder.WriteString(aurora.Magenta(finalURL).String())
 		} else {
 			builder.WriteString(finalURL)
 		}
-		builder.WriteRune('"')
+		builder.WriteRune(' ')
 		builder.WriteRune(']')
 	}
 
