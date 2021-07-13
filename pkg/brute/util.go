@@ -37,7 +37,7 @@ func httpRequsetBasic(username string, password string, urlstring string, touppe
 		}
 	}
 	client := &http.Client{
-		Timeout:   time.Duration(5) * time.Second,
+		Timeout:   time.Duration(10) * time.Second,
 		Transport: tr,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -71,7 +71,7 @@ func httpRequset(urlstring string, toupper string, postdate string) (*http.Respo
 		}
 	}
 	client := &http.Client{
-		Timeout:   time.Duration(5) * time.Second,
+		Timeout:   time.Duration(10) * time.Second,
 		Transport: tr,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
