@@ -855,7 +855,7 @@ retry:
 	}
 
 	file_paths := brute.File_fuzz(URL.String())
-	if len(file_paths) > 0 && len(file_paths) < 10 {
+	if len(file_paths) > 0 && len(file_paths) < 15 {
 		file_paths := strings.Join(file_paths, "\",\"")
 
 		builder.WriteString(" [敏感文件：\"")
