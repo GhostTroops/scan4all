@@ -6,7 +6,7 @@ func File_fuzz(url string) (path []string) {
 		for urli := range filedic {
 			lastword := filedic[urli][len(filedic[urli])-1:]
 			if req2, err := httpRequset(url+filedic[urli], "HEAD", ""); err == nil {
-				if lastword == "/" && (req2.StatusCode == 200 || req2.StatusCode == 403) {
+				if lastword == "/" && (req2.StatusCode == 302 || req2.StatusCode == 403) {
 					path = append(path, url+filedic[urli])
 				} else if req2.StatusCode == 200 {
 					path = append(path, url+filedic[urli])
