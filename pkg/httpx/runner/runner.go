@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"bufio"
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
@@ -223,39 +222,11 @@ func (r *Runner) prepareInput() {
 
 	// check if file has been provided
 	var numTargets int
-	if fileutil.FileExists(r.options.InputFile) {
-		finput, err := os.Open(r.options.InputFile)
-		if err != nil {
-			gologger.Fatal().Msgf("Could read input file '%s': %s\n", r.options.InputFile, err)
-		}
-		numTargets, err = r.loadAndCloseFile(finput)
-		if err != nil {
-			gologger.Fatal().Msgf("Could read input file '%s': %s\n", r.options.InputFile, err)
-		}
-	} else if r.options.InputFile != "" {
-		files, err := fileutil.ListFilesWithPattern(r.options.InputFile)
-		if err != nil {
-			gologger.Fatal().Msgf("No input provided: %s", err)
-		}
-		for _, file := range files {
-			finput, err := os.Open(file)
-			if err != nil {
-				gologger.Fatal().Msgf("Could read input file '%s': %s\n", r.options.InputFile, err)
-			}
-			numTargetsFile, err := r.loadAndCloseFile(finput)
-			if err != nil {
-				gologger.Fatal().Msgf("Could read input file '%s': %s\n", r.options.InputFile, err)
-			}
-			numTargets += numTargetsFile
-		}
+	numTargetsStdin, err := r.loadAndCloseFile(r.options.Naabuinput)
+	if err != nil {
+		gologger.Fatal().Msgf("Could read input from stdin: %s\n", err)
 	}
-	if fileutil.HasStdin() {
-		numTargetsStdin, err := r.loadAndCloseFile(os.Stdin)
-		if err != nil {
-			gologger.Fatal().Msgf("Could read input from stdin: %s\n", err)
-		}
-		numTargets += numTargetsStdin
-	}
+	numTargets += numTargetsStdin
 
 	if r.options.ShowStatistics {
 		numPorts := len(customport.Ports)
@@ -275,10 +246,9 @@ func (r *Runner) prepareInput() {
 	}
 }
 
-func (r *Runner) loadAndCloseFile(finput *os.File) (numTargets int, err error) {
-	scanner := bufio.NewScanner(finput)
-	for scanner.Scan() {
-		target := strings.TrimSpace(scanner.Text())
+func (r *Runner) loadAndCloseFile(ipPorts map[string]int) (numTargets int, err error) {
+	for host, port := range ipPorts {
+		target := strings.TrimSpace(fmt.Sprintf("%s:%d", host, port))
 		// Used just to get the exact number of targets
 		if _, ok := r.hm.Get(target); ok {
 			continue
@@ -291,7 +261,6 @@ func (r *Runner) loadAndCloseFile(finput *os.File) (numTargets int, err error) {
 		}
 		r.hm.Set(target, nil) //nolint
 	}
-	err = finput.Close()
 	return numTargets, err
 }
 

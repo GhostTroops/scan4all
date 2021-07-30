@@ -7,14 +7,11 @@ import (
 )
 
 func main() {
-	//brute.HttpProxy = "http://127.0.0.1:8080"
 	naabuoptions := naaburunner.ParseOptions()
-	naabuoptions.Output = "ips_port.txt"
 	naabuRunner, err := naaburunner.NewRunner(naabuoptions)
 	if err != nil {
 		gologger.Fatal().Msgf("Could not create runner: %s\n", err)
 	}
-
 	err = naabuRunner.RunEnumeration()
 	if err != nil {
 		gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
@@ -22,7 +19,11 @@ func main() {
 
 	//httpx
 	httpxoptions := httpxrunner.ParseOptions()
+	httpxoptions.NoColor = naabuoptions.NoColor
+	httpxoptions.Silent = naabuoptions.Silent
 	//httpxoptions.HTTPProxy = "http://127.0.0.1:8080"
+	//brute.HttpProxy = "http://127.0.0.1:8080"
+	httpxoptions.Naabuinput = naaburunner.Naabuipports
 	r, err := httpxrunner.New(httpxoptions)
 	if err != nil {
 		gologger.Fatal().Msgf("Could not create runner: %s\n", err)

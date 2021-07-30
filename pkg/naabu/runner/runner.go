@@ -25,6 +25,8 @@ const (
 	tickduration = 5
 )
 
+var Naabuipports = make(map[string]int)
+
 // Runner is an instance of the port enumeration
 // client used to orchestrate the whole process.
 type Runner struct {
@@ -348,7 +350,7 @@ func (r *Runner) handleOutput() {
 			if host == "ip" {
 				host = hostIP
 			}
-			//gologger.Info().Msgf("Found %d ports on host %s (%s)\n", len(ports), host, hostIP)
+			gologger.Info().Msgf("Found %d ports on host %s (%s)\n", len(ports), host, hostIP)
 
 			// console output
 			if r.options.JSON {
@@ -366,6 +368,7 @@ func (r *Runner) handleOutput() {
 				}
 			} else {
 				for port := range ports {
+					Naabuipports[host] = port
 					gologger.Silent().Msgf("%s:%d\n", host, port)
 				}
 			}
