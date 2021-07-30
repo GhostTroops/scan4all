@@ -170,6 +170,7 @@ type Options struct {
 	Allow                     customlist.CustomList
 	MaxResponseBodySize       int
 	OutputExtractRegex        string
+	Naabuinput                map[string]int
 }
 
 // ParseOptions parses the command line options for application
@@ -188,18 +189,18 @@ func ParseOptions() *Options {
 	options.Location = false
 	options.ContentLength = false
 	options.StoreResponse = false
-	options.StoreResponseDir = "output"
+	options.StoreResponseDir = ""
 	options.FollowRedirects = true
 	options.FollowHostRedirects = false
 	options.HTTPProxy = ""
 	options.JSONOutput = false
-	options.InputFile = "ips_port.txt"
+	options.InputFile = ""
 	options.Methods = ""
 	options.OutputMethod = false
-	options.Silent = false
+	options.Silent = true
 	options.Version = false
 	options.Verbose = false
-	options.NoColor = true
+	options.NoColor = false
 	options.OutputServerHeader = false
 	options.OutputWebSocket = false
 	options.responseInStdout = false
@@ -234,6 +235,7 @@ func ParseOptions() *Options {
 	options.RandomAgent = true
 	options.StoreChain = false
 	options.OutputExtractRegex = ""
+	options.Naabuinput = nil
 	// Read the inputs and configure the logging
 	options.configureOutput()
 	if options.Version {
