@@ -2,10 +2,41 @@ Vscan
 ================================
 Vscan 是一款为红队开发的简单、快速的跨平台打点扫描器。
 
-### 1.目标：开源红队扫描器
-[https://github.com/gobysec/Goby](https://github.com/gobysec/Goby)
-goby是一款已经比较成熟的红队打点扫描器，我目前的开发目标是能达到其同样的效果，虽然有点重复造轮子的嫌疑，但是goby有个缺点是不开源，无法特别灵活的添加自己想要的东西
-
+### 1.options
+```
+-host					Host to find ports for		
+-top-ports				Top Ports to scan (default top 100)		
+-iL						File containing list of hosts to enumerate ports		
+-p						Ports to scan (80, 80,443, 100-200, (-p - for full port scan)		
+-ping					Use ping probes for verification of host		
+-ports-file				File containing ports to enumerate for on hosts		
+-o						File to write output to (optional)		
+-json					Write output in JSON lines Format		
+-silent					Show found ports only in output		
+-retries  				DefaultRetriesSynScan, "Number of retries for the port scan probe		
+-rate 					DefaultRateSynScan, "Rate of port scan probe requests		
+-v						Show Verbose output		
+-no-color				Don't Use colors in output		
+-timeout				DefaultPortTimeoutSynScan, "Millisecond to wait before timing out		
+-exclude-ports			Ports to exclude from enumeration		
+-verify					Validate the ports again with TCP verification		
+-version				Show version of naabu		
+-exclude-hosts			Specifies a comma-separated list of targets to be excluded from the scan (ip, cidr)		
+-exclude-file			Specifies a newline-delimited file with targets to be excluded from the scan (ip, cidr)		
+-debug					Enable debugging information		
+-source-ip				Source Ip		
+-interface				Network Interface to use for port scan		
+-exclude-cdn			Skip full port scans for CDNs (only checks for 80,443)		
+-warm-up-time			Time in seconds between scan phases		
+-interface-list			List available interfaces and public ip		
+-config					Config file		
+-nmap					Invoke nmap scan on targets (nmap must be installed)		
+-nmap-cli				Nmap command line (invoked as COMMAND + TARGETS)		
+-c  					General internal worker threads		
+-stats					Display stats of the running scan		
+-scan-all-ips			Scan all the ips		
+-s 						Scan Type (s - SYN, c - CONNECT)		
+```
 
 ### 2.功能
 #### 2.1 端口扫描
@@ -63,7 +94,7 @@ for match := range matches {
 
 如：
 
-`http://xxx.xxx.xxx.xxx:8080 [302,200] [登录 - 后台] [Shiro,key:Z3VucwAAAAAAAAAAAAAAAA==,Java,Login_Page,爆破成功，账号密码 admin:123456] [http://xxx.xxx.xxx.xxx:8080/login;JSESSIONID=8417fe14-f529-46a7-a67e-bbe96429cbd0]`
+`http://xxx.xxx.xxx.xxx:8080 [302,200] [登录 - 后台] [exp-shiro|key:Z3VucwAAAAAAAAAAAAAAAA==,Java,登录页,brute-admin|admin:123456] [http://xxx.xxx.xxx.xxx:8080/login;JSESSIONID=8417fe14-f529-46a7-a67e-bbe96429cbd0]`
 
 包含爆破板块
 1. 智能后台爆破
