@@ -47,16 +47,12 @@ Vscan 是一款为红队开发的简单、快速的跨平台打点扫描器。
 
 端口扫描一般是作为输入的第一步，所以我们不需要指定太多默认参数，只需要修改一下输出即可
 ![](/img/vscan/2021-06-23-11-31-36.png)
-我将Output的默认输出参数调整为ips_port.txt，输出格式为192.168.1.1:80，可以非常方便的读取并进行下一步扫描，同时，我们可以保留其他输入参数，保留原扫描器的功能
-
 
 #### 2.2 服务识别
 [https://github.com/projectdiscovery/httpx](https://github.com/projectdiscovery/httpx)
 这是一款http服务快速识别扫描器
 对于外网打点来说，最重要的就是web快速扫描，这款识别扫描器非常好用，可以快速识别网站的标题、网址、状态码、指纹等，还可以保留内容
 
-同样的，我将它集成到vscan的pkg包里，并赋值一些默认参数，将端口扫描的结果ips_port.txt作为输入
-![](/img/vscan/2021-06-23-11-40-15.png)
 
 需要注意的是，由于httpx使用了wappalyzergo库作为指纹识别，我们需要把[wappalyzergo](https://github.com/projectdiscovery/wappalyzergo)库整个下载下来，方便后续的指纹添加,这里我添加了一个shiro指纹，可以快速识别服务器是否使用shiro
 ![](/img/vscan/2021-06-23-11-41-59.png)
