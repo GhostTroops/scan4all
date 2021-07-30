@@ -126,6 +126,8 @@ github.com/projectdiscovery/hmap v0.0.1/go.mod h1:VDEfgzkKQdq7iGTKz8Ooul0NuYHQ8q
 github.com/projectdiscovery/httputil v0.0.0-20210508183653-2e37c34b438d h1:IdBTOSGaPrZ8+FK0uYMQIva9dYIR5F55PLFWYtBBKc0=
 github.com/projectdiscovery/httputil v0.0.0-20210508183653-2e37c34b438d/go.mod h1:Vm2DY4NwUV5yA6TNzJOOjTYGjTcVfuEN8m9Y5dAksLQ=
 github.com/projectdiscovery/ipranger v0.0.2/go.mod h1:kcAIk/lo5rW+IzUrFkeYyXnFJ+dKwYooEOHGVPP/RWE=
+github.com/projectdiscovery/ipranger v0.0.3-0.20210617100928-8be9d49fa47b h1:JAcPJoJbRcR6Vth7VXuaxeMnLYGXtbL6GNo9QZaWXHY=
+github.com/projectdiscovery/ipranger v0.0.3-0.20210617100928-8be9d49fa47b/go.mod h1:prNZB2gIc/r1BjxM+Tb3Hf5JiiRkQKMJ05PeUlonSlA=
 github.com/projectdiscovery/ipranger v0.0.3-0.20210619173509-f9b366d18ac6 h1:NaQMBS3GN7PM0+nC+rYDLeLMbQt6YVoZU9QlxQKShLg=
 github.com/projectdiscovery/ipranger v0.0.3-0.20210619173509-f9b366d18ac6/go.mod h1:J1iJbIhUvLKIhRuosEyI0wzjmsLaG4m7jQjx42u82So=
 github.com/projectdiscovery/iputil v0.0.0-20210414194613-4b4d2517acf0/go.mod h1:PQAqn5h5NXsQTF4ZA00ZTYLRzGCjOtcCq8llAqrsd1A=
@@ -147,6 +149,7 @@ github.com/projectdiscovery/retryabledns v1.0.11/go.mod h1:4sMC8HZyF01HXukRleSQY
 github.com/projectdiscovery/retryablehttp-go v1.0.1/go.mod h1:SrN6iLZilNG1X4neq1D+SBxoqfAF4nyzvmevkTkWsek=
 github.com/projectdiscovery/retryablehttp-go v1.0.2-0.20210524224054-9fbe1f2b0727 h1:CJHP3CLCc/eqdXQEvZy8KiiqtAk9kEsd1URtPyPAQ1s=
 github.com/projectdiscovery/retryablehttp-go v1.0.2-0.20210524224054-9fbe1f2b0727/go.mod h1:dx//aY9V247qHdsRf0vdWHTBZuBQ2vm6Dq5dagxrDYI=
+github.com/projectdiscovery/stringsutil v0.0.0-20210524051937-51dabe3b72c0 h1:HvtSWR3UWX1nuIgkrgCjcdXOH4gTjLVVdZBKu31N/6o=
 github.com/projectdiscovery/stringsutil v0.0.0-20210524051937-51dabe3b72c0/go.mod h1:TVSdZC0rRQeMIbsNSiGPhbmhyRtxqqtAGA9JiiNp2r4=
 github.com/projectdiscovery/stringsutil v0.0.0-20210617141317-00728870f68d h1:nlOAex7twmrEqD5i6WLnugF9uO3DQ6jDEKN9gevrTAk=
 github.com/projectdiscovery/stringsutil v0.0.0-20210617141317-00728870f68d/go.mod h1:TVSdZC0rRQeMIbsNSiGPhbmhyRtxqqtAGA9JiiNp2r4=

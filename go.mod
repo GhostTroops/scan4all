@@ -21,7 +21,7 @@ require (
 	github.com/projectdiscovery/gologger v1.1.4
 	github.com/projectdiscovery/hmap v0.0.1
 	github.com/projectdiscovery/httputil v0.0.0-20210508183653-2e37c34b438d
-	github.com/projectdiscovery/ipranger v0.0.3-0.20210619173509-f9b366d18ac6
+	github.com/projectdiscovery/ipranger v0.0.3-0.20210617100928-8be9d49fa47b
 	github.com/projectdiscovery/iputil v0.0.0-20210429152401-c18a5408ca46
 	github.com/projectdiscovery/mapcidr v0.0.7
 	github.com/projectdiscovery/networkpolicy v0.0.0-20210617100800-060573865df4
