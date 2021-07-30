@@ -6,36 +6,36 @@ Vscan 是一款为红队开发的简单、快速的跨平台打点扫描器。
 ```
 -host					Host to find ports for		
 -top-ports				Top Ports to scan (default top 100)		
--iL						File containing list of hosts to enumerate ports		
--p						Ports to scan (80, 80,443, 100-200, (-p - for full port scan)		
+-iL					File containing list of hosts to enumerate ports		
+-p					Ports to scan (80, 80,443, 100-200, (-p - for full port scan)		
 -ping					Use ping probes for verification of host		
 -ports-file				File containing ports to enumerate for on hosts		
--o						File to write output to (optional)		
+-o					File to write output to (optional)		
 -json					Write output in JSON lines Format		
 -silent					Show found ports only in output		
 -retries  				DefaultRetriesSynScan, "Number of retries for the port scan probe		
 -rate 					DefaultRateSynScan, "Rate of port scan probe requests		
--v						Show Verbose output		
+-v					Show Verbose output		
 -no-color				Don't Use colors in output		
 -timeout				DefaultPortTimeoutSynScan, "Millisecond to wait before timing out		
--exclude-ports			Ports to exclude from enumeration		
+-exclude-ports			        Ports to exclude from enumeration		
 -verify					Validate the ports again with TCP verification		
 -version				Show version of naabu		
--exclude-hosts			Specifies a comma-separated list of targets to be excluded from the scan (ip, cidr)		
--exclude-file			Specifies a newline-delimited file with targets to be excluded from the scan (ip, cidr)		
+-exclude-hosts			        Specifies a comma-separated list of targets to be excluded from the scan (ip, cidr)		
+-exclude-file			        Specifies a newline-delimited file with targets to be excluded from the scan (ip, cidr)		
 -debug					Enable debugging information		
 -source-ip				Source Ip		
 -interface				Network Interface to use for port scan		
--exclude-cdn			Skip full port scans for CDNs (only checks for 80,443)		
--warm-up-time			Time in seconds between scan phases		
--interface-list			List available interfaces and public ip		
+-exclude-cdn			        Skip full port scans for CDNs (only checks for 80,443)		
+-warm-up-time			        Time in seconds between scan phases		
+-interface-list			        List available interfaces and public ip		
 -config					Config file		
 -nmap					Invoke nmap scan on targets (nmap must be installed)		
 -nmap-cli				Nmap command line (invoked as COMMAND + TARGETS)		
 -c  					General internal worker threads		
 -stats					Display stats of the running scan		
--scan-all-ips			Scan all the ips		
--s 						Scan Type (s - SYN, c - CONNECT)		
+-scan-all-ips			        Scan all the ips		
+-s 					Scan Type (s - SYN, c - CONNECT)		
 ```
 
 ### 2.功能
