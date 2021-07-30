@@ -5,7 +5,7 @@ Vscan 是一款为红队开发的简单、快速的跨平台打点扫描器。
 ### 1.options
 ```
 -host					Host to find ports for		
--top-ports				Top Ports to scan (default top 100)		
+-top-ports				Top Ports to scan (full|http|top100|top-1000)		
 -iL					File containing list of hosts to enumerate ports		
 -p					Ports to scan (80, 80,443, 100-200, (-p - for full port scan)		
 -ping					Use ping probes for verification of host		
