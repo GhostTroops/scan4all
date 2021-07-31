@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -312,33 +311,8 @@ func (r *Runner) SetSourceIPAndInterface() error {
 }
 
 func (r *Runner) handleOutput() {
-	var (
-		file   *os.File
-		err    error
-		output string
-	)
 	// In case the user has given an output file, write all the found
 	// ports to the output file.
-	if r.options.Output != "" {
-		output = r.options.Output
-
-		// create path if not existing
-		outputFolder := filepath.Dir(output)
-		if _, statErr := os.Stat(outputFolder); os.IsNotExist(statErr) {
-			mkdirErr := os.MkdirAll(outputFolder, 0700)
-			if mkdirErr != nil {
-				gologger.Error().Msgf("Could not create output folder %s: %s\n", outputFolder, mkdirErr)
-				return
-			}
-		}
-
-		file, err = os.Create(output)
-		if err != nil {
-			gologger.Error().Msgf("Could not create file %s: %s\n", output, err)
-			return
-		}
-		defer file.Close()
-	}
 
 	for hostIP, ports := range r.scanner.ScanResults.IPPorts {
 		dt, err := r.scanner.IPRanger.GetHostsByIP(hostIP)
@@ -370,18 +344,6 @@ func (r *Runner) handleOutput() {
 				for port := range ports {
 					Naabuipports[host] = port
 					gologger.Silent().Msgf("%s:%d\n", host, port)
-				}
-			}
-
-			// file output
-			if file != nil {
-				if r.options.JSON {
-					err = WriteJSONOutput(host, hostIP, ports, file)
-				} else {
-					err = WriteHostOutput(host, ports, file)
-				}
-				if err != nil {
-					gologger.Error().Msgf("Could not write results to file %s for %s: %s\n", output, host, err)
 				}
 			}
 		}

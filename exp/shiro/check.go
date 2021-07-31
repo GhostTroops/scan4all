@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
+	"github.com/veo/vscan/exp"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -154,7 +155,7 @@ func rememberMeGen() {
 func Check(url string) (key string) {
 	getCommandArgs()
 	shiro_url = url
-	//httpProxy = "http://127.0.0.1:8080"
+	httpProxy = exp.HttpProxy
 	key = keyCheck(url)
 	return key
 }
