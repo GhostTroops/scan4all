@@ -6,8 +6,9 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/veo/vscan/pkg/brute"
-	"github.com/veo/vscan/pkg/exp/shiro"
+	"github.com/veo/vscan/brute"
+	"github.com/veo/vscan/exp/shiro"
+	"github.com/veo/vscan/exp/tomcat"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -770,7 +771,13 @@ retry:
 					technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 				}
 			}
-			if match == "Tomcat登录页" {
+			if match == "Apache Tomcat" {
+				if tomcat.CVE_2020_1938(URL.Host) {
+					technologies = append(technologies, "exp-tomcat|CVE-2020-1938")
+				}
+				if tomcat.CVE_2017_12615(URL.String()) {
+					technologies = append(technologies, fmt.Sprintf("exp-tomcat|CVE_2017_12615|--\"%s/vscan.txt\"", URL.String()))
+				}
 				username, password := brute.Tomcat_brute(URL.String())
 				if username != "" {
 					technologies = append(technologies, fmt.Sprintf("brute-tomcat|%s:%s", username, password))
@@ -782,7 +789,7 @@ retry:
 					technologies = append(technologies, fmt.Sprintf("brute-basic|%s:%s", username, password))
 				}
 			}
-			if match == "weblogic登录页" || match == "bea-weblogic-server" {
+			if match == "weblogic" {
 				username, password := brute.Weblogic_brute(URL.String())
 				if username != "" {
 					if username == "login_page" {

@@ -28,16 +28,24 @@ func httpRequsetBasic(username string, password string, urlstring string, touppe
 	if HttpProxy != "" {
 		uri, _ := url.Parse(HttpProxy)
 		tr = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			Proxy:           http.ProxyURL(uri),
+			MaxIdleConnsPerHost: -1,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+			DisableKeepAlives: true,
+			Proxy:             http.ProxyURL(uri),
 		}
 	} else {
 		tr = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			MaxIdleConnsPerHost: -1,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+			DisableKeepAlives: true,
 		}
 	}
 	client := &http.Client{
-		Timeout:   time.Duration(10) * time.Second,
+		Timeout:   time.Duration(5) * time.Second,
 		Transport: tr,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -47,8 +55,6 @@ func httpRequsetBasic(username string, password string, urlstring string, touppe
 		fmt.Println(err)
 	}
 	req.SetBasicAuth(username, password)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")
 	resp, err := client.Do(req)
 	if err == nil {
@@ -62,16 +68,24 @@ func httpRequset(urlstring string, toupper string, postdate string) (*http.Respo
 	if HttpProxy != "" {
 		uri, _ := url.Parse(HttpProxy)
 		tr = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			Proxy:           http.ProxyURL(uri),
+			MaxIdleConnsPerHost: -1,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+			DisableKeepAlives: true,
+			Proxy:             http.ProxyURL(uri),
 		}
 	} else {
 		tr = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			MaxIdleConnsPerHost: -1,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+			DisableKeepAlives: true,
 		}
 	}
 	client := &http.Client{
-		Timeout:   time.Duration(10) * time.Second,
+		Timeout:   time.Duration(5) * time.Second,
 		Transport: tr,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -80,8 +94,6 @@ func httpRequset(urlstring string, toupper string, postdate string) (*http.Respo
 	if err != nil {
 		fmt.Println(err)
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("X-Requested-With", "XMLHttpRequest")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")
 	resp, err := client.Do(req)
 	if err == nil {

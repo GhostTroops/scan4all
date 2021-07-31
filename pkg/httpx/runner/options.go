@@ -181,7 +181,7 @@ func ParseOptions() *Options {
 	options.Threads = 50
 	options.Retries = 0
 	options.Timeout = 5
-	options.Output = "urls.txt"
+	options.Output = ""
 	options.VHost = false
 	options.VHostInput = false
 	options.ExtractTitle = true

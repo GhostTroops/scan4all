@@ -45,6 +45,7 @@ type Options struct {
 	EnableProgressBar bool   // Enable progress bar
 	ScanAllIPS        bool   // Scan all the ips
 	ScanType          string // Scan Type
+	HTTPProxy         string
 	config            *ConfigFile
 }
 
@@ -53,7 +54,7 @@ func ParseOptions() *Options {
 	options := &Options{}
 
 	flag.StringVar(&options.Host, "host", "", "Host to find ports for")
-	flag.StringVar(&options.TopPorts, "top-ports", "", "Top Ports to scan (default top 100)")
+	flag.StringVar(&options.TopPorts, "top-ports", "", "Top Ports to scan (full|http|top100|top-1000)")
 	flag.StringVar(&options.HostsFile, "iL", "", "File containing list of hosts to enumerate ports")
 	flag.StringVar(&options.Ports, "p", "", "Ports to scan (80, 80,443, 100-200, (-p - for full port scan)")
 	flag.BoolVar(&options.Ping, "ping", false, "Use ping probes for verification of host")
@@ -84,6 +85,7 @@ func ParseOptions() *Options {
 	flag.BoolVar(&options.EnableProgressBar, "stats", false, "Display stats of the running scan")
 	flag.BoolVar(&options.ScanAllIPS, "scan-all-ips", false, "Scan all the ips")
 	flag.StringVar(&options.ScanType, "s", SynScan, "Scan Type (s - SYN, c - CONNECT)")
+	flag.StringVar(&options.HTTPProxy, "http-proxy", "", "HTTP Proxy, eg http://127.0.0.1:8080")
 
 	flag.Parse()
 
