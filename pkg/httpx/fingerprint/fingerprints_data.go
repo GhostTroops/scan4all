@@ -7864,14 +7864,6 @@ var fingerprints = `{
         "WordPress"
       ]
     },
-    "Google Font API" : {
-      "js" : [
-        "webfonts"
-      ],
-      "html" : [
-        "<link[^>]* href=[^>]+fonts\\.(?:googleapis|google)\\.com"
-      ]
-    },
     "Scorpion" : {
       "js" : [
         "process.userdata"
@@ -8558,16 +8550,6 @@ var fingerprints = `{
     "Accesso" : {
       "js" : [
         "accesso"
-      ]
-    },
-    "Font Awesome" : {
-      "js" : [
-        "fontawesomecdnconfig",
-        "___font_awesome___"
-      ],
-      "html" : [
-        "<link[^>]* href=[^>]+(?:([\\d.]+)\/)?(?:css\/)?font-awesome(?:\\.min)?\\.css",
-        "<link[^>]* href=[^>]*kit\\-pro\\.fontawesome\\.com\/releases\/v([0-9.]+)\/"
       ]
     },
     "Varbase" : {
@@ -11658,7 +11640,11 @@ var fingerprints = `{
     },
     "Tomcat登录页" : {
       "html" : [
-        "\/manager\/html"
+        "manager\/html"
+      ],
+      "implies" : [
+        "Apache Tomcat",
+		"Java"
       ]
     },
     "macrec_dvr" : {
@@ -12087,12 +12073,6 @@ var fingerprints = `{
         "<title>eadmin"
       ]
     },
-    "igaming-cms" : {
-      "html" : [
-        "powered by",
-        "http:\/\/www.igamingcms.com\/"
-      ]
-    },
     "u-mail" : {
       "html" : [
         "<body link=\"white\" vlink=\"white\" alink=\"white\">"
@@ -12222,12 +12202,6 @@ var fingerprints = `{
     "畅捷通" : {
       "html" : [
         "<title>畅捷通"
-      ]
-    },
-    "blognplus" : {
-      "html" : [
-        "powered by",
-        "href=\"http:\/\/www.blogn.org"
       ]
     },
     "逐浪zoomla" : {
@@ -13225,12 +13199,6 @@ var fingerprints = `{
         "name=\"dc.title"
       ]
     },
-    "aardvark topsites" : {
-      "html" : [
-        "powered by",
-        "aardvark topsites"
-      ]
-    },
     "武汉弘智科技" : {
       "html" : [
         "研发与技术支持：武汉弘智科技有限公司"
@@ -13380,12 +13348,6 @@ var fingerprints = `{
     "silverstripe" : {
       "html" : [
         "content=\"silverstripe"
-      ]
-    },
-    "68 classifieds" : {
-      "html" : [
-        "powered by",
-        "68 classifieds"
       ]
     },
     "网御waf" : {
@@ -13553,12 +13515,6 @@ var fingerprints = `{
         "under-goal files"
       ]
     },
-    "allnewsmanager_net" : {
-      "html" : [
-        "powered by",
-        "allnewsmanager"
-      ]
-    },
     "福富安全基线管理" : {
       "html" : [
         "align=\"center\">福富软件"
@@ -13694,12 +13650,6 @@ var fingerprints = `{
       "html" : [
         "<title>斐讯fortress防火墙",
         "<meta name=\"author\" content=\"上海斐讯数据通信技术有限公司\" \/>"
-      ]
-    },
-    "atomic-photo-album" : {
-      "html" : [
-        "powered by",
-        "atomic photo album"
       ]
     },
     "kaibb" : {
@@ -13972,6 +13922,9 @@ var fingerprints = `{
     },
     "bea-weblogic-server" : {
       "html" : [
+        "weblogic"
+      ],
+      "implies" : [
         "weblogic"
       ]
     },
