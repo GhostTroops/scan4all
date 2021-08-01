@@ -45,7 +45,7 @@ type Options struct {
 	EnableProgressBar bool   // Enable progress bar
 	ScanAllIPS        bool   // Scan all the ips
 	ScanType          string // Scan Type
-	HTTPProxy         string
+	Proxy             string
 	config            *ConfigFile
 }
 
@@ -85,7 +85,7 @@ func ParseOptions() *Options {
 	flag.BoolVar(&options.EnableProgressBar, "stats", false, "Display stats of the running scan")
 	flag.BoolVar(&options.ScanAllIPS, "scan-all-ips", false, "Scan all the ips")
 	flag.StringVar(&options.ScanType, "s", SynScan, "Scan Type (s - SYN, c - CONNECT)")
-	flag.StringVar(&options.HTTPProxy, "http-proxy", "", "HTTP Proxy, eg http://127.0.0.1:8080")
+	flag.StringVar(&options.Proxy, "proxy", "", "HTTP Proxy, eg http://127.0.0.1:8080")
 
 	flag.Parse()
 

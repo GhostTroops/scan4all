@@ -36,7 +36,7 @@ Vscan 是一款为红队开发的简单、快速的跨平台打点扫描器。
 -stats                          Display stats of the running scan		
 -scan-all-ips                   Scan all the ips		
 -s                              Scan Type (s - SYN, c - CONNECT)	
--http-proxy                     HTTP Proxy, eg http://127.0.0.1:8080        	
+-proxy                          Httpx Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)       	
 ```
 
 ### 2.功能
