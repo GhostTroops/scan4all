@@ -22,9 +22,9 @@ func main() {
 	httpxoptions.NoColor = naabuoptions.NoColor
 	httpxoptions.Silent = naabuoptions.Silent
 	httpxoptions.Output = naabuoptions.Output
-	httpxoptions.HTTPProxy = naabuoptions.HTTPProxy
-	brute.HttpProxy = naabuoptions.HTTPProxy
-	exp.HttpProxy = naabuoptions.HTTPProxy
+	httpxoptions.HTTPProxy = naabuoptions.Proxy
+	brute.HttpProxy = naabuoptions.Proxy
+	exp.HttpProxy = naabuoptions.Proxy
 	httpxoptions.Naabuinput = naaburunner.Naabuipports
 	r, err := httpxrunner.New(httpxoptions)
 	if err != nil {
