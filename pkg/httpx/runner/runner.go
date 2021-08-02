@@ -16,6 +16,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -753,61 +754,111 @@ retry:
 	if scanopts.OutputResponseTime {
 		builder.WriteString(fmt.Sprintf(" [%s]", resp.Duration))
 	}
-
 	var technologies []string
+	var techshow []string
+	file_paths := brute.File_fuzz(URL.String())
+	listfind := func(str string, list []string) bool {
+		sort.Strings(list)
+		index := sort.SearchStrings(list, str)
+		if index < len(list) && list[index] == str {
+			return true
+		}
+		return false
+	}
 	if scanopts.TechDetect {
 		matches := r.wappalyzer.Fingerprint(resp.Headers, resp.Data)
 		for match := range matches {
 			technologies = append(technologies, match)
-			if match == "Shiro" {
+			techshow = append(techshow, match)
+		}
+		for filePathName := range file_paths {
+			switch file_paths[filePathName] {
+			case "/admin/":
+				if !listfind("admin登录页", technologies) {
+					technologies = append(technologies, "admin登录页")
+				}
+			case "/manager/html":
+				if !listfind("Apache Tomcat", technologies) {
+					technologies = append(technologies, "Apache Tomcat")
+				}
+			case "/console/login/LoginForm.jsp":
+				if !listfind("weblogic", technologies) {
+					technologies = append(technologies, "weblogic")
+				}
+			case "/Runtime/Logs/":
+				if !listfind("ThinkPHP3", technologies) {
+					technologies = append(technologies, "ThinkPHP3")
+				}
+			case "/seeyon/":
+				if !listfind("seeyon", technologies) {
+					technologies = append(technologies, "seeyon")
+				}
+			case "/zentao/":
+				if !listfind("禅道", technologies) {
+					technologies = append(technologies, "禅道")
+				}
+			case "/zabbix/":
+				if !listfind("zabbix", technologies) {
+					technologies = append(technologies, "zabbix")
+				}
+			case "/actuator", "/actuator/env", "/druid/index.html":
+				if !listfind("Spring", technologies) {
+					technologies = append(technologies, "Spring")
+				}
+			}
+		}
+		for tech := range technologies {
+			switch technologies[tech] {
+			case "Shiro":
 				key := shiro.Check(URL.String())
 				if key != "" {
-					technologies = append(technologies, fmt.Sprintf("exp-shiro|key:%s", key))
+					techshow = append(techshow, fmt.Sprintf("exp-shiro|key:%s", key))
 				}
-			}
-			if match == "登录页" {
+			case "登录页":
 				username, password, loginurl := brute.Admin_brute(URL.String())
 				if loginurl != "" {
-					technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
+					techshow = append(techshow, fmt.Sprintf("brute-admin|%s:%s", username, password))
 				}
-			}
-			if match == "Apache Tomcat" {
+			case "admin登录页":
+				username, password, loginurl := brute.Admin_brute(URL.String() + "/admin/")
+				if loginurl != "" {
+					techshow = append(techshow, fmt.Sprintf("brute-admin|%s:%s", username, password))
+				}
+			case "Apache Tomcat":
 				if tomcat.CVE_2020_1938(URL.Host) {
-					technologies = append(technologies, "exp-tomcat|CVE-2020-1938")
+					techshow = append(techshow, "exp-tomcat|CVE_2020_1938")
 				}
 				if tomcat.CVE_2017_12615(URL.String()) {
-					technologies = append(technologies, fmt.Sprintf("exp-tomcat|CVE_2017_12615|--\"%s/vscan.txt\"", URL.String()))
+					techshow = append(techshow, "exp-tomcat|CVE_2017_12615")
 				}
 				username, password := brute.Tomcat_brute(URL.String())
 				if username != "" {
-					technologies = append(technologies, fmt.Sprintf("brute-tomcat|%s:%s", username, password))
+					techshow = append(techshow, fmt.Sprintf("brute-tomcat|%s:%s", username, password))
 				}
-			}
-			if match == "Basic" {
+			case "Basic":
 				username, password := brute.Basic_brute(URL.String())
 				if username != "" {
-					technologies = append(technologies, fmt.Sprintf("brute-basic|%s:%s", username, password))
+					techshow = append(techshow, fmt.Sprintf("brute-basic|%s:%s", username, password))
 				}
-			}
-			if match == "weblogic" {
+			case "weblogic":
 				username, password := brute.Weblogic_brute(URL.String())
 				if username != "" {
 					if username == "login_page" {
-						technologies = append(technologies, "weblogic_login_page")
+						techshow = append(techshow, "weblogic_login_page")
 					} else {
-						technologies = append(technologies, fmt.Sprintf("brute-weblogic|%s:%s", username, password))
+						techshow = append(techshow, fmt.Sprintf("brute-weblogic|%s:%s", username, password))
 					}
 				}
 			}
 		}
-		if len(technologies) > 0 {
-			technologies := strings.Join(technologies, ",")
-
+		if len(techshow) > 0 {
+			sort.Strings(techshow)
+			techshow := strings.Join(techshow, ",")
 			builder.WriteString(" [")
 			if !scanopts.OutputWithNoColor {
-				builder.WriteString(aurora.Magenta(technologies).String())
+				builder.WriteString(aurora.Magenta(techshow).String())
 			} else {
-				builder.WriteString(technologies)
+				builder.WriteString(techshow)
 			}
 			builder.WriteRune(']')
 		}
@@ -837,13 +888,11 @@ retry:
 		builder.WriteRune(']')
 	}
 
-	file_paths := brute.File_fuzz(URL.String())
 	if len(file_paths) > 0 && len(file_paths) < 15 {
-		file_paths := strings.Join(file_paths, "\",\"")
-
-		builder.WriteString(" [file_fuzz：\"")
+		file_paths := strings.Join(file_paths, "\",\""+URL.String())
+		builder.WriteString(" [file_fuzz：")
 		if !scanopts.OutputWithNoColor {
-			builder.WriteString(aurora.Magenta(file_paths).String())
+			builder.WriteString(aurora.Magenta("\"" + URL.String() + file_paths).String())
 		} else {
 			builder.WriteString(file_paths)
 		}
