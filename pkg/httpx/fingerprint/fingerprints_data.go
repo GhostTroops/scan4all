@@ -6451,6 +6451,9 @@ var fingerprints = `{
       ]
     },
     "Apache Tomcat" : {
+	  "html" : [
+        "<h3>apache tomcat.*?</h3>"
+      ],
       "headers" : {
         "server" : "^apache-coyote",
         "x-powered-by" : "\\btomcat\\b(?:-([\\d.]+))?"
