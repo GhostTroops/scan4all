@@ -76,7 +76,7 @@ func ajp_msg_append_attribute_string(ajp_msg_ptr *[]byte, ajp_string string, ajp
 
 func bytes_length(ajp_string string) []byte {
 	ajp_string_len_buffer := new(bytes.Buffer)
-	var ajp_string_len int16 = int16(len(ajp_string))
+	var ajp_string_len = int16(len(ajp_string))
 	binary.Write(ajp_string_len_buffer, binary.BigEndian, ajp_string_len)
 	return ajp_string_len_buffer.Bytes()
 }
@@ -243,7 +243,7 @@ func CVE_2020_1938(host string) bool {
 	ajpBuffer := makePayload(host, 8009)
 	isVulnerable, version := getVersion(host, 8009, ajpBuffer)
 	if isVulnerable {
-		fmt.Printf("tomcat-exp-sucess|%s:%d Tomcat AJP LFI is vulnerable, Tomcat version: %s\n", host, 8009, version)
+		fmt.Printf("tomcat-exp-sucess|CVE_2020_1938 %s:%d Tomcat AJP LFI is vulnerable, Tomcat version: %s\n", host, 8009, version)
 		return true
 	}
 	return false
