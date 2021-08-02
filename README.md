@@ -1,6 +1,6 @@
 vscan
 ================================
-轻量、快速、跨平台 的红队外网打点扫描器框架
+开源、轻量、快速、跨平台 的红队外网打点扫描器
 
 ### 1.options
 ```
@@ -96,15 +96,13 @@ func Check(url string) (key string) {
 shiro exp 添加检测项：
 ```
 matches := r.wappalyzer.Fingerprint(resp.Headers, resp.Data)
-for match := range matches {
-    technologies = append(technologies, match)
-    if match == "Shiro" {
+for tech := range technologies {
+    switch technologies[tech] {
+    case "Shiro":
         key := shiro.Check(URL.String())
-        if key != ""{
-            technologies = append(technologies, "key:"+key)
+        if key != "" {
+            techshow = append(techshow, fmt.Sprintf("exp-shiro|key:%s", key))
         }
-    }
-}
 ```
 
 #### 3.4 智能后台弱口令扫描，中间件弱口令扫描
