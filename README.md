@@ -1,10 +1,10 @@
-Vscan
+vscan
 ================================
-Vscan 是一款为红队开发的简单、快速的跨平台打点扫描器。
+轻量、快速、跨平台 的红队外网打点扫描器框架
 
 ### 1.options
 ```
--host                           Host to find ports for		
+-host                           Host or Url to find ports for		
 -top-ports                      Top Ports to scan (full|http|top100|top-1000)		
 -iL                             File containing list of hosts to enumerate ports		
 -p                              Ports to scan (80, 80,443, 100-200, (-p - for full port scan)		
@@ -39,30 +39,61 @@ Vscan 是一款为红队开发的简单、快速的跨平台打点扫描器。
 -proxy                          Httpx Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)       	
 ```
 
-### 2.功能
-#### 2.1 端口扫描
+### 2.Build
 
-[https://github.com/projectdiscovery/naabu](https://github.com/projectdiscovery/naabu)
-
-一款扫描器必备的东西是端口扫描，虽然massscan和nmap是非常给力的端口扫描工具，要比其他端口扫描器好用，但是由于他们都是C语言开发的，想要集成到vscan里比较繁琐，所以我选择了大方向go语言的一款端口扫描器，他支持CONNECT、SYN扫描，C段扫描等功能，对于我们来说完全足够
-
-#### 2.2 服务识别
-[https://github.com/projectdiscovery/httpx](https://github.com/projectdiscovery/httpx)
-这是一款http服务快速识别扫描器
-对于外网打点来说，最重要的就是web快速扫描，这款识别扫描器非常好用，可以快速识别网站的标题、网址、状态码、指纹等，还可以保留内容
-
-
-需要注意的是，由于httpx使用了wappalyzergo库作为指纹识别，我们需要把[wappalyzergo](https://github.com/projectdiscovery/wappalyzergo)库整个下载下来，方便后续的指纹添加,这里我添加了一个shiro指纹，可以快速识别服务器是否使用shiro
+Requirements:
+  * [Go 1.15 版本以上](https://golang.org/dl/)
+  * [libpcap](https://www.tcpdump.org/)
+```
+git clone https://github.com/veo/vscan.git
+cd vscan
+go build
+```
 
 
-#### 2.3 漏洞扫描（nday、0day自动利用）
-我在pkg包里新建了一个exp版块，建立了一个入口函数check，以后其他所有nday也可以使用同样的入口，方便检测
+### 3.功能
+#### 3.1 端口扫描，站点访问
 
+1.支持CONNECT、SYN扫描，C段扫描等功能
 
-shiro exp内容：
-包含CBC、GCM两种方式的检测，遍历测试一百多个key
+2.可以直接输入网址进行扫描（不带http://），即使网址使用了CDN，也可以正常扫描
 
-漏洞扫描的过程我放到了指纹识别以后多线程并行进行，例如如果识别到使用了shiro服务，则调用shiro.Check
+3.支持CDN检测，检测到CDN则只返回80,443端口
+
+4.智能识别https，自动信任证书
+
+其他功能自行探索，详情见options
+
+#### 3.2 指纹识别
+3.2.1 基础指纹识别
+
+可以快速识别网站的标题、网址、状态码、指纹等
+
+使用了wappalyzergo库作为指纹识别，[wappalyzergo](https://github.com/projectdiscovery/wappalyzergo)库已集成在源码内，二次开发可以在./pkg/httpx/fingerprint/fingerprints_data.go 自行修改
+
+3.2.2 智能探索型指纹识别
+
+基于敏感文件扫描，扫描到某些文件，再进行指纹鉴定，二次开发可自行修改
+
+#### 3.3 漏洞扫描（nday、0day检测）
+为了方便，exp版块都是直接使用go文件，每个文件都是单独完整的poc
+
+添加poc需要写一个go的程序，放到exp文件夹下，指定一个入口函数，设置代理为 httpProxy = exp.HttpProxy,指定输入输出，并在./pkg/httpx/runner/runner.go 添加检测项
+
+例如
+
+shiro exp 入口函数：
+```
+func Check(url string) (key string) {
+	getCommandArgs()
+	shiro_url = url
+	httpProxy = exp.HttpProxy
+	key = keyCheck(url)
+	return key
+
+```
+
+shiro exp 添加检测项：
 ```
 matches := r.wappalyzer.Fingerprint(resp.Headers, resp.Data)
 for match := range matches {
@@ -76,11 +107,7 @@ for match := range matches {
 }
 ```
 
-#### 2.4 智能后台弱口令扫描，中间件弱口令扫描
-
-弱口令其实是打点一个较为关键的部分，需要人工去抓包使用工具爆破
-
-这里我完成了最简单的没有使用验证码，没有使用vue等前端框架的后台智能爆破，可以一定量的减少手工时间，加快打点速度
+#### 3.4 智能后台弱口令扫描，中间件弱口令扫描
 
 内置了两个账号 admin/test，密码为top100，如果成功识别后台会标记为\[登录页\]，成功构建登录包会自动爆破出密码
 
@@ -89,48 +116,65 @@ for match := range matches {
 `http://xxx.xxx.xxx.xxx:8080 [302,200] [登录 - 后台] [exp-shiro|key:Z3VucwAAAAAAAAAAAAAAAA==,Java,登录页,brute-admin|admin:123456] [http://xxx.xxx.xxx.xxx:8080/login;JSESSIONID=8417fe14-f529-46a7-a67e-bbe96429cbd0]`
 
 包含爆破板块
-1. 智能后台爆破
+1. 没有使用验证码，没有使用vue等前端框架的后台智能爆破
 2. basic爆破
 3. tomcat登录爆破
 4. weblogic登录爆破
 
-#### 2.5 敏感文件扫描
+#### 3.5 敏感文件扫描
 
 扫描 备份文件、swagger-ui、spring actuator、上传接口、测试文件等敏感链接
 
-### 3.演示
-```
-root@xxx:~/vscan# ./vscan  -iL ../urlx.txt -top-ports http
+### 4.演示
 
-http://xxx.xxx.xxx [200] [Test Page for Apache Installation] [OpenSSL,aardvark topsites,blognplus,igaming-cms,Windows Server,Apache,68 classifieds,allnewsmanager_net,atomic-photo-album]
-http://xxx.xxx.xxx:8001 [302,302,200] [商户管理平台] [Express,Node.js,登录页,Font Awesome] [ http://xxx.xxx.xxx:8001/login ]
-http://xxx.xxx.xxx:8004 [302,200] [系统后台] [Node.js,登录页,Font Awesome,Ionicons,Bootstrap,jQuery,Express] [ http://xxx.xxx.xxx:8004/login ]
-https://xxx.xxx.xxx [200] [xxxxxx] [Nginx,登录页]
-http://xxx.xxx.xxx:8001 [302,302,200] [商户管理平台] [Express,Node.js,登录页,Font Awesome] [ http://xxx.xxx.xxx:8001/login ]
-http://xxx.xxx.xxx:8083 [302,302,200] [运营后台] [登录页,Font Awesome,Google Font API,Bootstrap,jQuery] [ http://xxx.xxx.xxx:8083/main/login.html;JSESSIONID=xxx ] [file_fuzz："http://xxx.xxx.xxx:8083/actuator","http://xxx.xxx.xxx:8083/actuator/env"]
-http://xxx.xxx.xxx:8004 [302,200] [系统后台] [Ionicons,Bootstrap,jQuery,登录页,Express,Node.js,Font Awesome] [ http://xxx.xxx.xxx:8004/login ]
-https://xxx.xxx.xxx [200] [xxxxxx] [Nginx,登录页]
-https://xxx.xxx.xxx [200] [xxxxxx] [Nginx,PHP]
-http://xxx.xxx.xxx:8002 [302,302,200] [代理商管理平台] [登录页,Font Awesome,Express,Node.js] [ http://xxx.xxx.xxx:8002/login ]
-http://xxx.xxx.xxx:8002 [302,302,200] [代理商管理平台] [Font Awesome,Express,Node.js,登录页] [ http://xxx.xxx.xxx:8002/login ]
-http://xxx.xxx.xxx:8088 [302,200] [后台管理系统] [Shiro,exp-shiro|key:kPH+bIxk5D2deZiIxcaaaA==,Java,Apache Tomcat,登录页,brute-admin|test:test] [ http://xxx.xxx.xxx:8088/login;jsessionid=xxx ]
-http://xxx.xxx.xxx:8081 [302,200] [xxx后台管理系统] [Font Awesome,登录页,Microsoft ASP.NET,IIS,Windows Server] [ http://xxx.xxx.xxx:8081/Login ]
-http://xxx.xxx.xxx:8001 [302,302,200] [Data Search] [Java,Google Font API,Bootstrap,jQuery,登录页,Font Awesome,Shiro] [ http://xxx.xxx.xxx:8001/main/login.html;jsessionid=xxx ] [file_fuzz："http://xxx.xxx.xxx:8001/druid/index.html"]
-http://xxx.xxx.xxx:8082 [302,200] [运营系统] [Java,Google Font API,Bootstrap,jQuery,登录页,Font Awesome,Shiro] [ http://xxx.xxx.xxx:8082/main/login.html;jsessionid=xxx ]
-http://xxx.xxx.xxx:8084 [302,200] [xxx运营系统] [Java,Google Font API,Bootstrap,jQuery,登录页,Font Awesome,Shiro] [ http://xxx.xxx.xxx:8084/main/login.html;JSESSIONID=xxx ]
-http://xxx.xxx.xxx:8085 [302,200] [运营系统] [jQuery,登录页,Shiro,Java,Font Awesome,Google Font API,Bootstrap] [ http://xxx.xxx.xxx:8085/main/login.html;jsessionid=xxx ]
-http://xxx.xxx.xxx [200] [Test Page for Apache Installation] [Apache,68 classifieds,allnewsmanager_net,blognplus,atomic-photo-album,igaming-cms,OpenSSL,aardvark topsites,Windows Server]
-https://xxx.xxx.xxx [403] [403 Forbidden] [Apache,OpenSSL,Windows Server] [file_fuzz："https://xxx.xxx.xxx:443/.git/config","https://xxx.xxx.xxx:443/.svn/entries"]
-http://xxx.xxx.xxx [200] [APP管理后台] [Nginx] [file_fuzz："http://xxx.xxx.xxx:80/api/swagger-ui.html","http://xxx.xxx.xxx:80/api/v2/api-docs","http://xxx.xxx.xxx:80/api/v1/api-docs","http://xxx.xxx.xxx:80/api/upload","http://xxx.xxx.xxx:80/upload/"]
+#### 4.1 扫描Tomcat 
+```
+➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 8080
+[INF] Running CONNECT scan with non root privileges
+[INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
+127.0.0.1:8080
+tomcat-exp-sucess|CVE_2017_12615|--"http://127.0.0.1:8080/vtest.txt"
+tomcat-brute-sucess|Tomcat-manager:manager--http://127.0.0.1:8080
+tomcat-exp-sucess|127.0.0.1:8009 Tomcat AJP LFI is vulnerable, Tomcat version: 8.5.40
+http://127.0.0.1:8080 [200] [Apache Tomcat/8.5.40] [Apache Tomcat,Java,Tomcat登录页,brute-tomcat|Tomcat-manager:manager,exp-tomcat|CVE_2017_12615,exp-tomcat|CVE-2020-1938]] [file_fuzz："http://127.0.0.1:8080/manager/html"]
 ```
 
-### 4.TO DO
+#### 4.2 扫描weblogic
+```
+➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 7001
+[INF] Running CONNECT scan with non root privileges
+[INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
+127.0.0.1:7001
+weblogic-brute-sucess|weblogic:welcome1--http://127.0.0.1:7001/console/
+http://127.0.0.1:7001 [404] [Error 404--Not Found] [brute-weblogic|weblogic:welcome1,weblogic] [file_fuzz："http://127.0.0.1:7001/console/login/LoginForm.jsp"]
 
-1.加入socks代理
+```
 
-2.解析http以外的端口指纹
+#### 4.3 扫描后台智能爆破
+```
+➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 8080
+[INF] Running CONNECT scan with non root privileges
+[INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
+127.0.0.1:8080
+http://127.0.0.1:8080 [302,200] [登录 - 后台] [Java,登录页,brute-admin|admin:123456] [http://xxx.xxx.xxx.xxx:8080/login]
+```
 
-### 5.目前正在做的
+#### 4.4 扫描敏感文件
+```
+➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 443,8081
+[INF] Running CONNECT scan with non root privileges
+[INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
+127.0.0.1:443
+127.0.0.1:8081
+https://127.0.0.1 [403] [403 Forbidden] [Apache,OpenSSL,Windows Server] [file_fuzz："https://127.0.0.1:443/.git/config","https://127.0.0.1:443/.svn/entries"]
+http://127.0.0.1:8001 [302,302,200] [Data Search] [Java,Google Font API,Bootstrap,jQuery,登录页,Font Awesome,Shiro] [ http://127.0.0.1:8001/main/login.html ] [file_fuzz："http://127.0.0.1:8001/druid/index.html","http://127.0.0.1:8081/actuator","http://127.0.0.1:8081/actuator/env"]
+```
+
+### 5.TO DO
+
+1.解析http以外的端口指纹
+
+### 6.目前正在做的
 
 1.加入weblogic，jboss等反序列化检测
 
