@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/veo/vscan/brute"
+	"github.com/veo/vscan/poc/jboss"
 	"github.com/veo/vscan/poc/shiro"
 	"github.com/veo/vscan/poc/tomcat"
 	"github.com/veo/vscan/poc/weblogic"
@@ -879,6 +880,14 @@ retry:
 				}
 				if weblogic.CVE_2021_2109(URL.String()) {
 					techshow = append(techshow, "exp-weblogic|CVE_2021_2109")
+				}
+			case "JBoss Application Server":
+				if jboss.CVE_2017_12149(URL.String()) {
+					techshow = append(techshow, "exp-jboss|CVE_2017_12149")
+				}
+				username, password := brute.Jboss_brute(URL.String())
+				if username != "" {
+					techshow = append(techshow, fmt.Sprintf("brute-jboss|%s:%s", username, password))
 				}
 			}
 		}

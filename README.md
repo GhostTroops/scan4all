@@ -172,7 +172,18 @@ http://127.0.0.1:7001 [404] [Error 404--Not Found] [brute-weblogic|weblogic:welc
 
 ```
 
-#### 4.3 扫描后台智能爆破
+#### 4.3 扫描jboss
+```
+➜  vscan git:(main) ✗ go run main.go -host 127.0.0.1 -p 8888
+[INF] Running CONNECT scan with non root privileges
+[INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
+127.0.0.1:8888
+jboss-brute-sucess|jboss:jboss--http://127.0.0.1:8888/jmx-console/
+jboss-exp-sucess|CVE_2017_12149|http://127.0.0.1:8888
+http://127.0.0.1:8888 [200] [Welcome to JBoss AS] [Apache Tomcat,JBoss Application Server,JBoss Web,Java,Java Servlet,brute-jboss|jboss:jboss,exp-jboss|CVE_2017_12149,jboss,jboss_as]
+```
+
+#### 4.4 扫描后台智能爆破
 ```
 ➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 8080
 [INF] Running CONNECT scan with non root privileges
@@ -181,7 +192,7 @@ http://127.0.0.1:7001 [404] [Error 404--Not Found] [brute-weblogic|weblogic:welc
 http://127.0.0.1:8080 [302,200] [登录 - 后台] [Java,登录页,brute-admin|admin:123456] [http://xxx.xxx.xxx.xxx:8080/login]
 ```
 
-#### 4.4 扫描敏感文件
+#### 4.5 扫描敏感文件
 ```
 ➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 443,8081
 [INF] Running CONNECT scan with non root privileges
