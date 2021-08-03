@@ -7,8 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/veo/vscan/brute"
-	"github.com/veo/vscan/exp/shiro"
-	"github.com/veo/vscan/exp/tomcat"
+	"github.com/veo/vscan/poc/shiro"
+	"github.com/veo/vscan/poc/tomcat"
+	"github.com/veo/vscan/poc/weblogic"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -781,7 +782,7 @@ retry:
 				if !listfind("Apache Tomcat", technologies) {
 					technologies = append(technologies, "Apache Tomcat")
 				}
-			case "/console/login/LoginForm.jsp":
+			case "/console/login/LoginForm.jsp", "/wls-wsat/CoordinatorPortType", "/_async/AsyncResponseService":
 				if !listfind("weblogic", technologies) {
 					technologies = append(technologies, "weblogic")
 				}
@@ -825,15 +826,15 @@ retry:
 					techshow = append(techshow, fmt.Sprintf("brute-admin|%s:%s", username, password))
 				}
 			case "Apache Tomcat":
+				username, password := brute.Tomcat_brute(URL.String())
+				if username != "" {
+					techshow = append(techshow, fmt.Sprintf("brute-tomcat|%s:%s", username, password))
+				}
 				if tomcat.CVE_2020_1938(URL.Host) {
 					techshow = append(techshow, "exp-tomcat|CVE_2020_1938")
 				}
 				if tomcat.CVE_2017_12615(URL.String()) {
 					techshow = append(techshow, "exp-tomcat|CVE_2017_12615")
-				}
-				username, password := brute.Tomcat_brute(URL.String())
-				if username != "" {
-					techshow = append(techshow, fmt.Sprintf("brute-tomcat|%s:%s", username, password))
 				}
 			case "Basic":
 				username, password := brute.Basic_brute(URL.String())
@@ -848,6 +849,36 @@ retry:
 					} else {
 						techshow = append(techshow, fmt.Sprintf("brute-weblogic|%s:%s", username, password))
 					}
+				}
+				if weblogic.CVE_2014_4210(URL.String()) {
+					techshow = append(techshow, "exp-weblogic|CVE_2014_4210")
+				}
+				if weblogic.CVE_2017_3506(URL.String()) {
+					techshow = append(techshow, "exp-weblogic|CVE_2017_3506")
+				}
+				if weblogic.CVE_2017_10271(URL.String()) {
+					techshow = append(techshow, "exp-weblogic|CVE_2017_10271")
+				}
+				if weblogic.CVE_2018_2894(URL.String()) {
+					techshow = append(techshow, "exp-weblogic|CVE_2018_2894")
+				}
+				if weblogic.CVE_2019_2725(URL.String()) {
+					techshow = append(techshow, "exp-weblogic|CVE_2019_2725")
+				}
+				if weblogic.CVE_2019_2729(URL.String()) {
+					techshow = append(techshow, "exp-weblogic|CVE_2019_2729")
+				}
+				if weblogic.CVE_2020_2883(URL.String()) {
+					techshow = append(techshow, "exp-weblogic|CVE_2020_2883")
+				}
+				if weblogic.CVE_2020_14882(URL.String()) {
+					techshow = append(techshow, "exp-weblogic|CVE_2020_14882")
+				}
+				if weblogic.CVE_2020_14883(URL.String()) {
+					techshow = append(techshow, "exp-weblogic|CVE_2020_14883")
+				}
+				if weblogic.CVE_2021_2109(URL.String()) {
+					techshow = append(techshow, "exp-weblogic|CVE_2021_2109")
 				}
 			}
 		}

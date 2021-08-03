@@ -75,10 +75,29 @@ go build
 
 基于敏感文件扫描，扫描到某些文件，再进行指纹鉴定，二次开发可自行修改
 
-#### 3.3 漏洞扫描（nday、0day检测）
+#### 3.3 漏洞检测（nday、0day检测）
+
+目前包含的CVE检测项
+
+1.Tomcat
+
+CVE_2017_12615、CVE_2020_1938
+
+2.Weblogic
+
+CVE_2014_4210、CVE_2017_10271、CVE_2017_3506、CVE_2018_2894、CVE_2019_2725、CVE_2020_14882、CVE_2020_14883、CVE_2020_2883、CVE_2021_2109
+
+3.Shiro
+
+Shiro550
+
+#####自行添加poc方式:
+
 为了方便，exp版块都是直接使用go文件，每个文件都是单独完整的poc
 
-添加poc需要写一个go的程序，放到exp文件夹下，指定一个入口函数，设置代理为 httpProxy = exp.HttpProxy,指定输入输出，并在./pkg/httpx/runner/runner.go 添加检测项
+添加poc需要写一个go的文件，放到poc文件夹下，指定一个入口函数，设置代理为 httpProxy = poc.HttpProxy,指定输入输出，并在./pkg/httpx/runner/runner.go 添加检测项
+
+poc的编写过程可以使用util.go内的基础request函数poc.HttpRequset等
 
 例如
 
@@ -87,7 +106,7 @@ shiro exp 入口函数：
 func Check(url string) (key string) {
 	getCommandArgs()
 	shiro_url = url
-	httpProxy = exp.HttpProxy
+	httpProxy = poc.HttpProxy
 	key = keyCheck(url)
 	return key
 
@@ -131,20 +150,25 @@ for tech := range technologies {
 [INF] Running CONNECT scan with non root privileges
 [INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
 127.0.0.1:8080
-tomcat-exp-sucess|CVE_2017_12615|--"http://127.0.0.1:8080/vtest.txt"
 tomcat-brute-sucess|Tomcat-manager:manager--http://127.0.0.1:8080
-tomcat-exp-sucess|127.0.0.1:8009 Tomcat AJP LFI is vulnerable, Tomcat version: 8.5.40
+tomcat-exp-sucess|CVE_2017_12615|--"http://127.0.0.1:8080/vtest.txt"
+tomcat-exp-sucess|CVE_2020_1938 127.0.0.1:8009 Tomcat AJP LFI is vulnerable, Tomcat version: 8.5.40
 http://127.0.0.1:8080 [200] [Apache Tomcat/8.5.40] [Apache Tomcat,Java,Tomcat登录页,brute-tomcat|Tomcat-manager:manager,exp-tomcat|CVE_2017_12615,exp-tomcat|CVE-2020-1938]] [file_fuzz："http://127.0.0.1:8080/manager/html"]
 ```
 
 #### 4.2 扫描weblogic
 ```
-➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 7001
+➜  vscan git:(main) ✗ go run main.go -host 127.0.0.1 -p 7001
 [INF] Running CONNECT scan with non root privileges
 [INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
 127.0.0.1:7001
 weblogic-brute-sucess|weblogic:welcome1--http://127.0.0.1:7001/console/
-http://127.0.0.1:7001 [404] [Error 404--Not Found] [brute-weblogic|weblogic:welcome1,weblogic] [file_fuzz："http://127.0.0.1:7001/console/login/LoginForm.jsp"]
+weblogic-exp-sucess|CVE_2017_3506|http://127.0.0.1:7001
+weblogic-exp-sucess|CVE_2017_10271|http://127.0.0.1:7001
+weblogic-exp-sucess|CVE_2019_2725|http://127.0.0.1:7001
+weblogic-exp-sucess|CVE_2020_2883|http://127.0.0.1:7001
+weblogic-exp-sucess|CVE_2021_2109|http://127.0.0.1:7001
+http://127.0.0.1:7001 [404] [Error 404--Not Found] [brute-weblogic|weblogic:welcome1,exp-weblogic|CVE_2017_10271,exp-weblogic|CVE_2017_3506,exp-weblogic|CVE_2019_2725,exp-weblogic|CVE_2020_2883,exp-weblogic|CVE_2021_2109,weblogic] [file_fuzz："http://127.0.0.1:7001/console/login/LoginForm.jsp"]
 
 ```
 
@@ -161,7 +185,7 @@ http://127.0.0.1:8080 [302,200] [登录 - 后台] [Java,登录页,brute-admin|ad
 ```
 ➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 443,8081
 [INF] Running CONNECT scan with non root privileges
-[INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
+[INF] Found 2 ports on host 127.0.0.1 (127.0.0.1)
 127.0.0.1:443
 127.0.0.1:8081
 https://127.0.0.1 [403] [403 Forbidden] [Apache,OpenSSL,Windows Server] [file_fuzz："https://127.0.0.1:443/.git/config","https://127.0.0.1:443/.svn/entries"]
@@ -174,7 +198,7 @@ http://127.0.0.1:8001 [302,302,200] [Data Search] [Java,Google Font API,Bootstra
 
 ### 6.目前正在做的
 
-1.加入weblogic，jboss等反序列化检测
+1.加入jboss等反序列化检测
 
 2.加入其他cms nday
 
