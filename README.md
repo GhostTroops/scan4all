@@ -2,7 +2,7 @@ vscan
 ================================
 开源、轻量、快速、跨平台 的红队外网打点扫描器
 
-### 1.options
+# 1.options
 ```
 -host                           Host or Url to find ports for		
 -top-ports                      Top Ports to scan (full|http|top100|top-1000)		
@@ -39,7 +39,7 @@ vscan
 -proxy                          Httpx Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)       	
 ```
 
-### 2.Build
+# 2.Build
 
 Requirements:
   * [Go 1.15 版本以上](https://golang.org/dl/)
@@ -51,8 +51,8 @@ go build
 ```
 
 
-### 3.功能
-#### 3.1 端口扫描，站点访问
+# 3.功能
+### 3.1 端口扫描，站点访问
 
 1.支持CONNECT、SYN扫描，C段扫描等功能
 
@@ -64,7 +64,7 @@ go build
 
 其他功能自行探索，详情见options
 
-#### 3.2 指纹识别
+### 3.2 指纹识别
 3.2.1 基础指纹识别
 
 可以快速识别网站的标题、网址、状态码、指纹等
@@ -75,7 +75,7 @@ go build
 
 基于敏感文件扫描，扫描到某些文件，再进行指纹鉴定，二次开发可自行修改
 
-#### 3.3 漏洞检测（nday、0day检测）
+### 3.3 漏洞检测（nday、0day检测）
 
 目前包含的CVE检测项
 
@@ -91,7 +91,7 @@ CVE_2014_4210、CVE_2017_10271、CVE_2017_3506、CVE_2018_2894、CVE_2019_2725�
 
 Shiro550
 
-##### 自行添加poc方式:
+#### 自行添加poc方式:
 
 为了方便，poc版块都是直接使用go文件，每个文件都是单独完整的poc
 
@@ -124,7 +124,7 @@ for tech := range technologies {
         }
 ```
 
-#### 3.4 智能后台弱口令扫描，中间件弱口令扫描
+## 3.4 智能后台弱口令扫描，中间件弱口令扫描
 
 后台弱口令检测内置了两个账号 admin/test，密码为top100，如果成功识别后台会标记为\[登录页\]，成功构建登录包会自动检测
 
@@ -139,13 +139,13 @@ for tech := range technologies {
 4. weblogic弱口令检测
 5. jboss弱口令检测
 
-#### 3.5 敏感文件扫描
+## 3.5 敏感文件扫描
 
 扫描 备份、swagger-ui、spring actuator、上传接口、测试文件等敏感文件，字典在 ./brute/util.go 内置，可自行修改
 
-### 4.演示
+# 4.演示
 
-#### 4.1 扫描Shiro
+## 4.1 扫描Shiro
 ```
 ➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 8080
 [INF] Running CONNECT scan with non root privileges
@@ -157,7 +157,7 @@ for tech := range technologies {
 http://127.0.0.1:8080 [302,200] [后台管理系统] [Java,Shiro,exp-shiro|key:kPH+bIxk5D2deZiIxcaaaA==,登录页] [ http://103.71.153.11:8080/login.jsp ]
 ```
 
-#### 4.2 扫描Tomcat 
+## 4.2 扫描Tomcat 
 ```
 ➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 8080
 [INF] Running CONNECT scan with non root privileges
@@ -169,7 +169,7 @@ tomcat-exp-sucess|CVE_2020_1938 127.0.0.1:8009 Tomcat AJP LFI is vulnerable, Tom
 http://127.0.0.1:8080 [200] [Apache Tomcat/8.5.40] [Apache Tomcat,Java,Tomcat登录页,brute-tomcat|Tomcat-manager:manager,exp-tomcat|CVE_2017_12615,exp-tomcat|CVE-2020-1938]] [file_fuzz："http://127.0.0.1:8080/manager/html"]
 ```
 
-#### 4.3 扫描weblogic
+## 4.3 扫描weblogic
 ```
 ➜  vscan git:(main) ✗ go run main.go -host 127.0.0.1 -p 7001
 [INF] Running CONNECT scan with non root privileges
@@ -185,7 +185,7 @@ http://127.0.0.1:7001 [404] [Error 404--Not Found] [brute-weblogic|weblogic:welc
 
 ```
 
-#### 4.4 扫描jboss
+## 4.4 扫描jboss
 ```
 ➜  vscan git:(main) ✗ go run main.go -host 127.0.0.1 -p 8888
 [INF] Running CONNECT scan with non root privileges
@@ -196,7 +196,7 @@ jboss-exp-sucess|CVE_2017_12149|http://127.0.0.1:8888
 http://127.0.0.1:8888 [200] [Welcome to JBoss AS] [Apache Tomcat,JBoss Application Server,JBoss Web,Java,Java Servlet,brute-jboss|jboss:jboss,exp-jboss|CVE_2017_12149,jboss,jboss_as]
 ```
 
-#### 4.5 扫描后台智能爆破
+## 4.5 扫描后台智能爆破
 ```
 ➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 8080
 [INF] Running CONNECT scan with non root privileges
@@ -205,7 +205,7 @@ http://127.0.0.1:8888 [200] [Welcome to JBoss AS] [Apache Tomcat,JBoss Applicati
 http://127.0.0.1:8080 [302,200] [登录 - 后台] [Java,登录页,brute-admin|admin:123456] [http://xxx.xxx.xxx.xxx:8080/login]
 ```
 
-#### 4.6 扫描敏感文件
+## 4.6 扫描敏感文件
 ```
 ➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 443,8081
 [INF] Running CONNECT scan with non root privileges
@@ -216,11 +216,11 @@ https://127.0.0.1 [403] [403 Forbidden] [Apache,OpenSSL,Windows Server] [file_fu
 http://127.0.0.1:8001 [302,302,200] [Data Search] [Java,Google Font API,Bootstrap,jQuery,登录页,Font Awesome,Shiro] [ http://127.0.0.1:8001/main/login.html ] [file_fuzz："http://127.0.0.1:8001/druid/index.html","http://127.0.0.1:8081/actuator","http://127.0.0.1:8081/actuator/env"]
 ```
 
-### 5.TO DO
+# 5.TO DO
 
 1.解析http以外的端口指纹
 
-### 6.目前正在做的
+# 6.目前正在做的
 
 1.加入struts2指纹识别，poc
 
