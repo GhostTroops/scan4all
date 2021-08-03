@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/projectdiscovery/gologger"
 	"github.com/veo/vscan/brute"
-	"github.com/veo/vscan/exp"
 	httpxrunner "github.com/veo/vscan/pkg/httpx/runner"
 	naaburunner "github.com/veo/vscan/pkg/naabu/runner"
+	"github.com/veo/vscan/poc"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	httpxoptions.Output = naabuoptions.Output
 	httpxoptions.HTTPProxy = naabuoptions.Proxy
 	brute.HttpProxy = naabuoptions.Proxy
-	exp.HttpProxy = naabuoptions.Proxy
+	poc.HttpProxy = naabuoptions.Proxy
 	httpxoptions.Naabuinput = naaburunner.Naabuipports
 	r, err := httpxrunner.New(httpxoptions)
 	if err != nil {
