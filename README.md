@@ -91,9 +91,9 @@ CVE_2014_4210、CVE_2017_10271、CVE_2017_3506、CVE_2018_2894、CVE_2019_2725�
 
 Shiro550
 
-#####自行添加poc方式:
+##### 自行添加poc方式:
 
-为了方便，exp版块都是直接使用go文件，每个文件都是单独完整的poc
+为了方便，poc版块都是直接使用go文件，每个文件都是单独完整的poc
 
 添加poc需要写一个go的文件，放到poc文件夹下，指定一个入口函数，设置代理为 httpProxy = poc.HttpProxy,指定输入输出，并在./pkg/httpx/runner/runner.go 添加检测项
 
