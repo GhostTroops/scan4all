@@ -530,6 +530,9 @@ retry:
 	if err != nil {
 		return Result{URL: domain, err: err}
 	}
+	if URL.Port == "443" {
+		protocol = httpx.HTTPS
+	}
 	URL.Scheme = protocol
 
 	if !strings.Contains(domain, URL.Port) {
