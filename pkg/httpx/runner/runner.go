@@ -757,7 +757,6 @@ retry:
 		builder.WriteString(fmt.Sprintf(" [%s]", resp.Duration))
 	}
 	var technologies []string
-	var techshow []string
 	file_paths := brute.File_fuzz(URL.String())
 	listfind := func(str string, list []string) bool {
 		sort.Strings(list)
@@ -771,7 +770,6 @@ retry:
 		matches := r.wappalyzer.Fingerprint(resp.Headers, resp.Data)
 		for match := range matches {
 			technologies = append(technologies, match)
-			techshow = append(techshow, match)
 		}
 		for filePathName := range file_paths {
 			switch file_paths[filePathName] {
@@ -814,91 +812,91 @@ retry:
 			case "Shiro":
 				key := shiro.Check(URL.String())
 				if key != "" {
-					techshow = append(techshow, fmt.Sprintf("exp-shiro|key:%s", key))
+					technologies = append(technologies, fmt.Sprintf("exp-shiro|key:%s", key))
 				}
 			case "登录页":
 				username, password, loginurl := brute.Admin_brute(URL.String())
 				if loginurl != "" {
-					techshow = append(techshow, fmt.Sprintf("brute-admin|%s:%s", username, password))
+					technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 				}
 			case "admin登录页":
 				username, password, loginurl := brute.Admin_brute(URL.String() + "/admin/")
 				if loginurl != "" {
-					techshow = append(techshow, fmt.Sprintf("brute-admin|%s:%s", username, password))
+					technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 				}
 			case "Apache Tomcat":
 				username, password := brute.Tomcat_brute(URL.String())
 				if username != "" {
-					techshow = append(techshow, fmt.Sprintf("brute-tomcat|%s:%s", username, password))
+					technologies = append(technologies, fmt.Sprintf("brute-tomcat|%s:%s", username, password))
 				}
 				if tomcat.CVE_2020_1938(URL.Host) {
-					techshow = append(techshow, "exp-tomcat|CVE_2020_1938")
+					technologies = append(technologies, "exp-tomcat|CVE_2020_1938")
 				}
 				if tomcat.CVE_2017_12615(URL.String()) {
-					techshow = append(techshow, "exp-tomcat|CVE_2017_12615")
+					technologies = append(technologies, "exp-tomcat|CVE_2017_12615")
 				}
 			case "Basic":
 				username, password := brute.Basic_brute(URL.String())
 				if username != "" {
-					techshow = append(techshow, fmt.Sprintf("brute-basic|%s:%s", username, password))
+					technologies = append(technologies, fmt.Sprintf("brute-basic|%s:%s", username, password))
 				}
 			case "weblogic":
 				username, password := brute.Weblogic_brute(URL.String())
 				if username != "" {
 					if username == "login_page" {
-						techshow = append(techshow, "weblogic_login_page")
+						technologies = append(technologies, "weblogic_login_page")
 					} else {
-						techshow = append(techshow, fmt.Sprintf("brute-weblogic|%s:%s", username, password))
+						technologies = append(technologies, fmt.Sprintf("brute-weblogic|%s:%s", username, password))
 					}
 				}
 				if weblogic.CVE_2014_4210(URL.String()) {
-					techshow = append(techshow, "exp-weblogic|CVE_2014_4210")
+					technologies = append(technologies, "exp-weblogic|CVE_2014_4210")
 				}
 				if weblogic.CVE_2017_3506(URL.String()) {
-					techshow = append(techshow, "exp-weblogic|CVE_2017_3506")
+					technologies = append(technologies, "exp-weblogic|CVE_2017_3506")
 				}
 				if weblogic.CVE_2017_10271(URL.String()) {
-					techshow = append(techshow, "exp-weblogic|CVE_2017_10271")
+					technologies = append(technologies, "exp-weblogic|CVE_2017_10271")
 				}
 				if weblogic.CVE_2018_2894(URL.String()) {
-					techshow = append(techshow, "exp-weblogic|CVE_2018_2894")
+					technologies = append(technologies, "exp-weblogic|CVE_2018_2894")
 				}
 				if weblogic.CVE_2019_2725(URL.String()) {
-					techshow = append(techshow, "exp-weblogic|CVE_2019_2725")
+					technologies = append(technologies, "exp-weblogic|CVE_2019_2725")
 				}
 				if weblogic.CVE_2019_2729(URL.String()) {
-					techshow = append(techshow, "exp-weblogic|CVE_2019_2729")
+					technologies = append(technologies, "exp-weblogic|CVE_2019_2729")
 				}
 				if weblogic.CVE_2020_2883(URL.String()) {
-					techshow = append(techshow, "exp-weblogic|CVE_2020_2883")
+					technologies = append(technologies, "exp-weblogic|CVE_2020_2883")
 				}
 				if weblogic.CVE_2020_14882(URL.String()) {
-					techshow = append(techshow, "exp-weblogic|CVE_2020_14882")
+					technologies = append(technologies, "exp-weblogic|CVE_2020_14882")
 				}
 				if weblogic.CVE_2020_14883(URL.String()) {
-					techshow = append(techshow, "exp-weblogic|CVE_2020_14883")
+					technologies = append(technologies, "exp-weblogic|CVE_2020_14883")
 				}
 				if weblogic.CVE_2021_2109(URL.String()) {
-					techshow = append(techshow, "exp-weblogic|CVE_2021_2109")
+					technologies = append(technologies, "exp-weblogic|CVE_2021_2109")
 				}
 			case "JBoss Application Server":
 				if jboss.CVE_2017_12149(URL.String()) {
-					techshow = append(techshow, "exp-jboss|CVE_2017_12149")
+					technologies = append(technologies, "exp-jboss|CVE_2017_12149")
 				}
 				username, password := brute.Jboss_brute(URL.String())
 				if username != "" {
-					techshow = append(techshow, fmt.Sprintf("brute-jboss|%s:%s", username, password))
+					technologies = append(technologies, fmt.Sprintf("brute-jboss|%s:%s", username, password))
 				}
 			}
 		}
-		if len(techshow) > 0 {
-			sort.Strings(techshow)
-			techshow := strings.Join(techshow, ",")
+		if len(technologies) > 0 {
+			sort.Strings(technologies)
+			technologies := strings.Join(technologies, ",")
 			builder.WriteString(" [")
 			if !scanopts.OutputWithNoColor {
-				builder.WriteString(aurora.Magenta(techshow).String())
+				builder.WriteString(aurora.Magenta(technologies).String())
 			} else {
-				builder.WriteString(techshow)
+				builder.WriteString(technologies)
 			}
 			builder.WriteRune(']')
 		}
