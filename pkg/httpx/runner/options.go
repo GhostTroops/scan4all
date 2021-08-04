@@ -179,7 +179,7 @@ func ParseOptions() *Options {
 	options.TLSGrab = false
 	options.TechDetect = true
 	options.Threads = 50
-	options.Retries = 0
+	options.Retries = 1
 	options.Timeout = 5
 	options.Output = ""
 	options.VHost = false

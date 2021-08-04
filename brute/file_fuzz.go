@@ -15,7 +15,7 @@ func File_fuzz(url string) (path []string) {
 				for urli := range filedic {
 					lastword := filedic[urli][len(filedic[urli])-1:]
 					if req2, err := httpRequset(url+filedic[urli], "HEAD", ""); err == nil {
-						if lastword == "/" && (req2.StatusCode == 403 || req2.StatusCode == 200 || req2.StatusCode == 302 || req2.StatusCode == 301 || req2.StatusCode == 401) && req2.ContentLength != reqdir.ContentLength {
+						if lastword == "/" && (req2.StatusCode == 403 || req2.StatusCode == 200 || req2.StatusCode == 401) && req2.ContentLength != reqdir.ContentLength {
 							path = append(path, filedic[urli])
 						} else if (req2.StatusCode == 200 || req2.StatusCode == 401) && req2.ContentLength != reqfile.ContentLength {
 							path = append(path, filedic[urli])
