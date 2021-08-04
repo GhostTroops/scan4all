@@ -926,7 +926,7 @@ retry:
 		builder.WriteRune(']')
 	}
 
-	if len(file_paths) > 0 && len(file_paths) < 15 {
+	if len(file_paths) > 0 {
 		file_paths := strings.Join(file_paths, "\",\""+URL.String())
 		builder.WriteString(" [file_fuzz：")
 		if !scanopts.OutputWithNoColor {
