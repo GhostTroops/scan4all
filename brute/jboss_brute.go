@@ -8,8 +8,7 @@ func Jboss_brute(url string) (username string, password string) {
 			for uspa := range jbossuserpass {
 				if req2, err2 := httpRequsetBasic(jbossuserpass[uspa].username, jbossuserpass[uspa].password, url+"/jmx-console/", "GET", ""); err2 == nil {
 					if req2.StatusCode == 200 || req2.StatusCode == 403 {
-						fmt.Printf("jboss-brute-sucess|%s:%s--%s", jbossuserpass[uspa].username, jbossuserpass[uspa].password, url)
-						fmt.Println()
+						fmt.Printf("jboss-brute-sucess|%s:%s|%s\n", jbossuserpass[uspa].username, jbossuserpass[uspa].password, url)
 						return jbossuserpass[uspa].username, jbossuserpass[uspa].password
 					}
 				}

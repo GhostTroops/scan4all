@@ -8,8 +8,7 @@ func Tomcat_brute(url string) (username string, password string) {
 			for uspa := range tomcatuserpass {
 				if req2, err2 := httpRequsetBasic(tomcatuserpass[uspa].username, tomcatuserpass[uspa].password, url+"/manager/html", "HEAD", ""); err2 == nil {
 					if req2.StatusCode == 200 || req2.StatusCode == 403 {
-						fmt.Printf("tomcat-brute-sucess|%s:%s--%s", tomcatuserpass[uspa].username, tomcatuserpass[uspa].password, url)
-						fmt.Println()
+						fmt.Printf("tomcat-brute-sucess|%s:%s|%s\n", tomcatuserpass[uspa].username, tomcatuserpass[uspa].password, url)
 						return tomcatuserpass[uspa].username, tomcatuserpass[uspa].password
 					}
 				}

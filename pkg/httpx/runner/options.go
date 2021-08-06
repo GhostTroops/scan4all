@@ -180,7 +180,7 @@ func ParseOptions() *Options {
 	options.TechDetect = true
 	options.Threads = 50
 	options.Retries = 1
-	options.Timeout = 5
+	options.Timeout = 10
 	options.Output = ""
 	options.VHost = false
 	options.VHostInput = false

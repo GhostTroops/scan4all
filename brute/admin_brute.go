@@ -1,64 +1,40 @@
 package brute
 
 import (
-	"crypto/tls"
 	"fmt"
-	"io/ioutil"
-	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
-	"time"
 )
 
 func getinput(domainurl string) (usernamekey string, passwordkey string, domainurlx string) {
-	var tr *http.Transport
-	if HttpProxy != "" {
-		uri, _ := url.Parse(HttpProxy)
-		tr = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			Proxy:           http.ProxyURL(uri),
-		}
-	} else {
-		tr = &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		}
-	}
-	client := &http.Client{
-		Timeout:   time.Duration(5) * time.Second,
-		Transport: tr,
-	}
-
-	req, err := http.NewRequest(strings.ToUpper("GET"), domainurl, strings.NewReader(""))
+	requestdata, err := httpRequsetredirectbody(domainurl, "GET", "")
 	if err != nil {
-		fmt.Println(err)
-	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36")
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	resp, err := client.Do(req)
-	if err == nil {
-		defer resp.Body.Close()
-	} else {
 		return "", "", ""
 	}
 	var username = "username"
 	var password = "password"
-	var loginurl = resp.Request.URL.String() + "/login"
-	data, _ := ioutil.ReadAll(resp.Body)
-	userreg := regexp.MustCompile(`<input.*name="(name|user.*?|User.*?)".*>`)
-	usernamelist := userreg.FindStringSubmatch(string(data))
+	var loginurl = domainurl + "/login"
+	hrefreg := regexp.MustCompile(`location.href='(.*?)'`)
+	hreflist := hrefreg.FindStringSubmatch(string(requestdata))
+	if hreflist != nil {
+		requestdata, err = httpRequsetredirectbody(domainurl+"/"+hreflist[len(hreflist)-1:][0], "GET", "")
+		if err != nil {
+			return "", "", ""
+		}
+	}
+	userreg := regexp.MustCompile(`<input.*?name="(\w*?name\w*?|\w*?Name\w*?|\w*?user\w*?|\w*?User\w*?|\w*?USER\w*?)".*?>`)
+	usernamelist := userreg.FindStringSubmatch(string(requestdata))
 	if usernamelist != nil {
 		username = usernamelist[len(usernamelist)-1:][0]
 	}
-
-	passreg := regexp.MustCompile(`<input.*name="(pass.*?|Pass.*?)".*>`)
-	passlist := passreg.FindStringSubmatch(string(data))
+	passreg := regexp.MustCompile(`<input.*?name="(\w*?pass\w*?|\w*?Pass\w*?|\w*?PASS\w*?|\w*?pwd\w*?|\w*?Pwd\w*?|\w*?PWD\w*?)".*?>`)
+	passlist := passreg.FindStringSubmatch(string(requestdata))
 	if passlist != nil {
 		password = passlist[len(passlist)-1:][0]
 	}
-
-	domainreg := regexp.MustCompile(`<form.*action="(.*?)"`)
-	domainlist := domainreg.FindStringSubmatch(string(data))
+	domainreg := regexp.MustCompile(`<form.*?action="(.*?)"`)
+	domainlist := domainreg.FindStringSubmatch(string(requestdata))
 	if domainlist != nil {
 		domainx := domainlist[len(domainlist)-1:][0]
 		if strings.Contains(domainx, "http") {
@@ -72,8 +48,8 @@ func getinput(domainurl string) (usernamekey string, passwordkey string, domainu
 			loginurl = domainurl + "/" + domainlist[len(domainlist)-1:][0]
 		}
 	} else {
-		domainreg2 := regexp.MustCompile(`url:.*?"(.*?)"`)
-		domainlist2 := domainreg2.FindStringSubmatch(string(data))
+		domainreg2 := regexp.MustCompile(`,\s+url.*?:.*?"(.*?)",`)
+		domainlist2 := domainreg2.FindStringSubmatch(string(requestdata))
 		if domainlist2 != nil {
 			domainx := domainlist2[len(domainlist2)-1:][0]
 			if strings.Contains(domainx, "http") {
@@ -99,8 +75,7 @@ func Admin_brute(url string) (username string, password string, loginurl string)
 				for passi := range top100pass {
 					if req2, err2 := httpRequset(loginurl, "POST", fmt.Sprintf("%s=%s&%s=%s", usernamekey, usernames[useri], passwordkey, top100pass[passi])); err2 == nil {
 						if req2.ContentLength != req.ContentLength {
-							fmt.Printf("admin-brute-sucess|%s:%s--%s", usernames[useri], top100pass[passi], loginurl)
-							fmt.Println()
+							fmt.Printf("admin-brute-sucess|%s:%s|%s\n", usernames[useri], top100pass[passi], loginurl)
 							return usernames[useri], top100pass[passi], loginurl
 						}
 					}
