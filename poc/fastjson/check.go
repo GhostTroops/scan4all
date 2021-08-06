@@ -35,7 +35,7 @@ func getinputurl(domainurl string) (domainurlx []string) {
 	var loginurl []string
 	hrefreg := regexp.MustCompile(`location.href='(.*?)'`)
 	hreflist := hrefreg.FindStringSubmatch(string(requestdata))
-	if hreflist != nil && hreflist[len(hreflist)-1:][0][0:4] != "http" {
+	if hreflist != nil {
 		requestdata, err = poc.HttpRequsetredirectbody(domainurl+"/"+hreflist[len(hreflist)-1:][0], "GET", "")
 		if err != nil {
 			return nil
