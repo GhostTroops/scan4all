@@ -58,7 +58,7 @@ func cverequest(urlstring string, toupper string, postdate string) (*http.Respon
 		}
 	}
 	client := &http.Client{
-		Timeout:   time.Duration(5) * time.Second,
+		Timeout:   time.Duration(10) * time.Second,
 		Transport: tr,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse

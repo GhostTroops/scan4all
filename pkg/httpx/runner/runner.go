@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/veo/vscan/brute"
+	"github.com/veo/vscan/poc/fastjson"
 	"github.com/veo/vscan/poc/jboss"
 	"github.com/veo/vscan/poc/shiro"
 	"github.com/veo/vscan/poc/tomcat"
@@ -889,6 +890,11 @@ retry:
 				username, password := brute.Jboss_brute(URL.String())
 				if username != "" {
 					technologies = append(technologies, fmt.Sprintf("brute-jboss|%s:%s", username, password))
+				}
+			case "JSON":
+				fastjsonversion := fastjson.Check(URL.String())
+				if fastjsonversion != "" {
+					technologies = append(technologies, fmt.Sprintf("fastjson|%s", fastjsonversion))
 				}
 			}
 		}

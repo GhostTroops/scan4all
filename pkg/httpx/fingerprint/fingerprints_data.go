@@ -8,6 +8,11 @@ var fingerprints = `
 				"<input.*pass"
 			]
 		},
+		"JSON": {
+			"html": [
+				"data.*?:.*?json.stringify"
+			]
+		},
 		"致远OA": {
 			"html": [
 				"<title>用友致远oa",
@@ -814,14 +819,6 @@ var fingerprints = `
 				"splitbee"
 			]
 		},
-		"Typekit": {
-			"js": [
-				"typekit.config.js"
-			],
-			"html": [
-				"<link [^>]*href=\"[^\"]+use\\.typekit\\.(?:net|com)"
-			]
-		},
 		"Jetshop": {
 			"js": [
 				"jetshopdata"
@@ -880,17 +877,6 @@ var fingerprints = `
 			],
 			"html": [
 				"(?:<!--grandnode |<a[^>]+grandnode - powered by |powered by: <a[^>]+nopcommerce)"
-			]
-		},
-		"wpBakery": {
-			"meta": {
-				"generator": [
-					"wpbakery"
-				]
-			},
-			"implies": [
-				"WordPress",
-				"PHP"
 			]
 		},
 		"GOV.UK Frontend": {
@@ -2540,12 +2526,6 @@ var fingerprints = `
 			"js": [
 				"_spinnakr_site_id"
 			]
-		},
-		"Google PageSpeed": {
-			"headers": {
-				"x-mod-pagespeed": "([\\d.]+)",
-				"x-page-speed": "(.+)"
-			}
 		},
 		"RiteCMS": {
 			"meta": {
@@ -6386,11 +6366,6 @@ var fingerprints = `
 				"_yieldify"
 			]
 		},
-		"YouTube": {
-			"html": [
-				"<(?:param|embed|iframe)[^>]+youtube(?:-nocookie)?\\.com\/(?:v|embed)"
-			]
-		},
 		"Ametys": {
 			"meta": {
 				"generator": [
@@ -7477,14 +7452,6 @@ var fingerprints = `
 				]
 			}
 		},
-		"OWL Carousel": {
-			"implies": [
-				"jQuery"
-			],
-			"html": [
-				"<link [^>]*href=\"[^\"]+owl\\.carousel(?:\\.min)?\\.css"
-			]
-		},
 		"LocalFocus": {
 			"implies": [
 				"Angular",
@@ -7790,11 +7757,6 @@ var fingerprints = `
 			],
 			"html": [
 				"<link [^>]*href=\"[^>]*\\\/mt-content\\\/[^>]*\\.css"
-			]
-		},
-		"Revslider": {
-			"html": [
-				"<link[^>]* href=[\\'\"][^']+revslider[\/\\w-]+\\.css\\?ver=([0-9.]+)[\\'\"]"
 			]
 		},
 		"HubSpot": {
@@ -15563,15 +15525,7 @@ var fingerprints = `
 		"VMware vRealize Operations Manager": {
 			"html": [
 				"vrealize",
-				"vmware",
 				"identity manager"
-			]
-		},
-		"H3C-ER3200 路由器": {
-			"html": [
-				"er3200",
-				"home.asp",
-				"h3c.com"
 			]
 		},
 		"安恒云堡垒机": {
@@ -15667,7 +15621,7 @@ var fingerprints = `
 		},
 		"亿邮邮件系统": {
 			"html": [
-				"eyou"
+				"eyou.net"
 			]
 		},
 		"网神下一代极速防火墙": {
