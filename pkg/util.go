@@ -64,14 +64,16 @@ func HttpRequsetBasic(username string, password string, urlstring string, touppe
 		req.Header[v] = []string{k}
 	}
 	resp, err := client.Do(req)
-	if err == nil {
-		body, err2 := ioutil.ReadAll(resp.Body)
-		defer resp.Body.Close()
-		if err2 == nil {
-			return &Response{resp.Status, resp.StatusCode, string(body), resp.Header, resp.ContentLength, resp.Request.URL.String()}, err2
-		}
+	if err != nil {
+		//防止空指针
+		return &Response{"999", 999, "", nil, 0, ""}, err
 	}
-	return nil, err
+	defer resp.Body.Close()
+	body, err2 := ioutil.ReadAll(resp.Body)
+	if err2 != nil {
+		return &Response{resp.Status, resp.StatusCode, "", resp.Header, resp.ContentLength, resp.Request.URL.String()}, err2
+	}
+	return &Response{resp.Status, resp.StatusCode, string(body), resp.Header, resp.ContentLength, resp.Request.URL.String()}, nil
 }
 
 func HttpRequset(urlstring string, toupper string, postdate string, isredirect bool, headers map[string]string) (*Response, error) {
@@ -116,12 +118,14 @@ func HttpRequset(urlstring string, toupper string, postdate string, isredirect b
 		req.Header[v] = []string{k}
 	}
 	resp, err := client.Do(req)
-	if err == nil {
-		body, err2 := ioutil.ReadAll(resp.Body)
-		defer resp.Body.Close()
-		if err2 == nil {
-			return &Response{resp.Status, resp.StatusCode, string(body), resp.Header, resp.ContentLength, resp.Request.URL.String()}, err2
-		}
+	if err != nil {
+		//防止空指针
+		return &Response{"999", 999, "", nil, 0, ""}, err
 	}
-	return nil, err
+	defer resp.Body.Close()
+	body, err2 := ioutil.ReadAll(resp.Body)
+	if err2 != nil {
+		return &Response{resp.Status, resp.StatusCode, "", resp.Header, resp.ContentLength, resp.Request.URL.String()}, err2
+	}
+	return &Response{resp.Status, resp.StatusCode, string(body), resp.Header, resp.ContentLength, resp.Request.URL.String()}, nil
 }
