@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"fmt"
-	"github.com/veo/vscan/poc"
+	"github.com/veo/vscan/pkg"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -20,8 +20,8 @@ var (
 
 func httpRequset(RememberMe string, keylen int) int {
 	var tr *http.Transport
-	if poc.HttpProxy != "" {
-		uri, _ := url.Parse(poc.HttpProxy)
+	if pkg.HttpProxy != "" {
+		uri, _ := url.Parse(pkg.HttpProxy)
 		tr = &http.Transport{
 			MaxIdleConnsPerHost: -1,
 			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},

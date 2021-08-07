@@ -9,6 +9,7 @@ import (
 	"github.com/veo/vscan/brute"
 	"github.com/veo/vscan/poc/fastjson"
 	"github.com/veo/vscan/poc/jboss"
+	"github.com/veo/vscan/poc/jenkins"
 	"github.com/veo/vscan/poc/shiro"
 	"github.com/veo/vscan/poc/tomcat"
 	"github.com/veo/vscan/poc/weblogic"
@@ -895,6 +896,16 @@ retry:
 				fastjsonversion := fastjson.Check(URL.String())
 				if fastjsonversion != "" {
 					technologies = append(technologies, fmt.Sprintf("fastjson|%s", fastjsonversion))
+				}
+			case "Jenkins":
+				if jenkins.CVE_2018_1000110(URL.String()) {
+					technologies = append(technologies, "exp-jenkins|CVE_2018_1000110")
+				}
+				if jenkins.CVE_2018_1000861(URL.String()) {
+					technologies = append(technologies, "exp-jenkins|CVE_2018_1000861")
+				}
+				if jenkins.CVE_2019_10003000(URL.String()) {
+					technologies = append(technologies, "exp-jenkins|CVE_2019_10003000")
 				}
 			}
 		}

