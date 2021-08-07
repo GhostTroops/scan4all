@@ -12084,11 +12084,6 @@ var fingerprints = `
 				"bx_css_async"
 			]
 		},
-		"oa(a8\/seeyon\/ufida)": {
-			"html": [
-				"\/seeyon\/user-data\/images\/login\/login.gif"
-			]
-		},
 		"wdlinux": {
 			"html": [
 				"<title>wdos"
@@ -15057,11 +15052,6 @@ var fingerprints = `
 		"wp plugin all-in-one-seo-pack": {
 			"html": [
 				"<!-- \/all in one seo pack -->"
-			]
-		},
-		"seeyon": {
-			"html": [
-				"\/seeyon\/common\/"
 			]
 		},
 		"tccms": {

