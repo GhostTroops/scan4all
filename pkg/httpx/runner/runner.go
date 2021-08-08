@@ -898,6 +898,9 @@ retry:
 					technologies = append(technologies, fmt.Sprintf("fastjson|%s", fastjsonversion))
 				}
 			case "Jenkins":
+				if jenkins.Unauthorized(URL.String()) {
+					technologies = append(technologies, "exp-jenkins|Unauthorized script")
+				}
 				if jenkins.CVE_2018_1000110(URL.String()) {
 					technologies = append(technologies, "exp-jenkins|CVE_2018_1000110")
 				}
