@@ -170,7 +170,7 @@ type Options struct {
 	Allow                     customlist.CustomList
 	MaxResponseBodySize       int
 	OutputExtractRegex        string
-	Naabuinput                map[string]int
+	Naabuinput                map[string]map[int]struct{}
 }
 
 // ParseOptions parses the command line options for application

@@ -53,7 +53,7 @@ type Options struct {
 func ParseOptions() *Options {
 	options := &Options{}
 
-	flag.StringVar(&options.Host, "host", "", "Host to find ports for")
+	flag.StringVar(&options.Host, "host", "", "Host or Url or Cidr to find ports for")
 	flag.StringVar(&options.TopPorts, "top-ports", "", "Top Ports to scan (full|http|top100|top-1000)")
 	flag.StringVar(&options.HostsFile, "iL", "", "File containing list of hosts to enumerate ports")
 	flag.StringVar(&options.Ports, "p", "", "Ports to scan (80, 80,443, 100-200, (-p - for full port scan)")
@@ -69,7 +69,7 @@ func ParseOptions() *Options {
 	flag.IntVar(&options.Timeout, "timeout", DefaultPortTimeoutSynScan, "Millisecond to wait before timing out")
 	flag.StringVar(&options.ExcludePorts, "exclude-ports", "", "Ports to exclude from enumeration")
 	flag.BoolVar(&options.Verify, "verify", false, "Validate the ports again with TCP verification")
-	flag.BoolVar(&options.Version, "version", false, "Show version of naabu")
+	flag.BoolVar(&options.Version, "version", false, "Show version of vscan")
 	flag.StringVar(&options.ExcludeIps, "exclude-hosts", "", "Specifies a comma-separated list of targets to be excluded from the scan (ip, cidr)")
 	flag.StringVar(&options.ExcludeIpsFile, "exclude-file", "", "Specifies a newline-delimited file with targets to be excluded from the scan (ip, cidr)")
 	flag.BoolVar(&options.Debug, "debug", false, "Enable debugging information")
@@ -85,7 +85,7 @@ func ParseOptions() *Options {
 	flag.BoolVar(&options.EnableProgressBar, "stats", false, "Display stats of the running scan")
 	flag.BoolVar(&options.ScanAllIPS, "scan-all-ips", false, "Scan all the ips")
 	flag.StringVar(&options.ScanType, "s", SynScan, "Scan Type (s - SYN, c - CONNECT)")
-	flag.StringVar(&options.Proxy, "proxy", "", "HTTP Proxy, eg http://127.0.0.1:8080")
+	flag.StringVar(&options.Proxy, "proxy", "", "HTTP Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)")
 
 	flag.Parse()
 

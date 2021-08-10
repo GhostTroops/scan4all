@@ -252,20 +252,22 @@ func (r *Runner) prepareInput() {
 	}
 }
 
-func (r *Runner) loadAndCloseFile(ipPorts map[string]int) (numTargets int, err error) {
-	for host, port := range ipPorts {
-		target := strings.TrimSpace(fmt.Sprintf("%s:%d", host, port))
-		// Used just to get the exact number of targets
-		if _, ok := r.hm.Get(target); ok {
-			continue
-		}
+func (r *Runner) loadAndCloseFile(ipPorts map[string]map[int]struct{}) (numTargets int, err error) {
+	for host, ports := range ipPorts {
+		for port := range ports {
+			target := strings.TrimSpace(fmt.Sprintf("%s:%d", host, port))
+			// Used just to get the exact number of targets
+			if _, ok := r.hm.Get(target); ok {
+				continue
+			}
 
-		if len(r.options.requestURIs) > 0 {
-			numTargets += len(r.options.requestURIs)
-		} else {
-			numTargets++
+			if len(r.options.requestURIs) > 0 {
+				numTargets += len(r.options.requestURIs)
+			} else {
+				numTargets++
+			}
+			r.hm.Set(target, nil) //nolint
 		}
-		r.hm.Set(target, nil) //nolint
 	}
 	return numTargets, err
 }
@@ -955,7 +957,7 @@ retry:
 		if !scanopts.OutputWithNoColor {
 			builder.WriteString(aurora.Magenta("\"" + URL.String() + file_paths).String())
 		} else {
-			builder.WriteString(file_paths)
+			builder.WriteString("\"" + URL.String() + file_paths)
 		}
 		builder.WriteRune('"')
 		builder.WriteRune(']')
