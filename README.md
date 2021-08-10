@@ -4,23 +4,23 @@ vscan
 
 # 1.options
 ```
--host                           Host or Url to find ports for		
+-host                           Host or Url or Cidr to find ports for		
 -top-ports                      Top Ports to scan (full|http|top100|top-1000)		
 -iL                             File containing list of hosts to enumerate ports		
 -p                              Ports to scan (80, 80,443, 100-200, (-p - for full port scan)		
 -ping                           Use ping probes for verification of host		
 -ports-file                     File containing ports to enumerate for on hosts		
 -o                              File to write output to (optional)		
--json                           Write output in JSON lines Format		
+-json                           Write output host and port in JSON lines Format		
 -silent                         Show found ports only in output		
--retries                        DefaultRetriesSynScan, "Number of retries for the port scan probe		
--rate                           DefaultRateSynScan, "Rate of port scan probe requests		
+-retries                        Number of retries for the port scan probe		
+-rate                           Rate of port scan probe requests		
 -v                              Show Verbose output		
 -no-color                       Don't Use colors in output		
--timeout                        DefaultPortTimeoutSynScan, "Millisecond to wait before timing out		
+-timeout                        Millisecond to wait before timing out		
 -exclude-ports                  Ports to exclude from enumeration		
 -verify                         Validate the ports again with TCP verification		
--version                        Show version of naabu		
+-version                        Show version of vscan		
 -exclude-hosts                  Specifies a comma-separated list of targets to be excluded from the scan (ip, cidr)		
 -exclude-file                   Specifies a newline-delimited file with targets to be excluded from the scan (ip, cidr)		
 -debug                          Enable debugging information		
@@ -28,8 +28,7 @@ vscan
 -interface                      Network Interface to use for port scan		
 -exclude-cdn                    Skip full port scans for CDNs (only checks for 80,443)		
 -warm-up-time                   Time in seconds between scan phases		
--interface-list                 List available interfaces and public ip		
--config                         Config file		
+-interface-list                 List available interfaces and public ip
 -nmap                           Invoke nmap scan on targets (nmap must be installed)		
 -nmap-cli                       Nmap command line (invoked as COMMAND + TARGETS)		
 -c                              General internal worker threads		
@@ -91,37 +90,42 @@ CVE_2014_4210、CVE_2017_10271、CVE_2017_3506、CVE_2018_2894、CVE_2019_2725�
 
 Shiro550
 
+4.Fastjson
+
+5.Jboss
+
+CVE_2017_12149
+
+
 #### 自行添加poc方式:
 
 为了方便，poc版块都是直接使用go文件，每个文件都是单独完整的poc
 
-添加poc需要写一个go的文件，放到poc文件夹下，指定一个入口函数，设置代理为 httpProxy = poc.HttpProxy,指定输入输出，并在./pkg/httpx/runner/runner.go 添加检测项
+poc的编写过程可以使用./pkg/util.go内的函数pkg.HttpRequset
 
-poc的编写过程可以使用util.go内的基础request函数poc.HttpRequset等
+添加poc需要写一个go的文件，放到poc文件夹下，指定一个入口函数，指定输入输出，并在./pkg/httpx/runner/runner.go 添加检测项
 
 例如
 
-shiro exp 入口函数：
+CVE_2017_12615 poc：
 ```
-func Check(url string) (key string) {
-	getCommandArgs()
-	shiro_url = url
-	httpProxy = poc.HttpProxy
-	key = keyCheck(url)
-	return key
+func CVE_2017_12615(url string) bool {
+	if req, err := pkg.HttpRequset(url+"/vtset.txt", "PUT", "test", false, nil); err == nil {
+		if req.StatusCode == 204 || req.StatusCode == 201 {
+			fmt.Printf("tomcat-exp-sucess|CVE_2017_12615|--\"%s/vtest.txt\"\n", url)
+			return true
+		}
+	}
+	return false
+}
+```
 
+CVE_2017_12615 poc 添加检测项：
 ```
-
-shiro exp 添加检测项：
-```
-matches := r.wappalyzer.Fingerprint(resp.Headers, resp.Data)
-for tech := range technologies {
-    switch technologies[tech] {
-    case "Shiro":
-        key := shiro.Check(URL.String())
-        if key != "" {
-            techshow = append(techshow, fmt.Sprintf("exp-shiro|key:%s", key))
-        }
+case "Apache Tomcat":
+    if tomcat.CVE_2017_12615(URL.String()) {
+	    technologies = append(technologies, "exp-tomcat|CVE_2017_12615")
+	}
 ```
 
 ## 3.4 智能后台弱口令扫描，中间件弱口令扫描
