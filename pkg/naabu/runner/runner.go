@@ -24,7 +24,7 @@ const (
 	tickduration = 5
 )
 
-var Naabuipports = make(map[string]int)
+var Naabuipports = make(map[string]map[int]struct{})
 
 // Runner is an instance of the port enumeration
 // client used to orchestrate the whole process.
@@ -333,6 +333,10 @@ func (r *Runner) handleOutput() {
 					data.Host = host
 				}
 				for port := range ports {
+					if _, ok := Naabuipports[host]; !ok {
+						Naabuipports[host] = make(map[int]struct{})
+					}
+					Naabuipports[host][port] = struct{}{}
 					data.Port = port
 					b, marshallErr := json.Marshal(data)
 					if marshallErr != nil {
@@ -342,7 +346,10 @@ func (r *Runner) handleOutput() {
 				}
 			} else {
 				for port := range ports {
-					Naabuipports[host] = port
+					if _, ok := Naabuipports[host]; !ok {
+						Naabuipports[host] = make(map[int]struct{})
+					}
+					Naabuipports[host][port] = struct{}{}
 					gologger.Silent().Msgf("%s:%d\n", host, port)
 				}
 			}
