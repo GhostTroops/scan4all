@@ -3,6 +3,7 @@ package runner
 import (
 	"flag"
 	"os"
+	"runtime"
 
 	"github.com/projectdiscovery/gologger"
 )
@@ -134,7 +135,9 @@ func ParseOptions() *Options {
 	}
 
 	showNetworkCapabilities(options)
-
+	if runtime.GOOS == "windows" {
+		options.NoColor = true
+	}
 	return options
 }
 
