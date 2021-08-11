@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/veo/vscan/brute"
+	"github.com/veo/vscan/poc/ThinkPHP"
 	"github.com/veo/vscan/poc/fastjson"
 	"github.com/veo/vscan/poc/jboss"
 	"github.com/veo/vscan/poc/jenkins"
@@ -792,9 +793,13 @@ retry:
 				if !listfind("weblogic", technologies) {
 					technologies = append(technologies, "weblogic")
 				}
+			case "/ThinkPHP":
+				if !listfind("ThinkPHP", technologies) {
+					technologies = append(technologies, "ThinkPHP")
+				}
 			case "/Runtime/Logs/":
-				if !listfind("ThinkPHP3", technologies) {
-					technologies = append(technologies, "ThinkPHP3")
+				if !listfind("ThinkPHP", technologies) {
+					technologies = append(technologies, "ThinkPHP")
 				}
 			case "/seeyon/":
 				if !listfind("seeyon", technologies) {
@@ -911,6 +916,10 @@ retry:
 				}
 				if jenkins.CVE_2019_10003000(URL.String()) {
 					technologies = append(technologies, "exp-jenkins|CVE_2019_10003000")
+				}
+			case "ThinkPHP":
+				if ThinkPHP.RCE(URL.String()) {
+					technologies = append(technologies, "exp-ThinkPHP")
 				}
 			}
 		}
