@@ -61,6 +61,8 @@ func getinputurl(domainurl string) (domainurlx []string) {
 			domainx := a[1]
 			if strings.Contains(domainx, "http") {
 				loginurl = append(loginurl, domainx)
+			} else if domainx == "" {
+				loginurl = append(loginurl, domainurl)
 			} else if domainx[0:1] == "/" {
 				u, _ := url.Parse(domainurl)
 				loginurl = append(loginurl, u.Scheme+"://"+u.Host+domainx)
