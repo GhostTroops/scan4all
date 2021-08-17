@@ -117,15 +117,15 @@ func ParseOptions() *Options {
 	}
 
 	// If a config file is provided, merge the options
-	if options.ConfigFile != "" {
-		options.MergeFromConfig(options.ConfigFile, false)
-	} else {
-		defaultConfigPath, err := getDefaultConfigFile()
-		if err != nil {
-			gologger.Error().Msgf("Program exiting: %s\n", err)
-		}
-		options.MergeFromConfig(defaultConfigPath, true)
-	}
+	//if options.ConfigFile != "" {
+	//	options.MergeFromConfig(options.ConfigFile, false)
+	//} else {
+	//	defaultConfigPath, err := getDefaultConfigFile()
+	//	if err != nil {
+	//		gologger.Error().Msgf("Program exiting: %s\n", err)
+	//	}
+	//	options.MergeFromConfig(defaultConfigPath, true)
+	//}
 
 	// Validate the options passed by the user and if any
 	// invalid options have been used, exit.
