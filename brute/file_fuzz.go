@@ -2,6 +2,7 @@ package brute
 
 import (
 	"github.com/veo/vscan/pkg"
+	"regexp"
 	"strings"
 )
 
@@ -14,6 +15,18 @@ func File_fuzz(url string) (path []string) {
 			for _, urli := range filedic {
 				lastword := urli[len(urli)-1:]
 				switch urli {
+				case "/www.zip", "/www.rar", "/www.7z", "/www.tar.gz", "/www.tar", "/web.zip", "/web.rar", "/web.7z", "/web.tar.gz", "/web.tar", "/wwwroot.zip", "/wwwroot.rar", "/wwwroot.7z", "/wwwroot.tar.gz", "/wwwroot.tar", "/data.zip", "/data.rar", "/data.7z", "/data.tar.gz", "/data.tar":
+					if req, err := pkg.HttpRequset(url+urli, "HEAD", "", false, nil); err == nil {
+						if req.StatusCode == 200 {
+							regs := []string{"text/plain", "application/.*download", "application/.*file", "application/.*zip", "application/.*rar", "application/.*tar", "application/.*down", "application/.*compressed", "application/stream"}
+							for _, reg := range regs {
+								matched, _ := regexp.Match(reg, []byte(req.Header.Get("Content-Type")))
+								if matched {
+									path = append(path, urli)
+								}
+							}
+						}
+					}
 				case "/manager/html":
 					if req, err := pkg.HttpRequset(url+urli, "HEAD", "", false, nil); err == nil {
 						if req.StatusCode == 401 && req.Header.Get("Www-Authenticate") != "" {
