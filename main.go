@@ -18,6 +18,7 @@ func main() {
 		gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
 	}
 	httpxoptions := httpxrunner.ParseOptions()
+	httpxoptions.SkipWAF = naabuoptions.SkipWAF
 	httpxoptions.NoColor = naabuoptions.NoColor
 	httpxoptions.Silent = naabuoptions.Silent
 	httpxoptions.Output = naabuoptions.Output

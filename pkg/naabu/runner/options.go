@@ -14,6 +14,7 @@ import (
 type Options struct {
 	Verbose        bool // Verbose flag indicates whether to show verbose output or not
 	NoColor        bool // No-Color disables the colored output
+	SkipWAF        bool // No-Color disables the colored output
 	JSON           bool // JSON specifies whether to use json for output format or text file
 	Silent         bool // Silent suppresses any extra text and only writes found host:port to screen
 	Stdin          bool // Stdin specifies whether stdin input was given to the process
@@ -67,6 +68,7 @@ func ParseOptions() *Options {
 	flag.IntVar(&options.Rate, "rate", DefaultRateSynScan, "Rate of port scan probe requests")
 	flag.BoolVar(&options.Verbose, "v", false, "Show Verbose output")
 	flag.BoolVar(&options.NoColor, "no-color", false, "Don't Use colors in output")
+	flag.BoolVar(&options.SkipWAF, "skip-waf", false, "skip waf,do not exp")
 	flag.IntVar(&options.Timeout, "timeout", DefaultPortTimeoutSynScan, "Millisecond to wait before timing out")
 	flag.StringVar(&options.ExcludePorts, "exclude-ports", "", "Ports to exclude from enumeration")
 	flag.BoolVar(&options.Verify, "verify", false, "Validate the ports again with TCP verification")

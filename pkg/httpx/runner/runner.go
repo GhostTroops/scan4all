@@ -158,6 +158,7 @@ func New(options *Options) (*Runner, error) {
 	}
 	runner.options.protocol = httpx.HTTPorHTTPS
 	scanopts.VHost = options.VHost
+	scanopts.SkipWAF = options.SkipWAF
 	scanopts.OutputTitle = options.ExtractTitle
 	scanopts.OutputStatusCode = options.StatusCode
 	scanopts.OutputLocation = options.Location
@@ -764,162 +765,168 @@ retry:
 	if scanopts.OutputResponseTime {
 		builder.WriteString(fmt.Sprintf(" [%s]", resp.Duration))
 	}
+	var filePaths []string
 	var technologies []string
-	file_paths := brute.File_fuzz(URL.String())
-	listfind := func(str string, list []string) bool {
-		sort.Strings(list)
-		index := sort.SearchStrings(list, str)
-		if index < len(list) && list[index] == str {
-			return true
-		}
-		return false
+	if !scanopts.SkipWAF {
+		filePaths = brute.File_fuzz(URL.String())
 	}
+
 	if scanopts.TechDetect {
+		listfind := func(str string, list []string) bool {
+			sort.Strings(list)
+			index := sort.SearchStrings(list, str)
+			if index < len(list) && list[index] == str {
+				return true
+			}
+			return false
+		}
 		matches := r.wappalyzer.Fingerprint(resp.Headers, resp.Data)
 		for match := range matches {
 			technologies = append(technologies, match)
 		}
-		for filePathName := range file_paths {
-			switch file_paths[filePathName] {
-			case "/admin/":
-				if !listfind("admin登录页", technologies) {
-					technologies = append(technologies, "admin登录页")
-				}
-			case "/manager/html":
-				if !listfind("Apache Tomcat", technologies) {
-					technologies = append(technologies, "Apache Tomcat")
-				}
-			case "/console/login/LoginForm.jsp", "/wls-wsat/CoordinatorPortType", "/_async/AsyncResponseService":
-				if !listfind("weblogic", technologies) {
-					technologies = append(technologies, "weblogic")
-				}
-			case "/ThinkPHP":
-				if !listfind("ThinkPHP", technologies) {
-					technologies = append(technologies, "ThinkPHP")
-				}
-			case "/Runtime/Logs/":
-				if !listfind("ThinkPHP", technologies) {
-					technologies = append(technologies, "ThinkPHP")
-				}
-			case "/seeyon/":
-				if !listfind("seeyon", technologies) {
-					technologies = append(technologies, "seeyon")
-				}
-			case "/zentao/":
-				if !listfind("禅道", technologies) {
-					technologies = append(technologies, "禅道")
-				}
-			case "/zabbix/":
-				if !listfind("zabbix", technologies) {
-					technologies = append(technologies, "zabbix")
-				}
-			case "/actuator", "/actuator/env", "/druid/index.html":
-				if !listfind("Spring", technologies) {
-					technologies = append(technologies, "Spring")
-				}
-			}
-		}
-		for tech := range technologies {
-			switch technologies[tech] {
-			case "Shiro":
-				key := shiro.Check(URL.String())
-				if key != "" {
-					technologies = append(technologies, fmt.Sprintf("exp-shiro|key:%s", key))
-				}
-			case "登录页":
-				username, password, loginurl := brute.Admin_brute(URL.String())
-				if loginurl != "" {
-					technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
-				}
-			case "admin登录页":
-				username, password, loginurl := brute.Admin_brute(URL.String() + "/admin/")
-				if loginurl != "" {
-					technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
-				}
-			case "Apache Tomcat":
-				username, password := brute.Tomcat_brute(URL.String())
-				if username != "" {
-					technologies = append(technologies, fmt.Sprintf("brute-tomcat|%s:%s", username, password))
-				}
-				if tomcat.CVE_2020_1938(URL.Host) {
-					technologies = append(technologies, "exp-tomcat|CVE_2020_1938")
-				}
-				if tomcat.CVE_2017_12615(URL.String()) {
-					technologies = append(technologies, "exp-tomcat|CVE_2017_12615")
-				}
-			case "Basic":
-				username, password := brute.Basic_brute(URL.String())
-				if username != "" {
-					technologies = append(technologies, fmt.Sprintf("brute-basic|%s:%s", username, password))
-				}
-			case "weblogic":
-				username, password := brute.Weblogic_brute(URL.String())
-				if username != "" {
-					if username == "login_page" {
-						technologies = append(technologies, "weblogic_login_page")
-					} else {
-						technologies = append(technologies, fmt.Sprintf("brute-weblogic|%s:%s", username, password))
+		if !scanopts.SkipWAF {
+			for filePathName := range filePaths {
+				switch filePaths[filePathName] {
+				case "/admin/":
+					if !listfind("admin登录页", technologies) {
+						technologies = append(technologies, "admin登录页")
+					}
+				case "/manager/html":
+					if !listfind("Apache Tomcat", technologies) {
+						technologies = append(technologies, "Apache Tomcat")
+					}
+				case "/console/login/LoginForm.jsp", "/wls-wsat/CoordinatorPortType", "/_async/AsyncResponseService":
+					if !listfind("weblogic", technologies) {
+						technologies = append(technologies, "weblogic")
+					}
+				case "/ThinkPHP":
+					if !listfind("ThinkPHP", technologies) {
+						technologies = append(technologies, "ThinkPHP")
+					}
+				case "/Runtime/Logs/":
+					if !listfind("ThinkPHP", technologies) {
+						technologies = append(technologies, "ThinkPHP")
+					}
+				case "/seeyon/":
+					if !listfind("seeyon", technologies) {
+						technologies = append(technologies, "seeyon")
+					}
+				case "/zentao/":
+					if !listfind("禅道", technologies) {
+						technologies = append(technologies, "禅道")
+					}
+				case "/zabbix/":
+					if !listfind("zabbix", technologies) {
+						technologies = append(technologies, "zabbix")
+					}
+				case "/actuator", "/actuator/env", "/druid/index.html":
+					if !listfind("Spring", technologies) {
+						technologies = append(technologies, "Spring")
 					}
 				}
-				if weblogic.CVE_2014_4210(URL.String()) {
-					technologies = append(technologies, "exp-weblogic|CVE_2014_4210")
-				}
-				if weblogic.CVE_2017_3506(URL.String()) {
-					technologies = append(technologies, "exp-weblogic|CVE_2017_3506")
-				}
-				if weblogic.CVE_2017_10271(URL.String()) {
-					technologies = append(technologies, "exp-weblogic|CVE_2017_10271")
-				}
-				if weblogic.CVE_2018_2894(URL.String()) {
-					technologies = append(technologies, "exp-weblogic|CVE_2018_2894")
-				}
-				if weblogic.CVE_2019_2725(URL.String()) {
-					technologies = append(technologies, "exp-weblogic|CVE_2019_2725")
-				}
-				if weblogic.CVE_2019_2729(URL.String()) {
-					technologies = append(technologies, "exp-weblogic|CVE_2019_2729")
-				}
-				if weblogic.CVE_2020_2883(URL.String()) {
-					technologies = append(technologies, "exp-weblogic|CVE_2020_2883")
-				}
-				if weblogic.CVE_2020_14882(URL.String()) {
-					technologies = append(technologies, "exp-weblogic|CVE_2020_14882")
-				}
-				if weblogic.CVE_2020_14883(URL.String()) {
-					technologies = append(technologies, "exp-weblogic|CVE_2020_14883")
-				}
-				if weblogic.CVE_2021_2109(URL.String()) {
-					technologies = append(technologies, "exp-weblogic|CVE_2021_2109")
-				}
-			case "JBoss Application Server":
-				if jboss.CVE_2017_12149(URL.String()) {
-					technologies = append(technologies, "exp-jboss|CVE_2017_12149")
-				}
-				username, password := brute.Jboss_brute(URL.String())
-				if username != "" {
-					technologies = append(technologies, fmt.Sprintf("brute-jboss|%s:%s", username, password))
-				}
-			case "JSON":
-				fastjsonversion := fastjson.Check(URL.String())
-				if fastjsonversion != "" {
-					technologies = append(technologies, fmt.Sprintf("fastjson|%s", fastjsonversion))
-				}
-			case "Jenkins":
-				if jenkins.Unauthorized(URL.String()) {
-					technologies = append(technologies, "exp-jenkins|Unauthorized script")
-				}
-				if jenkins.CVE_2018_1000110(URL.String()) {
-					technologies = append(technologies, "exp-jenkins|CVE_2018_1000110")
-				}
-				if jenkins.CVE_2018_1000861(URL.String()) {
-					technologies = append(technologies, "exp-jenkins|CVE_2018_1000861")
-				}
-				if jenkins.CVE_2019_10003000(URL.String()) {
-					technologies = append(technologies, "exp-jenkins|CVE_2019_10003000")
-				}
-			case "ThinkPHP":
-				if ThinkPHP.RCE(URL.String()) {
-					technologies = append(technologies, "exp-ThinkPHP")
+			}
+			for tech := range technologies {
+				switch technologies[tech] {
+				case "Shiro":
+					key := shiro.Check(URL.String())
+					if key != "" {
+						technologies = append(technologies, fmt.Sprintf("exp-shiro|key:%s", key))
+					}
+				case "登录页":
+					username, password, loginurl := brute.Admin_brute(URL.String())
+					if loginurl != "" {
+						technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
+					}
+				case "admin登录页":
+					username, password, loginurl := brute.Admin_brute(URL.String() + "/admin/")
+					if loginurl != "" {
+						technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
+					}
+				case "Apache Tomcat":
+					username, password := brute.Tomcat_brute(URL.String())
+					if username != "" {
+						technologies = append(technologies, fmt.Sprintf("brute-tomcat|%s:%s", username, password))
+					}
+					if tomcat.CVE_2020_1938(URL.Host) {
+						technologies = append(technologies, "exp-tomcat|CVE_2020_1938")
+					}
+					if tomcat.CVE_2017_12615(URL.String()) {
+						technologies = append(technologies, "exp-tomcat|CVE_2017_12615")
+					}
+				case "Basic":
+					username, password := brute.Basic_brute(URL.String())
+					if username != "" {
+						technologies = append(technologies, fmt.Sprintf("brute-basic|%s:%s", username, password))
+					}
+				case "weblogic":
+					username, password := brute.Weblogic_brute(URL.String())
+					if username != "" {
+						if username == "login_page" {
+							technologies = append(technologies, "weblogic_login_page")
+						} else {
+							technologies = append(technologies, fmt.Sprintf("brute-weblogic|%s:%s", username, password))
+						}
+					}
+					if weblogic.CVE_2014_4210(URL.String()) {
+						technologies = append(technologies, "exp-weblogic|CVE_2014_4210")
+					}
+					if weblogic.CVE_2017_3506(URL.String()) {
+						technologies = append(technologies, "exp-weblogic|CVE_2017_3506")
+					}
+					if weblogic.CVE_2017_10271(URL.String()) {
+						technologies = append(technologies, "exp-weblogic|CVE_2017_10271")
+					}
+					if weblogic.CVE_2018_2894(URL.String()) {
+						technologies = append(technologies, "exp-weblogic|CVE_2018_2894")
+					}
+					if weblogic.CVE_2019_2725(URL.String()) {
+						technologies = append(technologies, "exp-weblogic|CVE_2019_2725")
+					}
+					if weblogic.CVE_2019_2729(URL.String()) {
+						technologies = append(technologies, "exp-weblogic|CVE_2019_2729")
+					}
+					if weblogic.CVE_2020_2883(URL.String()) {
+						technologies = append(technologies, "exp-weblogic|CVE_2020_2883")
+					}
+					if weblogic.CVE_2020_14882(URL.String()) {
+						technologies = append(technologies, "exp-weblogic|CVE_2020_14882")
+					}
+					if weblogic.CVE_2020_14883(URL.String()) {
+						technologies = append(technologies, "exp-weblogic|CVE_2020_14883")
+					}
+					if weblogic.CVE_2021_2109(URL.String()) {
+						technologies = append(technologies, "exp-weblogic|CVE_2021_2109")
+					}
+				case "JBoss Application Server":
+					if jboss.CVE_2017_12149(URL.String()) {
+						technologies = append(technologies, "exp-jboss|CVE_2017_12149")
+					}
+					username, password := brute.Jboss_brute(URL.String())
+					if username != "" {
+						technologies = append(technologies, fmt.Sprintf("brute-jboss|%s:%s", username, password))
+					}
+				case "JSON":
+					fastjsonversion := fastjson.Check(URL.String())
+					if fastjsonversion != "" {
+						technologies = append(technologies, fmt.Sprintf("fastjson|%s", fastjsonversion))
+					}
+				case "Jenkins":
+					if jenkins.Unauthorized(URL.String()) {
+						technologies = append(technologies, "exp-jenkins|Unauthorized script")
+					}
+					if jenkins.CVE_2018_1000110(URL.String()) {
+						technologies = append(technologies, "exp-jenkins|CVE_2018_1000110")
+					}
+					if jenkins.CVE_2018_1000861(URL.String()) {
+						technologies = append(technologies, "exp-jenkins|CVE_2018_1000861")
+					}
+					if jenkins.CVE_2019_10003000(URL.String()) {
+						technologies = append(technologies, "exp-jenkins|CVE_2019_10003000")
+					}
+				case "ThinkPHP":
+					if ThinkPHP.RCE(URL.String()) {
+						technologies = append(technologies, "exp-ThinkPHP")
+					}
 				}
 			}
 		}
@@ -960,8 +967,8 @@ retry:
 		builder.WriteRune(']')
 	}
 
-	if len(file_paths) > 0 {
-		file_paths := strings.Join(file_paths, "\",\""+URL.String())
+	if len(filePaths) > 0 {
+		file_paths := strings.Join(filePaths, "\",\""+URL.String())
 		builder.WriteString(" [file_fuzz：")
 		if !scanopts.OutputWithNoColor {
 			builder.WriteString(aurora.Magenta("\"" + URL.String() + file_paths).String())
