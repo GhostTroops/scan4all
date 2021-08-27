@@ -25,6 +25,7 @@ type scanOptions struct {
 	RequestURI             string
 	RequestBody            string
 	VHost                  bool
+	SkipWAF                bool
 	OutputTitle            bool
 	OutputStatusCode       bool
 	OutputLocation         bool
@@ -141,6 +142,7 @@ type Options struct {
 	Version                   bool
 	Verbose                   bool
 	NoColor                   bool
+	SkipWAF                   bool
 	OutputServerHeader        bool
 	OutputWebSocket           bool
 	responseInStdout          bool
@@ -201,6 +203,7 @@ func ParseOptions() *Options {
 	options.Version = false
 	options.Verbose = false
 	options.NoColor = false
+	options.SkipWAF = false
 	options.OutputServerHeader = false
 	options.OutputWebSocket = false
 	options.responseInStdout = false
