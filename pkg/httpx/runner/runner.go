@@ -536,7 +536,7 @@ retry:
 	if err != nil {
 		return Result{URL: domain, err: err}
 	}
-	if URL.Port == "443" {
+	if URL.Port == "443" || URL.Port == "8443" {
 		protocol = httpx.HTTPS
 	}
 	URL.Scheme = protocol
@@ -768,63 +768,30 @@ retry:
 	var filePaths []string
 	var technologies []string
 	if !scanopts.SkipWAF {
-		filePaths = brute.File_fuzz(URL.String())
+		filePaths, technologies = brute.FileFuzz(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw)
 	}
-
 	if scanopts.TechDetect {
-		listfind := func(str string, list []string) bool {
-			sort.Strings(list)
-			index := sort.SearchStrings(list, str)
-			if index < len(list) && list[index] == str {
-				return true
+		SliceRemoveDuplicates := func(slice []string) []string {
+			sort.Strings(slice)
+			i := 0
+			var j int
+			for {
+				if i >= len(slice)-1 {
+					break
+				}
+				for j = i + 1; j < len(slice) && slice[i] == slice[j]; j++ {
+				}
+				slice = append(slice[:i+1], slice[j:]...)
+				i++
 			}
-			return false
+			return slice
 		}
 		matches := r.wappalyzer.Fingerprint(resp.Headers, resp.Data)
 		for match := range matches {
 			technologies = append(technologies, match)
 		}
+		technologies = SliceRemoveDuplicates(technologies)
 		if !scanopts.SkipWAF {
-			for filePathName := range filePaths {
-				switch filePaths[filePathName] {
-				case "/admin/":
-					if !listfind("admin登录页", technologies) {
-						technologies = append(technologies, "admin登录页")
-					}
-				case "/manager/html":
-					if !listfind("Apache Tomcat", technologies) {
-						technologies = append(technologies, "Apache Tomcat")
-					}
-				case "/console/login/LoginForm.jsp", "/wls-wsat/CoordinatorPortType", "/_async/AsyncResponseService":
-					if !listfind("weblogic", technologies) {
-						technologies = append(technologies, "weblogic")
-					}
-				case "/ThinkPHP":
-					if !listfind("ThinkPHP", technologies) {
-						technologies = append(technologies, "ThinkPHP")
-					}
-				case "/Runtime/Logs/":
-					if !listfind("ThinkPHP", technologies) {
-						technologies = append(technologies, "ThinkPHP")
-					}
-				case "/seeyon/":
-					if !listfind("seeyon", technologies) {
-						technologies = append(technologies, "seeyon")
-					}
-				case "/zentao/":
-					if !listfind("禅道", technologies) {
-						technologies = append(technologies, "禅道")
-					}
-				case "/zabbix/":
-					if !listfind("zabbix", technologies) {
-						technologies = append(technologies, "zabbix")
-					}
-				case "/actuator", "/actuator/env", "/druid/index.html":
-					if !listfind("Spring", technologies) {
-						technologies = append(technologies, "Spring")
-					}
-				}
-			}
 			for tech := range technologies {
 				switch technologies[tech] {
 				case "Shiro":

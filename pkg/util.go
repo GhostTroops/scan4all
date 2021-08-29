@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"sort"
 	"strings"
 	"time"
 )
@@ -15,13 +16,14 @@ type Response struct {
 	StatusCode    int
 	Body          string
 	Header        http.Header
-	ContentLength int64
+	ContentLength int
 	RequestUrl    string
+	Location      string
 }
 
 var HttpProxy string
 
-func HttpRequsetBasic(username string, password string, urlstring string, toupper string, postdate string, isredirect bool, headers map[string]string) (*Response, error) {
+func HttpRequsetBasic(username string, password string, urlstring string, method string, postdate string, isredirect bool, headers map[string]string) (*Response, error) {
 	var tr *http.Transport
 	if HttpProxy != "" {
 		uri, _ := url.Parse(HttpProxy)
@@ -53,7 +55,7 @@ func HttpRequsetBasic(username string, password string, urlstring string, touppe
 			Jar:       jar,
 		}
 	}
-	req, err := http.NewRequest(strings.ToUpper(toupper), urlstring, strings.NewReader(postdate))
+	req, err := http.NewRequest(strings.ToUpper(method), urlstring, strings.NewReader(postdate))
 	if err != nil {
 		return nil, err
 	}
@@ -66,17 +68,21 @@ func HttpRequsetBasic(username string, password string, urlstring string, touppe
 	resp, err := client.Do(req)
 	if err != nil {
 		//防止空指针
-		return &Response{"999", 999, "", nil, 0, ""}, err
+		return &Response{"999", 999, "", nil, 0, "", ""}, err
 	}
+	var location string
+	var reqbody string
 	defer resp.Body.Close()
-	body, err2 := ioutil.ReadAll(resp.Body)
-	if err2 != nil {
-		return &Response{resp.Status, resp.StatusCode, "", resp.Header, resp.ContentLength, resp.Request.URL.String()}, err2
+	if body, err := ioutil.ReadAll(resp.Body); err == nil {
+		reqbody = string(body)
 	}
-	return &Response{resp.Status, resp.StatusCode, string(body), resp.Header, resp.ContentLength, resp.Request.URL.String()}, nil
+	if resplocation, err := resp.Location(); err == nil {
+		location = resplocation.String()
+	}
+	return &Response{resp.Status, resp.StatusCode, reqbody, resp.Header, len(reqbody), resp.Request.URL.String(), location}, nil
 }
 
-func HttpRequset(urlstring string, toupper string, postdate string, isredirect bool, headers map[string]string) (*Response, error) {
+func HttpRequset(urlstring string, method string, postdate string, isredirect bool, headers map[string]string) (*Response, error) {
 	var tr *http.Transport
 	if HttpProxy != "" {
 		uri, _ := url.Parse(HttpProxy)
@@ -108,7 +114,7 @@ func HttpRequset(urlstring string, toupper string, postdate string, isredirect b
 			Jar:       jar,
 		}
 	}
-	req, err := http.NewRequest(strings.ToUpper(toupper), urlstring, strings.NewReader(postdate))
+	req, err := http.NewRequest(strings.ToUpper(method), urlstring, strings.NewReader(postdate))
 	if err != nil {
 		return nil, err
 	}
@@ -120,12 +126,34 @@ func HttpRequset(urlstring string, toupper string, postdate string, isredirect b
 	resp, err := client.Do(req)
 	if err != nil {
 		//防止空指针
-		return &Response{"999", 999, "", nil, 0, ""}, err
+		return &Response{"999", 999, "", nil, 0, "", ""}, err
 	}
+	var location string
+	var reqbody string
 	defer resp.Body.Close()
-	body, err2 := ioutil.ReadAll(resp.Body)
-	if err2 != nil {
-		return &Response{resp.Status, resp.StatusCode, "", resp.Header, resp.ContentLength, resp.Request.URL.String()}, err2
+	if body, err := ioutil.ReadAll(resp.Body); err == nil {
+		reqbody = string(body)
 	}
-	return &Response{resp.Status, resp.StatusCode, string(body), resp.Header, resp.ContentLength, resp.Request.URL.String()}, nil
+	if resplocation, err := resp.Location(); err == nil {
+		location = resplocation.String()
+	}
+	return &Response{resp.Status, resp.StatusCode, reqbody, resp.Header, len(reqbody), resp.Request.URL.String(), location}, nil
+}
+
+func In_slice_int(i int, slice []int) bool {
+	sort.Ints(slice)
+	index := sort.SearchInts(slice, i)
+	if index < len(slice) && slice[index] == i {
+		return true
+	}
+	return false
+}
+
+func In_slice_string(str string, slice []string) bool {
+	for _, v := range slice {
+		if strings.Contains(str, v) {
+			return true
+		}
+	}
+	return false
 }
