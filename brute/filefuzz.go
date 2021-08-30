@@ -95,10 +95,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 			other200Contentlen = append(other200Contentlen, url404req.ContentLength)
 		}
 	}
-	//多线程实测效果并不理想，不使用
-	//var wg sync.WaitGroup
 	ch := make(chan struct{}, 20)
-
 	for _, payload := range filedic {
 		var is404Page = false
 		if errorTimes > 20 {
