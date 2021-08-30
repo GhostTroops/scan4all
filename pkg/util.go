@@ -42,7 +42,7 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 	}
 
 	client := &http.Client{
-		Timeout:   time.Duration(10) * time.Second,
+		Timeout:   time.Duration(60) * time.Second,
 		Transport: tr,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -50,7 +50,7 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 	if isredirect {
 		jar, _ := cookiejar.New(nil)
 		client = &http.Client{
-			Timeout:   time.Duration(10) * time.Second,
+			Timeout:   time.Duration(60) * time.Second,
 			Transport: tr,
 			Jar:       jar,
 		}
@@ -101,7 +101,7 @@ func HttpRequset(urlstring string, method string, postdate string, isredirect bo
 	}
 
 	client := &http.Client{
-		Timeout:   time.Duration(10) * time.Second,
+		Timeout:   time.Duration(60) * time.Second,
 		Transport: tr,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -109,7 +109,7 @@ func HttpRequset(urlstring string, method string, postdate string, isredirect bo
 	if isredirect {
 		jar, _ := cookiejar.New(nil)
 		client = &http.Client{
-			Timeout:   time.Duration(10) * time.Second,
+			Timeout:   time.Duration(60) * time.Second,
 			Transport: tr,
 			Jar:       jar,
 		}
@@ -140,7 +140,7 @@ func HttpRequset(urlstring string, method string, postdate string, isredirect bo
 	return &Response{resp.Status, resp.StatusCode, reqbody, resp.Header, len(reqbody), resp.Request.URL.String(), location}, nil
 }
 
-func In_slice_int(i int, slice []int) bool {
+func IntInSlice(i int, slice []int) bool {
 	sort.Ints(slice)
 	index := sort.SearchInts(slice, i)
 	if index < len(slice) && slice[index] == i {
@@ -149,7 +149,16 @@ func In_slice_int(i int, slice []int) bool {
 	return false
 }
 
-func In_slice_string(str string, slice []string) bool {
+func StringInSlice(str string, slice []string) bool {
+	sort.Strings(slice)
+	index := sort.SearchStrings(slice, str)
+	if index < len(slice) && slice[index] == str {
+		return true
+	}
+	return false
+}
+
+func SliceInString(str string, slice []string) bool {
 	for _, v := range slice {
 		if strings.Contains(str, v) {
 			return true
