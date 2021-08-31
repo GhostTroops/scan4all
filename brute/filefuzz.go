@@ -97,11 +97,17 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	}
 	ch := make(chan struct{}, 20)
 	for _, payload := range filedic {
+		var payloadlocation404 []string
+		var payload200Title []string
+		var payload200Contentlen []int
 		var is404Page = false
 		if errorTimes > 20 {
 			return
 		}
 		if (pkg.StringInSlice("/1.asp", path) && pkg.StringInSlice("/1.jsp", path) && pkg.StringInSlice("/2.jsp", path)) || (pkg.StringInSlice("/1.php", path) && pkg.StringInSlice("/1.jsp", path) && pkg.StringInSlice("/2.jsp", path)) || (pkg.StringInSlice("/zabbix/", path) && pkg.StringInSlice("/grafana/", path) && pkg.StringInSlice("/zentao/", path)) {
+			return nil, nil
+		}
+		if len(path) > 40 {
 			return nil, nil
 		}
 		ch <- struct{}{}
@@ -138,17 +144,22 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 					if skip302 {
 						is404Page = true
 					}
-					if pkg.SliceInString(req.Location, location404) {
+					if pkg.SliceInString(req.Location, location404) && pkg.SliceInString(req.Location, payloadlocation404) {
 						is404Page = true
 					}
 					if !strings.HasSuffix(req.Location, payload+"/") {
-						location404 = append(location404, req.Location)
+						location404 = append(payloadlocation404, req.Location)
 						is404Page = true
 					}
 				}
 
 				if !is404Page {
 					for _, title := range other200Title {
+						if len(url.title) > 2 && url.title == title {
+							is404Page = true
+						}
+					}
+					for _, title := range payload200Title {
 						if len(url.title) > 2 && url.title == title {
 							is404Page = true
 						}
@@ -162,8 +173,17 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 							is404Page = true
 						}
 					}
-					other200Title = append(other200Title, url.title)
-					other200Contentlen = append(other200Contentlen, req.ContentLength)
+					for _, len := range payload200Contentlen {
+						reqlenabs := req.ContentLength - len
+						if reqlenabs < 0 {
+							reqlenabs = -reqlenabs
+						}
+						if reqlenabs <= 5 {
+							is404Page = true
+						}
+					}
+					payload200Title = append(payload200Title, url.title)
+					payload200Contentlen = append(payload200Contentlen, req.ContentLength)
 					if !is404Page {
 						// 基于200页面文件扫描指纹添加
 						switch payload {
