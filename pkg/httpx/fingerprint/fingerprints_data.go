@@ -3,7 +3,7 @@ package wappalyzer
 var fingerprints = `
 {
 	"apps": {
-		"登录页": {
+		"LoginPage": {
 			"html": [
 				"<input.*pass"
 			]
@@ -26,7 +26,7 @@ var fingerprints = `
 				"servletcontextinitparams"
 			]
 		},
-		"weblogic": {
+		"WebLogic": {
 			"html": [
 				"error 404--not found",
 				"error 403--",
