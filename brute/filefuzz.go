@@ -59,28 +59,26 @@ func reqPage(u string) (*page, *pkg.Response, error) {
 }
 
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) (path []string, technologies []string) {
-	var path404 = "/file_not_support"
-	var page200CodeList = []int{200, 301, 302, 401, 500}
-	var page404Title = []string{"404", "不存在", "错误", "403", "禁止访问", "请求含有不合法的参数", "网络防火墙", "网站防火墙", "访问拦截", "由于安全原因JSP功能默认关闭"}
-	var page404Content = []string{"<script>document.getElementById(\"a-link\").click();</script>", "404 Not Found", "您所提交的请求含有不合法的参数，已被网站管理员设置拦截"}
-	var page403title = []string{"403", "Forbidden", "ERROR"}
-	var page403Content = []string{"403", "Forbidden", "ERROR"}
-	var location404 = []string{"/auth/login/", "error.html"}
-	var skip403 = false
-	var skip302 = false
-	var other200Contentlen []int
-	var other200Title []string
-	var errorTimes = 0
+	var (
+		path404            = "/file_not_support"
+		page200CodeList    = []int{200, 301, 302, 401, 500}
+		page404Title       = []string{"404", "不存在", "错误", "403", "禁止访问", "请求含有不合法的参数", "网络防火墙", "网站防火墙", "访问拦截", "由于安全原因JSP功能默认关闭"}
+		page404Content     = []string{"<script>document.getElementById(\"a-link\").click();</script>", "404 Not Found", "您所提交的请求含有不合法的参数，已被网站管理员设置拦截", "404.safedog.cn"}
+		page403title       = []string{"403", "Forbidden", "ERROR"}
+		page403Content     = []string{"403", "Forbidden", "ERROR"}
+		location404        = []string{"/auth/login/", "error.html"}
+		skip403            = false
+		skip302            = false
+		other200Contentlen []int
+		other200Title      []string
+		errorTimes         = 0
+	)
 	other200Contentlen = append(other200Contentlen, indexContentLength)
 	other200Title = append(other200Title, gettitle(indexbody))
 	if url404, url404req, err := reqPage(u + path404); err == nil {
-
-		//基于404页面文件扫描指纹添加
-		if url404req.StatusCode == 404 && strings.Contains(url404req.Body, "thinkphp") {
-			technologies = append(technologies, "ThinkPHP")
+		if url404req.StatusCode == 404 {
+			technologies = addfingerprints404(technologies, url404req) //基于404页面文件扫描指纹添加
 		}
-		//
-
 		if url404.is302 {
 			location404 = append(location404, url404.locationUrl)
 		}
@@ -114,11 +112,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		go func(payload string) {
 			if url, req, err := reqPage(u + payload); err == nil {
 				if url.is403 && (pkg.SliceInString(url.title, page403title) || pkg.SliceInString(req.Body, page403Content)) && !skip403 {
-					// 基于403页面文件扫描指纹添加
-					switch payload {
-					case "/Runtime/Logs/":
-						technologies = append(technologies, "ThinkPHP")
-					}
+					technologies = addfingerprints403(payload, technologies, req) // 基于403页面文件扫描指纹添加
 					path = append(path, payload)
 				}
 				if !pkg.IntInSlice(req.StatusCode, page200CodeList) {
@@ -185,43 +179,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 					payload200Title = append(payload200Title, url.title)
 					payload200Contentlen = append(payload200Contentlen, req.ContentLength)
 					if !is404Page {
-						// 基于200页面文件扫描指纹添加
-						switch payload {
-						case "/manager/html":
-							if req.StatusCode == 401 && req.Header.Get("Www-Authenticate") != "" {
-								technologies = append(technologies, "Apache Tomcat")
-							}
-						case "/console/login/LoginForm.jsp":
-							if req.StatusCode == 200 && strings.Contains(req.Body, "Oracle WebLogic Server Administration Console") {
-								technologies = append(technologies, "weblogic")
-							}
-						case "/wls-wsat/CoordinatorPortType", "/_async/AsyncResponseService":
-							if req.StatusCode == 200 && strings.Contains(req.Body, "ws_utc") {
-								technologies = append(technologies, "weblogic")
-							}
-						case "/seeyon/":
-							if strings.Contains(req.Body, "/seeyon/common/") {
-								technologies = append(technologies, "seeyon")
-							}
-						case "/admin/":
-							if strings.Contains(req.Body, "pass") || strings.Contains(req.Body, "Pass") || strings.Contains(req.Body, "PASS") {
-								technologies = append(technologies, "admin登录页")
-							}
-						case "/zabbix/":
-							if strings.Contains(req.Body, "www.zabbix.com") {
-								technologies = append(technologies, "zabbix")
-							}
-						case "/grafana/":
-							if strings.Contains(req.Body, "grafana-app") {
-								technologies = append(technologies, "Grafana")
-							}
-						case "/zentao/":
-							if strings.Contains(req.Body, "zentao/theme") {
-								technologies = append(technologies, "zentao")
-							}
-						case "/actuator", "/actuator/archaius", "/actuator/auditevents", "/actuator/autoconfig", "/actuator/bindings", "/actuator/caches", "/actuator/channels", "/actuator/conditions", "/actuator/configprops", "/actuator/env", "/actuator/env.json", "/actuator/gateway/globalfilters", "/actuator/gateway/routefilters", "/actuator/gateway/routes", "/actuator/health", "/actuator/health.json", "/actuator/heapdump", "/actuator/hystrix.stream", "/actuator/integrationgraph", "/actuator/mappings", "/actuator/metrics", "/actuator/routes", "/actuator/scheduledtasks", "/actuator/service-registry":
-							technologies = append(technologies, "Spring")
-						}
+						technologies = addfingerprintsnormal(payload, technologies, req) // 基于200页面文件扫描指纹添加
 						path = append(path, payload)
 					}
 				}
