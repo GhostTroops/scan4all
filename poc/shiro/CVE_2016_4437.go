@@ -72,13 +72,13 @@ func CVE_2016_4437(u string) (key string) {
 			RememberMe2 := aES_GCM_Encrypt(decodekey, Content) //AES GCM加密
 			if CBClen, err := getkeylen(u, indexlen, RememberMe1); err == nil {
 				if CBClen != indexlen {
-					fmt.Printf("[+] Found Shiro CVE_2016_4437| URL: %s CBC-KEY: %s\n", u, key)
+					fmt.Printf("[+] Found vuln Shiro CVE_2016_4437| URL: %s CBC-KEY: %s\n", u, key)
 					return key
 				}
 			}
 			if GCMlen, err := getkeylen(u, indexlen, RememberMe2); err == nil {
 				if GCMlen != indexlen {
-					fmt.Printf("[+] Found Shiro CVE_2016_4437| URL: %s GCM-KEY: %s\n", u, key)
+					fmt.Printf("[+] Found vuln Shiro CVE_2016_4437| URL: %s GCM-KEY: %s\n", u, key)
 					return key
 				}
 			}

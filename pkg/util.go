@@ -42,7 +42,7 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 	}
 
 	client := &http.Client{
-		Timeout:   time.Duration(60) * time.Second,
+		Timeout:   time.Duration(10) * time.Second,
 		Transport: tr,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -50,7 +50,7 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 	if isredirect {
 		jar, _ := cookiejar.New(nil)
 		client = &http.Client{
-			Timeout:   time.Duration(60) * time.Second,
+			Timeout:   time.Duration(10) * time.Second,
 			Transport: tr,
 			Jar:       jar,
 		}
@@ -101,7 +101,7 @@ func HttpRequset(urlstring string, method string, postdate string, isredirect bo
 	}
 
 	client := &http.Client{
-		Timeout:   time.Duration(60) * time.Second,
+		Timeout:   time.Duration(10) * time.Second,
 		Transport: tr,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
@@ -109,7 +109,7 @@ func HttpRequset(urlstring string, method string, postdate string, isredirect bo
 	if isredirect {
 		jar, _ := cookiejar.New(nil)
 		client = &http.Client{
-			Timeout:   time.Duration(60) * time.Second,
+			Timeout:   time.Duration(10) * time.Second,
 			Transport: tr,
 			Jar:       jar,
 		}

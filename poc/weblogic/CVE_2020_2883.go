@@ -44,7 +44,7 @@ func CVE_2020_2883(u string) bool {
 		conn.Read(buf)
 		p, _ := regexp.Match("weblogic", buf)
 		if p {
-			fmt.Printf("[+] Found WebLogic CVE_2020_2883|%s\n", u)
+			fmt.Printf("[+] Found vuln WebLogic CVE_2020_2883|%s\n", u)
 			return true
 		}
 	}
