@@ -11,13 +11,13 @@ func Unauthorized(u string) bool {
 		if req.Header.Get("X-Jenkins-Session") != "" {
 			if req2, err := pkg.HttpRequset(u+"/script", "GET", "", false, nil); err == nil {
 				if req2.StatusCode == 200 && strings.Contains(req2.Body, "Groovy script") {
-					fmt.Printf("[+] Found Jenkins Unauthorized script|%s\n", u+"/script")
+					fmt.Printf("[+] Found vuln Jenkins Unauthorized script|%s\n", u+"/script")
 					return true
 				}
 			}
 			if req2, err := pkg.HttpRequset(u+"/computer/(master)/scripts", "GET", "", false, nil); err == nil {
 				if req2.StatusCode == 200 && strings.Contains(req2.Body, "Groovy script") {
-					fmt.Printf("[+] Found Jenkins Unauthorized script|%s\n", u+"/computer/(master)/scripts")
+					fmt.Printf("[+] Found vuln Jenkins Unauthorized script|%s\n", u+"/computer/(master)/scripts")
 					return true
 				}
 			}
