@@ -25,7 +25,7 @@ func getinput(domainurl string) (usernamekey string, passwordkey string, domainu
 				return "", "", "", ismd5
 			}
 		}
-		userreg := regexp.MustCompile(`<input.*?name=['"](\w*?name\w*?|\w*?Name\w*?|\w*?user\w*?|\w*?User\w*?|\w*?USER\w*?)['"].*?>`)
+		userreg := regexp.MustCompile(`<input.*?name=['"](\w*?name\w*?|\w*?Name\w*?|\w*?user\w*?|\w*?User\w*?|\w*?USER\w*?|\w*?log\w*?)['"].*?>`)
 		usernamelist := userreg.FindStringSubmatch(req.Body)
 		if usernamelist != nil {
 			username = usernamelist[len(usernamelist)-1:][0]
