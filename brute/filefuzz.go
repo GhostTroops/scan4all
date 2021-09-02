@@ -112,7 +112,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		go func(payload string) {
 			if url, req, err := reqPage(u + payload); err == nil {
 				if url.is403 && (pkg.SliceInString(url.title, page403title) || pkg.SliceInString(req.Body, page403Content)) && !skip403 {
-					technologies = addfingerprints403(payload, technologies, req) // 基于403页面文件扫描指纹添加
+					technologies = addfingerprints403(payload, technologies) // 基于403页面文件扫描指纹添加
 					path = append(path, payload)
 				}
 				if !pkg.IntInSlice(req.StatusCode, page200CodeList) {
@@ -158,8 +158,8 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 							is404Page = true
 						}
 					}
-					for _, len := range other200Contentlen {
-						reqlenabs := req.ContentLength - len
+					for _, l := range other200Contentlen {
+						reqlenabs := req.ContentLength - l
 						if reqlenabs < 0 {
 							reqlenabs = -reqlenabs
 						}
@@ -167,8 +167,8 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 							is404Page = true
 						}
 					}
-					for _, len := range payload200Contentlen {
-						reqlenabs := req.ContentLength - len
+					for _, l := range payload200Contentlen {
+						reqlenabs := req.ContentLength - l
 						if reqlenabs < 0 {
 							reqlenabs = -reqlenabs
 						}

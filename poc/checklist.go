@@ -31,11 +31,6 @@ func POCcheck(technologies []string, URL string) []string {
 			if loginurl != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 			}
-		case "AdminLoginPage":
-			username, password, loginurl := brute.Admin_brute(URL + "/admin/")
-			if loginurl != "" {
-				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
-			}
 		case "Apache Tomcat":
 			username, password := brute.Tomcat_brute(URL)
 			if username != "" {
