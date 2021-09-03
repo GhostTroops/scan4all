@@ -192,5 +192,6 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 			<-ch
 		}(payload)
 	}
+	close(ch)
 	return path, technologies
 }
