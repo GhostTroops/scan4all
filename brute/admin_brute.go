@@ -9,65 +9,60 @@ import (
 	"strings"
 )
 
-func getinput(domainurl string) (usernamekey string, passwordkey string, domainurlx string, ismd5 bool) {
-	var username = "username"
-	var password = "password"
-	var loginurl = domainurl + "/login"
-	if req, err := pkg.HttpRequset(domainurl, "GET", "", true, nil); err == nil {
+func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl string, ismd5 bool) {
+	usernamekey = "username"
+	passwordkey = "password"
+	if req, err := pkg.HttpRequset(inputurl, "GET", "", true, nil); err == nil {
 		if strings.Contains(req.Body, "md5.js") {
 			ismd5 = true
 		}
-		hrefreg := regexp.MustCompile(`location.href=['"](.*?)['"]`)
-		hreflist := hrefreg.FindStringSubmatch(req.Body)
+		u, _ := url.Parse(req.RequestUrl)
+		loginurl = u.String()
+		if u.Path == "/" {
+			loginurl = loginurl + "login"
+		} else if u.Path == "" {
+			loginurl = loginurl + "/login"
+		}
+		hreflist := regexp.MustCompile(`location.href=['"](.*?)['"]`).FindStringSubmatch(req.Body)
 		if hreflist != nil {
-			req, err = pkg.HttpRequset(domainurl+"/"+hreflist[len(hreflist)-1:][0], "GET", "", true, nil)
+			href, _ := url.Parse(hreflist[len(hreflist)-1:][0])
+			hrefurl := u.ResolveReference(href)
+			req, err = pkg.HttpRequset(hrefurl.String(), "GET", "", true, nil)
 			if err != nil {
-				return "", "", "", ismd5
+				return "", "", "", false
 			}
 		}
-		userreg := regexp.MustCompile(`<input.*?name=['"](\w*?name\w*?|\w*?Name\w*?|\w*?user\w*?|\w*?User\w*?|\w*?USER\w*?|\w*?log\w*?)['"].*?>`)
-		usernamelist := userreg.FindStringSubmatch(req.Body)
+		usernamelist := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?name[\w\[\]]*?|[\w\[\]]*?Name[\w\[\]]*?|[\w\[\]]*?user[\w\[\]]*?|[\w\[\]]*?User[\w\[\]]*?|[\w\[\]]*?USER[\w\[\]]*?)['"].*?>`).FindStringSubmatch(req.Body)
 		if usernamelist != nil {
-			username = usernamelist[len(usernamelist)-1:][0]
-		}
-		passreg := regexp.MustCompile(`<input.*?name=['"](\w*?pass\w*?|\w*?Pass\w*?|\w*?PASS\w*?|\w*?pwd\w*?|\w*?Pwd\w*?|\w*?PWD\w*?)['"].*?>`)
-		passlist := passreg.FindStringSubmatch(req.Body)
-		if passlist != nil {
-			password = passlist[len(passlist)-1:][0]
-		}
-		domainreg := regexp.MustCompile(`<form.*?action=['"](.*?)['"]`)
-		domainlist := domainreg.FindStringSubmatch(req.Body)
-		if domainlist != nil {
-			domainx := domainlist[len(domainlist)-1:][0]
-			if strings.Contains(domainx, "http") {
-				loginurl = domainx
-			} else if domainx == "" {
-				loginurl = loginurl
-			} else if domainx[0:1] == "/" {
-				u, _ := url.Parse(domainurl)
-				loginurl = u.Scheme + "://" + u.Host + domainlist[len(domainlist)-1:][0]
-			} else {
-				loginurl = domainurl + "/" + domainlist[len(domainlist)-1:][0]
-			}
+			usernamekey = usernamelist[len(usernamelist)-1:][0]
 		} else {
-			domainreg2 := regexp.MustCompile(`,\s+url.*?:.*?['"](.*?)['"],`)
-			domainlist2 := domainreg2.FindStringSubmatch(req.Body)
+			usernamelist2 := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?log[\w\[\]]*?|[\w\[\]]*?Log[\w\[\]]*?|[\w\[\]]*?LoG[\w\[\]]*?|[\w\[\]]*?LOG[\w\[\]]*?|[\w\[\]]*?account[\w\[\]]*?|[\w\[\]]*?Account[\w\[\]]*?)['"].*?>`).FindStringSubmatch(req.Body)
+			if usernamelist2 != nil {
+				usernamekey = usernamelist2[len(usernamelist2)-1:][0]
+			}
+		}
+		passlist := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?pass[\w\[\]]*?|[\w\[\]]*?Pass[\w\[\]]*?|[\w\[\]]*?PASS[\w\[\]]*?|[\w\[\]]*?pwd[\w\[\]]*?|[\w\[\]]*?Pwd[\w\[\]]*?|[\w\[\]]*?PWD[\w\[\]]*?)['"].*?>`).FindStringSubmatch(req.Body)
+		if passlist != nil {
+			passwordkey = passlist[len(passlist)-1:][0]
+		} else {
+			passlist2 := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?mima[\w\[\]]*?|[\w\[\]]*?word[\w\[\]]*?)['"].*?>`).FindStringSubmatch(req.Body)
+			if passlist2 != nil {
+				passwordkey = passlist2[len(passlist2)-1:][0]
+			}
+		}
+		domainlist := regexp.MustCompile(`<form.*?action=['"](.*?)['"]`).FindStringSubmatch(req.Body)
+		if domainlist != nil {
+			action, _ := url.Parse(domainlist[len(domainlist)-1:][0])
+			loginurl = u.ResolveReference(action).String()
+		} else {
+			domainlist2 := regexp.MustCompile(`url.*?:.*?['"](.*?)['"],`).FindStringSubmatch(req.Body)
 			if domainlist2 != nil {
-				domainx := domainlist2[len(domainlist2)-1:][0]
-				if strings.Contains(domainx, "http") {
-					loginurl = domainx
-				} else if domainx == "" {
-					loginurl = loginurl
-				} else if domainx[0:1] == "/" {
-					u, _ := url.Parse(domainurl)
-					loginurl = u.Scheme + "://" + u.Host + domainlist2[len(domainlist2)-1:][0]
-				} else {
-					loginurl = domainurl + "/" + domainlist2[len(domainlist2)-1:][0]
-				}
+				ajax, _ := url.Parse(domainlist2[len(domainlist2)-1:][0])
+				loginurl = u.ResolveReference(ajax).String()
 			}
 		}
 	}
-	return username, password, loginurl, ismd5
+	return usernamekey, passwordkey, loginurl, ismd5
 }
 
 func Admin_brute(u string) (username string, password string, loginurl string) {
@@ -79,7 +74,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 		testaccount           = true
 		usernames             []string
 		noaccount             = []string{"不存在", "用户名错误", "\\u4e0d\\u5b58\\u5728", "\\u7528\\u6237\\u540d\\u9519\\u8bef"}
-		lockContent           = []string{"锁定", "次数超", "超次数", "验证码错误", "\\u9501\\u5b9a", "\\u6b21\\u6570\\u8d85", "\\u8d85\\u6b21\\u6570", "\\u9a8c\\u8bc1\\u7801\\u9519\\u8bef"}
+		lockContent           = []string{"锁定", "次数超", "超次数", "验证码错误", "请输入验证码", "请输入正确的验证码", "验证码不能为空", "\\u9501\\u5b9a", "\\u6b21\\u6570\\u8d85", "\\u8d85\\u6b21\\u6570", "\\u9a8c\\u8bc1\\u7801\\u9519\\u8bef", "\\u8bf7\\u8f93\\u5165\\u9a8c\\u8bc1\\u7801", "\\u8bf7\\u8f93\\u5165\\u6b63\\u786e\\u7684\\u9a8c\\u8bc1\\u7801", "\\u9a8c\\u8bc1\\u7801\\u4e0d\\u80fd\\u4e3a\\u7a7a"}
 		adminfalseContentlen  int
 		testfalseContentlen   int
 		falseis302            = false
