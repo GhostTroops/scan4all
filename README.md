@@ -50,32 +50,47 @@ cd vscan
 go build
 ```
 
+# 3.Note
+#### 3.1 基本使用命令
+hosts.txt -> 导入的hosts列表，格式：(URL或IP):PORT
 
-# 3.功能
-### 3.1 端口扫描，站点访问
+`nohup ./vscan -iL hosts.txt -top-ports http -o out.txt > alltext.out 2>&1 & `
+
+out.txt和alltext.out内容目前并不一致，alltext.out有`[+] Found vuln`关键字，更方便筛选结果
+#### 3.2 万数以上的扫描
+支持万数量级以上的扫描，一万个扫描任务挂在后台，一般一天就扫描完
+#### 3.3 筛选结果
+Linux使用grep可以很快的筛选vuln结果
+`cat alltext.out|grep "[+] Found vuln"`
+#### 3.4 发包量较大
+现在程序发包量极大，不建议在内网使用。以后可能会有更完善的线程控制和过WAF机制
+
+
+# 4.功能
+### 4.1 端口扫描，站点访问
 
 1.支持CONNECT、SYN扫描，C段扫描等功能
 
 2.可以直接输入网址进行扫描（不带http://），即使网址使用了CDN，也可以正常扫描
 
-3.支持CDN检测，检测到CDN则只返回80,443端口
+3.支持CDN检测，使用-exclude-cdn选项检测到CDN会只返回80,443端口
 
 4.智能识别https，自动信任证书
 
 其他功能自行探索，详情见options
 
-### 3.2 指纹识别
-3.2.1 基础指纹识别
+### 4.2 指纹识别
+4.2.1 基础指纹识别
 
 可以快速识别网站的标题、网址、状态码、指纹等
 
 使用了wappalyzergo库作为指纹识别，[wappalyzergo](https://github.com/projectdiscovery/wappalyzergo)库已集成在源码内，二次开发可以在./pkg/httpx/fingerprint/fingerprints_data.go 自行修改
 
-3.2.2 智能探索型指纹识别
+4.2.2 智能探索型指纹识别
 
 基于敏感文件扫描，扫描到某些文件，再进行指纹鉴定，二次开发可自行修改
 
-### 3.3 漏洞检测（nday、0day检测）
+### 4.3 漏洞检测（nday、0day检测）
 
 目前包含的CVE检测项
 
@@ -104,7 +119,7 @@ CVE_2017_12149
 
 poc的编写过程可以使用./pkg/util.go内的函数pkg.HttpRequset
 
-添加poc需要写一个go的文件，放到poc文件夹下，指定一个入口函数，指定输入输出，并在./pkg/httpx/runner/runner.go 添加检测项
+添加poc需要写一个go的文件，放到poc文件夹下，指定一个入口函数，指定输入输出，并在./poc/checklist.go 添加检测项
 
 例如
 
@@ -129,9 +144,9 @@ case "Apache Tomcat":
 	}
 ```
 
-## 3.4 智能后台弱口令扫描，中间件弱口令扫描
+## 4.4 智能后台弱口令扫描，中间件弱口令扫描
 
-后台弱口令检测内置了两个账号 admin/test，密码为top100，如果成功识别后台会标记为\[登录页\]，成功构建登录包会自动检测
+后台弱口令检测内置了两个账号 admin/test，密码为top100，如果成功识别首页有登录会标记为\[LoginPage\]，如果识别可能是后台登录页会标记为\[AdminLoginPage\]，都会尝试构建登录包会自动检测弱口令
 
 如：
 
@@ -144,73 +159,72 @@ case "Apache Tomcat":
 4. weblogic弱口令检测
 5. jboss弱口令检测
 
-## 3.5 敏感文件扫描
+## 4.5 敏感文件扫描
 
-扫描 备份、swagger-ui、spring actuator、上传接口、测试文件等敏感文件，字典在 ./brute/util.go 内置，可自行修改
+扫描 备份、swagger-ui、spring actuator、上传接口、测试文件等敏感文件，字典在 ./brute/dicts.go 内置，可自行修改
 
-# 4.演示
+# 5.演示
 
-## 4.1 扫描Shiro
+## 5.1 扫描Shiro
 ```
 ➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 8080
 [INF] Running CONNECT scan with non root privileges
 [INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
 127.0.0.1:8080
-[+] Url:  http://127.0.0.1:8080
-[+] CBC-KEY: kPH+bIxk5D2deZiIxcaaaA==
-[+] rememberMe= wCNa7hauQ2Kq9h5PPUvUNyNp6fBbikYK4eHFCzlkTUcQuJyXevR+3oQRPtq2yMLckX0Eu0jCuOPjzguuKw1p2p5zG9m0w872541/EK7L0tM/VN/eCIDrP/7mTV5Q2B5y3xx+oqjaxoCJD1HarUDItt7LG2erCz1o/S5T7/vk9PSYnJzmqfX1qclfV7hrtEB4
-http://127.0.0.1:8080 [302,200] [后台管理系统] [Java,Shiro,exp-shiro|key:kPH+bIxk5D2deZiIxcaaaA==,登录页] [ http://103.71.153.11:8080/login.jsp ]
+[+] Found vuln Shiro CVE_2016_4437| URL: http://127.0.0.1:8080 CBC-KEY: kPH+bIxk5D2deZiIxcaaaA==
+http://127.0.0.1:8080 [302,200] [后台管理系统] [Java,Shiro,exp-shiro|key:kPH+bIxk5D2deZiIxcaaaA==,LoginPage] [ http://103.71.153.11:8080/login.jsp ]
 ```
 
-## 4.2 扫描Tomcat 
+## 5.2 扫描Tomcat 
 ```
 ➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 8080
 [INF] Running CONNECT scan with non root privileges
 [INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
 127.0.0.1:8080
-tomcat-brute-sucess|Tomcat-manager:manager--http://127.0.0.1:8080
-tomcat-exp-sucess|CVE_2017_12615|--"http://127.0.0.1:8080/vtest.txt"
-tomcat-exp-sucess|CVE_2020_1938 127.0.0.1:8009 Tomcat AJP LFI is vulnerable, Tomcat version: 8.5.40
+[+] Found vuln Tomcat password|Tomcat-manager:manager--http://127.0.0.1:8080
+[+] Found vuln Tomcat CVE_2017_12615|--"http://127.0.0.1:8080/vtest.txt"
+[+] Found vuln Tomcat CVE_2020_1938 127.0.0.1:8009 Tomcat AJP LFI is vulnerable, Tomcat version: 8.5.40
 http://127.0.0.1:8080 [200] [Apache Tomcat/8.5.40] [Apache Tomcat,Java,Tomcat登录页,brute-tomcat|Tomcat-manager:manager,exp-tomcat|CVE_2017_12615,exp-tomcat|CVE-2020-1938]] [file_fuzz："http://127.0.0.1:8080/manager/html"]
 ```
 
-## 4.3 扫描weblogic
+## 5.3 扫描weblogic
 ```
 ➜  vscan git:(main) ✗ go run main.go -host 127.0.0.1 -p 7001
 [INF] Running CONNECT scan with non root privileges
 [INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
 127.0.0.1:7001
-weblogic-brute-sucess|weblogic:welcome1--http://127.0.0.1:7001/console/
-weblogic-exp-sucess|CVE_2017_3506|http://127.0.0.1:7001
-weblogic-exp-sucess|CVE_2017_10271|http://127.0.0.1:7001
-weblogic-exp-sucess|CVE_2019_2725|http://127.0.0.1:7001
-weblogic-exp-sucess|CVE_2020_2883|http://127.0.0.1:7001
-weblogic-exp-sucess|CVE_2021_2109|http://127.0.0.1:7001
+[+] Found vuln WebLogic password|weblogic:welcome1|http://127.0.0.1:7001/console/
+[+] Found vuln WebLogic CVE_2017_3506|http://127.0.0.1:7001
+[+] Found vuln WebLogic CVE_2017_10271|http://127.0.0.1:7001
+[+] Found vuln WebLogic CVE_2019_2725|http://127.0.0.1:7001
+[+] Found vuln WebLogic CVE_2020_2883|http://127.0.0.1:7001
+[+] Found vuln WebLogic CVE_2021_2109|http://127.0.0.1:7001
 http://127.0.0.1:7001 [404] [Error 404--Not Found] [brute-weblogic|weblogic:welcome1,exp-weblogic|CVE_2017_10271,exp-weblogic|CVE_2017_3506,exp-weblogic|CVE_2019_2725,exp-weblogic|CVE_2020_2883,exp-weblogic|CVE_2021_2109,weblogic] [file_fuzz："http://127.0.0.1:7001/console/login/LoginForm.jsp"]
 
 ```
 
-## 4.4 扫描jboss
+## 5.4 扫描jboss
 ```
 ➜  vscan git:(main) ✗ go run main.go -host 127.0.0.1 -p 8888
 [INF] Running CONNECT scan with non root privileges
 [INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
 127.0.0.1:8888
-jboss-brute-sucess|jboss:jboss--http://127.0.0.1:8888/jmx-console/
-jboss-exp-sucess|CVE_2017_12149|http://127.0.0.1:8888
+[+] Found vuln Jboss password|jboss:jboss|http://127.0.0.1:8888/jmx-console/
+[+] Found vuln Jboss CVE_2017_12149|http://127.0.0.1:8888
 http://127.0.0.1:8888 [200] [Welcome to JBoss AS] [Apache Tomcat,JBoss Application Server,JBoss Web,Java,Java Servlet,brute-jboss|jboss:jboss,exp-jboss|CVE_2017_12149,jboss,jboss_as]
 ```
 
-## 4.5 扫描后台智能爆破
+## 5.5 扫描后台智能爆破
 ```
 ➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 8080
 [INF] Running CONNECT scan with non root privileges
 [INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
 127.0.0.1:8080
-http://127.0.0.1:8080 [302,200] [登录 - 后台] [Java,登录页,brute-admin|admin:123456] [http://xxx.xxx.xxx.xxx:8080/login]
+[+] Found vuln admin password|admin:123456|http://127.0.0.1:8080
+http://127.0.0.1:8080 [302,200] [登录 - 后台] [Java,LoginPage,brute-admin|admin:123456] [http://127.0.0.1:8080/login]
 ```
 
-## 4.6 扫描敏感文件
+## 5.6 扫描敏感文件
 ```
 ➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 443,8081
 [INF] Running CONNECT scan with non root privileges
@@ -218,14 +232,14 @@ http://127.0.0.1:8080 [302,200] [登录 - 后台] [Java,登录页,brute-admin|ad
 127.0.0.1:443
 127.0.0.1:8081
 https://127.0.0.1 [403] [403 Forbidden] [Apache,OpenSSL,Windows Server] [file_fuzz："https://127.0.0.1:443/.git/config","https://127.0.0.1:443/.svn/entries"]
-http://127.0.0.1:8001 [302,302,200] [Data Search] [Java,Google Font API,Bootstrap,jQuery,登录页,Font Awesome,Shiro] [ http://127.0.0.1:8001/main/login.html ] [file_fuzz："http://127.0.0.1:8001/druid/index.html","http://127.0.0.1:8081/actuator","http://127.0.0.1:8081/actuator/env"]
+http://127.0.0.1:8001 [302,302,200] [Data Search] [Java,Google Font API,Bootstrap,jQuery,LoginPage,Font Awesome,Shiro] [ http://127.0.0.1:8001/main/login.html ] [file_fuzz："http://127.0.0.1:8001/druid/index.html","http://127.0.0.1:8081/actuator","http://127.0.0.1:8081/actuator/env"]
 ```
 
-# 5.TO DO
+# 6.TO DO
 
 1.解析http以外的端口指纹
 
-# 6.目前正在做的
+# 7.目前正在做的
 
 1.加入struts2指纹识别，poc
 
