@@ -16,7 +16,10 @@ func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl
 		if strings.Contains(req.Body, "md5.js") {
 			ismd5 = true
 		}
-		u, _ := url.Parse(req.RequestUrl)
+		u, err := url.Parse(req.RequestUrl)
+		if err != nil {
+			return "", "", "", false
+		}
 		loginurl = u.String()
 		if u.Path == "/" {
 			loginurl = loginurl + "login"
@@ -52,13 +55,15 @@ func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl
 		}
 		domainlist := regexp.MustCompile(`<form.*?action=['"](.*?)['"]`).FindStringSubmatch(req.Body)
 		if domainlist != nil {
-			action, _ := url.Parse(domainlist[len(domainlist)-1:][0])
-			loginurl = u.ResolveReference(action).String()
+			if action, err := url.Parse(domainlist[len(domainlist)-1:][0]); err == nil {
+				loginurl = u.ResolveReference(action).String()
+			}
 		} else {
 			domainlist2 := regexp.MustCompile(`url.*?:.*?['"](.*?)['"],`).FindStringSubmatch(req.Body)
 			if domainlist2 != nil {
-				ajax, _ := url.Parse(domainlist2[len(domainlist2)-1:][0])
-				loginurl = u.ResolveReference(ajax).String()
+				if ajax, err := url.Parse(domainlist2[len(domainlist2)-1:][0]); err == nil {
+					loginurl = u.ResolveReference(ajax).String()
+				}
 			}
 		}
 	}
@@ -173,7 +178,15 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 					if pkg.SliceInString(req.Body, lockContent) {
 						return "", "", ""
 					}
-					if (req.ContentLength != 0 || req.StatusCode == 301 || req.StatusCode == 302 || req.StatusCode == 307 || req.StatusCode == 308) && req.ContentLength != adminfalseContentlen && req.ContentLength != testfalseContentlen {
+					adminlenabs := req.ContentLength - adminfalseContentlen
+					testlenabs := req.ContentLength - testfalseContentlen
+					if adminlenabs < 0 {
+						adminlenabs = -adminlenabs
+					}
+					if testlenabs < 0 {
+						testlenabs = -testlenabs
+					}
+					if (req.ContentLength != 0 || req.StatusCode == 301 || req.StatusCode == 302 || req.StatusCode == 307 || req.StatusCode == 308) && adminlenabs > 2 && testlenabs > 2 {
 						fmt.Printf("[+] Found vuln admin password|%s:%s|%s\n", user, pass, loginurl)
 						return user, pass, loginurl
 					}
