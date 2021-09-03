@@ -52,7 +52,7 @@ go build
 
 # 3.Note
 #### 3.1 基本使用命令
-hosts.txt -> 导入的hosts列表，格式：(URL或IP):PORT
+hosts.txt -> 导入的hosts列表，格式：IP或域名，一行一个
 
 `nohup ./vscan -iL hosts.txt -top-ports http -o out.txt > alltext.out 2>&1 & `
 
@@ -150,7 +150,7 @@ case "Apache Tomcat":
 
 如：
 
-`http://127.0.0.1:8080 [302,200] [登录 - 后台] [exp-shiro|key:Z3VucwAAAAAAAAAAAAAAAA==,Java,登录页,brute-admin|admin:123456] [http://127.0.0.1:8080/login]`
+`http://127.0.0.1:8080 [302,200] [登录 - 后台] [exp-shiro|key:Z3VucwAAAAAAAAAAAAAAAA==,Java,LoginPage,brute-admin|admin:123456] [http://127.0.0.1:8080/login]`
 
 包含弱口令检测板块
 1. 没有使用验证码，没有使用vue等前端框架的后台智能弱口令检测
