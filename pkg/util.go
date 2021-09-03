@@ -141,6 +141,9 @@ func HttpRequset(urlstring string, method string, postdate string, isredirect bo
 }
 
 func IntInSlice(i int, slice []int) bool {
+	if slice == nil {
+		return false
+	}
 	sort.Ints(slice)
 	index := sort.SearchInts(slice, i)
 	if index < len(slice) && slice[index] == i {
@@ -150,6 +153,9 @@ func IntInSlice(i int, slice []int) bool {
 }
 
 func StringInSlice(str string, slice []string) bool {
+	if slice == nil {
+		return false
+	}
 	sort.Strings(slice)
 	index := sort.SearchStrings(slice, str)
 	if index < len(slice) && slice[index] == str {
@@ -159,6 +165,9 @@ func StringInSlice(str string, slice []string) bool {
 }
 
 func SliceInString(str string, slice []string) bool {
+	if slice == nil {
+		return false
+	}
 	for _, v := range slice {
 		if strings.Contains(str, v) {
 			return true
