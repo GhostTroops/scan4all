@@ -58,7 +58,7 @@ func reqPage(u string) (*page, *pkg.Response, error) {
 	}
 }
 
-func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) (path []string, technologies []string) {
+func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
 	var (
 		path404            = "/file_not_support"
 		page200CodeList    = []int{200, 301, 302, 401, 500}
@@ -72,6 +72,8 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		other200Contentlen []int
 		other200Title      []string
 		errorTimes         = 0
+		path               []string
+		technologies       []string
 	)
 	other200Contentlen = append(other200Contentlen, indexContentLength)
 	other200Title = append(other200Title, gettitle(indexbody))
@@ -100,7 +102,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		var payload200Contentlen []int
 		var is404Page = false
 		if errorTimes > 20 {
-			return
+			return nil, nil
 		}
 		if (pkg.StringInSlice("/1.asp", path) && pkg.StringInSlice("/1.jsp", path) && pkg.StringInSlice("/2.jsp", path)) || (pkg.StringInSlice("/1.php", path) && pkg.StringInSlice("/1.jsp", path) && pkg.StringInSlice("/2.jsp", path)) || (pkg.StringInSlice("/zabbix/", path) && pkg.StringInSlice("/grafana/", path) && pkg.StringInSlice("/zentao/", path)) {
 			return nil, nil
