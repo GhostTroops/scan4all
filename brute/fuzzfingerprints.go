@@ -40,7 +40,7 @@ func addfingerprintsnormal(payload string, technologies []string, req *pkg.Respo
 		}
 	case "/seeyon/":
 		if strings.Contains(req.Body, "/seeyon/common/") {
-			technologies = append(technologies, "seeyon")
+			technologies = append(technologies, "致远OA")
 		}
 	case "/admin", "/admin-console", "/admin.asp", "/admin.aspx", "/admin.do", "/admin.html", "/admin.jsp", "/admin.php", "/admin/", "/admin/admin", "/admin/adminLogin.do", "/admin/checkLogin.do", "/admin/index.do", "/Admin/Login", "/admin/Login.aspx", "/admin/login.do", "/admin/menu", "/Adminer", "/adminer.php", "/administrator", "/adminLogin.do", "/checkLogin.do", "/doc/page/login.asp", "/login", "/Login.aspx", "/login/login", "/login/Login.jsp", "/manage", "/manage/login.htm", "/management", "/manager", "/manager.aspx", "/manager.do", "/manager.jsp", "/manager.jspx", "/manager.php", "/memadmin/index.php", "/myadmin/login.php", "/Systems/", "/user-login.html", "/wp-login.php":
 		if reqlogin, err := pkg.HttpRequset(req.RequestUrl, "GET", "", true, nil); err == nil {
