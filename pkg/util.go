@@ -23,7 +23,7 @@ type Response struct {
 
 var HttpProxy string
 
-func HttpRequsetBasic(username string, password string, urlstring string, method string, postdate string, isredirect bool, headers map[string]string) (*Response, error) {
+func HttpRequsetBasic(username string, password string, urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
 	var tr *http.Transport
 	if HttpProxy != "" {
 		uri, _ := url.Parse(HttpProxy)
@@ -55,7 +55,7 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 			Jar:       jar,
 		}
 	}
-	req, err := http.NewRequest(strings.ToUpper(method), urlstring, strings.NewReader(postdate))
+	req, err := http.NewRequest(strings.ToUpper(method), urlstring, strings.NewReader(postdata))
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 	return &Response{resp.Status, resp.StatusCode, reqbody, resp.Header, len(reqbody), resp.Request.URL.String(), location}, nil
 }
 
-func HttpRequset(urlstring string, method string, postdate string, isredirect bool, headers map[string]string) (*Response, error) {
+func HttpRequset(urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
 	var tr *http.Transport
 	if HttpProxy != "" {
 		uri, _ := url.Parse(HttpProxy)
@@ -114,7 +114,7 @@ func HttpRequset(urlstring string, method string, postdate string, isredirect bo
 			Jar:       jar,
 		}
 	}
-	req, err := http.NewRequest(strings.ToUpper(method), urlstring, strings.NewReader(postdate))
+	req, err := http.NewRequest(strings.ToUpper(method), urlstring, strings.NewReader(postdata))
 	if err != nil {
 		return nil, err
 	}
