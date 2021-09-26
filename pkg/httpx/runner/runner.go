@@ -759,11 +759,19 @@ retry:
 	if scanopts.OutputResponseTime {
 		builder.WriteString(fmt.Sprintf(" [%s]", resp.Duration))
 	}
+
+	var finalURL string
+	if resp.HasChain() {
+		finalURL = resp.GetChainLastURL()
+	} else {
+		finalURL = URL.String()
+	}
+
 	var filePaths []string
 	var technologies []string
-	if !scanopts.SkipWAF {
-		filePaths, technologies = brute.FileFuzz(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw)
-	}
+	filePaths1, technologies1 := brute.FileFuzz(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw, 1)
+	technologies = append(technologies, technologies1...)
+	filePaths = append(filePaths, filePaths1...)
 	if scanopts.TechDetect {
 		SliceRemoveDuplicates := func(slice []string) []string {
 			sort.Strings(slice)
@@ -785,9 +793,16 @@ retry:
 			technologies = append(technologies, match)
 		}
 		technologies = SliceRemoveDuplicates(technologies)
+		technologies = poc.POCcheck(technologies, URL.String(), finalURL)
+		filePaths2, technologies2 := brute.FileFuzz(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw, 2)
+		technologies = append(technologies, technologies2...)
+		filePaths = append(filePaths, filePaths2...)
 		if !scanopts.SkipWAF {
-			technologies = poc.POCcheck(technologies, URL.String())
+			filePaths3, technologies3 := brute.FileFuzz(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw, 3)
+			technologies = append(technologies, technologies3...)
+			filePaths = append(filePaths, filePaths3...)
 		}
+		technologies = SliceRemoveDuplicates(technologies)
 		if len(technologies) > 0 {
 			sort.Strings(technologies)
 			technologies := strings.Join(technologies, ",")
@@ -807,11 +822,6 @@ retry:
 		if len(matches) > 0 {
 			builder.WriteString(" [" + strings.Join(matches, ",") + "]")
 		}
-	}
-
-	var finalURL string
-	if resp.HasChain() {
-		finalURL = resp.GetChainLastURL()
 	}
 
 	if resp.HasChain() {
