@@ -11,6 +11,15 @@ func addfingerprints404(technologies []string, req *pkg.Response) []string {
 	if strings.Contains(req.Body, "thinkphp") {
 		technologies = append(technologies, "ThinkPHP")
 	}
+	if strings.Contains(req.Body, "Hypertext Transfer Protocol") {
+		technologies = append(technologies, "WebLogic")
+	}
+	if strings.Contains(req.Body, "font-family:Tahoma,Arial,sans-serif") {
+		technologies = append(technologies, "Apache Tomcat")
+	}
+	if strings.Contains(req.Body, "Whitelabel Error Page") {
+		technologies = append(technologies, "Spring")
+	}
 	return technologies
 }
 

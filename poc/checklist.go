@@ -8,13 +8,14 @@ import (
 	"github.com/veo/vscan/poc/jboss"
 	"github.com/veo/vscan/poc/jenkins"
 	"github.com/veo/vscan/poc/phpunit"
+	"github.com/veo/vscan/poc/seeyon"
 	"github.com/veo/vscan/poc/shiro"
 	"github.com/veo/vscan/poc/tomcat"
 	"github.com/veo/vscan/poc/weblogic"
 	"net/url"
 )
 
-func POCcheck(technologies []string, URL string) []string {
+func POCcheck(technologies []string, URL string, finalURL string) []string {
 	var HOST string
 	if host, err := url.Parse(URL); err == nil {
 		HOST = host.Host
@@ -22,14 +23,9 @@ func POCcheck(technologies []string, URL string) []string {
 	for tech := range technologies {
 		switch technologies[tech] {
 		case "Shiro":
-			key := shiro.CVE_2016_4437(URL)
+			key := shiro.CVE_2016_4437(finalURL)
 			if key != "" {
 				technologies = append(technologies, fmt.Sprintf("exp-Shiro|key:%s", key))
-			}
-		case "LoginPage":
-			username, password, loginurl := brute.Admin_brute(URL)
-			if loginurl != "" {
-				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 			}
 		case "Apache Tomcat":
 			username, password := brute.Tomcat_brute(URL)
@@ -120,7 +116,45 @@ func POCcheck(technologies []string, URL string) []string {
 			if phpunit.CVE_2017_9841(URL) {
 				technologies = append(technologies, "exp-phpunit|CVE_2017_9841")
 			}
-
+		case "致远OA":
+			if seeyon.SeeyonFastjson(URL) {
+				technologies = append(technologies, "exp-seeyon|SeeyonFastjson")
+			}
+			if seeyon.SessionUpload(URL) {
+				technologies = append(technologies, "exp-seeyon|SessionUpload")
+			}
+			if seeyon.CNVD_2019_19299(URL) {
+				technologies = append(technologies, "exp-seeyon|CNVD_2019_19299")
+			}
+			if seeyon.CNVD_2020_62422(URL) {
+				technologies = append(technologies, "exp-seeyon|CNVD_2020_62422")
+			}
+			if seeyon.CNVD_2021_01627(URL) {
+				technologies = append(technologies, "exp-seeyon|CNVD_2021_01627")
+			}
+			if seeyon.CreateMysql(URL) {
+				technologies = append(technologies, "exp-seeyon|CreateMysql")
+			}
+			if seeyon.DownExcelBeanServlet(URL) {
+				technologies = append(technologies, "exp-seeyon|DownExcelBeanServlet")
+			}
+			if seeyon.GetSessionList(URL) {
+				technologies = append(technologies, "exp-seeyon|GetSessionList")
+			}
+			if seeyon.InitDataAssess(URL) {
+				technologies = append(technologies, "exp-seeyon|InitDataAssess")
+			}
+			if seeyon.ManagementStatus(URL) {
+				technologies = append(technologies, "exp-seeyon|ManagementStatus")
+			}
+			if seeyon.BackdoorScan(URL) {
+				technologies = append(technologies, "exp-seeyon|Backdoor")
+			}
+		case "LoginPage":
+			username, password, loginurl := brute.Admin_brute(URL)
+			if loginurl != "" {
+				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
+			}
 		}
 	}
 	return technologies
