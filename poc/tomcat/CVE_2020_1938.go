@@ -10,16 +10,6 @@ import (
 	"time"
 )
 
-const VersionBig = 1
-
-const VersionSmall = 2
-
-const VersionEqual = 0
-
-//copy from https://github.com/hdanniel/ajpclient/blob/master/ajpclient.go
-
-const AJP_HEADER_LEN int = 4
-
 const SC_REQ_ACCEPT string = "\xA0\x01"
 const SC_REQ_CONNECTION string = "\xA0\x06"
 const SC_REQ_CONTENT_LENGTH string = "\xA0\x08" // \b \10
