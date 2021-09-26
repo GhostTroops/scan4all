@@ -8,6 +8,11 @@ var fingerprints = `
 				"<input.*pass"
 			]
 		},
+		"Struts2": {
+			"html": [
+				"\.action"
+			]
+		},
 		"JSON": {
 			"html": [
 				"data.*?:.*?json.stringify"
