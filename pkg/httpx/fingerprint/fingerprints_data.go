@@ -10,7 +10,7 @@ var fingerprints = `
 		},
 		"Struts2": {
 			"html": [
-				"\.action"
+				"\\.action"
 			]
 		},
 		"JSON": {
