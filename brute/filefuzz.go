@@ -4,6 +4,7 @@ import (
 	"github.com/veo/vscan/pkg"
 	"regexp"
 	"strings"
+	"time"
 )
 
 type page struct {
@@ -57,7 +58,7 @@ func reqPage(u string) (*page, *pkg.Response, error) {
 	}
 }
 
-func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string, dictype int) ([]string, []string) {
+func FileFuzza(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
 	var (
 		path404              = "/file_not_support"
 		page200CodeList      = []int{200, 301, 302, 401, 500}
@@ -98,16 +99,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		}
 	}
 	//ch := make(chan struct{}, 20)
-	var dic []string
-	switch dictype {
-	case 1:
-		dic = filedicnormal
-	case 2:
-		dic = filedicsmall
-	case 3:
-		dic = filedicbig
-	}
-	for _, payload := range dic {
+	for _, payload := range filedicnormal {
 		var is404Page = false
 		if errorTimes > 20 {
 			return path, technologies
@@ -201,5 +193,143 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		//	}(payload)
 	}
 	//close(ch)
+	return path, technologies
+}
+
+func FileFuzzb(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
+	var (
+		path404              = "/file_not_support"
+		page200CodeList      = []int{200, 301, 302, 401, 500}
+		page404Title         = []string{"404", "不存在", "错误", "403", "禁止访问", "请求含有不合法的参数", "网络防火墙", "网站防火墙", "访问拦截", "由于安全原因JSP功能默认关闭"}
+		page404Content       = []string{"<script>document.getElementById(\"a-link\").click();</script>", "404 Not Found", "您所提交的请求含有不合法的参数，已被网站管理员设置拦截", "404.safedog.cn"}
+		page403title         = []string{"403", "Forbidden", "ERROR"}
+		page403Content       = []string{"403", "Forbidden", "ERROR"}
+		location404          = []string{"/auth/login/", "error.html"}
+		payloadlocation404   []string
+		payload200Title      []string
+		payload200Contentlen []int
+		skip403              = false
+		skip302              = false
+		other200Contentlen   []int
+		other200Title        []string
+		errorTimes           = 0
+		technologies         []string
+		path                 []string
+	)
+	other200Contentlen = append(other200Contentlen, indexContentLength)
+	other200Title = append(other200Title, gettitle(indexbody))
+	if url404, url404req, err := reqPage(u + path404); err == nil {
+		if url404req.StatusCode == 404 {
+			technologies = addfingerprints404(technologies, url404req) //基于404页面文件扫描指纹添加
+		}
+		if url404.is302 {
+			location404 = append(location404, url404.locationUrl)
+		}
+		if url404.is302 && strings.HasSuffix(url404.locationUrl, "/file_not_support/") {
+			skip302 = true
+		}
+		if url404.is403 || indexStatusCode == 403 {
+			skip403 = true
+		}
+		if url404req.StatusCode == 200 {
+			other200Title = append(other200Title, url404.title)
+			other200Contentlen = append(other200Contentlen, url404req.ContentLength)
+		}
+	}
+	ch := make(chan struct{}, 20)
+	for _, payload := range filedicbig {
+		var is404Page = false
+		if errorTimes > 20 {
+			return path, technologies
+		}
+		if (pkg.StringInSlice("/1.asp", path) && pkg.StringInSlice("/1.jsp", path) && pkg.StringInSlice("/2.jsp", path)) || (pkg.StringInSlice("/1.php", path) && pkg.StringInSlice("/1.jsp", path) && pkg.StringInSlice("/2.jsp", path)) || (pkg.StringInSlice("/zabbix/", path) && pkg.StringInSlice("/grafana/", path) && pkg.StringInSlice("/zentao/", path)) {
+			return nil, nil
+		}
+		if len(path) > 40 {
+			return nil, nil
+		}
+		ch <- struct{}{}
+		go func(payload string) {
+			if url, req, err := reqPage(u + payload); err == nil {
+				if url.is403 && (pkg.SliceInString(url.title, page403title) || pkg.SliceInString(req.Body, page403Content)) && !skip403 {
+					path = append(path, payload)
+					technologies = addfingerprints403(payload, technologies) // 基于403页面文件扫描指纹添加
+				}
+				if !pkg.IntInSlice(req.StatusCode, page200CodeList) {
+					is404Page = true
+				}
+				if url.isBackUpPath {
+					if !url.isBackUpPage {
+						is404Page = true
+					}
+				}
+				if pkg.SliceInString(url.title, page404Title) {
+					is404Page = true
+				}
+				if pkg.SliceInString(req.Body, page404Content) {
+					is404Page = true
+				}
+				if strings.Contains(req.RequestUrl, "/.") && req.StatusCode == 200 {
+					if req.ContentLength == 0 {
+						is404Page = true
+					}
+				}
+				if url.is302 {
+					if skip302 {
+						is404Page = true
+					}
+					if pkg.SliceInString(req.Location, location404) && pkg.SliceInString(req.Location, payloadlocation404) {
+						is404Page = true
+					}
+					if !strings.HasSuffix(req.Location, payload+"/") {
+						location404 = append(payloadlocation404, req.Location)
+						is404Page = true
+					}
+				}
+
+				if !is404Page {
+					for _, title := range other200Title {
+						if len(url.title) > 2 && url.title == title {
+							is404Page = true
+						}
+					}
+					for _, title := range payload200Title {
+						if len(url.title) > 2 && url.title == title {
+							is404Page = true
+						}
+					}
+					for _, l := range other200Contentlen {
+						reqlenabs := req.ContentLength - l
+						if reqlenabs < 0 {
+							reqlenabs = -reqlenabs
+						}
+						if reqlenabs <= 5 {
+							is404Page = true
+						}
+					}
+					for _, l := range payload200Contentlen {
+						reqlenabs := req.ContentLength - l
+						if reqlenabs < 0 {
+							reqlenabs = -reqlenabs
+						}
+						if reqlenabs <= 5 {
+							is404Page = true
+						}
+					}
+					payload200Title = append(payload200Title, url.title)
+					payload200Contentlen = append(payload200Contentlen, req.ContentLength)
+					if !is404Page {
+						path = append(path, payload)
+						technologies = addfingerprintsnormal(payload, technologies, req) // 基于200页面文件扫描指纹添加
+					}
+				}
+			} else {
+				errorTimes += 1
+			}
+			<-time.After(time.Duration(500) * time.Millisecond)
+			<-ch
+		}(payload)
+	}
+	close(ch)
 	return path, technologies
 }
