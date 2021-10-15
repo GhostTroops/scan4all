@@ -4,39 +4,58 @@ vscan
 
 # 1.options
 ```
--host                           Host or Url or Cidr to find ports for		
--top-ports                      Top Ports to scan (full|http|top100|top-1000)		
--iL                             File containing list of hosts to enumerate ports		
--p                              Ports to scan (80, 80,443, 100-200, (-p - for full port scan)		
--ping                           Use ping probes for verification of host		
--ports-file                     File containing ports to enumerate for on hosts		
--o                              File to write output to (optional)		
--json                           Write output host and port in JSON lines Format		
--silent                         Show found ports only in output		
--retries                        Number of retries for the port scan probe		
--rate                           Rate of port scan probe requests		
--v                              Show Verbose output		
--no-color                       Don't Use colors in output		
--skip-waf                       Not filefuzz scan to prevent interception by WAF
--timeout                        Millisecond to wait before timing out		
--exclude-ports                  Ports to exclude from enumeration		
--verify                         Validate the ports again with TCP verification		
--version                        Show version of vscan		
--exclude-hosts                  Specifies a comma-separated list of targets to be excluded from the scan (ip, cidr)		
--exclude-file                   Specifies a newline-delimited file with targets to be excluded from the scan (ip, cidr)		
--debug                          Enable debugging information		
--source-ip                      Source Ip		
--interface                      Network Interface to use for port scan		
--exclude-cdn                    Skip full port scans for CDNs (only checks for 80,443)		
--warm-up-time                   Time in seconds between scan phases		
--interface-list                 List available interfaces and public ip
--nmap                           Invoke nmap scan on targets (nmap must be installed)		
--nmap-cli                       Nmap command line (invoked as COMMAND + TARGETS)		
--c                              General internal worker threads		
--stats                          Display stats of the running scan		
--scan-all-ips                   Scan all the ips		
--s                              Scan Type (s - SYN, c - CONNECT)	
--proxy                          Httpx Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)       	
+
+Usage:
+  ./naabu [flags]
+
+INPUT:
+   -host string                Host to scan ports for
+   -list, -l string            File containing list of hosts to scan ports
+   -exclude-hosts, -eh string  Specifies a comma-separated list of targets to be excluded from the scan (ip, cidr)
+   -exclude-file, -ef string   Specifies a newline-delimited file with targets to be excluded from the scan (ip, cidr)
+
+PORT:
+   -port, -p string            Ports to scan (80, 80,443, 100-200
+   -top-ports, -tp string      Top Ports to scan (default top 100)
+   -exclude-ports, -ep string  Ports to exclude from scan
+   -ports-file, -pf string     File containing ports to scan for
+   -exclude-cdn, -ec           Skip full port scans for CDNs (only checks for 80,443)
+
+RATE-LIMIT:
+   -c int     General internal worker threads (default 25)
+   -rate int  Rate of port scan probe request (default 1000)
+
+OUTPUT:
+   -o, -output string  File to write output to (optional)
+   -json               Write output in JSON lines Format
+
+CONFIGURATION:
+   -proxy                 Httpx Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)   
+   -skip-waf              Not filefuzz scan to prevent interception by WAF
+   -no-color              Don't Use colors in output	
+   -scan-all-ips          Scan all the ips
+   -scan-type, -s string  Port scan type (SYN/CONNECT) (default s)
+   -source-ip string      Source Ip
+   -interface-list, -il   List available interfaces and public ip
+   -interface, -i string  Network Interface to use for port scan
+   -nmap                  Invoke nmap scan on targets (nmap must be installed)
+   -nmap-cli string       nmap command to run on found results (example: -nmap-cli 'nmap -sV')
+
+OPTIMIZATION:
+   -retries int       Number of retries for the port scan probe (default 3)
+   -timeout int       Millisecond to wait before timing out (default 1000)
+   -warm-up-time int  Time in seconds between scan phases (default 2)
+   -ping              Use ping probes for verification of host
+   -verify            Validate the ports again with TCP verification
+
+DEBUG:
+   -debug          Enable debugging information
+   -v              Show Verbose output
+   -no-color, -nc  Don't Use colors in output
+   -silent         Show found ports only in output
+   -version        Show version of naabu
+   -stats          Display stats of the running scan
+
 ```
 
 # 2.Build
@@ -54,14 +73,14 @@ go build
 #### 3.1 基本使用命令
 hosts.txt -> 导入的hosts列表，格式：IP或域名，一行一个
 
-`nohup ./vscan -iL hosts.txt -top-ports http -o out.txt > alltext.out 2>&1 & `
+`nohup ./vscan -l hosts.txt -top-ports http -o out.txt > alltext.out 2>&1 & `
 
 out.txt和alltext.out内容目前并不一致，alltext.out有`[+] Found vuln`关键字，更方便筛选结果
 #### 3.2 万数以上的扫描
 支持万数量级以上的扫描，一万个扫描任务挂在后台，一般一天就扫描完
 #### 3.3 筛选结果
 Linux使用grep可以很快的筛选vuln结果
-`cat alltext.out|grep "[+] Found vuln"`
+`cat alltext.out|grep "Found vuln"`
 #### 3.4 发包量较大
 现在程序发包量极大，不建议在内网使用。以后可能会有更完善的线程控制和过WAF机制
 
