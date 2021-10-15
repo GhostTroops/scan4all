@@ -15,13 +15,14 @@ import (
 	"net/url"
 )
 
-func POCcheck(technologies []string, URL string, finalURL string) []string {
+func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []string {
 	var HOST string
+	var technologies []string
 	if host, err := url.Parse(URL); err == nil {
 		HOST = host.Host
 	}
-	for tech := range technologies {
-		switch technologies[tech] {
+	for tech := range wappalyzertechnologies {
+		switch wappalyzertechnologies[tech] {
 		case "Shiro":
 			key := shiro.CVE_2016_4437(finalURL)
 			if key != "" {
