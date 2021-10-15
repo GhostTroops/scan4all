@@ -3,9 +3,11 @@ package httpx
 import (
 	"crypto/tls"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -16,21 +18,21 @@ import (
 	"github.com/projectdiscovery/fastdialer/fastdialer"
 	pdhttputil "github.com/projectdiscovery/httputil"
 	"github.com/projectdiscovery/rawhttp"
-	retryablehttp "github.com/projectdiscovery/retryablehttp-go"
+	"github.com/projectdiscovery/retryablehttp-go"
+	"github.com/projectdiscovery/stringsutil"
 	"golang.org/x/net/http2"
 )
 
 // HTTPX represent an instance of the library client
 type HTTPX struct {
-	client          *retryablehttp.Client
-	client2         *http.Client
-	Filters         []Filter
-	Options         *Options
-	htmlPolicy      *bluemonday.Policy
-	CustomHeaders   map[string]string
-	RequestOverride *RequestOverride
-	cdn             *cdncheck.Client
-	Dialer          *fastdialer.Dialer
+	client        *retryablehttp.Client
+	client2       *http.Client
+	Filters       []Filter
+	Options       *Options
+	htmlPolicy    *bluemonday.Policy
+	CustomHeaders map[string]string
+	cdn           *cdncheck.Client
+	Dialer        *fastdialer.Dialer
 }
 
 // New httpx instance
@@ -58,18 +60,28 @@ func New(options *Options) (*HTTPX, error) {
 	}
 
 	if httpx.Options.FollowRedirects {
-		// Follow redirects
-		redirectFunc = nil
+		// Follow redirects up to a maximum number
+		redirectFunc = func(redirectedRequest *http.Request, previousRequests []*http.Request) error {
+			if len(previousRequests) >= options.MaxRedirects {
+				// https://github.com/golang/go/issues/10069
+				return http.ErrUseLastResponse
+			}
+			return nil
+		}
 	}
 
 	if httpx.Options.FollowHostRedirects {
-		// Only follow redirects on the same host
-		redirectFunc = func(redirectedRequest *http.Request, previousRequest []*http.Request) error {
-			// Check if we get a redirect to a differen host
+		// Only follow redirects on the same host up to a maximum number
+		redirectFunc = func(redirectedRequest *http.Request, previousRequests []*http.Request) error {
+			// Check if we get a redirect to a different host
 			var newHost = redirectedRequest.URL.Host
-			var oldHost = previousRequest[0].URL.Host
+			var oldHost = previousRequests[0].URL.Host
 			if newHost != oldHost {
 				// Tell the http client to not follow redirect
+				return http.ErrUseLastResponse
+			}
+			if len(previousRequests) >= options.MaxRedirects {
+				// https://github.com/golang/go/issues/10069
 				return http.ErrUseLastResponse
 			}
 			return nil
@@ -111,8 +123,7 @@ func New(options *Options) (*HTTPX, error) {
 
 	httpx.htmlPolicy = bluemonday.NewPolicy()
 	httpx.CustomHeaders = httpx.Options.CustomHeaders
-	httpx.RequestOverride = &options.RequestOverride
-	if options.CdnCheck {
+	if options.CdnCheck || options.ExcludeCdn {
 		httpx.cdn, err = cdncheck.NewWithCache()
 		if err != nil {
 			return nil, fmt.Errorf("could not create cdn check: %s", err)
@@ -123,12 +134,21 @@ func New(options *Options) (*HTTPX, error) {
 }
 
 // Do http request
-func (h *HTTPX) Do(req *retryablehttp.Request) (*Response, error) {
+func (h *HTTPX) Do(req *retryablehttp.Request, unsafeOptions UnsafeOptions) (*Response, error) {
 	timeStart := time.Now()
 
-	httpresp, err := h.getResponse(req)
+	var gzipRetry bool
+get_response:
+	httpresp, err := h.getResponse(req, unsafeOptions)
 	if err != nil {
 		return nil, err
+	}
+
+	var shouldIgnoreErrors, shouldIgnoreBodyErrors bool
+	switch {
+	case h.Options.Unsafe && req.Method == http.MethodHead && !stringsutil.ContainsAny("i/o timeout"):
+		shouldIgnoreErrors = true
+		shouldIgnoreBodyErrors = true
 	}
 
 	var resp Response
@@ -138,23 +158,32 @@ func (h *HTTPX) Do(req *retryablehttp.Request) (*Response, error) {
 	// httputil.DumpResponse does not handle websockets
 	headers, rawResp, err := pdhttputil.DumpResponseHeadersAndRaw(httpresp)
 	if err != nil {
-		return nil, err
+		// Edge case - some servers respond with gzip encoding header but uncompressed body, in this case the standard library configures the reader as gzip, triggering an error when read.
+		// The bytes slice is not accessible because of abstraction, therefore we need to perform the request again tampering the Accept-Encoding header
+		if !gzipRetry && strings.Contains(err.Error(), "gzip: invalid header") {
+			gzipRetry = true
+			req.Header.Set("Accept-Encoding", "identity")
+			goto get_response
+		}
+		if !shouldIgnoreErrors {
+			return nil, err
+		}
 	}
-	resp.Raw = rawResp
-	resp.RawHeaders = headers
+	resp.Raw = string(rawResp)
+	resp.RawHeaders = string(headers)
 
 	var respbody []byte
 	// websockets don't have a readable body
 	if httpresp.StatusCode != http.StatusSwitchingProtocols {
 		var err error
-		respbody, err = ioutil.ReadAll(httpresp.Body)
-		if err != nil {
+		respbody, err = ioutil.ReadAll(io.LimitReader(httpresp.Body, h.Options.MaxResponseBodySizeToRead))
+		if err != nil && !shouldIgnoreBodyErrors {
 			return nil, err
 		}
 	}
 
 	closeErr := httpresp.Body.Close()
-	if closeErr != nil {
+	if closeErr != nil && !shouldIgnoreBodyErrors {
 		return nil, closeErr
 	}
 
@@ -165,7 +194,20 @@ func (h *HTTPX) Do(req *retryablehttp.Request) (*Response, error) {
 		respbodystr = h.htmlPolicy.Sanitize(respbodystr)
 	}
 
-	resp.ContentLength = utf8.RuneCountInString(respbodystr)
+	// if content length is not defined
+	if resp.ContentLength <= 0 {
+		// check if it's in the header and convert to int
+		if contentLength, ok := resp.Headers["Content-Length"]; ok {
+			contentLengthInt, _ := strconv.Atoi(strings.Join(contentLength, ""))
+			resp.ContentLength = contentLengthInt
+		}
+
+		// if we have a body, then use the number of bytes in the body if the length is still zero
+		if resp.ContentLength <= 0 && len(respbodystr) > 0 {
+			resp.ContentLength = utf8.RuneCountInString(respbodystr)
+		}
+	}
+
 	resp.Data = respbody
 
 	// fill metrics
@@ -197,31 +239,33 @@ func (h *HTTPX) Do(req *retryablehttp.Request) (*Response, error) {
 }
 
 // RequestOverride contains the URI path to override the request
-type RequestOverride struct {
+type UnsafeOptions struct {
 	URIPath string
 }
 
 // getResponse returns response from safe / unsafe request
-func (h *HTTPX) getResponse(req *retryablehttp.Request) (*http.Response, error) {
+func (h *HTTPX) getResponse(req *retryablehttp.Request, unsafeOptions UnsafeOptions) (*http.Response, error) {
 	if h.Options.Unsafe {
-		return h.doUnsafe(req)
+		return h.doUnsafeWithOptions(req, unsafeOptions)
 	}
 
 	return h.client.Do(req)
 }
 
 // doUnsafe does an unsafe http request
-func (h *HTTPX) doUnsafe(req *retryablehttp.Request) (*http.Response, error) {
+func (h *HTTPX) doUnsafeWithOptions(req *retryablehttp.Request, unsafeOptions UnsafeOptions) (*http.Response, error) {
 	method := req.Method
 	headers := req.Header
 	targetURL := req.URL.String()
 	body := req.Body
-	return rawhttp.DoRaw(method, targetURL, h.RequestOverride.URIPath, headers, body)
+	options := rawhttp.DefaultOptions
+	options.Timeout = h.Options.Timeout
+	return rawhttp.DoRawWithOptions(method, targetURL, unsafeOptions.URIPath, headers, body, options)
 }
 
 // Verify the http calls and apply-cascade all the filters, as soon as one matches it returns true
-func (h *HTTPX) Verify(req *retryablehttp.Request) (bool, error) {
-	resp, err := h.Do(req)
+func (h *HTTPX) Verify(req *retryablehttp.Request, unsafeOptions UnsafeOptions) (bool, error) {
+	resp, err := h.Do(req, unsafeOptions)
 	if err != nil {
 		return false, err
 	}
@@ -258,7 +302,6 @@ func (h *HTTPX) NewRequest(method, targetURL string) (req *retryablehttp.Request
 		req.Header.Set("User-Agent", h.Options.DefaultUserAgent)
 		// set default encoding to accept utf8
 		req.Header.Add("Accept-Charset", "utf-8")
-		req.Header.Add("Cookie", "rememberMe=1")
 	}
 	return
 }

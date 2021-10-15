@@ -1,47 +1,56 @@
 package runner
 
 import (
+	"bufio"
 	"bytes"
 	"crypto/sha256"
+	"encoding/csv"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/veo/vscan/brute"
 	"github.com/veo/vscan/poc"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
 	"path"
+	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/bluele/gcache"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
-
 	"github.com/projectdiscovery/clistats"
+	"github.com/projectdiscovery/cryptoutil"
+	"github.com/projectdiscovery/goconfig"
+	"github.com/projectdiscovery/stringsutil"
 	"github.com/projectdiscovery/urlutil"
 
 	// automatic fd max increase if running as root
 	_ "github.com/projectdiscovery/fdmax/autofdmax"
+	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/hmap/store/hybrid"
 	pdhttputil "github.com/projectdiscovery/httputil"
 	"github.com/projectdiscovery/iputil"
 	"github.com/projectdiscovery/mapcidr"
 	"github.com/projectdiscovery/rawhttp"
+	wappalyzer "github.com/projectdiscovery/wappalyzergo"
 	"github.com/remeh/sizedwaitgroup"
 	customport "github.com/veo/vscan/pkg/httpx/common/customports"
-	"github.com/veo/vscan/pkg/httpx/common/fileutil"
+	fileutilz "github.com/veo/vscan/pkg/httpx/common/fileutil"
 	"github.com/veo/vscan/pkg/httpx/common/httputilz"
 	"github.com/veo/vscan/pkg/httpx/common/httpx"
 	"github.com/veo/vscan/pkg/httpx/common/slice"
 	"github.com/veo/vscan/pkg/httpx/common/stringz"
-	wappalyzer "github.com/veo/vscan/pkg/httpx/fingerprint"
+	"go.uber.org/ratelimit"
 )
 
 const (
@@ -50,12 +59,14 @@ const (
 
 // Runner is a client for running the enumeration process.
 type Runner struct {
-	options    *Options
-	hp         *httpx.HTTPX
-	wappalyzer *wappalyzer.Wappalyze
-	scanopts   scanOptions
-	hm         *hybrid.HybridMap
-	stats      clistats.StatisticsClient
+	options         *Options
+	hp              *httpx.HTTPX
+	wappalyzer      *wappalyzer.Wappalyze
+	scanopts        scanOptions
+	hm              *hybrid.HybridMap
+	stats           clistats.StatisticsClient
+	ratelimiter     ratelimit.Limiter
+	HostErrorsCache gcache.Cache
 }
 
 // New creates a new client for running enumeration process.
@@ -78,13 +89,25 @@ func New(options *Options) (*Runner, error) {
 	httpxOptions.RetryMax = options.Retries
 	httpxOptions.FollowRedirects = options.FollowRedirects
 	httpxOptions.FollowHostRedirects = options.FollowHostRedirects
+	httpxOptions.MaxRedirects = options.MaxRedirects
 	httpxOptions.HTTPProxy = options.HTTPProxy
 	httpxOptions.Unsafe = options.Unsafe
-	httpxOptions.RequestOverride = httpx.RequestOverride{URIPath: options.RequestURI}
+	httpxOptions.UnsafeURI = options.RequestURI
 	httpxOptions.CdnCheck = options.OutputCDN
-	httpxOptions.RandomAgent = options.RandomAgent
+	httpxOptions.ExcludeCdn = options.ExcludeCDN
+	if options.CustomHeaders.Has("User-Agent:") {
+		httpxOptions.RandomAgent = false
+	} else {
+		httpxOptions.RandomAgent = options.RandomAgent
+	}
 	httpxOptions.Deny = options.Deny
 	httpxOptions.Allow = options.Allow
+	httpxOptions.MaxResponseBodySizeToSave = int64(options.MaxResponseBodySizeToSave)
+	httpxOptions.MaxResponseBodySizeToRead = int64(options.MaxResponseBodySizeToRead)
+	// adjust response size saved according to the max one read by the server
+	if httpxOptions.MaxResponseBodySizeToSave > httpxOptions.MaxResponseBodySizeToRead {
+		httpxOptions.MaxResponseBodySizeToSave = httpxOptions.MaxResponseBodySizeToRead
+	}
 
 	var key, value string
 	httpxOptions.CustomHeaders = make(map[string]string)
@@ -116,7 +139,7 @@ func New(options *Options) (*Runner, error) {
 		var rawRequest []byte
 		rawRequest, err = ioutil.ReadFile(options.InputRawRequest)
 		if err != nil {
-			gologger.Fatal().Msgf("Could not read raw request from '%s': %s\n", options.InputRawRequest, err)
+			gologger.Fatal().Msgf("Could not read raw request from path '%s': %s\n", options.InputRawRequest, err)
 		}
 
 		rrMethod, rrPath, rrHeaders, rrBody, errParse := httputilz.ParseRequest(string(rawRequest), options.Unsafe)
@@ -145,6 +168,10 @@ func New(options *Options) (*Runner, error) {
 	if strings.EqualFold(options.Methods, "all") {
 		scanopts.Methods = pdhttputil.AllHTTPMethods()
 	} else if options.Methods != "" {
+		// if unsafe is specified then converts the methods to uppercase
+		if !options.Unsafe {
+			options.Methods = strings.ToUpper(options.Methods)
+		}
 		scanopts.Methods = append(scanopts.Methods, stringz.SplitByCharAndTrimSpace(options.Methods, ",")...)
 	}
 	if len(scanopts.Methods) == 0 {
@@ -152,7 +179,6 @@ func New(options *Options) (*Runner, error) {
 	}
 	runner.options.protocol = httpx.HTTPorHTTPS
 	scanopts.VHost = options.VHost
-	scanopts.SkipWAF = options.SkipWAF
 	scanopts.OutputTitle = options.ExtractTitle
 	scanopts.OutputStatusCode = options.StatusCode
 	scanopts.OutputLocation = options.Location
@@ -184,7 +210,8 @@ func New(options *Options) (*Runner, error) {
 	scanopts.NoFallbackScheme = options.NoFallbackScheme
 	scanopts.TechDetect = options.TechDetect
 	scanopts.StoreChain = options.StoreChain
-	scanopts.MaxResponseBodySize = options.MaxResponseBodySize
+	scanopts.MaxResponseBodySizeToSave = options.MaxResponseBodySizeToSave
+	scanopts.MaxResponseBodySizeToRead = options.MaxResponseBodySizeToRead
 	if options.OutputExtractRegex != "" {
 		if scanopts.extractRegex, err = regexp.Compile(options.OutputExtractRegex); err != nil {
 			return nil, err
@@ -196,6 +223,8 @@ func New(options *Options) (*Runner, error) {
 		scanopts.OutputMethod = true
 	}
 
+	scanopts.ExcludeCDN = options.ExcludeCDN
+	scanopts.HostMaxErrors = options.HostMaxErrors
 	runner.scanopts = scanopts
 
 	if options.ShowStatistics {
@@ -205,11 +234,26 @@ func New(options *Options) (*Runner, error) {
 		}
 	}
 
+	hmapOptions := hybrid.DefaultDiskOptions
+	hmapOptions.DBType = hybrid.PogrebDB
 	hm, err := hybrid.New(hybrid.DefaultDiskOptions)
 	if err != nil {
 		return nil, err
 	}
 	runner.hm = hm
+
+	if options.RateLimit > 0 {
+		runner.ratelimiter = ratelimit.New(options.RateLimit)
+	} else {
+		runner.ratelimiter = ratelimit.NewUnlimited()
+	}
+
+	if options.HostMaxErrors >= 0 {
+		gc := gcache.New(1000).
+			ARC().
+			Build()
+		runner.HostErrorsCache = gc
+	}
 
 	return runner, nil
 }
@@ -217,35 +261,98 @@ func New(options *Options) (*Runner, error) {
 func (r *Runner) prepareInput() {
 	// Check if the user requested multiple paths
 	if fileutil.FileExists(r.options.RequestURIs) {
-		r.options.requestURIs = fileutil.LoadFile(r.options.RequestURIs)
+		r.options.requestURIs = fileutilz.LoadFile(r.options.RequestURIs)
 	} else if r.options.RequestURIs != "" {
 		r.options.requestURIs = strings.Split(r.options.RequestURIs, ",")
 	}
 
 	// check if file has been provided
-	var numTargets int
-	numTargetsStdin, err := r.loadAndCloseFile(r.options.Naabuinput)
+	var numHosts int
+	numHosts, err := r.loadAndCloseFile(r.options.Naabuinput)
 	if err != nil {
 		gologger.Fatal().Msgf("Could read input from stdin: %s\n", err)
 	}
-	numTargets += numTargetsStdin
-
 	if r.options.ShowStatistics {
-		numPorts := len(customport.Ports)
-		if numPorts == 0 {
-			// Default Ports 80, 443
-			numPorts = 2
-		}
-
-		r.stats.AddStatic("hosts", numTargets)
+		r.stats.AddStatic("totalHosts", numHosts)
+		r.stats.AddCounter("hosts", 0)
 		r.stats.AddStatic("startedAt", time.Now())
 		r.stats.AddCounter("requests", 0)
-		r.stats.AddCounter("total", uint64(numTargets*numPorts))
 		err := r.stats.Start(makePrintCallback(), time.Duration(statsDisplayInterval)*time.Second)
 		if err != nil {
-			gologger.Warning().Msgf("Could not create statistic: %s\n", err)
+			gologger.Warning().Msgf("Could not create statistics: %s\n", err)
 		}
 	}
+}
+
+func (r *Runner) setSeen(k string) {
+	_ = r.hm.Set(k, nil)
+}
+
+func (r *Runner) seen(k string) bool {
+	_, ok := r.hm.Get(k)
+	return ok
+}
+
+func (r *Runner) testAndSet(k string) bool {
+	// skip empty lines
+	k = strings.TrimSpace(k)
+	if k == "" {
+		return false
+	}
+
+	if r.seen(k) {
+		return false
+	}
+
+	r.setSeen(k)
+	return true
+}
+
+func (r *Runner) streamInput() (chan string, error) {
+	out := make(chan string)
+	go func() {
+		defer close(out)
+
+		if fileutil.FileExists(r.options.InputFile) {
+			fchan, err := fileutil.ReadFile(r.options.InputFile)
+			if err != nil {
+				return
+			}
+			for item := range fchan {
+				if r.options.SkipDedupe || r.testAndSet(item) {
+					out <- item
+				}
+			}
+		} else if r.options.InputFile != "" {
+			files, err := fileutilz.ListFilesWithPattern(r.options.InputFile)
+			if err != nil {
+				gologger.Fatal().Msgf("No input provided: %s", err)
+			}
+			for _, file := range files {
+				fchan, err := fileutil.ReadFile(file)
+				if err != nil {
+					return
+				}
+				for item := range fchan {
+					if r.options.SkipDedupe || r.testAndSet(item) {
+						out <- item
+					}
+				}
+			}
+		}
+		if fileutil.HasStdin() {
+			fchan, err := fileutil.ReadFileWithReader(os.Stdin)
+			if err != nil {
+				return
+			}
+			for item := range fchan {
+				if r.options.SkipDedupe || r.testAndSet(item) {
+					out <- item
+				}
+			}
+		}
+	}()
+	return out, nil
 }
 
 func (r *Runner) loadAndCloseFile(ipPorts map[string]map[int]struct{}) (numTargets int, err error) {
@@ -268,39 +375,89 @@ func (r *Runner) loadAndCloseFile(ipPorts map[string]map[int]struct{}) (numTarge
 	return numTargets, err
 }
 
+func (r *Runner) loadAndCloseFilex(finput *os.File) (numTargets int, err error) {
+	scanner := bufio.NewScanner(finput)
+	for scanner.Scan() {
+		target := strings.TrimSpace(scanner.Text())
+		// Used just to get the exact number of targets
+		if target == "" {
+			continue
+		}
+		if _, ok := r.hm.Get(target); ok {
+			continue
+		}
+
+		// if the target is ip or host it counts as 1
+		expandedTarget := 1
+		// input can be a cidr
+		if iputil.IsCIDR(target) {
+			// so we need to count the ips
+			if ipsCount, err := mapcidr.AddressCount(target); err == nil && ipsCount > 0 {
+				expandedTarget = int(ipsCount)
+			}
+		}
+
+		numTargets += expandedTarget
+		r.hm.Set(target, nil) //nolint
+	}
+	err = finput.Close()
+	return numTargets, err
+}
+
+var (
+	lastPrint         time.Time
+	lastRequestsCount float64
+)
+
 func makePrintCallback() func(stats clistats.StatisticsClient) {
 	builder := &strings.Builder{}
 	return func(stats clistats.StatisticsClient) {
+		var duration time.Duration
+		now := time.Now()
+		if lastPrint.IsZero() {
+			startedAt, _ := stats.GetStatic("startedAt")
+			duration = time.Since(startedAt.(time.Time))
+		} else {
+			duration = time.Since(lastPrint)
+		}
+
 		builder.WriteRune('[')
-		startedAt, _ := stats.GetStatic("startedAt")
-		duration := time.Since(startedAt.(time.Time))
 		builder.WriteString(clistats.FmtDuration(duration))
 		builder.WriteRune(']')
 
-		hosts, _ := stats.GetStatic("hosts")
-		builder.WriteString(" | Hosts: ")
-		builder.WriteString(clistats.String(hosts))
-
-		requests, _ := stats.GetCounter("requests")
-		total, _ := stats.GetCounter("total")
+		var currentRequests float64
+		if reqs, _ := stats.GetCounter("requests"); reqs > 0 {
+			currentRequests = float64(reqs)
+		}
 
 		builder.WriteString(" | RPS: ")
-		builder.WriteString(clistats.String(uint64(float64(requests) / duration.Seconds())))
+		incrementRequests := currentRequests - lastRequestsCount
+		builder.WriteString(clistats.String(uint64(incrementRequests / duration.Seconds())))
 
 		builder.WriteString(" | Requests: ")
-		builder.WriteString(clistats.String(requests))
+		builder.WriteString(fmt.Sprintf("%.0f", currentRequests))
+
+		hosts, _ := stats.GetCounter("hosts")
+		totalHosts, _ := stats.GetStatic("totalHosts")
+
+		builder.WriteString(" | Hosts: ")
+		builder.WriteString(clistats.String(hosts))
 		builder.WriteRune('/')
-		builder.WriteString(clistats.String(total))
+		builder.WriteString(clistats.String(totalHosts))
 		builder.WriteRune(' ')
 		builder.WriteRune('(')
 		//nolint:gomnd // this is not a magic number
-		builder.WriteString(clistats.String(uint64(float64(requests) / float64(total) * 100.0)))
+		builder.WriteString(clistats.String(uint64(float64(hosts) / float64(totalHosts.(int)) * 100.0)))
 		builder.WriteRune('%')
 		builder.WriteRune(')')
+
 		builder.WriteRune('\n')
 
 		fmt.Fprintf(os.Stderr, "%s", builder.String())
 		builder.Reset()
+
+		lastPrint = now
+		lastRequestsCount = currentRequests
 	}
 }
 
@@ -309,18 +466,35 @@ func (r *Runner) Close() {
 	// nolint:errcheck // ignore
 	r.hm.Close()
 	r.hp.Dialer.Close()
+	if r.options.HostMaxErrors >= 0 {
+		r.HostErrorsCache.Purge()
+	}
 }
 
 // RunEnumeration on targets for httpx client
 func (r *Runner) RunEnumeration() {
-	// Try to create output folder if it doesnt exist
+	// Try to create output folder if it doesn't exist
 	if r.options.StoreResponse && !fileutil.FolderExists(r.options.StoreResponseDir) {
 		if err := os.MkdirAll(r.options.StoreResponseDir, os.ModePerm); err != nil {
 			gologger.Fatal().Msgf("Could not create output directory '%s': %s\n", r.options.StoreResponseDir, err)
 		}
 	}
 
-	r.prepareInput()
+	var streamChan chan string
+	if r.options.Stream {
+		var err error
+		streamChan, err = r.streamInput()
+		if err != nil {
+			gologger.Fatal().Msgf("Could not stream input: %s\n", err)
+		}
+	} else {
+		r.prepareInput()
+
+		// if resume is enabled inform the user
+		if r.options.ShouldLoadResume() && r.options.resumeCfg.Index > 0 {
+			gologger.Debug().Msgf("Resuming at position %d: %s\n", r.options.resumeCfg.Index, r.options.resumeCfg.ResumeFrom)
+		}
+	}
 
 	// output routine
 	wgoutput := sizedwaitgroup.New(1)
@@ -338,9 +512,18 @@ func (r *Runner) RunEnumeration() {
 			}
 			defer f.Close() //nolint
 		}
+		if r.options.CSVOutput {
+			header := Result{}.CSVHeader()
+			gologger.Silent().Msgf("%s\n", header)
+			if f != nil {
+				//nolint:errcheck // this method needs a small refactor to reduce complexity
+				f.WriteString(header + "\n")
+			}
+		}
+
 		for resp := range output {
 			if resp.err != nil {
-				gologger.Debug().Msgf("Failure '%s': %s\n", resp.URL, resp.err)
+				gologger.Debug().Msgf("Failed '%s': %s\n", resp.URL, resp.err)
 			}
 			if resp.str == "" {
 				continue
@@ -375,7 +558,10 @@ func (r *Runner) RunEnumeration() {
 			row := resp.str
 			if r.options.JSONOutput {
 				row = resp.JSON(&r.scanopts)
+			} else if r.options.CSVOutput {
+				row = resp.CSVRow(&r.scanopts)
 			}
+
 			gologger.Silent().Msgf("%s\n", row)
 			if f != nil {
 				//nolint:errcheck // this method needs a small refactor to reduce complexity
@@ -386,12 +572,18 @@ func (r *Runner) RunEnumeration() {
 
 	wg := sizedwaitgroup.New(r.options.Threads)
 
-	r.hm.Scan(func(k, _ []byte) error {
-		t := string(k)
-		var reqs int
+	processItem := func(k string) error {
+		if r.options.resumeCfg != nil {
+			r.options.resumeCfg.current = k
+			r.options.resumeCfg.currentIndex++
+			if r.options.resumeCfg.currentIndex <= r.options.resumeCfg.Index {
+				return nil
+			}
+		}
+
 		protocol := r.options.protocol
 		// attempt to parse url as is
-		if u, err := url.Parse(t); err == nil {
+		if u, err := url.Parse(k); err == nil {
 			if r.options.NoFallbackScheme && u.Scheme == httpx.HTTP || u.Scheme == httpx.HTTPS {
 				protocol = u.Scheme
 			}
@@ -401,19 +593,24 @@ func (r *Runner) RunEnumeration() {
 			for _, p := range r.options.requestURIs {
 				scanopts := r.scanopts.Clone()
 				scanopts.RequestURI = p
-				r.process(t, &wg, r.hp, protocol, scanopts, output)
-				reqs++
+				r.process(k, &wg, r.hp, protocol, scanopts, output)
 			}
 		} else {
-			r.process(t, &wg, r.hp, protocol, &r.scanopts, output)
-			reqs++
+			r.process(k, &wg, r.hp, protocol, &r.scanopts, output)
 		}
 
-		if r.options.ShowStatistics {
-			r.stats.IncrementCounter("requests", reqs)
-		}
 		return nil
-	})
+	}
+
+	if r.options.Stream {
+		for item := range streamChan {
+			_ = processItem(item)
+		}
+	} else {
+		r.hm.Scan(func(k, _ []byte) error {
+			return processItem(string(k))
+		})
+	}
 
 	wg.Wait()
 
@@ -424,9 +621,10 @@ func (r *Runner) RunEnumeration() {
 
 func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.HTTPX, protocol string, scanopts *scanOptions, output chan Result) {
 	protocols := []string{protocol}
-	if scanopts.NoFallback {
+	if scanopts.NoFallback || protocol == httpx.HTTPandHTTPS {
 		protocols = []string{httpx.HTTPS, httpx.HTTP}
 	}
+
 	for target := range targets(stringz.TrimProtocol(t, scanopts.NoFallback || scanopts.NoFallbackScheme)) {
 		// if no custom ports specified then test the default ones
 		if len(customport.Ports) == 0 {
@@ -435,7 +633,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 					wg.Add()
 					go func(target, method, protocol string) {
 						defer wg.Done()
-						result := r.analyze(hp, protocol, target, method, scanopts)
+						result := r.analyze(hp, protocol, target, method, t, scanopts)
 						output <- result
 						if scanopts.TLSProbe && result.TLSData != nil {
 							scanopts.TLSProbe = false
@@ -457,25 +655,34 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 			}
 		}
 
-		for port, wantedProtocol := range customport.Ports {
-			for _, method := range scanopts.Methods {
-				wg.Add()
-				go func(port int, method, protocol string) {
-					defer wg.Done()
-					h, _ := urlutil.ChangePort(target, fmt.Sprint(port))
-					result := r.analyze(hp, protocol, h, method, scanopts)
-					output <- result
-					if scanopts.TLSProbe && result.TLSData != nil {
-						scanopts.TLSProbe = false
-						for _, tt := range result.TLSData.DNSNames {
-							r.process(tt, wg, hp, protocol, scanopts, output)
-						}
-						for _, tt := range result.TLSData.CommonName {
-							r.process(tt, wg, hp, protocol, scanopts, output)
-						}
-					}
-				}(port, method, wantedProtocol)
+		for port, wantedProtocolForPort := range customport.Ports {
+			wantedProtocols := []string{wantedProtocolForPort}
+			if wantedProtocolForPort == httpx.HTTPandHTTPS {
+				wantedProtocols = []string{httpx.HTTPS, httpx.HTTP}
 			}
+			for _, wantedProtocol := range wantedProtocols {
+				for _, method := range scanopts.Methods {
+					wg.Add()
+					go func(port int, method, protocol string) {
+						defer wg.Done()
+						h, _ := urlutil.ChangePort(target, fmt.Sprint(port))
+						result := r.analyze(hp, protocol, h, method, t, scanopts)
+						output <- result
+						if scanopts.TLSProbe && result.TLSData != nil {
+							scanopts.TLSProbe = false
+							for _, tt := range result.TLSData.DNSNames {
+								r.process(tt, wg, hp, protocol, scanopts, output)
+							}
+							for _, tt := range result.TLSData.CommonName {
+								r.process(tt, wg, hp, protocol, scanopts, output)
+							}
+						}
+					}(port, method, wantedProtocol)
+				}
+			}
+		}
+		if r.options.ShowStatistics {
+			r.stats.IncrementCounter("hosts", 1)
 		}
 	}
 }
@@ -509,9 +716,9 @@ func targets(target string) chan string {
 	return results
 }
 
-func (r *Runner) analyze(hp *httpx.HTTPX, protocol, domain, method string, scanopts *scanOptions) Result {
+func (r *Runner) analyze(hp *httpx.HTTPX, protocol, domain, method, origInput string, scanopts *scanOptions) Result {
 	origProtocol := protocol
-	if protocol == httpx.HTTPorHTTPS {
+	if protocol == httpx.HTTPorHTTPS || protocol == httpx.HTTPandHTTPS {
 		protocol = httpx.HTTPS
 	}
 	retried := false
@@ -521,15 +728,31 @@ retry:
 		parts := strings.Split(domain, ",")
 		//nolint:gomnd // not a magic number
 		if len(parts) != 2 {
-			return Result{}
+			return Result{Input: origInput}
 		}
 		domain = parts[0]
 		customHost = parts[1]
 	}
 	URL, err := urlutil.Parse(domain)
 	if err != nil {
-		return Result{URL: domain, err: err}
+		return Result{URL: domain, Input: origInput, err: err}
 	}
+
+	// check if we have to skip the host:port as a result of a previous failure
+	hostPort := net.JoinHostPort(URL.Host, URL.Port)
+	if r.options.HostMaxErrors >= 0 && r.HostErrorsCache.Has(hostPort) {
+		numberOfErrors, err := r.HostErrorsCache.GetIFPresent(hostPort)
+		if err == nil && numberOfErrors.(int) >= r.options.HostMaxErrors {
+			return Result{URL: domain, err: errors.New("skipping as previously unresponsive")}
+		}
+	}
+
+	// check if the combination host:port should be skipped if belonging to a cdn
+	if r.skipCDNPort(URL.Host, URL.Port) {
+		gologger.Debug().Msgf("Skipping cdn target: %s:%s\n", URL.Host, URL.Port)
+		return Result{URL: domain, Input: origInput, err: errors.New("cdn target only allows ports 80 and 443")}
+	}
+
 	if URL.Port == "443" || URL.Port == "8443" {
 		protocol = httpx.HTTPS
 	}
@@ -539,18 +762,24 @@ retry:
 		URL.Port = ""
 	}
 
-	if !scanopts.Unsafe {
+	var reqURI string
+	// retry with unsafe
+	if scanopts.Unsafe {
+		reqURI = URL.RequestURI + scanopts.RequestURI
+		// then create a base request without it to avoid go errors
+		URL.RequestURI = ""
+	} else {
+		// in case of standard requests append the new path to the existing one
 		URL.RequestURI += scanopts.RequestURI
 	}
 	req, err := hp.NewRequest(method, URL.String())
 	if err != nil {
-		return Result{URL: URL.String(), err: err}
+		return Result{URL: URL.String(), Input: origInput, err: err}
 	}
+
 	if customHost != "" {
 		req.Host = customHost
 	}
-
-	reqURI := req.URL.RequestURI()
 
 	hp.SetCustomHeaders(req, hp.CustomHeaders)
 	// We set content-length even if zero to allow net/http to follow 307/308 redirects (it fails on unknown size)
@@ -561,29 +790,81 @@ retry:
 		req.ContentLength = 0
 		req.Body = nil
 	}
+
+	r.ratelimiter.Take()
+
+	// with rawhttp we should say to the server to close the connection, otherwise it will remain open
+	if scanopts.Unsafe {
+		req.Header.Add("Connection", "close")
+	}
+	resp, err := hp.Do(req, httpx.UnsafeOptions{URIPath: reqURI})
+	if r.options.ShowStatistics {
+		r.stats.IncrementCounter("requests", 1)
+	}
 	var requestDump []byte
 	if scanopts.Unsafe {
-		requestDump, err = rawhttp.DumpRequestRaw(req.Method, req.URL.String(), reqURI, req.Header, req.Body, rawhttp.DefaultOptions)
-		if err != nil {
-			return Result{URL: URL.String(), err: err}
+		var errDump error
+		requestDump, errDump = rawhttp.DumpRequestRaw(req.Method, req.URL.String(), reqURI, req.Header, req.Body, rawhttp.DefaultOptions)
+		if errDump != nil {
+			return Result{URL: URL.String(), Input: origInput, err: errDump}
 		}
 	} else {
 		// Create a copy on the fly of the request body
-		bodyBytes, _ := req.BodyBytes()
-		req.Request.Body = ioutil.NopCloser(bytes.NewReader(bodyBytes))
-		requestDump, err = httputil.DumpRequestOut(req.Request, true)
-		if err != nil {
-			return Result{URL: URL.String(), err: err}
+		if scanopts.RequestBody != "" {
+			req.ContentLength = int64(len(scanopts.RequestBody))
+			req.Body = ioutil.NopCloser(strings.NewReader(scanopts.RequestBody))
+		}
+		var errDump error
+		requestDump, errDump = httputil.DumpRequestOut(req.Request, true)
+		if errDump != nil {
+			return Result{URL: URL.String(), Input: origInput, err: errDump}
 		}
 		// The original req.Body gets modified indirectly by httputil.DumpRequestOut so we set it again to nil if it was empty
 		// Otherwise redirects like 307/308 would fail (as they require the body to be sent along)
-		if len(bodyBytes) == 0 {
+		if len(scanopts.RequestBody) == 0 {
+			req.ContentLength = 0
 			req.Body = nil
 		}
 	}
+	// fix the final output url
+	fullURL := req.URL.String()
+	parsedURL, _ := urlutil.Parse(fullURL)
+	if r.options.Unsafe {
+		parsedURL.RequestURI = reqURI
+		// if the full url doesn't end with the custom path we pick the original input value
+	} else if !stringsutil.HasSuffixAny(fullURL, scanopts.RequestURI) {
+		parsedURL.RequestURI = scanopts.RequestURI
+	}
+	fullURL = parsedURL.String()
 
-	resp, err := hp.Do(req)
+	builder := &strings.Builder{}
+	builder.WriteString(stringz.RemoveURLDefaultPort(fullURL))
+
+	if r.options.Probe {
+		builder.WriteString(" [")
+
+		outputStatus := "SUCCESS"
+		if err != nil {
+			outputStatus = "FAILED"
+		}
+
+		if !scanopts.OutputWithNoColor && err != nil {
+			builder.WriteString(aurora.Red(outputStatus).String())
+		} else if !scanopts.OutputWithNoColor && err == nil {
+			builder.WriteString(aurora.Green(outputStatus).String())
+		} else {
+			builder.WriteString(outputStatus)
+		}
+
+		builder.WriteRune(']')
+	}
+
 	if err != nil {
+		errString := ""
+		errString = err.Error()
+		splitErr := strings.Split(errString, ":")
+		errString = strings.TrimSpace(splitErr[len(splitErr)-1])
+
 		if !retried && origProtocol == httpx.HTTPorHTTPS {
 			if protocol == httpx.HTTPS {
 				protocol = httpx.HTTP
@@ -593,40 +874,51 @@ retry:
 			retried = true
 			goto retry
 		}
-		return Result{URL: URL.String(), err: err}
+
+		// mark the host:port as failed to avoid further checks
+		if r.options.HostMaxErrors >= 0 {
+			errorCount, err := r.HostErrorsCache.GetIFPresent(hostPort)
+			if err != nil || errorCount == nil {
+				_ = r.HostErrorsCache.Set(hostPort, 1)
+			} else if errorCount != nil {
+				_ = r.HostErrorsCache.Set(hostPort, errorCount.(int)+1)
+			}
+		}
+
+		if r.options.Probe {
+			return Result{URL: URL.String(), Input: origInput, Timestamp: time.Now(), err: err, Failed: err != nil, Error: errString, str: builder.String()}
+		} else {
+			return Result{URL: URL.String(), Input: origInput, Timestamp: time.Now(), err: err}
+		}
 	}
-
-	var fullURL string
-
-	if resp.StatusCode >= 0 {
-		fullURL = req.URL.String()
-	}
-
-	builder := &strings.Builder{}
-
-	builder.WriteString(stringz.RemoveURLDefaultPort(fullURL))
 
 	if scanopts.OutputStatusCode {
 		builder.WriteString(" [")
-		for i, chainItem := range resp.Chain {
+		setColor := func(statusCode int) {
 			if !scanopts.OutputWithNoColor {
 				// Color the status code based on its value
 				switch {
-				case chainItem.StatusCode >= http.StatusOK && chainItem.StatusCode < http.StatusMultipleChoices:
-					builder.WriteString(aurora.Green(strconv.Itoa(chainItem.StatusCode)).String())
-				case chainItem.StatusCode >= http.StatusMultipleChoices && chainItem.StatusCode < http.StatusBadRequest:
-					builder.WriteString(aurora.Yellow(strconv.Itoa(chainItem.StatusCode)).String())
-				case chainItem.StatusCode >= http.StatusBadRequest && chainItem.StatusCode < http.StatusInternalServerError:
-					builder.WriteString(aurora.Red(strconv.Itoa(chainItem.StatusCode)).String())
+				case statusCode >= http.StatusOK && statusCode < http.StatusMultipleChoices:
+					builder.WriteString(aurora.Green(strconv.Itoa(statusCode)).String())
+				case statusCode >= http.StatusMultipleChoices && statusCode < http.StatusBadRequest:
+					builder.WriteString(aurora.Yellow(strconv.Itoa(statusCode)).String())
+				case statusCode >= http.StatusBadRequest && statusCode < http.StatusInternalServerError:
+					builder.WriteString(aurora.Red(strconv.Itoa(statusCode)).String())
 				case resp.StatusCode > http.StatusInternalServerError:
-					builder.WriteString(aurora.Bold(aurora.Yellow(strconv.Itoa(chainItem.StatusCode))).String())
+					builder.WriteString(aurora.Bold(aurora.Yellow(strconv.Itoa(statusCode))).String())
 				}
 			} else {
-				builder.WriteString(strconv.Itoa(chainItem.StatusCode))
+				builder.WriteString(strconv.Itoa(statusCode))
 			}
+		}
+		for i, chainItem := range resp.Chain {
+			setColor(chainItem.StatusCode)
 			if i != len(resp.Chain)-1 {
 				builder.WriteRune(',')
 			}
+		}
+		if r.options.Unsafe {
+			setColor(resp.StatusCode)
 		}
 		builder.WriteRune(']')
 	}
@@ -675,7 +967,7 @@ retry:
 	if scanopts.OutputTitle {
 		builder.WriteString(" [")
 		if !scanopts.OutputWithNoColor {
-			builder.WriteString(aurora.Cyan(title).String())
+			builder.WriteString(aurora.BrightCyan(title).String())
 		} else {
 			builder.WriteString(title)
 		}
@@ -699,7 +991,8 @@ retry:
 	// check for virtual host
 	isvhost := false
 	if scanopts.VHost {
-		isvhost, _ = hp.IsVirtualHost(req)
+		r.ratelimiter.Take()
+		isvhost, _ = hp.IsVirtualHost(req, httpx.UnsafeOptions{})
 		if isvhost {
 			builder.WriteString(" [vhost]")
 		}
@@ -714,21 +1007,29 @@ retry:
 	pipeline := false
 	if scanopts.Pipeline {
 		port, _ := strconv.Atoi(URL.Port)
-		pipeline = hp.SupportPipeline(protocol, method, domain, port)
+		r.ratelimiter.Take()
+		pipeline = hp.SupportPipeline(protocol, method, URL.Host, port)
 		if pipeline {
 			builder.WriteString(" [pipeline]")
+		}
+		if r.options.ShowStatistics {
+			r.stats.IncrementCounter("requests", 1)
 		}
 	}
 
 	var http2 bool
 	// if requested probes for http2
 	if scanopts.HTTP2Probe {
+		r.ratelimiter.Take()
 		http2 = hp.SupportHTTP2(protocol, method, URL.String())
 		if http2 {
 			builder.WriteString(" [http2]")
 		}
+		if r.options.ShowStatistics {
+			r.stats.IncrementCounter("requests", 1)
+		}
 	}
-	ip := hp.Dialer.GetDialedIP(domain)
+	ip := hp.Dialer.GetDialedIP(URL.Host)
 	if scanopts.OutputIP {
 		builder.WriteString(fmt.Sprintf(" [%s]", ip))
 	}
@@ -737,7 +1038,7 @@ retry:
 		ips    []string
 		cnames []string
 	)
-	dnsData, err := hp.Dialer.GetDNSData(domain)
+	dnsData, err := hp.Dialer.GetDNSData(URL.Host)
 	if dnsData != nil && err == nil {
 		ips = append(ips, dnsData.A...)
 		ips = append(ips, dnsData.AAAA...)
@@ -769,7 +1070,7 @@ retry:
 
 	var filePaths []string
 	var technologies []string
-	filePaths1, technologies1 := brute.FileFuzz(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw, 1)
+	filePaths1, technologies1 := brute.FileFuzza(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw)
 	technologies = append(technologies, technologies1...)
 	filePaths = append(filePaths, filePaths1...)
 	if scanopts.TechDetect {
@@ -793,15 +1094,21 @@ retry:
 			technologies = append(technologies, match)
 		}
 		technologies = SliceRemoveDuplicates(technologies)
-		technologies = poc.POCcheck(technologies, URL.String(), finalURL)
-		filePaths2, technologies2 := brute.FileFuzz(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw, 2)
-		technologies = append(technologies, technologies2...)
-		filePaths = append(filePaths, filePaths2...)
-		if !scanopts.SkipWAF {
-			filePaths3, technologies3 := brute.FileFuzz(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw, 3)
-			technologies = append(technologies, technologies3...)
-			filePaths = append(filePaths, filePaths3...)
+		poctechnologies := poc.POCcheck(technologies, URL.String(), finalURL)
+		if !scanopts.OutputWithNoColor {
+			for _, poctech := range poctechnologies {
+				technologies = append(technologies, aurora.Red(poctech).String())
+			}
+		} else {
+			technologies = append(technologies, poctechnologies...)
+
 		}
+		if !scanopts.SkipWAF {
+			filePaths2, technologies2 := brute.FileFuzzb(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw)
+			technologies = append(technologies, technologies2...)
+			filePaths = append(filePaths, filePaths2...)
+		}
+		filePaths = SliceRemoveDuplicates(filePaths)
 		technologies = SliceRemoveDuplicates(technologies)
 		if len(technologies) > 0 {
 			sort.Strings(technologies)
@@ -825,25 +1132,29 @@ retry:
 	}
 
 	if resp.HasChain() {
-		builder.WriteString(" [ ")
+		builder.WriteString(" [")
 		if !scanopts.OutputWithNoColor {
 			builder.WriteString(aurora.Magenta(finalURL).String())
 		} else {
 			builder.WriteString(finalURL)
 		}
-		builder.WriteRune(' ')
 		builder.WriteRune(']')
 	}
 
 	if len(filePaths) > 0 {
 		file_paths := strings.Join(filePaths, "\",\""+URL.String())
-		builder.WriteString(" [file_fuzz：")
+		builder.WriteString(" [")
+		builder.WriteString(aurora.BrightYellow("File_fuzz：").String())
 		if !scanopts.OutputWithNoColor {
 			builder.WriteString(aurora.Magenta("\"" + URL.String() + file_paths).String())
 		} else {
 			builder.WriteString("\"" + URL.String() + file_paths)
 		}
-		builder.WriteRune('"')
+		if !scanopts.OutputWithNoColor {
+			builder.WriteString(aurora.Magenta("\"").String())
+		} else {
+			builder.WriteString("\"")
+		}
 		builder.WriteRune(']')
 	}
 
@@ -862,26 +1173,26 @@ retry:
 		// store response
 		responsePath := path.Join(scanopts.StoreResponseDirectory, domainFile)
 		respRaw := resp.Raw
-		if len(respRaw) > scanopts.MaxResponseBodySize {
-			respRaw = respRaw[:scanopts.MaxResponseBodySize]
+		if len(respRaw) > scanopts.MaxResponseBodySizeToSave {
+			respRaw = respRaw[:scanopts.MaxResponseBodySizeToSave]
 		}
 		writeErr := ioutil.WriteFile(responsePath, []byte(respRaw), 0644)
 		if writeErr != nil {
-			gologger.Warning().Msgf("Could not write response, at path '%s', to disk: %s", responsePath, writeErr)
+			gologger.Warning().Msgf("Could not write response at path '%s', to disk: %s", responsePath, writeErr)
 		}
 		if scanopts.StoreChain && resp.HasChain() {
 			domainFile = strings.ReplaceAll(domainFile, ".txt", ".chain.txt")
 			responsePath := path.Join(scanopts.StoreResponseDirectory, domainFile)
 			writeErr := ioutil.WriteFile(responsePath, []byte(resp.GetChain()), 0644)
 			if writeErr != nil {
-				gologger.Warning().Msgf("Could not write response, at path '%s', to disk: %s", responsePath, writeErr)
+				gologger.Warning().Msgf("Could not write response at path '%s', to disk: %s", responsePath, writeErr)
 			}
 		}
 	}
 
 	parsed, err := urlutil.Parse(fullURL)
 	if err != nil {
-		return Result{URL: fullURL, err: errors.Wrap(err, "could not parse url")}
+		return Result{URL: fullURL, Input: origInput, err: errors.Wrap(err, "could not parse url")}
 	}
 
 	finalPort := parsed.Port
@@ -925,6 +1236,7 @@ retry:
 		HeaderSHA256:     headersSha,
 		raw:              resp.Raw,
 		URL:              fullURL,
+		Input:            origInput,
 		ContentLength:    resp.ContentLength,
 		ChainStatusCodes: chainStatusCodes,
 		Chain:            chainItems,
@@ -952,49 +1264,60 @@ retry:
 	}
 }
 
+// SaveResumeConfig to file
+func (r *Runner) SaveResumeConfig() error {
+	var resumeCfg ResumeCfg
+	resumeCfg.Index = r.options.resumeCfg.currentIndex
+	resumeCfg.ResumeFrom = r.options.resumeCfg.current
+	return goconfig.Save(resumeCfg, DefaultResumeFile)
+}
+
 // Result of a scan
 type Result struct {
-	Timestamp        time.Time `json:"timestamp,omitempty"`
-	Request          string    `json:"request,omitempty"`
-	ResponseHeader   string    `json:"response-header,omitempty"`
-	Scheme           string    `json:"scheme,omitempty"`
-	Port             string    `json:"port,omitempty"`
-	Path             string    `json:"path,omitempty"`
-	BodySHA256       string    `json:"body-sha256,omitempty"`
-	HeaderSHA256     string    `json:"header-sha256,omitempty"`
-	A                []string  `json:"a,omitempty"`
-	CNAMEs           []string  `json:"cnames,omitempty"`
+	Timestamp        time.Time `json:"timestamp,omitempty" csv:"timestamp"`
+	Request          string    `json:"request,omitempty" csv:"request"`
+	ResponseHeader   string    `json:"response-header,omitempty" csv:"response-header"`
+	Scheme           string    `json:"scheme,omitempty" csv:"scheme"`
+	Port             string    `json:"port,omitempty" csv:"port"`
+	Path             string    `json:"path,omitempty" csv:"path"`
+	BodySHA256       string    `json:"body-sha256,omitempty" csv:"body-sha256"`
+	HeaderSHA256     string    `json:"header-sha256,omitempty" csv:"header-sha256"`
+	A                []string  `json:"a,omitempty" csv:"a"`
+	CNAMEs           []string  `json:"cnames,omitempty" csv:"cnames"`
 	raw              string
-	URL              string `json:"url,omitempty"`
-	Location         string `json:"location,omitempty"`
-	Title            string `json:"title,omitempty"`
+	URL              string `json:"url,omitempty" csv:"url"`
+	Input            string `json:"input,omitempty" csv:"input"`
+	Location         string `json:"location,omitempty" csv:"location"`
+	Title            string `json:"title,omitempty" csv:"title"`
 	str              string
 	err              error
-	WebServer        string            `json:"webserver,omitempty"`
-	ResponseBody     string            `json:"response-body,omitempty"`
-	ContentType      string            `json:"content-type,omitempty"`
-	Method           string            `json:"method,omitempty"`
-	Host             string            `json:"host,omitempty"`
-	ContentLength    int               `json:"content-length,omitempty"`
-	ChainStatusCodes []int             `json:"chain-status-codes,omitempty"`
-	StatusCode       int               `json:"status-code,omitempty"`
-	TLSData          *httpx.TLSData    `json:"tls-grab,omitempty"`
-	CSPData          *httpx.CSPData    `json:"csp,omitempty"`
-	VHost            bool              `json:"vhost,omitempty"`
-	WebSocket        bool              `json:"websocket,omitempty"`
-	Pipeline         bool              `json:"pipeline,omitempty"`
-	HTTP2            bool              `json:"http2,omitempty"`
-	CDN              bool              `json:"cdn,omitempty"`
-	ResponseTime     string            `json:"response-time,omitempty"`
-	Technologies     []string          `json:"technologies,omitempty"`
-	Chain            []httpx.ChainItem `json:"chain,omitempty"`
-	FinalURL         string            `json:"final-url,omitempty"`
+	Error            string              `json:"error,omitempty" csv:"error"`
+	WebServer        string              `json:"webserver,omitempty" csv:"webserver"`
+	ResponseBody     string              `json:"response-body,omitempty" csv:"response-body"`
+	ContentType      string              `json:"content-type,omitempty" csv:"content-type"`
+	Method           string              `json:"method,omitempty" csv:"method"`
+	Host             string              `json:"host,omitempty" csv:"host"`
+	ContentLength    int                 `json:"content-length,omitempty" csv:"content-length"`
+	ChainStatusCodes []int               `json:"chain-status-codes,omitempty" csv:"chain-status-codes"`
+	StatusCode       int                 `json:"status-code,omitempty" csv:"status-code"`
+	TLSData          *cryptoutil.TLSData `json:"tls-grab,omitempty" csv:"tls-grab"`
+	CSPData          *httpx.CSPData      `json:"csp,omitempty" csv:"csp"`
+	VHost            bool                `json:"vhost,omitempty" csv:"vhost"`
+	WebSocket        bool                `json:"websocket,omitempty" csv:"websocket"`
+	Pipeline         bool                `json:"pipeline,omitempty" csv:"pipeline"`
+	HTTP2            bool                `json:"http2,omitempty" csv:"http2"`
+	CDN              bool                `json:"cdn,omitempty" csv:"cdn"`
+	ResponseTime     string              `json:"response-time,omitempty" csv:"response-time"`
+	Technologies     []string            `json:"technologies,omitempty" csv:"technologies"`
+	Chain            []httpx.ChainItem   `json:"chain,omitempty" csv:"chain"`
+	FinalURL         string              `json:"final-url,omitempty" csv:"final-url"`
+	Failed           bool                `json:"failed" csv:"failed"`
 }
 
 // JSON the result
 func (r Result) JSON(scanopts *scanOptions) string { //nolint
-	if scanopts != nil && len(r.ResponseBody) > scanopts.MaxResponseBodySize {
-		r.ResponseBody = r.ResponseBody[:scanopts.MaxResponseBodySize]
+	if scanopts != nil && len(r.ResponseBody) > scanopts.MaxResponseBodySizeToSave {
+		r.ResponseBody = r.ResponseBody[:scanopts.MaxResponseBodySizeToSave]
 	}
 
 	if js, err := json.Marshal(r); err == nil {
@@ -1002,4 +1325,92 @@ func (r Result) JSON(scanopts *scanOptions) string { //nolint
 	}
 
 	return ""
+}
+
+// CSVHeader the CSV headers
+func (r Result) CSVHeader() string { //nolint
+	buffer := bytes.Buffer{}
+	writer := csv.NewWriter(&buffer)
+
+	var headers []string
+	ty := reflect.TypeOf(r)
+	for i := 0; i < ty.NumField(); i++ {
+		tag := ty.Field(i).Tag.Get("csv")
+
+		if ignored := tag == ""; ignored {
+			continue
+		}
+
+		headers = append(headers, tag)
+	}
+	_ = writer.Write(headers)
+	writer.Flush()
+
+	return strings.TrimSpace(buffer.String())
+}
+
+// CSVRow the CSV Row
+func (r Result) CSVRow(scanopts *scanOptions) string { //nolint
+	if scanopts != nil && len(r.ResponseBody) > scanopts.MaxResponseBodySizeToSave {
+		r.ResponseBody = r.ResponseBody[:scanopts.MaxResponseBodySizeToSave]
+	}
+
+	buffer := bytes.Buffer{}
+	writer := csv.NewWriter(&buffer)
+
+	var cells []string
+	elem := reflect.ValueOf(r)
+	for i := 0; i < elem.NumField(); i++ {
+		value := elem.Field(i)
+		tag := elem.Type().Field(i).Tag.Get(`csv`)
+		if ignored := tag == ""; ignored {
+			continue
+		}
+
+		str := fmt.Sprintf("%v", value.Interface())
+
+		// defense against csv injection
+		startWithRiskyChar, _ := regexp.Compile(`^([=+\-@])`)
+		if startWithRiskyChar.Match([]byte(str)) {
+			str = "'" + str
+		}
+
+		cells = append(cells, str)
+	}
+	_ = writer.Write(cells)
+	writer.Flush()
+
+	return strings.TrimSpace(buffer.String()) // remove "\n" in the end
+}
+
+func (r *Runner) skipCDNPort(host string, port string) bool {
+	// if the option is not enabled we don't skip
+	if !r.options.ExcludeCDN {
+		return false
+	}
+	// uses the dealer to pre-resolve the target
+	dnsData, err := r.hp.Dialer.GetDNSData(host)
+	// if we get an error the target cannot be resolved, so we return false so that the program logic continues as usual and handles the errors accordingly
+	if err != nil {
+		return false
+	}
+
+	if len(dnsData.A) == 0 {
+		return false
+	}
+
+	// pick the first ip as target
+	hostIP := dnsData.A[0]
+
+	isCdnIP, err := r.hp.CdnCheck(hostIP)
+	if err != nil {
+		return false
+	}
+
+	// If the target is part of the CDN ips range - only ports 80 and 443 are allowed
+	if isCdnIP && port != "80" && port != "443" {
+		return true
+	}
+
+	return false
 }

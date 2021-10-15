@@ -1,6 +1,8 @@
 package result
 
-import "sync"
+import (
+	"sync"
+)
 
 // Result of the scan
 type Result struct {

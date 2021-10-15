@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/projectdiscovery/gologger"
+	"github.com/projectdiscovery/sliceutil"
 
 	"github.com/veo/vscan/pkg/httpx/common/httpx"
 )
@@ -31,7 +32,7 @@ func (c *CustomPorts) String() string {
 func (c *CustomPorts) Set(value string) error {
 	// ports can be like nmap -p [https|http:]start-end,[https|http:]port1,[https|http:]port2,[https|http:]port3
 	// splits on comma
-	potentialPorts := strings.Split(value, ",")
+	potentialPorts := sliceutil.Dedupe(strings.Split(value, ","))
 
 	// check if port is a single integer value or needs to be expanded further
 	for _, potentialPort := range potentialPorts {
@@ -43,15 +44,23 @@ func (c *CustomPorts) Set(value string) error {
 		} else if strings.HasPrefix(potentialPort, httpx.HTTPS+":") {
 			potentialPort = strings.TrimPrefix(potentialPort, httpx.HTTPS+":")
 			protocol = httpx.HTTPS
+		} else if strings.HasPrefix(potentialPort, httpx.HTTPandHTTPS+":") {
+			potentialPort = strings.TrimPrefix(potentialPort, httpx.HTTPandHTTPS+":")
+			protocol = httpx.HTTPandHTTPS
 		}
 
 		potentialRange := strings.Split(potentialPort, "-")
 		// it's a single port?
 		if len(potentialRange) < portRangeParts {
 			if p, err := strconv.Atoi(potentialPort); err == nil {
+				if existingProtocol, ok := Ports[p]; ok {
+					if existingProtocol == httpx.HTTP && protocol == httpx.HTTPS || existingProtocol == httpx.HTTPS && protocol == httpx.HTTP {
+						protocol = httpx.HTTPandHTTPS
+					}
+				}
 				Ports[p] = protocol
 			} else {
-				gologger.Warning().Msgf("Could not cast port to integer, your value: %s, resulting error %s. Skipping it\n",
+				gologger.Warning().Msgf("Could not cast port to integer from your value: %s. Resulting error: %s. Skipping it.\n",
 					potentialPort, err.Error())
 			}
 		} else {
@@ -59,26 +68,31 @@ func (c *CustomPorts) Set(value string) error {
 			var lowP, highP int
 			lowP, err := strconv.Atoi(potentialRange[0])
 			if err != nil {
-				gologger.Warning().Msgf("Could not cast first port of your port range(%s) to integer, your value: %s, resulting error %s. Skipping it\n",
+				gologger.Warning().Msgf("Could not cast first port of your range(%s) to integer from your value: %s. Resulting error: %s. Skipping it.\n",
 					potentialPort, potentialRange[0], err.Error())
 				continue
 			}
 			highP, err = strconv.Atoi(potentialRange[1])
 			if err != nil {
-				gologger.Warning().Msgf("Could not cast last port of your port range(%s) to integer, "+
-					"your value: %s, resulting error %s. Skipping it\n",
+				gologger.Warning().Msgf("Could not cast last port of your port range(%s) to integer from "+
+					"your value: %s. Resulting error %s. Skipping it\n",
 					potentialPort, potentialRange[1], err.Error())
 				continue
 			}
 
 			if lowP > highP {
-				gologger.Warning().Msgf("first value of port range should be lower than the last part port "+
-					"in that range, your range: [%d, %d]. Skipping it\n",
+				gologger.Warning().Msgf("First value of port range should be lower than the last port "+
+					"from your range: [%d, %d]. Skipping it.\n",
 					lowP, highP)
 				continue
 			}
 
 			for i := lowP; i <= highP; i++ {
+				if existingProtocol, ok := Ports[i]; ok {
+					if existingProtocol == httpx.HTTP && protocol == httpx.HTTPS || existingProtocol == httpx.HTTPS && protocol == httpx.HTTP {
+						protocol = httpx.HTTPandHTTPS
+					}
+				}
 				Ports[i] = protocol
 			}
 		}

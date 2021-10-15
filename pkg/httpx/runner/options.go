@@ -1,97 +1,107 @@
 package runner
 
 import (
+	"math"
 	"os"
 	"regexp"
 
+	"github.com/projectdiscovery/fileutil"
+	"github.com/projectdiscovery/goconfig"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/formatter"
 	"github.com/projectdiscovery/gologger/levels"
 	"github.com/veo/vscan/pkg/httpx/common/customheader"
 	"github.com/veo/vscan/pkg/httpx/common/customlist"
 	customport "github.com/veo/vscan/pkg/httpx/common/customports"
-	"github.com/veo/vscan/pkg/httpx/common/fileutil"
+	fileutilz "github.com/veo/vscan/pkg/httpx/common/fileutil"
 	"github.com/veo/vscan/pkg/httpx/common/stringz"
 )
 
 const (
 	maxFileNameLength = 255
 	two               = 2
+	DefaultResumeFile = "resume.cfg"
 )
 
 type scanOptions struct {
-	Methods                []string
-	StoreResponseDirectory string
-	RequestURI             string
-	RequestBody            string
-	VHost                  bool
-	SkipWAF                bool
-	OutputTitle            bool
-	OutputStatusCode       bool
-	OutputLocation         bool
-	OutputContentLength    bool
-	StoreResponse          bool
-	OutputServerHeader     bool
-	OutputWebSocket        bool
-	OutputWithNoColor      bool
-	OutputMethod           bool
-	ResponseInStdout       bool
-	ChainInStdout          bool
-	TLSProbe               bool
-	CSPProbe               bool
-	VHostInput             bool
-	OutputContentType      bool
-	Unsafe                 bool
-	Pipeline               bool
-	HTTP2Probe             bool
-	OutputIP               bool
-	OutputCName            bool
-	OutputCDN              bool
-	OutputResponseTime     bool
-	PreferHTTPS            bool
-	NoFallback             bool
-	NoFallbackScheme       bool
-	TechDetect             bool
-	StoreChain             bool
-	MaxResponseBodySize    int
-	OutputExtractRegex     string
-	extractRegex           *regexp.Regexp
+	Methods                   []string
+	StoreResponseDirectory    string
+	RequestURI                string
+	RequestBody               string
+	VHost                     bool
+	SkipWAF                   bool
+	OutputTitle               bool
+	OutputStatusCode          bool
+	OutputLocation            bool
+	OutputContentLength       bool
+	StoreResponse             bool
+	OutputServerHeader        bool
+	OutputWebSocket           bool
+	OutputWithNoColor         bool
+	OutputMethod              bool
+	ResponseInStdout          bool
+	ChainInStdout             bool
+	TLSProbe                  bool
+	CSPProbe                  bool
+	VHostInput                bool
+	OutputContentType         bool
+	Unsafe                    bool
+	Pipeline                  bool
+	HTTP2Probe                bool
+	OutputIP                  bool
+	OutputCName               bool
+	OutputCDN                 bool
+	OutputResponseTime        bool
+	PreferHTTPS               bool
+	NoFallback                bool
+	NoFallbackScheme          bool
+	TechDetect                bool
+	StoreChain                bool
+	MaxResponseBodySizeToSave int
+	MaxResponseBodySizeToRead int
+	OutputExtractRegex        string
+	extractRegex              *regexp.Regexp
+	ExcludeCDN                bool
+	HostMaxErrors             int
 }
 
 func (s *scanOptions) Clone() *scanOptions {
 	return &scanOptions{
-		Methods:                s.Methods,
-		StoreResponseDirectory: s.StoreResponseDirectory,
-		RequestURI:             s.RequestURI,
-		RequestBody:            s.RequestBody,
-		VHost:                  s.VHost,
-		OutputTitle:            s.OutputTitle,
-		OutputStatusCode:       s.OutputStatusCode,
-		OutputLocation:         s.OutputLocation,
-		OutputContentLength:    s.OutputContentLength,
-		StoreResponse:          s.StoreResponse,
-		OutputServerHeader:     s.OutputServerHeader,
-		OutputWebSocket:        s.OutputWebSocket,
-		OutputWithNoColor:      s.OutputWithNoColor,
-		OutputMethod:           s.OutputMethod,
-		ResponseInStdout:       s.ResponseInStdout,
-		ChainInStdout:          s.ChainInStdout,
-		TLSProbe:               s.TLSProbe,
-		CSPProbe:               s.CSPProbe,
-		OutputContentType:      s.OutputContentType,
-		Unsafe:                 s.Unsafe,
-		Pipeline:               s.Pipeline,
-		HTTP2Probe:             s.HTTP2Probe,
-		OutputIP:               s.OutputIP,
-		OutputCName:            s.OutputCName,
-		OutputCDN:              s.OutputCDN,
-		OutputResponseTime:     s.OutputResponseTime,
-		PreferHTTPS:            s.PreferHTTPS,
-		NoFallback:             s.NoFallback,
-		NoFallbackScheme:       s.NoFallbackScheme,
-		TechDetect:             s.TechDetect,
-		StoreChain:             s.StoreChain,
-		OutputExtractRegex:     s.OutputExtractRegex,
+		Methods:                   s.Methods,
+		StoreResponseDirectory:    s.StoreResponseDirectory,
+		RequestURI:                s.RequestURI,
+		RequestBody:               s.RequestBody,
+		VHost:                     s.VHost,
+		OutputTitle:               s.OutputTitle,
+		OutputStatusCode:          s.OutputStatusCode,
+		OutputLocation:            s.OutputLocation,
+		OutputContentLength:       s.OutputContentLength,
+		StoreResponse:             s.StoreResponse,
+		OutputServerHeader:        s.OutputServerHeader,
+		OutputWebSocket:           s.OutputWebSocket,
+		OutputWithNoColor:         s.OutputWithNoColor,
+		OutputMethod:              s.OutputMethod,
+		ResponseInStdout:          s.ResponseInStdout,
+		ChainInStdout:             s.ChainInStdout,
+		TLSProbe:                  s.TLSProbe,
+		CSPProbe:                  s.CSPProbe,
+		OutputContentType:         s.OutputContentType,
+		Unsafe:                    s.Unsafe,
+		Pipeline:                  s.Pipeline,
+		HTTP2Probe:                s.HTTP2Probe,
+		OutputIP:                  s.OutputIP,
+		OutputCName:               s.OutputCName,
+		OutputCDN:                 s.OutputCDN,
+		OutputResponseTime:        s.OutputResponseTime,
+		PreferHTTPS:               s.PreferHTTPS,
+		NoFallback:                s.NoFallback,
+		NoFallbackScheme:          s.NoFallbackScheme,
+		TechDetect:                s.TechDetect,
+		StoreChain:                s.StoreChain,
+		OutputExtractRegex:        s.OutputExtractRegex,
+		MaxResponseBodySizeToSave: s.MaxResponseBodySizeToSave,
+		MaxResponseBodySizeToRead: s.MaxResponseBodySizeToRead,
+		HostMaxErrors:             s.HostMaxErrors,
 	}
 }
 
@@ -138,6 +148,7 @@ type Options struct {
 	FollowRedirects           bool
 	StoreResponse             bool
 	JSONOutput                bool
+	CSVOutput                 bool
 	Silent                    bool
 	Version                   bool
 	Verbose                   bool
@@ -148,6 +159,7 @@ type Options struct {
 	responseInStdout          bool
 	chainInStdout             bool
 	FollowHostRedirects       bool
+	MaxRedirects              int
 	OutputMethod              bool
 	TLSProbe                  bool
 	CSPProbe                  bool
@@ -170,77 +182,107 @@ type Options struct {
 	StoreChain                bool
 	Deny                      customlist.CustomList
 	Allow                     customlist.CustomList
-	MaxResponseBodySize       int
+	MaxResponseBodySizeToSave int
+	MaxResponseBodySizeToRead int
 	OutputExtractRegex        string
+	RateLimit                 int
+	Probe                     bool
+	Resume                    bool
+	resumeCfg                 *ResumeCfg
+	ExcludeCDN                bool
+	HostMaxErrors             int
+	Stream                    bool
+	SkipDedupe                bool
 	Naabuinput                map[string]map[int]struct{}
 }
 
 // ParseOptions parses the command line options for application
 func ParseOptions() *Options {
 	options := &Options{}
-	options.TLSGrab = false
-	options.TechDetect = true
-	options.Threads = 50
-	options.Retries = 0
-	options.Timeout = 5
-	options.Output = ""
-	options.VHost = false
-	options.VHostInput = false
-	options.ExtractTitle = true
-	options.StatusCode = true
-	options.Location = false
-	options.ContentLength = false
-	options.StoreResponse = false
-	options.StoreResponseDir = ""
-	options.FollowRedirects = true
-	options.FollowHostRedirects = false
-	options.HTTPProxy = ""
-	options.JSONOutput = false
 	options.InputFile = ""
-	options.Methods = ""
-	options.OutputMethod = false
-	options.Silent = true
-	options.Version = false
-	options.Verbose = false
-	options.NoColor = false
-	options.SkipWAF = false
-	options.OutputServerHeader = false
-	options.OutputWebSocket = false
-	options.responseInStdout = false
-	options.responseInStdout = false
-	options.chainInStdout = false
-	options.TLSProbe = false
-	options.CSPProbe = false
-	options.RequestURI = ""
-	options.RequestURIs = ""
-	options.OutputContentType = false
-	options.OutputMatchStatusCode = ""
-	options.OutputMatchStatusCode = ""
-	options.OutputFilterStatusCode = ""
-	options.OutputFilterContentLength = ""
 	options.InputRawRequest = ""
-	options.Unsafe = false
-	options.RequestBody = ""
-	options.Debug = false
-	options.Pipeline = false
-	options.HTTP2Probe = false
+	options.StatusCode = true
+	options.TechDetect = true
+	options.ContentLength = false
+	options.OutputServerHeader = false
+	options.OutputContentType = false
+	options.OutputResponseTime = false
+	options.ExtractTitle = true
+	options.Location = false
+	options.OutputMethod = false
+	options.OutputWebSocket = false
 	options.OutputIP = false
-	options.OutputFilterString = ""
-	options.OutputMatchString = ""
-	options.OutputFilterRegex = ""
-	options.OutputMatchRegex = ""
 	options.OutputCName = false
 	options.OutputCDN = false
-	options.OutputResponseTime = false
+	options.Probe = false
 	options.NoFallback = false
-	options.NoFallbackScheme = false
-	options.ShowStatistics = false
-	options.RandomAgent = true
-	options.StoreChain = false
+	options.OutputMatchStatusCode = ""
+	options.OutputMatchContentLength = ""
+	options.OutputMatchString = ""
+	options.OutputMatchRegex = ""
 	options.OutputExtractRegex = ""
+	options.OutputFilterStatusCode = ""
+	options.OutputFilterContentLength = ""
+	options.OutputFilterString = ""
+	options.OutputFilterRegex = ""
+	options.Threads = 50
+	options.RateLimit = 150
+	options.TLSGrab = false
+	options.TLSProbe = false
+	options.CSPProbe = false
+	options.Pipeline = false
+	options.HTTP2Probe = false
+	options.VHost = false
+	options.CustomPorts = nil
+	options.RequestURIs = ""
+	options.RequestURIs = ""
+	options.Output = ""
+	options.StoreResponse = false
+	options.StoreResponseDir = "output"
+	options.JSONOutput = false
+	options.responseInStdout = false
+	options.chainInStdout = false
+	options.StoreChain = false
+	options.CSVOutput = false
+	options.MaxResponseBodySizeToSave = math.MaxInt32
+	options.MaxResponseBodySizeToRead = math.MaxInt32
+	options.Allow = nil
+	options.Deny = nil
+	options.RandomAgent = true
+	options.CustomHeaders = nil
+	options.HTTPProxy = ""
+	options.Unsafe = false
+	options.Resume = false
+	options.NoColor = false
+	options.NoFallbackScheme = false
+	options.FollowRedirects = true
+	options.FollowHostRedirects = false
+	options.MaxRedirects = 10
+	options.VHostInput = false
+	options.Methods = ""
+	options.RequestBody = ""
+	options.Stream = false
+	options.SkipDedupe = false
+	options.Silent = true
+	options.Verbose = false
+	options.Version = false
+	options.Debug = false
+	options.ShowStatistics = false
+	options.Retries = 0
+	options.Timeout = 5
+	options.HostMaxErrors = 30
+	options.ExcludeCDN = false
 	options.Naabuinput = nil
-	// Read the inputs and configure the logging
+
 	options.configureOutput()
+
+	err := options.configureResume()
+	if err != nil {
+		gologger.Fatal().Msgf("%s\n", err)
+	}
+
+	//showBanner()
+
 	if options.Version {
 		gologger.Info().Msgf("Current Version: %s\n", Version)
 		os.Exit(0)
@@ -252,12 +294,17 @@ func ParseOptions() *Options {
 }
 
 func (options *Options) validateOptions() {
-	if options.InputFile != "" && !fileutil.FileNameIsGlob(options.InputFile) && !fileutil.FileExists(options.InputFile) {
-		gologger.Fatal().Msgf("File %s does not exist!\n", options.InputFile)
+	if options.InputFile != "" && !fileutilz.FileNameIsGlob(options.InputFile) && !fileutil.FileExists(options.InputFile) {
+		gologger.Fatal().Msgf("File %s does not exist.\n", options.InputFile)
 	}
 
 	if options.InputRawRequest != "" && !fileutil.FileExists(options.InputRawRequest) {
-		gologger.Fatal().Msgf("File %s does not exist!\n", options.InputRawRequest)
+		gologger.Fatal().Msgf("File %s does not exist.\n", options.InputRawRequest)
+	}
+
+	multiOutput := options.CSVOutput && options.JSONOutput
+	if multiOutput {
+		gologger.Fatal().Msg("Results can only be displayed in one format: 'JSON' or 'CSV'\n")
 	}
 
 	var err error
@@ -301,3 +348,29 @@ func (options *Options) configureOutput() {
 		gologger.DefaultLogger.SetMaxLevel(levels.LevelSilent)
 	}
 }
+
+func (options *Options) configureResume() error {
+	options.resumeCfg = &ResumeCfg{}
+	if options.Resume && fileutil.FileExists(DefaultResumeFile) {
+		return goconfig.Load(&options.resumeCfg, DefaultResumeFile)
+
+	}
+	return nil
+}
+
+// ShouldLoadResume resume file
+func (options *Options) ShouldLoadResume() bool {
+	return options.Resume && fileutil.FileExists(DefaultResumeFile)
+}
+
+// ShouldSaveResume file
+func (options *Options) ShouldSaveResume() bool {
+	return true
+}
+
+//func createGroup(flagSet *goflags.FlagSet, groupName, description string, flags ...*goflags.FlagData) {
+//	flagSet.SetGroup(groupName, description)
+//	for _, currentFlag := range flags {
+//		currentFlag.Group(groupName)
+//	}
+//}
