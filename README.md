@@ -17,7 +17,7 @@ vscan
 -rate                           Rate of port scan probe requests		
 -v                              Show Verbose output		
 -no-color                       Don't Use colors in output		
--skip-waf                       Only asset detection, not vulnerability scan to prevent interception by WAF
+-skip-waf                       Not filefuzz scan to prevent interception by WAF
 -timeout                        Millisecond to wait before timing out		
 -exclude-ports                  Ports to exclude from enumeration		
 -verify                         Validate the ports again with TCP verification		

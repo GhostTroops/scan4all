@@ -1,13 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"github.com/projectdiscovery/gologger"
 	"github.com/veo/vscan/pkg"
 	httpxrunner "github.com/veo/vscan/pkg/httpx/runner"
 	naaburunner "github.com/veo/vscan/pkg/naabu/runner"
+	"time"
 )
 
 func main() {
+	startTime := time.Now()
 	naabuoptions := naaburunner.ParseOptions()
 	naabuRunner, err := naaburunner.NewRunner(naabuoptions)
 	if err != nil {
@@ -31,4 +34,6 @@ func main() {
 	}
 	r.RunEnumeration()
 	r.Close()
+	elapsedTime := time.Since(startTime)
+	fmt.Println("Segment finished in %dms", elapsedTime)
 }
