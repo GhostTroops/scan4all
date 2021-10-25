@@ -252,7 +252,7 @@ func ParseOptions() *Options {
 	options.CustomHeaders = nil
 	options.HTTPProxy = ""
 	options.SkipWAF = false
-	options.Unsafe = true
+	options.Unsafe = false
 	options.Resume = false
 	options.NoColor = false
 	options.NoFallbackScheme = false
