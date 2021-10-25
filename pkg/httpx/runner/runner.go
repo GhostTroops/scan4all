@@ -42,7 +42,6 @@ import (
 	"github.com/projectdiscovery/iputil"
 	"github.com/projectdiscovery/mapcidr"
 	"github.com/projectdiscovery/rawhttp"
-	wappalyzer "github.com/projectdiscovery/wappalyzergo"
 	"github.com/remeh/sizedwaitgroup"
 	customport "github.com/veo/vscan/pkg/httpx/common/customports"
 	fileutilz "github.com/veo/vscan/pkg/httpx/common/fileutil"
@@ -50,6 +49,7 @@ import (
 	"github.com/veo/vscan/pkg/httpx/common/httpx"
 	"github.com/veo/vscan/pkg/httpx/common/slice"
 	"github.com/veo/vscan/pkg/httpx/common/stringz"
+	wappalyzer "github.com/veo/vscan/pkg/httpx/fingerprint"
 	"go.uber.org/ratelimit"
 )
 
@@ -506,7 +506,11 @@ func (r *Runner) RunEnumeration() {
 		var f *os.File
 		if r.options.Output != "" {
 			var err error
-			f, err = os.Create(r.options.Output)
+			_, err = os.Create(r.options.Output)
+			if err != nil {
+				gologger.Fatal().Msgf("Could not create output file '%s': %s\n", r.options.Output, err)
+			}
+			f, err = os.OpenFile(r.options.Output, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 			if err != nil {
 				gologger.Fatal().Msgf("Could not create output file '%s': %s\n", r.options.Output, err)
 			}
@@ -1101,9 +1105,8 @@ retry:
 			}
 		} else {
 			technologies = append(technologies, poctechnologies...)
-
 		}
-		if !scanopts.SkipWAF {
+		if !r.options.SkipWAF {
 			filePaths2, technologies2 := brute.FileFuzzb(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw)
 			technologies = append(technologies, technologies2...)
 			filePaths = append(filePaths, filePaths2...)
@@ -1144,7 +1147,7 @@ retry:
 	if len(filePaths) > 0 {
 		file_paths := strings.Join(filePaths, "\",\""+URL.String())
 		builder.WriteString(" [")
-		builder.WriteString(aurora.BrightYellow("File_fuzz：").String())
+		builder.WriteString(aurora.BrightYellow("FileFuzz：").String())
 		if !scanopts.OutputWithNoColor {
 			builder.WriteString(aurora.Magenta("\"" + URL.String() + file_paths).String())
 		} else {

