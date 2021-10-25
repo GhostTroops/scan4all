@@ -73,12 +73,11 @@ go build
 #### 3.1 基本使用命令
 hosts.txt -> 导入的hosts列表，格式：IP或域名或C段，一行一个
 
-`nohup ./vscan -l hosts.txt -top-ports http -o out.txt >/dev/null 2>&1 & `
+`vscan -l hosts.txt -top-ports http -o out.txt `
 
 #### 3.2 万数以上的扫描
 支持万数量级以上的扫描，一万个扫描任务挂在后台，一般一天就扫描完
 #### 3.3 筛选结果
-Linux使用grep可以很快的筛选vuln结果
 `cat out.txt|grep "POC"`
 
 # 4.功能
