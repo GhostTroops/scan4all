@@ -35,7 +35,7 @@ func showNetworkCapabilities(options *Options) {
 		accessLevel = "root"
 		scanType = "SYN"
 	}
-	gologger.Info().Msgf("Running %s scan with %s privileges\n", scanType, accessLevel)
+	gologger.Info().Msgf("Port scan starting, running %s scan with %s privileges\n", scanType, accessLevel)
 }
 
 func showNetworkInterfaces() error {
