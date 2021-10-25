@@ -15,7 +15,7 @@ func POClog(log string) {
 	builder := &strings.Builder{}
 	builder.WriteString(aurora.BrightRed("[POC] ").String())
 	if !NoColor {
-		builder.WriteString(aurora.BrightGreen(log).String())
+		builder.WriteString(aurora.BrightRed(log).String())
 	} else {
 		builder.WriteString(log)
 	}

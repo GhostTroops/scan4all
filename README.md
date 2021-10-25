@@ -6,7 +6,7 @@ vscan
 ```
 
 Usage:
-  ./naabu [flags]
+  ./vscan [flags]
 
 INPUT:
    -host string                Host to scan ports for
@@ -71,19 +71,15 @@ go build
 
 # 3.Note
 #### 3.1 基本使用命令
-hosts.txt -> 导入的hosts列表，格式：IP或域名，一行一个
+hosts.txt -> 导入的hosts列表，格式：IP或域名或C段，一行一个
 
-`nohup ./vscan -l hosts.txt -top-ports http -o out.txt > alltext.out 2>&1 & `
+`nohup ./vscan -l hosts.txt -top-ports http -o out.txt >/dev/null 2>&1 & `
 
-out.txt和alltext.out内容目前并不一致，alltext.out有`[+] Found vuln`关键字，更方便筛选结果
 #### 3.2 万数以上的扫描
 支持万数量级以上的扫描，一万个扫描任务挂在后台，一般一天就扫描完
 #### 3.3 筛选结果
 Linux使用grep可以很快的筛选vuln结果
-`cat alltext.out|grep "Found vuln"`
-#### 3.4 发包量较大
-现在程序发包量极大，不建议在内网使用。以后可能会有更完善的线程控制和过WAF机制
-
+`cat out.txt|grep "POC"`
 
 # 4.功能
 ### 4.1 端口扫描，站点访问
@@ -256,7 +252,9 @@ http://127.0.0.1:8001 [302,302,200] [Data Search] [Java,Google Font API,Bootstra
 
 # 6.TO DO
 
-1.解析http以外的端口指纹
+1.端口扫描和WEB扫描并发，30s内开始出结果
+
+2.解析http以外的端口指纹
 
 # 7.目前正在做的
 

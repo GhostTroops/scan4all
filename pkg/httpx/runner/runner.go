@@ -1117,11 +1117,7 @@ retry:
 			sort.Strings(technologies)
 			technologies := strings.Join(technologies, ",")
 			builder.WriteString(" [")
-			if !scanopts.OutputWithNoColor {
-				builder.WriteString(aurora.Magenta(technologies).String())
-			} else {
-				builder.WriteString(technologies)
-			}
+			builder.WriteString(technologies)
 			builder.WriteRune(']')
 		}
 	}
@@ -1149,12 +1145,12 @@ retry:
 		builder.WriteString(" [")
 		builder.WriteString(aurora.BrightYellow("FileFuzz：").String())
 		if !scanopts.OutputWithNoColor {
-			builder.WriteString(aurora.Magenta("\"" + URL.String() + file_paths).String())
+			builder.WriteString(aurora.Yellow("\"" + URL.String() + file_paths).String())
 		} else {
 			builder.WriteString("\"" + URL.String() + file_paths)
 		}
 		if !scanopts.OutputWithNoColor {
-			builder.WriteString(aurora.Magenta("\"").String())
+			builder.WriteString(aurora.Yellow("\"").String())
 		} else {
 			builder.WriteString("\"")
 		}
