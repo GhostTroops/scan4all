@@ -302,6 +302,7 @@ func (h *HTTPX) NewRequest(method, targetURL string) (req *retryablehttp.Request
 		req.Header.Set("User-Agent", h.Options.DefaultUserAgent)
 		// set default encoding to accept utf8
 		req.Header.Add("Accept-Charset", "utf-8")
+		req.Header.Add("Cookie", "rememberMe=1")
 	}
 	return
 }

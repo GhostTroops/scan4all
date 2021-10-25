@@ -8,7 +8,7 @@ import (
 func CVE_2014_4210(url string) bool {
 	if req, err := pkg.HttpRequset(url+"/uddiexplorer/SearchPublicRegistries.jsp", "GET", "", false, nil); err == nil {
 		if req.StatusCode == 200 {
-			fmt.Printf("[+] Found vuln WebLogic CVE_2014_4210|%s\n", url)
+			pkg.POClog(fmt.Sprintf("Found vuln WebLogic CVE_2014_4210|%s\n", url))
 			return true
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"github.com/veo/vscan/pkg"
 	"net"
 	"regexp"
 	"strings"
@@ -233,7 +234,7 @@ func CVE_2020_1938(host string) bool {
 	ajpBuffer := makePayload(host, 8009)
 	isVulnerable, version := getVersion(host, 8009, ajpBuffer)
 	if isVulnerable {
-		fmt.Printf("[+] Found vuln Tomcat CVE_2020_1938 %s:%d Tomcat AJP LFI is vulnerable, Tomcat version: %s\n", host, 8009, version)
+		pkg.POClog(fmt.Sprintf("Found vuln Tomcat CVE_2020_1938 %s:%d Tomcat AJP LFI is vulnerable, Tomcat version: %s\n", host, 8009, version))
 		return true
 	}
 	return false

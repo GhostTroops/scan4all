@@ -112,7 +112,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.NoColor, "nc", "no-color", false, "Don't Use colors in output"),
 		flagSet.BoolVar(&options.Silent, "silent", false, "Show found ports only in output"),
 		flagSet.BoolVar(&options.Version, "version", false, "Show version of naabu"),
-		flagSet.BoolVar(&options.EnableProgressBar, "stats", false, "Display stats of the running scan"),
+		flagSet.BoolVar(&options.EnableProgressBar, "stats", true, "Display stats of the running scan"),
 	)
 
 	_ = flagSet.Parse()

@@ -3,6 +3,7 @@ package weblogic
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/veo/vscan/pkg"
 	"net"
 	"net/url"
 	"regexp"
@@ -46,7 +47,7 @@ func CVE_2020_2883(u string) bool {
 		send, _ := regexp.Match("weblogic", buf)
 		security, _ := regexp.Match("Connection rejected", buf)
 		if send && !security {
-			fmt.Printf("[+] Found vuln WebLogic CVE_2020_2883|%s\n", u)
+			pkg.POClog(fmt.Sprintf("Found vuln WebLogic CVE_2020_2883|%s\n", u))
 			return true
 		}
 	}

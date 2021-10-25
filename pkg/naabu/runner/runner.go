@@ -3,6 +3,8 @@ package runner
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/veo/vscan/pkg"
+	httpxrunner "github.com/veo/vscan/pkg/httpx/runner"
 	"net"
 	"os"
 	"path/filepath"
@@ -25,8 +27,6 @@ const (
 	tickduration = 5
 )
 
-var Naabuipports = make(map[string]map[int]struct{})
-
 // Runner is an instance of the port enumeration
 // client used to orchestrate the whole process.
 type Runner struct {
@@ -37,6 +37,44 @@ type Runner struct {
 	wgscan      sizedwaitgroup.SizedWaitGroup
 	dnsclient   *dnsx.DNSX
 	stats       *clistats.Statistics
+}
+
+func (r *Runner) httpxrun() error {
+	var Naabuipports = make(map[string]map[int]struct{})
+	for hostIP, ports := range r.scanner.ScanResults.IPPorts {
+		dt, err := r.scanner.IPRanger.GetHostsByIP(hostIP)
+		if err != nil {
+			continue
+		}
+		for _, host := range dt {
+			if host == "ip" {
+				host = hostIP
+			}
+			for port := range ports {
+				if _, ok := Naabuipports[host]; !ok {
+					Naabuipports[host] = make(map[int]struct{})
+				}
+				Naabuipports[host][port] = struct{}{}
+			}
+		}
+	}
+	httpxoptions := httpxrunner.ParseOptions()
+	httpxoptions.SkipWAF = r.options.SkipWAF
+	httpxoptions.NoColor = r.options.NoColor
+	httpxoptions.Silent = r.options.Silent
+	httpxoptions.Output = r.options.Output
+	httpxoptions.HTTPProxy = r.options.Proxy
+	pkg.HttpProxy = r.options.Proxy
+	pkg.NoColor = r.options.NoColor
+	pkg.Output = r.options.Output
+	httpxoptions.Naabuinput = Naabuipports
+	rx, err := httpxrunner.New(httpxoptions)
+	if err != nil {
+		return err
+	}
+	rx.RunEnumeration()
+	rx.Close()
+	return nil
 }
 
 // NewRunner creates a new runner struct instance by parsing
@@ -181,6 +219,9 @@ func (r *Runner) RunEnumeration() error {
 	}
 
 	r.wgscan.Wait()
+	_ = r.stats.Stop()
+	gologger.Info().Msg("Port scan over,web scan starting")
+	r.httpxrun()
 
 	if r.options.WarmUpTime > 0 {
 		time.Sleep(time.Duration(r.options.WarmUpTime) * time.Second)
@@ -193,7 +234,7 @@ func (r *Runner) RunEnumeration() error {
 		r.ConnectVerification()
 	}
 
-	r.handleOutput()
+	//r.handleOutput()
 
 	// handle nmap
 	r.handleNmap()
@@ -370,16 +411,16 @@ func (r *Runner) handleOutput() {
 					gologger.Silent().Msgf("%s\n", string(b))
 				}
 			} else {
-				//for port := range ports {
-				//	gologger.Silent().Msgf("%s:%d\n", host, port)
-				//}
 				for port := range ports {
-					if _, ok := Naabuipports[host]; !ok {
-						Naabuipports[host] = make(map[int]struct{})
-					}
-					Naabuipports[host][port] = struct{}{}
 					gologger.Silent().Msgf("%s:%d\n", host, port)
 				}
+				//for port := range ports {
+				//	if _, ok := Naabuipports[host]; !ok {
+				//		Naabuipports[host] = make(map[int]struct{})
+				//	}
+				//	Naabuipports[host][port] = struct{}{}
+				//	gologger.Silent().Msgf("%s:%d\n", host, port)
+				//}
 			}
 
 			// file output
