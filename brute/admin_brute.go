@@ -170,8 +170,13 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 						req.Location = regexp.MustCompile(`(.*);`).FindString(req.Location)
 					}
 					if req.Location != adminfalse302location && req.Location != testfalse302location {
-						pkg.POClog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
-						return user, pass, loginurl
+						sucesstestdata := fmt.Sprintf("%s=%s&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, user, passwordkey)
+						if sucesstest, err := pkg.HttpRequset(loginurl, "POST", sucesstestdata, false, nil); err == nil {
+							if sucesstest.Location != req.Location {
+								pkg.POClog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
+								return user, pass, loginurl
+							}
+						}
 					}
 				}
 				if falseis200 {
@@ -187,8 +192,13 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 						testlenabs = -testlenabs
 					}
 					if (req.ContentLength != 0 || req.StatusCode == 301 || req.StatusCode == 302 || req.StatusCode == 307 || req.StatusCode == 308) && adminlenabs > 2 && testlenabs > 2 {
-						pkg.POClog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
-						return user, pass, loginurl
+						sucesstestdata := fmt.Sprintf("%s=%s&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, user, passwordkey)
+						if sucesstest, err := pkg.HttpRequset(loginurl, "POST", sucesstestdata, false, nil); err == nil {
+							if sucesstest.ContentLength != req.ContentLength {
+								pkg.POClog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
+								return user, pass, loginurl
+							}
+						}
 					}
 				}
 			}
