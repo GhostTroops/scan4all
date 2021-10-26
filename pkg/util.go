@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"crypto/tls"
+	"github.com/corpix/uarand"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -61,7 +62,7 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 	}
 	req.SetBasicAuth(username, password)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")
+	req.Header.Set("User-Agent", uarand.GetRandom())
 	for v, k := range headers {
 		req.Header[v] = []string{k}
 	}
@@ -119,7 +120,7 @@ func HttpRequset(urlstring string, method string, postdata string, isredirect bo
 		return nil, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)")
+	req.Header.Set("User-Agent", uarand.GetRandom())
 	for v, k := range headers {
 		req.Header[v] = []string{k}
 	}
