@@ -1,17 +1,18 @@
 module github.com/veo/vscan
 
-go 1.13
+go 1.16
 
 require (
 	github.com/akrylysov/pogreb v0.10.1 // indirect
 	github.com/bluele/gcache v0.0.2
 	github.com/corpix/uarand v0.1.1
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
-	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
+	github.com/google/cel-go v0.9.0
 	github.com/google/gopacket v1.1.19
 	github.com/hbakhtiyor/strsim v0.0.0-20190107154042-4d2bbb273edf
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/microcosm-cc/bluemonday v1.0.16
+	github.com/panjf2000/ants v1.3.0
 	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2
 	github.com/pkg/errors v0.9.1
 	github.com/projectdiscovery/blackrock v0.0.0-20210415162320-b38689ae3a2e
@@ -36,7 +37,6 @@ require (
 	github.com/projectdiscovery/sliceutil v0.0.0-20210804143453-61f3e7fd43ea
 	github.com/projectdiscovery/stringsutil v0.0.0-20210830151154-f567170afdd9
 	github.com/projectdiscovery/urlutil v0.0.0-20210805190935-3d83726391c1
-	github.com/projectdiscovery/wappalyzergo v0.0.13
 	github.com/remeh/sizedwaitgroup v1.0.0
 	github.com/rs/xid v1.3.0
 	github.com/satori/go.uuid v1.2.0
@@ -46,5 +46,7 @@ require (
 	go.uber.org/ratelimit v0.2.0
 	golang.org/x/net v0.0.0-20210916014120-12bc252f5db8
 	golang.org/x/text v0.3.7
-	google.golang.org/protobuf v1.27.1 // indirect
+	google.golang.org/genproto v0.0.0-20211029142109-e255c875f7c7
+	google.golang.org/protobuf v1.27.1
+	gopkg.in/yaml.v2 v2.4.0
 )
