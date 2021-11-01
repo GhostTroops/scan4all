@@ -1,17 +1,17 @@
-package poc
+package pocs_go
 
 import (
 	"fmt"
 	"github.com/veo/vscan/brute"
-	"github.com/veo/vscan/poc/ThinkPHP"
-	"github.com/veo/vscan/poc/fastjson"
-	"github.com/veo/vscan/poc/jboss"
-	"github.com/veo/vscan/poc/jenkins"
-	"github.com/veo/vscan/poc/phpunit"
-	"github.com/veo/vscan/poc/seeyon"
-	"github.com/veo/vscan/poc/shiro"
-	"github.com/veo/vscan/poc/tomcat"
-	"github.com/veo/vscan/poc/weblogic"
+	"github.com/veo/vscan/pocs_go/ThinkPHP"
+	"github.com/veo/vscan/pocs_go/fastjson"
+	"github.com/veo/vscan/pocs_go/jboss"
+	"github.com/veo/vscan/pocs_go/jenkins"
+	"github.com/veo/vscan/pocs_go/phpunit"
+	"github.com/veo/vscan/pocs_go/seeyon"
+	"github.com/veo/vscan/pocs_go/shiro"
+	"github.com/veo/vscan/pocs_go/tomcat"
+	"github.com/veo/vscan/pocs_go/weblogic"
 	"net/url"
 )
 
@@ -117,7 +117,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 			if phpunit.CVE_2017_9841(URL) {
 				technologies = append(technologies, "exp-phpunit|CVE_2017_9841")
 			}
-		case "致远OA":
+		case "seeyon":
 			if seeyon.SeeyonFastjson(URL) {
 				technologies = append(technologies, "exp-seeyon|SeeyonFastjson")
 			}
