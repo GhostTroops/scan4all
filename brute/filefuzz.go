@@ -61,7 +61,7 @@ func reqPage(u string) (*page, *pkg.Response, error) {
 func FileFuzza(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
 	var (
 		path404              = "/file_not_support"
-		page200CodeList      = []int{200, 301, 302, 401, 500}
+		page200CodeList      = []int{200, 301, 302, 500}
 		page404Title         = []string{"404", "不存在", "错误", "403", "禁止访问", "请求含有不合法的参数", "网络防火墙", "网站防火墙", "访问拦截", "由于安全原因JSP功能默认关闭"}
 		page404Content       = []string{"<script>document.getElementById(\"a-link\").click();</script>", "404 Not Found", "您所提交的请求含有不合法的参数，已被网站管理员设置拦截", "404.safedog.cn"}
 		page403title         = []string{"403", "Forbidden", "ERROR"}
@@ -199,7 +199,7 @@ func FileFuzza(u string, indexStatusCode int, indexContentLength int, indexbody 
 func FileFuzzb(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
 	var (
 		path404              = "/file_not_support"
-		page200CodeList      = []int{200, 301, 302, 401, 500}
+		page200CodeList      = []int{200, 301, 302, 500}
 		page404Title         = []string{"404", "不存在", "错误", "403", "禁止访问", "请求含有不合法的参数", "网络防火墙", "网站防火墙", "访问拦截", "由于安全原因JSP功能默认关闭"}
 		page404Content       = []string{"<script>document.getElementById(\"a-link\").click();</script>", "404 Not Found", "您所提交的请求含有不合法的参数，已被网站管理员设置拦截", "404.safedog.cn"}
 		page403title         = []string{"403", "Forbidden", "ERROR"}
