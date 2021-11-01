@@ -13,7 +13,7 @@ import (
 type Options struct {
 	Verbose           bool // Verbose flag indicates whether to show verbose output or not
 	NoColor           bool // No-Color disables the colored output
-	SkipWAF           bool // No-Color disables the colored output
+	SkipWAF           bool // Skip WAF,Do Not FileFuzz
 	JSON              bool // JSON specifies whether to use json for output format or text file
 	Silent            bool // Silent suppresses any extra text and only writes found host:port to screen
 	Stdin             bool // Stdin specifies whether stdin input was given to the process
@@ -25,6 +25,8 @@ type Options struct {
 	Nmap              bool // Invoke nmap detailed scan on results
 	InterfacesList    bool // InterfacesList show interfaces list
 	Proxy             string
+	CeyeApi           string
+	CeyeDomain        string
 	Retries           int    // Retries is the number of retries for the port
 	Rate              int    // Rate is the rate of port scan requests
 	Timeout           int    // Timeout is the seconds to wait for ports to respond
@@ -87,6 +89,8 @@ func ParseOptions() *Options {
 
 	createGroup(flagSet, "config", "Configuration",
 		flagSet.StringVar(&options.Proxy, "proxy", "", "HTTP Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)"),
+		flagSet.StringVar(&options.CeyeApi, "ceyeapi", "", "ceye.io api key"),
+		flagSet.StringVar(&options.CeyeDomain, "ceyedomain", "", "ceye.io subdomain"),
 		flagSet.BoolVar(&options.SkipWAF, "skip-waf", false, "Skip WAF,Do Not FileFuzz"),
 		flagSet.BoolVar(&options.ScanAllIPS, "scan-all-ips", false, "Scan all the ips"),
 		flagSet.StringVarP(&options.ScanType, "s", "scan-type", SynScan, "Port scan type (SYN/CONNECT)"),
