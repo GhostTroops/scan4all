@@ -60,6 +60,8 @@ func (r *Runner) httpxrun() error {
 	}
 	httpxoptions := httpxrunner.ParseOptions()
 	httpxoptions.SkipWAF = r.options.SkipWAF
+	httpxoptions.CeyeApi = r.options.CeyeApi
+	httpxoptions.CeyeDomain = r.options.CeyeDomain
 	httpxoptions.NoColor = r.options.NoColor
 	httpxoptions.Silent = r.options.Silent
 	httpxoptions.Output = r.options.Output

@@ -9,7 +9,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/veo/vscan/brute"
-	"github.com/veo/vscan/poc"
+	"github.com/veo/vscan/pocs_go"
+	"github.com/veo/vscan/pocs_yml"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -203,6 +204,9 @@ func New(options *Options) (*Runner, error) {
 	scanopts.HTTP2Probe = options.HTTP2Probe
 	scanopts.OutputMethod = options.OutputMethod
 	scanopts.OutputIP = options.OutputIP
+	scanopts.SkipWAF = options.SkipWAF
+	scanopts.CeyeApi = options.CeyeApi
+	scanopts.CeyeDomain = options.CeyeDomain
 	scanopts.OutputCName = options.OutputCName
 	scanopts.OutputCDN = options.OutputCDN
 	scanopts.OutputResponseTime = options.OutputResponseTime
@@ -1098,7 +1102,10 @@ retry:
 			technologies = append(technologies, match)
 		}
 		technologies = SliceRemoveDuplicates(technologies)
-		poctechnologies := poc.POCcheck(technologies, URL.String(), finalURL)
+		poctechnologies := pocs_go.POCcheck(technologies, URL.String(), finalURL)
+		for _, technology := range technologies {
+			pocs_yml.Check(URL.String(), scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology))
+		}
 		if !scanopts.OutputWithNoColor {
 			for _, poctech := range poctechnologies {
 				technologies = append(technologies, aurora.Red(poctech).String())
@@ -1106,7 +1113,7 @@ retry:
 		} else {
 			technologies = append(technologies, poctechnologies...)
 		}
-		if !r.options.SkipWAF {
+		if !scanopts.SkipWAF {
 			filePaths2, technologies2 := brute.FileFuzzb(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw)
 			technologies = append(technologies, technologies2...)
 			filePaths = append(filePaths, filePaths2...)
