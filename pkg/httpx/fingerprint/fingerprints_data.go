@@ -18,7 +18,7 @@ var fingerprints = `
 				"data.*?:.*?json.stringify"
 			]
 		},
-		"致远OA": {
+		"seeyon": {
 			"html": [
 				"<title>用友致远oa",
 				"\/seeyon\/user-data\/images\/login\/login.gif",
@@ -46,8 +46,9 @@ var fingerprints = `
 				"\/por\/login_psw.csp"
 			]
 		},
-		"ecology": {
+		"Ecology": {
 			"headers": {
+				"set-cookie": "ecology_jsessionid",
 				"cookie": "ecology_jsessionid"
 			}
 		},
@@ -58,6 +59,36 @@ var fingerprints = `
 			},
 			"implies": [
 				"Java"
+			]
+		},
+		"ActiveMQ": {
+			"html": [
+				"<title>apache activemq<\/title>",
+				"<h2>welcome to the apache activemq!<\/h2>"
+			],
+			"implies": [
+				"Java"
+			]
+		},
+		"Alibaba-Nacos": {
+			"html": [
+				"<title>nacos<\/title>"
+			]
+		},
+		"Amtt-Hiboss": {
+			"html": [
+				"<title>酒店宽带运营系统<\/title>"
+			]
+		},
+		"Apache-Flink": {
+			"html": [
+				"<title>apache flink web dashboard<\/title>",
+				"<title>apache flink history server<\/title>"
+			]
+		},
+		"ChinaUnicom-Modem": {
+			"html": [
+				"cu.html"
 			]
 		},
 		"泛微云桥 e-Bridge": {
@@ -96,7 +127,7 @@ var fingerprints = `
 				"PHP"
 			]
 		},
-		"蓝凌 OA": {
+		"Landray": {
 			"html": [
 				"蓝凌软件",
 				"app_themes\/login",
@@ -136,7 +167,8 @@ var fingerprints = `
 				"bt.cn"
 			],
 			"implies": [
-				"PHP"
+				"PHP",
+				"bt"
 			]
 		},
 		"禅道": {
@@ -11589,7 +11621,8 @@ var fingerprints = `
 		},
 		"74cms": {
 			"html": [
-				"powered by <a href=\"http:\/\/www.74cms.com\/\""
+				"powered by <a href=\"http:\/\/www.74cms.com\/\"",
+				"content=\"74cms.com\""
 			]
 		},
 		"ecwapoa": {
@@ -15322,9 +15355,9 @@ var fingerprints = `
 				"\/+cscoe+\/logon.html"
 			]
 		},
-		"Apache Airflow": {
+		"Airflow": {
 			"html": [
-				"<title>airflow - login<\/title>"
+				"<title>airflow"
 			]
 		},
 		"CoreMail": {
