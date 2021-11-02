@@ -46,6 +46,11 @@ var fingerprints = `
 				"\/por\/login_psw.csp"
 			]
 		},
+		"Sangfor-EDR": {
+			"html": [
+				"<title>SANGFOR终端检测响应平台"
+			]
+		},
 		"Ecology": {
 			"meta": {
 				"keywords": [
@@ -117,13 +122,126 @@ var fingerprints = `
 				"<title>harbor<\/title>"
 			]
 		},
-		"泛微云桥 e-Bridge": {
+		"Jellyfin": {
+			"html": [
+				"<title>jellyfin<\/title>"
+			]
+		},
+		"Jumpserver": {
+			"html": [
+				"<script src=\"/static/js/jumpserver.js\"></script>",
+				"<title>jumpserver<\/title>",
+				"jumpserver.org organization"
+			]
+		},
+		"Jupyter-Notebook": {
+			"html": [
+				"<title>jupyter notebook<\/title>"
+			]
+		},
+		"kafka-manager": {
+			"html": [
+				"<title>kafka manager<\/title>"
+			]
+		},
+		"netentsec": {
+			"html": [
+				"<title>网康下一代防火墙<\/title>"
+			]
+		},
+		"Nexus": {
+			"meta": {
+				"description": [
+					"nexus repository manager"
+				]
+			},
+			"html": [
+				"<title>nexus repository manager<\/title>"
+			]
+		},
+		"phpstudy": {
+			"html": [
+				"<title>phpstudy"
+			]
+		},
+		"shiziyu": {
+			"html": [
+				"<form action=\"\/seller.php"
+			]
+		},
+		"shopxo": {
+			"html": [
+				"<meta name=\"apple-mobile-web-app-title\" content=\"shopxo\">"
+			]
+		},
+		"showdoc": {
+			"html": [
+				"<title>showdoc<\/title>"
+			]
+		},
+		"SkyWalking": {
+			"html": [
+				"<title>skywalking<\/title>"
+			]
+		},
+		"SONICWALL-SSL-VPN": {
+			"headers": {
+				"server": "sonicwall ssl-vpn"
+			}
+		},
+		"Supervisor": {
+			"html": [
+				"<title>supervisor status<\/title>"
+			]
+		},
+		"TamronOS-IPTV": {
+			"html": [
+				"<title>tamronos iptv系统<\/title>"
+			]
+		},
+		"TensorBoard": {
+			"html": [
+				"<title>tensorboard<\/title>"
+			]
+		},
+		"ThinkAdmin": {
+			"html": [
+				"\/static\/theme\/img\/login\/bg1.jpg,\/static\/theme\/img\/login\/bg2.jpg"
+			]
+		},
+		"ThinkCMF": {
+			"headers": {
+				"x-powered-by": "thinkcmf"
+			}
+		},
+		"YouPHPTube": {
+			"html": [
+				"<title>install youphptube<\/title>",
+				"youphptube streamer site"
+			]
+		},
+		"YunGouCMS": {
+			"html": [
+				"statics\/templates\/yungou\/"
+			]
+		},
+		"ZeroShell": {
+			"html": [
+				"<title>zeroshell<\/title>"
+			]
+		},
+		"Citrix": {
+			"html": [
+				"<title>citrix login<\/title>"
+			]
+		},
+		"weaver-ebridge": {
 			"html": [
 				"wx.weaver",
 				"e-bridge"
 			]
 		},
-		"通达OA": {
+		"TongDa": {
 			"html": [
 				"通达oa",
 				"\/images\/tongda.ico",
@@ -197,7 +315,7 @@ var fingerprints = `
 				"bt"
 			]
 		},
-		"禅道": {
+		"zentao": {
 			"headers": {
 				"cookie": "zentaosid"
 			},
@@ -206,7 +324,7 @@ var fingerprints = `
 				"\/theme\/default\/images\/main\/zt-logo.png"
 			]
 		},
-		"用友软件": {
+		"yonyou": {
 			"html": [
 				"ufida software co.ltd all rights reserved"
 			]
@@ -2072,6 +2190,10 @@ var fingerprints = `
 			]
 		},
 		"Laravel": {
+			"headers": {
+				"set-cookie": "laravel_session",
+				"cookie": "laravel_session"
+			},
 			"cookies": {
 				"laravel_session": ""
 			},
@@ -2695,7 +2817,7 @@ var fingerprints = `
 				"x-sucuri-cache:": ""
 			}
 		},
-		"SonarQubes": {
+		"SonarQube": {
 			"meta": {
 				"application-name": [
 					"^sonarqubes$"
@@ -6421,6 +6543,7 @@ var fingerprints = `
 				"django"
 			],
 			"html": [
+				"csrfmiddlewaretoken",
 				"(?:powered by <a[^>]+>django ?([\\d.]+)?<\\\/a>|<input[^>]*name=[\"']csrfmiddlewaretoken[\"'][^>]*>)"
 			]
 		},
@@ -9437,7 +9560,8 @@ var fingerprints = `
 				"jira.id"
 			],
 			"implies": [
-				"Java"
+				"Java",
+				"Jira"
 			]
 		},
 		"WPCacheOn": {
@@ -11441,6 +11565,9 @@ var fingerprints = `
 			]
 		},
 		"Docker": {
+			"headers": {
+				"server": "docker"
+			},
 			"html": [
 				"<!-- this comment is expected by the docker healthcheck  -->"
 			]
@@ -11531,11 +11658,6 @@ var fingerprints = `
 				"skins\/_common\/jscripts.css"
 			]
 		},
-		"joomla": {
-			"html": [
-				"content=\"joomla"
-			]
-		},
 		"boonex-dolphin": {
 			"html": [
 				"powered by                    dolphin - <a href=\"http:\/\/www.boonex.com\/products\/dolphin"
@@ -11544,6 +11666,9 @@ var fingerprints = `
 		"h3c er3100": {
 			"html": [
 				"<title>er3100系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"phpcms": {
@@ -11584,6 +11709,9 @@ var fingerprints = `
 		"h3c er8300g2": {
 			"html": [
 				"<title>er8300g2系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"dspace": {
@@ -11667,7 +11795,7 @@ var fingerprints = `
 				"powered by <a href=\"http:\/\/codefuture.co.uk\/projects\/imagehost\/"
 			]
 		},
-		"用友u8": {
+		"yonyou-u8": {
 			"html": [
 				"getfirstu8accid"
 			]
@@ -11889,9 +12017,10 @@ var fingerprints = `
 				"易族智汇javashop"
 			]
 		},
-		"spark_worker": {
+		"Spark": {
 			"html": [
-				"<title>spark worker at"
+				"<title>spark",
+				"spark jobs"
 			]
 		},
 		"o2ocms": {
@@ -12022,6 +12151,9 @@ var fingerprints = `
 		"h3c router": {
 			"html": [
 				"\/wnm\/ssl\/web\/frame\/login.html"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"clansphere": {
@@ -12092,6 +12224,9 @@ var fingerprints = `
 		"h3c er2100": {
 			"html": [
 				"<title>er2100系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"acidcat_cms": {
@@ -12182,6 +12317,9 @@ var fingerprints = `
 		"h3c er6300": {
 			"html": [
 				"<title>er6300系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"dnp firewall": {
@@ -12218,6 +12356,9 @@ var fingerprints = `
 		"h3c am8000": {
 			"html": [
 				"<title>am8000"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"dbshop": {
@@ -12248,11 +12389,17 @@ var fingerprints = `
 		"h3c-secblade-firewall": {
 			"html": [
 				"js\/mulplatapi.js"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"h3c er3108g": {
 			"html": [
 				"<title>er3108g系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"donations-cloud": {
@@ -12284,6 +12431,9 @@ var fingerprints = `
 			"html": [
 				"<title>web user login",
 				"nlanguagesupported"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"e-junkie": {
@@ -12397,11 +12547,6 @@ var fingerprints = `
 				"harbin synjones electronic"
 			]
 		},
-		"ruijie": {
-			"html": [
-				"4008 111 000"
-			]
-		},
 		"edmwebvideo": {
 			"html": [
 				"<title>edmwebvideo"
@@ -12420,6 +12565,9 @@ var fingerprints = `
 		"h3c er3108gw": {
 			"html": [
 				"<title>er3108gw系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"jgs-portal": {
@@ -12458,7 +12606,7 @@ var fingerprints = `
 				"recaptcha_ajax.js"
 			]
 		},
-		"yongyoufe": {
+		"yonyoufe": {
 			"html": [
 				"<title>fe协作"
 			]
@@ -12710,11 +12858,6 @@ var fingerprints = `
 				"<title>mifi une 4g lte"
 			]
 		},
-		"ufida_nc": {
-			"html": [
-				"logo\/images\/ufida_nc.png"
-			]
-		},
 		"帝友p2p": {
 			"html": [
 				"src=\"\/dyweb\/dythemes"
@@ -12834,6 +12977,9 @@ var fingerprints = `
 		"citrix-xenserver": {
 			"html": [
 				"citrix systems, inc. xenserver"
+			],
+			"implies": [
+				"Citrix"
 			]
 		},
 		"phpb2b": {
@@ -13088,6 +13234,9 @@ var fingerprints = `
 		"h3c er6300g2": {
 			"html": [
 				"<title>er6300g2系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"tipask": {
@@ -13291,7 +13440,7 @@ var fingerprints = `
 				"powered by <a href=\"http:\/\/www.avscripts.net\/avarcade\/"
 			]
 		},
-		"用友ufida": {
+		"yonyou-ufida": {
 			"html": [
 				"\/system\/login\/login.asp?appid="
 			]
@@ -13339,6 +13488,9 @@ var fingerprints = `
 		"h3c er2100v2": {
 			"html": [
 				"<title>er2100v2系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"samsung dvr": {
@@ -13354,6 +13506,9 @@ var fingerprints = `
 		"h3c er5200": {
 			"html": [
 				"<title>er5200系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"cogent-datahub": {
@@ -13476,9 +13631,15 @@ var fingerprints = `
 				"content=\"interspire shopping cart"
 			]
 		},
-		"metinfo": {
+		"MetInfo": {
+			"meta": {
+				"generator": [
+					"metinfo( [\\d.]+)?"
+				]
+			},
 			"html": [
-				"<title>powered by metinfo"
+				"<title>powered by metinfo",
+				"metinfo.css"
 			]
 		},
 		"arrisi_touchstone": {
@@ -13514,6 +13675,9 @@ var fingerprints = `
 		"h3c公司产品": {
 			"html": [
 				"service@h3c.com"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"凡科": {
@@ -13770,6 +13934,9 @@ var fingerprints = `
 		"h3c icg1000": {
 			"html": [
 				"<title>icg1000系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"oa企业智能办公自动化系统": {
@@ -13902,11 +14069,17 @@ var fingerprints = `
 		"h3c er3260g2": {
 			"html": [
 				"<title>er3260g2系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"h3c er3260": {
 			"html": [
 				"<title>er3260系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"opencms": {
@@ -13957,6 +14130,9 @@ var fingerprints = `
 		"h3c icg 1000": {
 			"html": [
 				"<title>icg 1000系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"天融信网络卫士过滤网关": {
@@ -14080,15 +14256,10 @@ var fingerprints = `
 				"powered by am4ss"
 			]
 		},
-		"terramaster": {
+		"TerraMaster": {
 			"html": [
+				"<title>tos loading",
 				"<title>terramaster"
-			]
-		},
-		"thinksns": {
-			"html": [
-				"\/addons\/theme\/",
-				"全局变量"
 			]
 		},
 		"爱快流控路由": {
@@ -14167,7 +14338,7 @@ var fingerprints = `
 				"\/bw_templete1.dwt"
 			]
 		},
-		"用友erp-nc": {
+		"yonyou-erp-nc": {
 			"html": [
 				"<title>用友新世纪"
 			]
@@ -14180,11 +14351,6 @@ var fingerprints = `
 		"i@report": {
 			"html": [
 				"ireportclient"
-			]
-		},
-		"spark_master": {
-			"html": [
-				"<title>spark master at"
 			]
 		},
 		"phpweb": {
@@ -14220,6 +14386,9 @@ var fingerprints = `
 		"h3c er2100n": {
 			"html": [
 				"<title>er2100n系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"belkin-modem": {
@@ -14295,6 +14464,9 @@ var fingerprints = `
 		"h3c er5100": {
 			"html": [
 				"<title>er5100系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"易普拉格科研管理系统": {
@@ -14362,11 +14534,6 @@ var fingerprints = `
 				"<a href=\"\/_replset\">replica set status<\/a><\/p>"
 			]
 		},
-		"weiphp": {
-			"html": [
-				"content=\"weiphp"
-			]
-		},
 		"jeecms": {
 			"html": [
 				"<title>powered by jeecms"
@@ -14412,6 +14579,9 @@ var fingerprints = `
 		"h3c er3200": {
 			"html": [
 				"<title>er3200系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"atmail-webmail": {
@@ -14422,11 +14592,6 @@ var fingerprints = `
 		"eazycms": {
 			"html": [
 				"powered by eazycms"
-			]
-		},
-		"django": {
-			"html": [
-				"csrfmiddlewaretoken"
 			]
 		},
 		"huawei_auth_server": {
@@ -14733,11 +14898,6 @@ var fingerprints = `
 				"<title>悟空crm"
 			]
 		},
-		"kibana": {
-			"html": [
-				"<title>kibana"
-			]
-		},
 		"alstrasoft-epay-enterprise": {
 			"html": [
 				"powered by epay enterprise"
@@ -14768,9 +14928,13 @@ var fingerprints = `
 				"<title>i-o data wireless broadband router"
 			]
 		},
-		"海康威视ivms": {
+		"Hikvision": {
+			"headers": {
+				"server": "dnvrs-webs"
+			},
 			"html": [
-				"g_szcachetime"
+				"g_szcachetime",
+				"\/doc\/page\/login.asp"
 			]
 		},
 		"deluxebb": {
@@ -14941,6 +15105,9 @@ var fingerprints = `
 		"h3c er8300": {
 			"html": [
 				"<title>er8300系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"entrans": {
@@ -15056,7 +15223,7 @@ var fingerprints = `
 		},
 		"tpshop": {
 			"html": [
-				">tpshop开源商城<"
+				"<script src=\"\/public\/js\/global.js\"><\/script>"
 			]
 		},
 		"easyconsole-cms": {
@@ -15077,11 +15244,15 @@ var fingerprints = `
 		"h3c er5200g2": {
 			"html": [
 				"<title>er5200g2系统管理"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
-		"苹果cms": {
+		"maccms": {
 			"html": [
-				"maccms:voddaycount"
+				"maccms:voddaycount",
+				"maccms.la"
 			]
 		},
 		"ucstar": {
@@ -15295,6 +15466,9 @@ var fingerprints = `
 		"citrix-metaframe": {
 			"html": [
 				"window.location=\"\/citrix\/metaframe"
+			],
+			"implies": [
+				"Citrix"
 			]
 		},
 		"boyowcms": {
@@ -15354,7 +15528,9 @@ var fingerprints = `
 		},
 		"Ruijie": {
 			"html": [
-				"4008 111 000"
+				"4008 111 000",
+				"url=\/cgi-bin\/mcfi",
+				"<title>rg-uac登录页面"
 			]
 		},
 		"Huawei SMC": {
@@ -15365,6 +15541,9 @@ var fingerprints = `
 		"H3C Router": {
 			"html": [
 				"\/wnm\/ssl\/web\/frame\/login.html"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"Cisco SSLVPN": {
@@ -15387,16 +15566,10 @@ var fingerprints = `
 				"powered by douphp"
 			]
 		},
-		"用友NC": {
+		"yonyou-NC": {
 			"html": [
 				"logo\/images\/ufida_nc.png",
 				"用友nc"
-			]
-		},
-		"YONYOU NC": {
-			"html": [
-				"uclient.yonyou.com",
-				"uclient"
 			]
 		},
 		"RabbitMQ": {
@@ -15433,10 +15606,11 @@ var fingerprints = `
 		},
 		"WeiPHP": {
 			"html": [
-				"weiphp.css"
+				"weiphp.css",
+				"content=\"weiphp"
 			]
 		},
-		"Nagios XI": {
+		"Nagio": {
 			"html": [
 				"nagiosxi"
 			]
@@ -15502,7 +15676,7 @@ var fingerprints = `
 				"中新金盾信息安全管理系统"
 			]
 		},
-		"VMware vCenter": {
+		"VMware-vCenter": {
 			"html": [
 				"vmware",
 				"id_visdk"
@@ -15537,6 +15711,9 @@ var fingerprints = `
 		"Citrix Access Gateway": {
 			"html": [
 				"citrix access gateway"
+			],
+			"implies": [
+				"Citrix"
 			]
 		},
 		"深信服安全感知平台": {
@@ -15567,7 +15744,7 @@ var fingerprints = `
 				"channellist"
 			]
 		},
-		"VMware vRealize Operations Manager": {
+		"VMware-vRealize": {
 			"html": [
 				"vrealize",
 				"identity manager"
@@ -15624,6 +15801,9 @@ var fingerprints = `
 			"html": [
 				"setup\/kanclient.exe",
 				"iepngfix\/iepngfix_tilebg.js"
+			],
+			"implies": [
+				"kingsoft"
 			]
 		},
 		"微擎 - 公众平台自助引擎": {
@@ -15702,18 +15882,27 @@ var fingerprints = `
 		"H3C Web网管": {
 			"html": [
 				"web网管用户登录"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"H3C ER6300G2": {
 			"html": [
 				"er6300g2",
 				"h3c.com"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"H3C ER3100": {
 			"html": [
 				"er3100",
 				"h3c.com"
+			],
+			"implies": [
+				"H3C"
 			]
 		},
 		"锐捷 SSLVPN": {
