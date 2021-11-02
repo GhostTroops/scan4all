@@ -8,6 +8,8 @@ vscan
 ![vscan](img.png)
 # 1.options
 ```
+Examples:
+ ./vscan -l hosts.txt -top-ports http -o out.txt 
 
 Usage:
   ./vscan [flags]
@@ -35,7 +37,9 @@ OUTPUT:
 
 CONFIGURATION:
    -proxy                 Httpx Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)   
-   -skip-waf              Not filefuzz scan to prevent interception by WAF
+   -skip-waf              Not FileFuzz scan to prevent interception by WAF
+   -ceyeapi               ceye.io api key
+   -ceyedomain            ceye.io subdomain
    -no-color              Don't Use colors in output	
    -scan-all-ips          Scan all the ips
    -scan-type, -s string  Port scan type (SYN/CONNECT) (default s)
@@ -73,80 +77,87 @@ cd vscan
 go build
 ```
 
-# 3.Note
-#### 3.1 基本使用命令
-hosts.txt -> 导入的hosts列表，格式：IP或域名或C段，一行一个
-
-`vscan -l hosts.txt -top-ports http -o out.txt `
-
-#### 3.2 万数以上的扫描
-支持万数量级以上的扫描，一万个扫描任务挂在后台，一般一天就扫描完
-#### 3.3 筛选结果
-`cat out.txt|grep "POC"`
-
-# 4.功能
-### 4.1 端口扫描，站点访问
+# 3.功能
+### 3.1 端口扫描，站点访问
 
 1.支持CONNECT、SYN扫描，C段扫描等功能
 
 2.可以直接输入网址进行扫描（不带http://），即使网址使用了CDN，也可以正常扫描
 
-3.支持CDN检测，使用-exclude-cdn选项检测到CDN会只返回80,443端口
+3.支持CDN检测，使用-exclude-cdn参数检测到CDN会只扫描80,443端口
 
 4.智能识别https，自动信任证书
 
 其他功能自行探索，详情见options
 
-### 4.2 指纹识别
-4.2.1 基础指纹识别
+### 3.2 指纹识别
+3.2.1 基础指纹识别
 
 可以快速识别网站的标题、网址、状态码、指纹等
 
-使用了wappalyzergo库作为指纹识别，[wappalyzergo](https://github.com/projectdiscovery/wappalyzergo)库已集成在源码内，二次开发可以在./pkg/httpx/fingerprint/fingerprints_data.go 自行修改
+使用了wappalyzergo库作为指纹识别，[wappalyzergo](https://github.com/projectdiscovery/wappalyzergo)库已集成在源码内，详情见./pkg/httpx/fingerprint/fingerprints_data.go
 
-4.2.2 智能探索型指纹识别
+3.2.2 智能探索型指纹识别
 
-基于敏感文件扫描，扫描到某些文件，再进行指纹鉴定，二次开发可自行修改
+基于敏感文件扫描，扫描到某些文件，再进行指纹鉴定，详情见./brute/fuzzfingerprints.go
 
-### 4.3 漏洞检测（nday、0day检测）
+### 3.3 漏洞检测
+<details>
+<summary>已支持的漏洞列表 [点击展开] </summary>  
+ 
+```
+pocs_go:
 
-目前包含的CVE检测项
+ +-------------------+------------------+-------------------------------------------------------------+
+ | 系统               | 编号             | 描述                                                         |
+ +-------------------+------------------+-------------------------------------------------------------+
+ | Apache Shiro      | CVE-2016-4437    | <= 1.2.4, shiro-550, rememberme deserialization rce         |
+ | Apache Tomcat     | CVE-2017-12615   | 7.0.0 - 7.0.81, put method any files upload                 |
+ | Apache Tomcat     | CVE-2020-1938    | 6, 7 < 7.0.100, 8 < 8.5.51, 9 < 9.0.31 arbitrary file read  |
+ | Fsatjson          | VER-1262         | <= 1.2.62 fastjson autotype remote code execution           |
+ | Jboss             | CVE_2017_12149   | Jboss AS 5.x/6.x rce                                        |
+ | Jenkins           | CVE-2018-1000110 | user search                                                 |
+ | Jenkins           | CVE-2018-1000861 | <= 2.153, LTS <= 2.138.3, remote code execution             |
+ | Jenkins           | CVE-2018-1003000 | Groovy <= 2.61 Script Security <= 1.49 remote code execution|
+ | Jenkins           | Unauthorized     | Unauthorized Groovy script remote code execution            |
+ | Oracle Weblogic   | CVE-2014-4210    | 10.0.2 - 10.3.6, weblogic ssrf vulnerability                |
+ | Oracle Weblogic   | CVE-2017-3506    | 10.3.6.0, 12.1.3.0, 12.2.1.0-2, weblogic wls-wsat rce       |
+ | Oracle Weblogic   | CVE-2017-10271   | 10.3.6.0, 12.1.3.0, 12.2.1.1-2, weblogic wls-wsat rce       |
+ | Oracle Weblogic   | CVE-2018-2894    | 12.1.3.0, 12.2.1.2-3, deserialization any file upload       |
+ | Oracle Weblogic   | CVE-2019-2725    | 10.3.6.0, 12.1.3.0, weblogic wls9-async deserialization rce |
+ | Oracle Weblogic   | CVE-2019-2729    | 10.3.6.0, 12.1.3.0, weblogic wls9-async deserialization rce |
+ | Oracle Weblogic   | CVE-2020-2883    | 10.3.6.0, 12.1.3.0, 12.2.1.3-4, iiop t3 deserialization rce |
+ | Oracle Weblogic   | CVE-2020-14882   | 10.3.6.0, 12.1.3.0, 12.2.1.3-4, 14.1.1.0, console rce       |
+ | Oracle Weblogic   | CVE-2020-14883   | 10.3.6.0, 12.1.3.0, 12.2.1.3-4, 14.1.1.0, console rce       |
+ | Oracle Weblogic   | CVE-2021-2109    | 10.3.6.0, 12.1.3.0, 12.2.1.3-4, 14.1.1.0, unauthorized jndi |
+ | PHPUnit           | CVE_2017_9841    | 4.x < 4.8.28, 5.x < 5.6.3, remote code execution            |
+ | Seeyon            | *                | some poc                                                    |
+ | ThinkPHP          | CVE-2019-9082    | < 3.2.4, thinkphp remote code execution                     |
+ | ThinkPHP          | CVE-2018-20062   | <= 5.0.23, 5.1.31, thinkphp remote code execution           |
+ +-------------------+------------------+-------------------------------------------------------------+
+pocs_yml:
 
-1.Tomcat
+xray all pocs
 
-CVE_2017_12615、CVE_2020_1938
+```
+</details>
 
-2.Weblogic
+#### 自行添加POC方式:
 
-CVE_2014_4210、CVE_2017_10271、CVE_2017_3506、CVE_2018_2894、CVE_2019_2725、CVE_2020_14882、CVE_2020_14883、CVE_2020_2883、CVE_2021_2109
+go文件添加POC：
 
-3.Shiro
+1.在./pkg/httpx/fingerprint/fingerprints_data.go内添加指纹
 
-Shiro550
+2.写一个go文件POC，放到pocs_go文件夹下，指定一个入口函数，指定输入输出，并在./pocs_go/go_poc_check.go 添加检测项（poc的编写过程可以使用./pkg/util.go内的函数pkg.HttpRequset）
 
-4.Fastjson
+例如：
 
-5.Jboss
-
-CVE_2017_12149
-
-
-#### 自行添加poc方式:
-
-为了方便，poc版块都是直接使用go文件，每个文件都是单独完整的poc
-
-poc的编写过程可以使用./pkg/util.go内的函数pkg.HttpRequset
-
-添加poc需要写一个go的文件，放到poc文件夹下，指定一个入口函数，指定输入输出，并在./poc/checklist.go 添加检测项
-
-例如
-
-CVE_2017_12615 poc：
+CVE_2017_12615 POC：
 ```
 func CVE_2017_12615(url string) bool {
 	if req, err := pkg.HttpRequset(url+"/vtset.txt", "PUT", "test", false, nil); err == nil {
 		if req.StatusCode == 204 || req.StatusCode == 201 {
-			fmt.Printf("tomcat-exp-sucess|CVE_2017_12615|--\"%s/vtest.txt\"\n", url)
+			pkg.POClog(fmt.Sprintf("Found vuln Tomcat CVE_2017_12615|--\"%s/vtest.txt\"\n", url))
 			return true
 		}
 	}
@@ -154,17 +165,17 @@ func CVE_2017_12615(url string) bool {
 }
 ```
 
-CVE_2017_12615 poc 添加检测项：
+CVE_2017_12615 POC ./pocs_go/go_poc_check.go 添加检测项：
 ```
 case "Apache Tomcat":
-    if tomcat.CVE_2017_12615(URL.String()) {
-	    technologies = append(technologies, "exp-tomcat|CVE_2017_12615")
-	}
+   if tomcat.CVE_2017_12615(URL) {
+				technologies = append(technologies, "exp-Tomcat|CVE_2017_12615")
+			}
 ```
 
-## 4.4 智能后台弱口令扫描，中间件弱口令扫描
+## 3.4 智能后台弱口令扫描，中间件弱口令扫描
 
-后台弱口令检测内置了两个账号 admin/test，密码为top100，如果成功识别首页有登录会标记为\[LoginPage\]，如果识别可能是后台登录页会标记为\[AdminLoginPage\]，都会尝试构建登录包会自动检测弱口令
+后台弱口令检测内置了两个账号 admin/test，密码为top100，如果成功识别首页有登录会标记为 LoginPage，如果识别可能是后台登录页会标记为 AdminLoginPage ，都会尝试构建登录包会自动检测弱口令
 
 如：
 
@@ -177,93 +188,7 @@ case "Apache Tomcat":
 4. weblogic弱口令检测
 5. jboss弱口令检测
 
-## 4.5 敏感文件扫描
+## 3.5 敏感文件扫描
 
 扫描 备份、swagger-ui、spring actuator、上传接口、测试文件等敏感文件，字典在 ./brute/dicts.go 内置，可自行修改
-
-# 5.演示
-
-## 5.1 扫描Shiro
-```
-➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 8080
-[INF] Running CONNECT scan with non root privileges
-[INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
-127.0.0.1:8080
-[+] Found vuln Shiro CVE_2016_4437| URL: http://127.0.0.1:8080 CBC-KEY: kPH+bIxk5D2deZiIxcaaaA==
-http://127.0.0.1:8080 [302,200] [后台管理系统] [Java,Shiro,exp-shiro|key:kPH+bIxk5D2deZiIxcaaaA==,LoginPage] [ http://103.71.153.11:8080/login.jsp ]
-```
-
-## 5.2 扫描Tomcat 
-```
-➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 8080
-[INF] Running CONNECT scan with non root privileges
-[INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
-127.0.0.1:8080
-[+] Found vuln Tomcat password|Tomcat-manager:manager--http://127.0.0.1:8080
-[+] Found vuln Tomcat CVE_2017_12615|--"http://127.0.0.1:8080/vtest.txt"
-[+] Found vuln Tomcat CVE_2020_1938 127.0.0.1:8009 Tomcat AJP LFI is vulnerable, Tomcat version: 8.5.40
-http://127.0.0.1:8080 [200] [Apache Tomcat/8.5.40] [Apache Tomcat,Java,Tomcat登录页,brute-tomcat|Tomcat-manager:manager,exp-tomcat|CVE_2017_12615,exp-tomcat|CVE-2020-1938]] [file_fuzz："http://127.0.0.1:8080/manager/html"]
-```
-
-## 5.3 扫描weblogic
-```
-➜  vscan git:(main) ✗ go run main.go -host 127.0.0.1 -p 7001
-[INF] Running CONNECT scan with non root privileges
-[INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
-127.0.0.1:7001
-[+] Found vuln WebLogic password|weblogic:welcome1|http://127.0.0.1:7001/console/
-[+] Found vuln WebLogic CVE_2017_3506|http://127.0.0.1:7001
-[+] Found vuln WebLogic CVE_2017_10271|http://127.0.0.1:7001
-[+] Found vuln WebLogic CVE_2019_2725|http://127.0.0.1:7001
-[+] Found vuln WebLogic CVE_2020_2883|http://127.0.0.1:7001
-[+] Found vuln WebLogic CVE_2021_2109|http://127.0.0.1:7001
-http://127.0.0.1:7001 [404] [Error 404--Not Found] [brute-weblogic|weblogic:welcome1,exp-weblogic|CVE_2017_10271,exp-weblogic|CVE_2017_3506,exp-weblogic|CVE_2019_2725,exp-weblogic|CVE_2020_2883,exp-weblogic|CVE_2021_2109,weblogic] [file_fuzz："http://127.0.0.1:7001/console/login/LoginForm.jsp"]
-
-```
-
-## 5.4 扫描jboss
-```
-➜  vscan git:(main) ✗ go run main.go -host 127.0.0.1 -p 8888
-[INF] Running CONNECT scan with non root privileges
-[INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
-127.0.0.1:8888
-[+] Found vuln Jboss password|jboss:jboss|http://127.0.0.1:8888/jmx-console/
-[+] Found vuln Jboss CVE_2017_12149|http://127.0.0.1:8888
-http://127.0.0.1:8888 [200] [Welcome to JBoss AS] [Apache Tomcat,JBoss Application Server,JBoss Web,Java,Java Servlet,brute-jboss|jboss:jboss,exp-jboss|CVE_2017_12149,jboss,jboss_as]
-```
-
-## 5.5 扫描后台智能爆破
-```
-➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 8080
-[INF] Running CONNECT scan with non root privileges
-[INF] Found 1 ports on host 127.0.0.1 (127.0.0.1)
-127.0.0.1:8080
-[+] Found vuln admin password|admin:123456|http://127.0.0.1:8080
-http://127.0.0.1:8080 [302,200] [登录 - 后台] [Java,LoginPage,brute-admin|admin:123456] [http://127.0.0.1:8080/login]
-```
-
-## 5.6 扫描敏感文件
-```
-➜  vscan git:(main) ✗ ./vscan -host 127.0.0.1 -p 443,8081
-[INF] Running CONNECT scan with non root privileges
-[INF] Found 2 ports on host 127.0.0.1 (127.0.0.1)
-127.0.0.1:443
-127.0.0.1:8081
-https://127.0.0.1 [403] [403 Forbidden] [Apache,OpenSSL,Windows Server] [file_fuzz："https://127.0.0.1:443/.git/config","https://127.0.0.1:443/.svn/entries"]
-http://127.0.0.1:8001 [302,302,200] [Data Search] [Java,Google Font API,Bootstrap,jQuery,LoginPage,Font Awesome,Shiro] [ http://127.0.0.1:8001/main/login.html ] [file_fuzz："http://127.0.0.1:8001/druid/index.html","http://127.0.0.1:8081/actuator","http://127.0.0.1:8081/actuator/env"]
-```
-
-# 6.TO DO
-
-1.端口扫描和WEB扫描并发，30s内开始出结果
-
-2.解析http以外的端口指纹
-
-# 7.目前正在做的
-
-1.加入struts2指纹识别，poc
-
-2.加入其他cms nday
-
-
 
