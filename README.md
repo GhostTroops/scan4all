@@ -58,7 +58,6 @@ OPTIMIZATION:
 
 DEBUG:
    -debug          Enable debugging information
-   -v              Show Verbose output
    -no-color, -nc  Don't Use colors in output
    -silent         Show found ports only in output
    -version        Show version of naabu

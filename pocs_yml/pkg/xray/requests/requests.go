@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"crypto/tls"
+	"github.com/corpix/uarand"
 	"io"
 	"io/ioutil"
 	"net"
@@ -82,10 +83,11 @@ func DoRequest(req *http.Request, redirect bool) (*structs.Response, error) {
 	if req.Body == nil || req.Body == http.NoBody {
 	} else {
 		req.Header.Set("Content-Length", strconv.Itoa(int(req.ContentLength)))
-		if req.Header.Get("Content-Type") == "" {
-			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-		}
 	}
+	if req.Header.Get("Content-Type") == "" {
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	}
+	req.Header.Set("User-Agent", uarand.GetRandom())
 
 	var oResp *http.Response
 	var err error
