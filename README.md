@@ -144,9 +144,9 @@ xray all pocs
 
 #### 自行添加POC方式:
 
-go文件添加POC：
+##### go文件添加POC：
 
-1.在./pkg/httpx/fingerprint/fingerprints_data.go内添加指纹
+1.在 ./pkg/httpx/fingerprint/fingerprints_data.go 内检查或添加指纹
 
 2.写一个go文件POC，放到pocs_go文件夹下，指定一个入口函数，指定输入输出，并在./pocs_go/go_poc_check.go 添加检测项（poc的编写过程可以使用./pkg/util.go内的函数pkg.HttpRequset）
 
@@ -172,6 +172,10 @@ case "Apache Tomcat":
 				technologies = append(technologies, "exp-Tomcat|CVE_2017_12615")
 			}
 ```
+##### yml文件添加POC：
+1.在 ./pkg/httpx/fingerprint/fingerprints_data.go 内检查或添加指纹
+
+2.参考 xray yml 的编写方式编写放至 ./pocs_yml/ymlFiles/ 下
 
 ## 3.4 智能后台弱口令扫描，中间件弱口令扫描
 
