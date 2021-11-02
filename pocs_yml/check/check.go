@@ -244,7 +244,7 @@ func executePoc(oReq *http.Request, p *structs.Poc) (bool, error) {
 
 func doSearch(re string, body string) map[string]string {
 	r, err := regexp.Compile(re)
-	fmt.Sprintf("Regexp compile error: %v", err.Error())
+	//fmt.Sprintf("Regexp compile error: %v", err.Error())
 	if err != nil {
 		return nil
 	}
