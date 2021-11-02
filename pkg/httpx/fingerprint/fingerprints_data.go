@@ -47,10 +47,20 @@ var fingerprints = `
 			]
 		},
 		"Ecology": {
+			"meta": {
+				"keywords": [
+					"weaver",
+					"e-mobile"
+				]
+			},
 			"headers": {
 				"set-cookie": "ecology_jsessionid",
 				"cookie": "ecology_jsessionid"
-			}
+			},
+			"html": [
+				"<title>移动管理平台-企业管理<\/title>",
+				"=\"resizable=yes\""
+			]
 		},
 		"Shiro": {
 			"headers": {
@@ -89,6 +99,22 @@ var fingerprints = `
 		"ChinaUnicom-Modem": {
 			"html": [
 				"cu.html"
+			]
+		},
+		"ECshop": {
+			"headers": {
+				"set-cookie": "ecs_id",
+				"cookie": "ecs_id"
+			}
+		},
+		"Elasticsearch": {
+			"html": [
+				"cluster_uuid"
+			]
+		},
+		"Harbor": {
+			"html": [
+				"<title>harbor<\/title>"
 			]
 		},
 		"泛微云桥 e-Bridge": {
@@ -1906,7 +1932,7 @@ var fingerprints = `
 				]
 			}
 		},
-		"Atlassian Confluence": {
+		"Confluence": {
 			"headers": {
 				"x-confluence-request-time": ""
 			},
@@ -4706,7 +4732,7 @@ var fingerprints = `
 				"wpjsonpliverampgdprcmp"
 			]
 		},
-		"Discuz! X": {
+		"Discuz": {
 			"meta": {
 				"generator": [
 					"discuz! x([\\d\\.]+)?"
@@ -7836,7 +7862,11 @@ var fingerprints = `
 				"PHP"
 			],
 			"js": [
-				"dedecontainer"
+				"dedecontainer",
+				"dedeajax2"
+			],
+			"html": [
+				"dedecms.com"
 			]
 		},
 		"Albacross": {
@@ -9173,13 +9203,15 @@ var fingerprints = `
 		},
 		"Outlook Web App": {
 			"implies": [
-				"Microsoft ASP.NET"
+				"Microsoft ASP.NET",
+				"Exchange"
 			],
 			"js": [
 				"isowapremiumbrowser"
 			],
 			"html": [
-				"<link\\s[^>]*href=\"[^\"]*?([\\d.]+)\/themes\/resources\/owafont\\.css"
+				"<link\\s[^>]*href=\"[^\"]*?([\\d.]+)\/themes\/resources\/owafont\\.css",
+				"\/owa/auth\/"
 			]
 		},
 		"Sellingo": {
@@ -11756,11 +11788,6 @@ var fingerprints = `
 				"powered by imgcms"
 			]
 		},
-		"dedecms": {
-			"html": [
-				"<title>powered by dedecms\" "
-			]
-		},
 		"pineapp": {
 			"html": [
 				"<title>pineapp webaccess - login"
@@ -12150,11 +12177,6 @@ var fingerprints = `
 		"etano": {
 			"html": [
 				"powered by <a href=\"http:\/\/www.datemill.com"
-			]
-		},
-		"coremail": {
-			"html": [
-				"<title>coremail邮件系统"
 			]
 		},
 		"h3c er6300": {
@@ -14488,11 +14510,6 @@ var fingerprints = `
 				"design by somoidea"
 			]
 		},
-		"discuz": {
-			"html": [
-				"<title>powered by discuz"
-			]
-		},
 		"mikrotik": {
 			"html": [
 				"<title>routeros",
@@ -15362,7 +15379,7 @@ var fingerprints = `
 		},
 		"CoreMail": {
 			"html": [
-				"coremail\/common"
+				"<script type=\"text/javascript\" src=\"\/coremail\/common"
 			]
 		},
 		"DouPHP": {
@@ -15527,7 +15544,7 @@ var fingerprints = `
 				"安全感知平台"
 			]
 		},
-		"帆软报表-FineReport": {
+		"FineReport": {
 			"html": [
 				"reportserver",
 				"=fs"
@@ -15677,7 +15694,7 @@ var fingerprints = `
 				"\/r\/cms\/www"
 			]
 		},
-		"Apache Hadoop": {
+		"Hadoop": {
 			"html": [
 				"static\/hadoop-st.png"
 			]
