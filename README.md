@@ -169,8 +169,8 @@ CVE_2017_12615 POC ./pocs_go/go_poc_check.go 添加检测项：
 ```
 case "Apache Tomcat":
    if tomcat.CVE_2017_12615(URL) {
-				technologies = append(technologies, "exp-Tomcat|CVE_2017_12615")
-			}
+		technologies = append(technologies, "exp-Tomcat|CVE_2017_12615")
+    }
 ```
 ##### yml文件添加POC：
 1.在 ./pkg/httpx/fingerprint/fingerprints_data.go 内检查或添加指纹
