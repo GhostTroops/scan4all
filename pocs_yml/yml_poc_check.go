@@ -16,8 +16,5 @@ func Check(target string, ceyeapi string, ceyedomain string, proxy string, pocna
 	common_structs.InitCeyeApi(ceyeapi, ceyedomain)
 	_ = xray_requests.InitHttpClient(10, proxy, time.Duration(5)*time.Second)
 	xrayPocs := utils.LoadMultiPoc(Pocs, pocname)
-	xray_check.InitCheck(10, 100, false)
 	xray_check.Start(target, xrayPocs)
-	xray_check.Wait()
-	xray_check.End()
 }

@@ -2,16 +2,15 @@ package check
 
 import (
 	"fmt"
+	"github.com/projectdiscovery/gologger"
 	"github.com/veo/vscan/pkg"
 	"math/rand"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
-	"github.com/panjf2000/ants"
 	common_structs "github.com/veo/vscan/pocs_yml/pkg/common/structs"
 	"github.com/veo/vscan/pocs_yml/pkg/xray/cel"
 	"github.com/veo/vscan/pocs_yml/pkg/xray/requests"
@@ -19,66 +18,17 @@ import (
 	"github.com/veo/vscan/pocs_yml/utils"
 )
 
-var (
-	Ticker    *time.Ticker
-	WaitGroup sync.WaitGroup
-	Pool      *ants.PoolWithFunc
-	Verbose   bool
-)
-
-func InitCheck(threads, rate int, verbose bool) {
-	var err error
-
-	rateLimit := time.Second / time.Duration(rate)
-	Ticker = time.NewTicker(rateLimit)
-	Pool, err = ants.NewPoolWithFunc(threads, check)
-	if err != nil {
-		fmt.Sprintf("Initialize goroutine pool error: "+err.Error(), 7)
-	}
-
-	Verbose = verbose
-}
-
 func Start(target string, pocs []*structs.Poc) {
 	for _, poc := range pocs {
-		WaitGroup.Add(1)
-		_ = Pool.Invoke(&structs.Task{
-			Target: target,
-			Poc:    poc,
-		})
-	}
-}
-
-func Wait() {
-	WaitGroup.Wait()
-}
-
-func End() {
-	Pool.Release()
-}
-
-func check(taskInterface interface{}) {
-	defer WaitGroup.Done()
-	<-Ticker.C
-
-	task, ok := taskInterface.(*structs.Task)
-	if !ok {
-		fmt.Sprintf("Can't convert task interface: %#v", taskInterface)
-		return
-	}
-	target, poc := task.Target, task.Poc
-
-	req, _ := http.NewRequest("GET", target, nil)
-	isVul, err := executePoc(req, poc)
-	if err != nil {
-		fmt.Sprintf("Execute Poc (%v) error: %v", poc.Name, err.Error())
-		return
-	}
-	if isVul {
-		pkg.POClog(fmt.Sprintf("%s (%s)\n", target, poc.Name))
-
-	} else if Verbose {
-		fmt.Printf("[-] %s (%s)\n", target, poc.Name)
+		if req, err := http.NewRequest("GET", target, nil); err == nil {
+			isVul, err := executePoc(req, poc)
+			if err != nil {
+				gologger.Error().Msgf("Execute Poc (%v) error: %v", poc.Name, err.Error())
+			}
+			if isVul {
+				pkg.YmlPocLog(fmt.Sprintf("%s (%s)\n", target, poc.Name))
+			}
+		}
 	}
 }
 
@@ -215,7 +165,7 @@ func executePoc(oReq *http.Request, p *structs.Poc) (bool, error) {
 		for _, rule := range rules {
 			flag, err := DealWithRule(rule)
 			if err != nil {
-				fmt.Sprintf("Execute Rule error: %#v", err.Error())
+				gologger.Error().Msgf("Execute Rule error: %#v", err.Error())
 			}
 
 			if err != nil || !flag { //如果false不继续执行后续rule
