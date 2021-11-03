@@ -150,7 +150,7 @@ func HttpRequset(urlstring string, method string, postdata string, isredirect bo
 func Dnslogchek(randomstr string) bool {
 	urlStr := fmt.Sprintf("http://api.ceye.io/v1/records?token=%s&type=dns&filter=%s", CeyeApi, randomstr)
 	if resp, err := HttpRequset(urlStr, "GET", "", false, nil); err == nil {
-		if !strings.Contains(resp.Body, `"data": []`) { // api返回结果不为空
+		if !strings.Contains(resp.Body, `"data": []`) && strings.Contains(resp.Body, `{"code": 200, "message": "OK"}`) { // api返回结果不为空
 			return true
 		}
 	}
@@ -160,7 +160,7 @@ func Dnslogchek(randomstr string) bool {
 func RandomStr() string {
 	lowercase := "1234567890abcdefghijklmnopqrstuvwxyz"
 	randSource := rand.New(rand.NewSource(time.Now().Unix()))
-	const (
+	var (
 		letterIdxBits = 6                    // 6 bits to represent a letter index
 		letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
 		letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
@@ -170,7 +170,7 @@ func RandomStr() string {
 		if remain == 0 {
 			cache, remain = randSource.Int63(), letterIdxMax
 		}
-		if idx := int(cache & letterIdxMask); idx < len(lowercase) {
+		if idx := int(cache) & int(letterIdxMask); idx < len(lowercase) {
 			randBytes[i] = lowercase[idx]
 			i--
 		}
