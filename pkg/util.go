@@ -2,8 +2,10 @@ package pkg
 
 import (
 	"crypto/tls"
+	"fmt"
 	"github.com/corpix/uarand"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -22,7 +24,11 @@ type Response struct {
 	Location      string
 }
 
-var HttpProxy string
+var (
+	HttpProxy  string
+	CeyeApi    string
+	CeyeDomain string
+)
 
 func HttpRequsetBasic(username string, password string, urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
 	var tr *http.Transport
@@ -139,6 +145,39 @@ func HttpRequset(urlstring string, method string, postdata string, isredirect bo
 		location = resplocation.String()
 	}
 	return &Response{resp.Status, resp.StatusCode, reqbody, resp.Header, len(reqbody), resp.Request.URL.String(), location}, nil
+}
+
+func Dnslogchek(randomstr string) bool {
+	urlStr := fmt.Sprintf("http://api.ceye.io/v1/records?token=%s&type=dns&filter=%s", CeyeApi, randomstr)
+	if resp, err := HttpRequset(urlStr, "GET", "", false, nil); err == nil {
+		if !strings.Contains(resp.Body, `"data": []`) { // api返回结果不为空
+			return true
+		}
+	}
+	return false
+}
+
+func RandomStr() string {
+	lowercase := "1234567890abcdefghijklmnopqrstuvwxyz"
+	randSource := rand.New(rand.NewSource(time.Now().Unix()))
+	const (
+		letterIdxBits = 6                    // 6 bits to represent a letter index
+		letterIdxMask = 1<<letterIdxBits - 1 // All 1-bits, as many as letterIdxBits
+		letterIdxMax  = 63 / letterIdxBits   // # of letter indices fitting in 63 bits
+	)
+	randBytes := make([]byte, 8)
+	for i, cache, remain := 8-1, randSource.Int63(), letterIdxMax; i >= 0; {
+		if remain == 0 {
+			cache, remain = randSource.Int63(), letterIdxMax
+		}
+		if idx := int(cache & letterIdxMask); idx < len(lowercase) {
+			randBytes[i] = lowercase[idx]
+			i--
+		}
+		cache >>= letterIdxBits
+		remain--
+	}
+	return string(randBytes)
 }
 
 func IntInSlice(i int, slice []int) bool {
