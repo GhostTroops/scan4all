@@ -17,7 +17,7 @@ func SessionUpload(u string) bool {
 	if session := getsession(u); session != "" {
 		if filename := upload(u, session); filename != "" {
 			if unzip(u, filename, session) {
-				pkg.POClog(fmt.Sprintf("Found vuln seeyon poc SessionUpload|%s\n", u))
+				pkg.GoPocLog(fmt.Sprintf("Found vuln seeyon poc SessionUpload|%s\n", u))
 				return true
 			}
 		}

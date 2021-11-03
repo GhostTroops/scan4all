@@ -14,7 +14,7 @@ func CNVD_2021_01627(u string) bool {
 		if req.StatusCode == 500 {
 			if req2, err := pkg.HttpRequset(u+"/seeyon/vtest.txt", "GET", "", false, nil); err == nil {
 				if req2.StatusCode == 200 && strings.Contains(req2.Body, "vtest") {
-					pkg.POClog(fmt.Sprintf("Found vuln seeyon CNVD_2021_01627|%s\n", u+"/seeyon/vtest.txt"))
+					pkg.GoPocLog(fmt.Sprintf("Found vuln seeyon CNVD_2021_01627|%s\n", u+"/seeyon/vtest.txt"))
 					return true
 				}
 			}

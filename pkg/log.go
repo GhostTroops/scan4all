@@ -11,19 +11,52 @@ import (
 var NoColor bool
 var Output = ""
 
-func POClog(log string) {
+func GoPocLog(log string) {
 	builder := &strings.Builder{}
-	builder.WriteString(aurora.BrightRed("[POC] ").String())
+	builder.WriteString("[")
 	if !NoColor {
-		builder.WriteString(aurora.BrightRed(log).String())
+		builder.WriteString(aurora.BrightRed("GoPOC").String())
 	} else {
-		builder.WriteString(log)
+		builder.WriteString("GoPOC")
 	}
+	builder.WriteString("] ")
+	builder.WriteString(log)
 	fmt.Print(builder.String())
 	if Output != "" {
 		writeoutput(builder.String())
 	}
+}
 
+func YmlPocLog(log string) {
+	builder := &strings.Builder{}
+	builder.WriteString("[")
+	if !NoColor {
+		builder.WriteString(aurora.BrightRed("YmlPOC").String())
+	} else {
+		builder.WriteString("YmlPOC")
+	}
+	builder.WriteString("] ")
+	builder.WriteString(log)
+	fmt.Print(builder.String())
+	if Output != "" {
+		writeoutput(builder.String())
+	}
+}
+
+func BurteLog(log string) {
+	builder := &strings.Builder{}
+	builder.WriteString("[")
+	if !NoColor {
+		builder.WriteString(aurora.BrightRed("Brute").String())
+	} else {
+		builder.WriteString("Brute")
+	}
+	builder.WriteString("] ")
+	builder.WriteString(log)
+	fmt.Print(builder.String())
+	if Output != "" {
+		writeoutput(builder.String())
+	}
 }
 
 func writeoutput(log string) {

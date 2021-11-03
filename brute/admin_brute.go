@@ -161,7 +161,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 			if req, err2 := pkg.HttpRequset(loginurl, "POST", fmt.Sprintf("%s=%s&%s=%s", usernamekey, user, passwordkey, pass), false, nil); err2 == nil {
 				if falseis401 {
 					if req.StatusCode != 401 {
-						pkg.POClog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
+						pkg.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
 						return user, pass, loginurl
 					}
 				}
@@ -173,7 +173,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 						sucesstestdata := fmt.Sprintf("%s=%s&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, user, passwordkey)
 						if sucesstest, err := pkg.HttpRequset(loginurl, "POST", sucesstestdata, false, nil); err == nil {
 							if sucesstest.Location != req.Location {
-								pkg.POClog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
+								pkg.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
 								return user, pass, loginurl
 							}
 						}
@@ -195,7 +195,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 						sucesstestdata := fmt.Sprintf("%s=%s&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, user, passwordkey)
 						if sucesstest, err := pkg.HttpRequset(loginurl, "POST", sucesstestdata, false, nil); err == nil {
 							if sucesstest.ContentLength != req.ContentLength {
-								pkg.POClog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
+								pkg.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
 								return user, pass, loginurl
 							}
 						}

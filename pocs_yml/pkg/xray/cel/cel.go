@@ -34,19 +34,16 @@ type CustomLib struct {
 func Evaluate(env *cel.Env, expression string, params map[string]interface{}) (ref.Val, error) {
 	ast, iss := env.Compile(expression)
 	if iss.Err() != nil {
-		fmt.Sprintf("compile: ", iss.Err())
 		return nil, iss.Err()
 	}
 
 	prg, err := env.Program(ast)
 	if err != nil {
-		fmt.Sprintf("Program creation error: %v", err)
 		return nil, err
 	}
 
 	out, _, err := prg.Eval(params)
 	if err != nil {
-		fmt.Sprintf("Evaluation error: %v", err)
 		return nil, err
 	}
 	return out, nil
@@ -440,13 +437,9 @@ func reverseCheck(r *structs.Reverse, timeout int64) bool {
 	time.Sleep(time.Second * time.Duration(timeout))
 	sub := strings.Split(r.Domain, ".")[0]
 	urlStr := fmt.Sprintf("http://api.ceye.io/v1/records?token=%s&type=dns&filter=%s", common_structs.CeyeApi, sub)
-
-	fmt.Sprintf("got dnslog from : %s", urlStr)
-
 	req, _ := http.NewRequest("GET", urlStr, nil)
 	resp, err := requests.DoRequest(req, false)
 	if err != nil {
-		fmt.Println(err)
 		return false
 	}
 

@@ -416,13 +416,6 @@ func (r *Runner) handleOutput() {
 				for port := range ports {
 					gologger.Silent().Msgf("%s:%d\n", host, port)
 				}
-				//for port := range ports {
-				//	if _, ok := Naabuipports[host]; !ok {
-				//		Naabuipports[host] = make(map[int]struct{})
-				//	}
-				//	Naabuipports[host][port] = struct{}{}
-				//	gologger.Silent().Msgf("%s:%d\n", host, port)
-				//}
 			}
 
 			// file output
