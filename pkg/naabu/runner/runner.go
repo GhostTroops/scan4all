@@ -66,6 +66,8 @@ func (r *Runner) httpxrun() error {
 	httpxoptions.Silent = r.options.Silent
 	httpxoptions.Output = r.options.Output
 	httpxoptions.HTTPProxy = r.options.Proxy
+	pkg.CeyeApi = r.options.CeyeApi
+	pkg.CeyeDomain = r.options.CeyeDomain
 	pkg.HttpProxy = r.options.Proxy
 	pkg.NoColor = r.options.NoColor
 	pkg.Output = r.options.Output
