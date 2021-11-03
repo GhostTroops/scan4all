@@ -11,7 +11,7 @@ import (
 func InitDataAssess(u string) bool {
 	if req, err := pkg.HttpRequset(u+"/yyoa/assess/js/initDataAssess.jsp", "GET", "", false, nil); err == nil {
 		if req.StatusCode == 200 && strings.Contains(req.Body, "personList") {
-			pkg.POClog(fmt.Sprintf("Found vuln seeyon InitDataAssess|%s\n", u+"/yyoa/assess/js/initDataAssess.jsp"))
+			pkg.GoPocLog(fmt.Sprintf("Found vuln seeyon InitDataAssess|%s\n", u+"/yyoa/assess/js/initDataAssess.jsp"))
 
 			return true
 		}

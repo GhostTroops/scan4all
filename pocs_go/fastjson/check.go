@@ -17,7 +17,7 @@ func Check(u string) string {
 			fastjsonreg := regexp.MustCompile(`fastjson-version (1\.2\.\d+)`)
 			fastjsonversionlilst := fastjsonreg.FindStringSubmatch(req.Body)
 			if fastjsonversionlilst != nil {
-				pkg.POClog(fmt.Sprintf("Found vuln fastjson version %s|%s\n", fastjsonversionlilst[len(fastjsonversionlilst)-1:][0], u))
+				pkg.GoPocLog(fmt.Sprintf("Found vuln fastjson version %s|%s\n", fastjsonversionlilst[len(fastjsonversionlilst)-1:][0], u))
 				return fastjsonversionlilst[len(fastjsonversionlilst)-1:][0]
 			}
 		}

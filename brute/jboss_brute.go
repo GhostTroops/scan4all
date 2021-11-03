@@ -11,7 +11,7 @@ func Jboss_brute(url string) (username string, password string) {
 			for uspa := range jbossuserpass {
 				if req2, err2 := pkg.HttpRequsetBasic(jbossuserpass[uspa].username, jbossuserpass[uspa].password, url+"/jmx-console/", "GET", "", false, nil); err2 == nil {
 					if req2.StatusCode == 200 || req2.StatusCode == 403 {
-						pkg.POClog(fmt.Sprintf("Found vuln Jboss password|%s:%s|%s\n", jbossuserpass[uspa].username, jbossuserpass[uspa].password, url))
+						pkg.BurteLog(fmt.Sprintf("Found vuln Jboss password|%s:%s|%s\n", jbossuserpass[uspa].username, jbossuserpass[uspa].password, url))
 						return jbossuserpass[uspa].username, jbossuserpass[uspa].password
 					}
 				}
