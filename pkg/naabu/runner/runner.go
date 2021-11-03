@@ -480,14 +480,13 @@ func makePrintCallback() func(stats clistats.StatisticsClient) {
 		builder.WriteRune('/')
 		builder.WriteString(clistats.String(total))
 		builder.WriteRune(' ')
-		builder.WriteRune('(')
+		builder.WriteRune('[')
 		//nolint:gomnd // this is not a magic number
 		builder.WriteString(clistats.String(uint64(float64(packets) / float64(total) * 100.0)))
 		builder.WriteRune('%')
-		builder.WriteRune(')')
+		builder.WriteRune(']')
 		builder.WriteRune('\n')
-
-		fmt.Fprintf(os.Stderr, "%s", builder.String())
+		gologger.Info().Msg(builder.String())
 		builder.Reset()
 	}
 }
