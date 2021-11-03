@@ -1148,18 +1148,13 @@ retry:
 	}
 
 	if len(filePaths) > 0 {
-		file_paths := strings.Join(filePaths, "\",\""+URL.String())
+		filePaths := strings.Join(filePaths, "\",\""+URL.String())
 		builder.WriteString(" [")
-		builder.WriteString(aurora.BrightYellow("FileFuzz：").String())
 		if !scanopts.OutputWithNoColor {
-			builder.WriteString(aurora.Yellow("\"" + URL.String() + file_paths).String())
+			builder.WriteString(aurora.BrightYellow("FileFuzz:").String())
+			builder.WriteString(aurora.Yellow("\"" + URL.String() + filePaths + "\"").String())
 		} else {
-			builder.WriteString("\"" + URL.String() + file_paths)
-		}
-		if !scanopts.OutputWithNoColor {
-			builder.WriteString(aurora.Yellow("\"").String())
-		} else {
-			builder.WriteString("\"")
+			builder.WriteString("FileFuzz: \"" + URL.String() + filePaths + "\"")
 		}
 		builder.WriteRune(']')
 	}
