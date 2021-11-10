@@ -975,7 +975,7 @@ retry:
 	if scanopts.OutputTitle {
 		builder.WriteString(" [")
 		if !scanopts.OutputWithNoColor {
-			builder.WriteString(aurora.BrightCyan(title).String())
+			builder.WriteString(aurora.Cyan(title).String())
 		} else {
 			builder.WriteString(title)
 		}
@@ -1151,7 +1151,7 @@ retry:
 		filePaths := strings.Join(filePaths, "\",\""+URL.String())
 		builder.WriteString(" [")
 		if !scanopts.OutputWithNoColor {
-			builder.WriteString(aurora.BrightYellow("FileFuzz:").String())
+			builder.WriteString(aurora.Yellow("FileFuzz:").String())
 			builder.WriteString(aurora.Yellow("\"" + URL.String() + filePaths + "\"").String())
 		} else {
 			builder.WriteString("FileFuzz: \"" + URL.String() + filePaths + "\"")
