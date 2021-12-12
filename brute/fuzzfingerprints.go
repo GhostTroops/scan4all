@@ -40,11 +40,11 @@ func addfingerprintsnormal(payload string, technologies []string, req *pkg.Respo
 			technologies = append(technologies, "Apache Tomcat")
 		}
 	case "/console/login/LoginForm.jsp":
-		if req.StatusCode == 200 && strings.Contains(req.Body, "Oracle WebLogic Server Administration Console") {
+		if req.StatusCode == 200 && strings.Contains(req.Body, "Oracle") {
 			technologies = append(technologies, "WebLogic")
 		}
 	case "/wls-wsat/CoordinatorPortType", "/_async/AsyncResponseService":
-		if req.StatusCode == 200 && strings.Contains(req.Body, "ws_utc") {
+		if req.StatusCode == 200 && strings.Contains(req.Body, "weblogic") {
 			technologies = append(technologies, "WebLogic")
 		}
 	case "/seeyon/":

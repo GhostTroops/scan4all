@@ -204,7 +204,6 @@ func New(options *Options) (*Runner, error) {
 	scanopts.HTTP2Probe = options.HTTP2Probe
 	scanopts.OutputMethod = options.OutputMethod
 	scanopts.OutputIP = options.OutputIP
-	scanopts.SkipWAF = options.SkipWAF
 	scanopts.CeyeApi = options.CeyeApi
 	scanopts.CeyeDomain = options.CeyeDomain
 	scanopts.OutputCName = options.OutputCName
@@ -1075,12 +1074,7 @@ retry:
 	} else {
 		finalURL = URL.String()
 	}
-
-	var filePaths []string
-	var technologies []string
-	filePaths1, technologies1 := brute.FileFuzza(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw)
-	technologies = append(technologies, technologies1...)
-	filePaths = append(filePaths, filePaths1...)
+	filePaths, technologies := brute.FileFuzz(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw)
 	if scanopts.TechDetect {
 		SliceRemoveDuplicates := func(slice []string) []string {
 			sort.Strings(slice)
@@ -1113,13 +1107,7 @@ retry:
 		} else {
 			technologies = append(technologies, poctechnologies...)
 		}
-		if !scanopts.SkipWAF {
-			filePaths2, technologies2 := brute.FileFuzzb(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw)
-			technologies = append(technologies, technologies2...)
-			filePaths = append(filePaths, filePaths2...)
-		}
-		filePaths = SliceRemoveDuplicates(filePaths)
-		technologies = SliceRemoveDuplicates(technologies)
+
 		if len(technologies) > 0 {
 			sort.Strings(technologies)
 			technologies := strings.Join(technologies, ",")

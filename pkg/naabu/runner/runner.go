@@ -59,7 +59,6 @@ func (r *Runner) httpxrun() error {
 		}
 	}
 	httpxoptions := httpxrunner.ParseOptions()
-	httpxoptions.SkipWAF = r.options.SkipWAF
 	httpxoptions.CeyeApi = r.options.CeyeApi
 	httpxoptions.CeyeDomain = r.options.CeyeDomain
 	httpxoptions.NoColor = r.options.NoColor
@@ -238,7 +237,7 @@ func (r *Runner) RunEnumeration() error {
 		r.ConnectVerification()
 	}
 
-	//r.handleOutput()
+	r.handleOutput()
 
 	// handle nmap
 	r.handleNmap()
