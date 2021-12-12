@@ -7,6 +7,7 @@ import (
 	"github.com/veo/vscan/pocs_go/fastjson"
 	"github.com/veo/vscan/pocs_go/jboss"
 	"github.com/veo/vscan/pocs_go/jenkins"
+	"github.com/veo/vscan/pocs_go/log4j"
 	"github.com/veo/vscan/pocs_go/phpunit"
 	"github.com/veo/vscan/pocs_go/seeyon"
 	"github.com/veo/vscan/pocs_go/shiro"
@@ -92,9 +93,9 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 				technologies = append(technologies, fmt.Sprintf("brute-jboss|%s:%s", username, password))
 			}
 		case "JSON":
-			fastjsonversion := fastjson.Check(URL)
-			if fastjsonversion != "" {
-				technologies = append(technologies, fmt.Sprintf("fastjson|%s", fastjsonversion))
+			fastjsonRceType := fastjson.Check(URL)
+			if fastjsonRceType != "" {
+				technologies = append(technologies, fmt.Sprintf("exp-FastJson|%s", fastjsonRceType))
 			}
 		case "Jenkins":
 			if jenkins.Unauthorized(URL) {
@@ -156,6 +157,9 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 			if loginurl != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 			}
+		}
+		if log4j.Check(URL) {
+			technologies = append(technologies, "exp-log4j|JNDI RCE")
 		}
 	}
 	return technologies
