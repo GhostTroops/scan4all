@@ -84,7 +84,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 			if weblogic.CVE_2021_2109(URL) {
 				technologies = append(technologies, "exp-WebLogic|CVE_2021_2109")
 			}
-		case "JBoss Application Server":
+		case "JBoss":
 			if jboss.CVE_2017_12149(URL) {
 				technologies = append(technologies, "exp-jboss|CVE_2017_12149")
 			}
