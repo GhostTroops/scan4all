@@ -1994,12 +1994,12 @@ var fingerprints = `
 				]
 			}
 		},
-		"JBoss Web": {
+		"JBoss": {
 			"headers": {
-				"x-powered-by": "jbossweb(?:-([\\d.]+))?"
+				"x-powered-by": "jboss(?:-([\\d.]+))?"
 			},
-			"implies": [
-				"JBoss Application Server"
+			"html": [
+				"jboss.css"
 			]
 		},
 		"CoconutSoftware": {
@@ -6884,11 +6884,6 @@ var fingerprints = `
 			"implies": [
 				"PHP"
 			]
-		},
-		"JBoss Application Server": {
-			"headers": {
-				"x-powered-by": "jboss(?:-([\\d.]+))?"
-			}
 		},
 		"AOS": {
 			"js": [
@@ -11906,11 +11901,6 @@ var fingerprints = `
 				"<title>login - blueonyx"
 			]
 		},
-		"Jboss": {
-			"html": [
-				"jboss.css"
-			]
-		},
 		"imgcms": {
 			"html": [
 				"powered by imgcms"
@@ -12906,11 +12896,6 @@ var fingerprints = `
 		"bitweaver": {
 			"html": [
 				"href=\"http:\/\/www.bitweaver.org\">powered by"
-			]
-		},
-		"jboss_as": {
-			"html": [
-				"manage this jboss as instance"
 			]
 		},
 		"paloalto_firewall": {
