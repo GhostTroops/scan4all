@@ -113,7 +113,7 @@ func ParsePorts(options *Options) ([]int, error) {
 
 	// By default scan top 100 ports only
 	if len(ports) == 0 {
-		portsList, err := parsePortsList(NmapTop100)
+		portsList, err := parsePortsList(Httpports)
 		if err != nil {
 			return nil, fmt.Errorf("could not read ports: %s", err)
 		}
