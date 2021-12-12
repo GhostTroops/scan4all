@@ -13,7 +13,6 @@ import (
 type Options struct {
 	Verbose           bool // Verbose flag indicates whether to show verbose output or not
 	NoColor           bool // No-Color disables the colored output
-	SkipWAF           bool // Skip WAF,Do Not FileFuzz
 	JSON              bool // JSON specifies whether to use json for output format or text file
 	Silent            bool // Silent suppresses any extra text and only writes found host:port to screen
 	Stdin             bool // Stdin specifies whether stdin input was given to the process
@@ -91,7 +90,6 @@ func ParseOptions() *Options {
 		flagSet.StringVar(&options.Proxy, "proxy", "", "HTTP Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)"),
 		flagSet.StringVar(&options.CeyeApi, "ceyeapi", "", "ceye.io api key"),
 		flagSet.StringVar(&options.CeyeDomain, "ceyedomain", "", "ceye.io subdomain"),
-		flagSet.BoolVar(&options.SkipWAF, "skip-waf", false, "Skip WAF,Do Not FileFuzz"),
 		flagSet.BoolVar(&options.ScanAllIPS, "scan-all-ips", false, "Scan all the ips"),
 		flagSet.StringVarP(&options.ScanType, "s", "scan-type", SynScan, "Port scan type (SYN/CONNECT)"),
 		flagSet.StringVar(&options.SourceIP, "source-ip", "", "Source Ip"),

@@ -29,7 +29,6 @@ type scanOptions struct {
 	RequestURI                string
 	RequestBody               string
 	VHost                     bool
-	SkipWAF                   bool
 	CeyeApi                   string
 	CeyeDomain                string
 	OutputTitle               bool
@@ -155,7 +154,6 @@ type Options struct {
 	Version                   bool
 	Verbose                   bool
 	NoColor                   bool
-	SkipWAF                   bool
 	CeyeApi                   string
 	CeyeDomain                string
 	OutputServerHeader        bool
@@ -255,7 +253,6 @@ func ParseOptions() *Options {
 	options.RandomAgent = true
 	options.CustomHeaders = nil
 	options.HTTPProxy = ""
-	options.SkipWAF = false
 	options.CeyeApi = ""
 	options.CeyeDomain = ""
 	options.Unsafe = false
