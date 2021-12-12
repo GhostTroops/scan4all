@@ -158,9 +158,9 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 			}
 		}
-		if log4j.Check(URL) {
-			technologies = append(technologies, "exp-log4j|JNDI RCE")
-		}
+	}
+	if log4j.Check(URL) {
+		technologies = append(technologies, "exp-log4j|JNDI RCE")
 	}
 	return technologies
 }
