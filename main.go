@@ -7,7 +7,6 @@ import (
 )
 
 func main() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
 	naabuoptions := naaburunner.ParseOptions()
 	if runtime.GOOS == "windows" {
 		naabuoptions.NoColor = true
