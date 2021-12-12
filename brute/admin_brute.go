@@ -73,8 +73,8 @@ func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl
 func Admin_brute(u string) (username string, password string, loginurl string) {
 	usernamekey, passwordkey, loginurl, ismd5 := getinput(u)
 	var (
-		adminfalsedata        = fmt.Sprintf("%s=admin&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, passwordkey)
-		testfalsedata         = fmt.Sprintf("%s=test&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, passwordkey)
+		adminfalsedata        = fmt.Sprintf("%s=admin&%s=Qweasd123admin", usernamekey, passwordkey)
+		testfalsedata         = fmt.Sprintf("%s=test&%s=Qweasd123test", usernamekey, passwordkey)
 		adminaccount          = true
 		testaccount           = true
 		usernames             []string
@@ -170,7 +170,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 						req.Location = regexp.MustCompile(`(.*);`).FindString(req.Location)
 					}
 					if req.Location != adminfalse302location && req.Location != testfalse302location {
-						sucesstestdata := fmt.Sprintf("%s=%s&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, user, passwordkey)
+						sucesstestdata := fmt.Sprintf("%s=%s&%s=Qweasd123zxc", usernamekey, user, passwordkey)
 						if sucesstest, err := pkg.HttpRequset(loginurl, "POST", sucesstestdata, false, nil); err == nil {
 							if sucesstest.Location != req.Location {
 								pkg.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
@@ -192,7 +192,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 						testlenabs = -testlenabs
 					}
 					if (req.ContentLength != 0 || req.StatusCode == 301 || req.StatusCode == 302 || req.StatusCode == 307 || req.StatusCode == 308) && adminlenabs > 2 && testlenabs > 2 {
-						sucesstestdata := fmt.Sprintf("%s=%s&%s=7756ee93d3ac8037bf4d55744b93e08c", usernamekey, user, passwordkey)
+						sucesstestdata := fmt.Sprintf("%s=%s&%s=Qweasd123zxc", usernamekey, user, passwordkey)
 						if sucesstest, err := pkg.HttpRequset(loginurl, "POST", sucesstestdata, false, nil); err == nil {
 							if sucesstest.ContentLength != req.ContentLength {
 								pkg.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
