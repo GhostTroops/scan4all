@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/url"
 	"os"
 	"strings"
 
@@ -109,6 +110,11 @@ func (r *Runner) AddTarget(target string) error {
 	} else if ipranger.IsIP(target) && !r.scanner.IPRanger.Contains(target) {
 		if err := r.scanner.IPRanger.AddHostWithMetadata(target, "ip"); err != nil {
 			gologger.Warning().Msgf("%s\n", err)
+		}
+	} else if strings.HasPrefix(target, "http") {
+		if _, err := url.Parse(target); err == nil {
+			Naabuipports[target] = make(map[int]struct{})
+			Naabuipports[target][80] = struct{}{}
 		}
 	} else {
 		ips, err := r.resolveFQDN(target)
