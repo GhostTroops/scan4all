@@ -44,7 +44,7 @@ func addfingerprintsnormal(payload string, technologies []string, req *pkg.Respo
 			technologies = append(technologies, "WebLogic")
 		}
 	case "/wls-wsat", "/wls-wsat/CoordinatorPortType", "/wls-wsat/CoordinatorPortType11", "/_async/AsyncResponseService", "/_async/AsyncResponseServiceSoap12", "/uddiexplorer/SearchPublicRegistries.jsp", "/ws_utc/config.do":
-		if req.StatusCode == 200 && strings.Contains(req.Body, "weblogic") {
+		if req.StatusCode == 200 && (strings.Contains(req.Body, "weblogic") || strings.Contains(req.Body, "www.bea.com")) {
 			technologies = append(technologies, "WebLogic")
 		}
 	case "/jmx-console/":
