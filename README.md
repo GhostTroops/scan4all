@@ -9,20 +9,20 @@ vscan
 # 1.options
 ```
 Examples:
- ./vscan -l hosts.txt -top-ports http -o out.txt 
+ ./vscan -l hosts.txt -top-ports http -o out.txt -ceyeapi xxx -ceyedomain xxxxxx.ceye.io
 
 Usage:
   ./vscan [flags]
 
 INPUT:
-   -host string                Host to scan ports for
-   -list, -l string            File containing list of hosts to scan ports
+   -host string                Host to scan ports for (url/domain/ip/cidr)
+   -list, -l string            File containing list of hosts to scan ports (url/domain/ip/cidr)
    -exclude-hosts, -eh string  Specifies a comma-separated list of targets to be excluded from the scan (ip, cidr)
    -exclude-file, -ef string   Specifies a newline-delimited file with targets to be excluded from the scan (ip, cidr)
 
 PORT:
-   -port, -p string            Ports to scan (80, 80,443, 100-200
-   -top-ports, -tp string      Top Ports to scan (full/http/top-100/top-1000，default http)
+   -port, -p string            Ports to scan (80, 80,443, 100-200)
+   -top-ports, -tp string      Top Ports to scan (full/http/top-100/top-1000) (default http)
    -exclude-ports, -ep string  Ports to exclude from scan
    -ports-file, -pf string     File containing ports to scan for
    -exclude-cdn, -ec           Skip full port scans for CDNs (only checks for 80,443)
@@ -37,15 +37,15 @@ OUTPUT:
 
 CONFIGURATION:
    -proxy                 Httpx Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)   
-   -skip-waf              Not FileFuzz scan to prevent interception by WAF
-   -ceyeapi               ceye.io api key
-   -ceyedomain            ceye.io subdomain
+   -ceyeapi               ceye.io api key  //扫描时最好添加dnslog，有些漏洞检测需要dnslog验证
+   -ceyedomain            ceye.io subdomain  //扫描时最好添加dnslog，有些漏洞检测需要dnslog验证
    -no-color              Don't Use colors in output	
    -scan-all-ips          Scan all the ips
    -scan-type, -s string  Port scan type (SYN/CONNECT) (default s)
    -source-ip string      Source Ip
    -interface-list, -il   List available interfaces and public ip
    -interface, -i string  Network Interface to use for port scan
+   -r                     Custom resolvers to use to resolve DNS names (comma separated or from file)
    -nmap                  Invoke nmap scan on targets (nmap must be installed)
    -nmap-cli string       nmap command to run on found results (example: -nmap-cli 'nmap -sV')
 
@@ -62,7 +62,6 @@ DEBUG:
    -silent         Show found ports only in output
    -version        Show version of naabu
    -stats          Display stats of the running scan
-
 ```
 
 # 2.Build
@@ -79,9 +78,9 @@ go build
 # 3.功能
 ### 3.1 端口扫描，站点访问
 
-1.支持CONNECT、SYN扫描，C段扫描等功能
+1.支持CONNECT、SYN扫描
 
-2.可以直接输入网址进行扫描（不带http://），即使网址使用了CDN，也可以正常扫描
+2.支持四种模式的输入，完整链接（字目录）/域名地址/IP/C段
 
 3.支持CDN检测，使用-exclude-cdn参数检测到CDN会只扫描80,443端口
 
