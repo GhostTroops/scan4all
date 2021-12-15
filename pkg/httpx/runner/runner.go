@@ -360,19 +360,32 @@ func (r *Runner) streamInput() (chan string, error) {
 
 func (r *Runner) loadAndCloseFile(ipPorts map[string]map[int]struct{}) (numTargets int, err error) {
 	for host, ports := range ipPorts {
-		for port := range ports {
-			target := strings.TrimSpace(fmt.Sprintf("%s:%d", host, port))
-			// Used just to get the exact number of targets
+		if strings.HasPrefix(host, "http") {
+			target := strings.TrimSpace(fmt.Sprintf("%s", host))
 			if _, ok := r.hm.Get(target); ok {
 				continue
 			}
-
 			if len(r.options.requestURIs) > 0 {
 				numTargets += len(r.options.requestURIs)
 			} else {
 				numTargets++
 			}
 			r.hm.Set(target, nil) //nolint
+		} else {
+			for port := range ports {
+				target := strings.TrimSpace(fmt.Sprintf("%s:%d", host, port))
+				// Used just to get the exact number of targets
+				if _, ok := r.hm.Get(target); ok {
+					continue
+				}
+
+				if len(r.options.requestURIs) > 0 {
+					numTargets += len(r.options.requestURIs)
+				} else {
+					numTargets++
+				}
+				r.hm.Set(target, nil) //nolint
+			}
 		}
 	}
 	return numTargets, err
@@ -608,7 +621,6 @@ func (r *Runner) RunEnumeration() {
 
 		return nil
 	}
-
 	if r.options.Stream {
 		for item := range streamChan {
 			_ = processItem(item)
@@ -1074,7 +1086,12 @@ retry:
 	} else {
 		finalURL = URL.String()
 	}
-	filePaths, technologies := brute.FileFuzz(URL.String(), resp.StatusCode, resp.ContentLength, resp.Raw)
+	var technologies []string
+	var filePaths []string
+	var poctechnologies1 []string
+	var poctechnologies2 []string
+	var filefuzzTechnologies []string
+	ul := req.URL.String()
 	if scanopts.TechDetect {
 		SliceRemoveDuplicates := func(slice []string) []string {
 			sort.Strings(slice)
@@ -1095,20 +1112,47 @@ retry:
 		for match := range matches {
 			technologies = append(technologies, match)
 		}
-		technologies = SliceRemoveDuplicates(technologies)
-		poctechnologies := pocs_go.POCcheck(technologies, URL.String(), finalURL)
-		for _, technology := range technologies {
-			pocs_yml.Check(URL.String(), scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology))
+		if req.URL.Path != "" { //获取二级目录，支持完整链接扫描
+			ul = strings.TrimSuffix(ul, path.Base(req.URL.Path))
+			if strings.HasSuffix(ul, "/") {
+				ul = strings.TrimSuffix(ul, "/")
+			}
 		}
-		if !scanopts.OutputWithNoColor {
-			for _, poctech := range poctechnologies {
+		technologies1 := append(technologies, "log4j") //所有链接都检测log4j
+
+		poctechnologies1 = pocs_go.POCcheck(technologies1, ul, finalURL) //通过wappalyzer.Fingerprint 获取到的指纹进行 漏洞扫描
+		for _, technology := range technologies1 {
+			pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology))
+		}
+
+		filePaths, filefuzzTechnologies = brute.FileFuzz(ul, resp.StatusCode, resp.ContentLength, resp.Raw) // 敏感文件扫描
+		filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)                                  // filefuzz指纹去重
+		poctechnologies2 = pocs_go.POCcheck(filefuzzTechnologies, ul, finalURL)                             //// 通过敏感文件扫描 获取到的指纹进行 漏洞扫描
+		for _, technology := range filefuzzTechnologies {
+			pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology))
+		}
+
+		technologies = append(technologies, filefuzzTechnologies...) // 输出加入 敏感文件扫描 获取到的指纹
+
+		if !scanopts.OutputWithNoColor { // poctechnologies1 加色处理
+			for _, poctech := range poctechnologies1 {
 				technologies = append(technologies, aurora.Red(poctech).String())
 			}
 		} else {
-			technologies = append(technologies, poctechnologies...)
+			technologies = append(technologies, poctechnologies1...)
 		}
 
-		if len(technologies) > 0 {
+		if !scanopts.OutputWithNoColor { // poctechnologies2 加色处理
+			for _, poctech := range poctechnologies2 {
+				technologies = append(technologies, aurora.Red(poctech).String())
+			}
+		} else {
+			technologies = append(technologies, poctechnologies2...)
+		}
+
+		technologies = SliceRemoveDuplicates(technologies) // 总体指纹去重
+
+		if len(technologies) > 0 { //输出 指纹
 			sort.Strings(technologies)
 			technologies := strings.Join(technologies, ",")
 			builder.WriteString(" [")
@@ -1136,13 +1180,13 @@ retry:
 	}
 
 	if len(filePaths) > 0 {
-		filePaths := strings.Join(filePaths, "\",\""+URL.String())
+		filePaths := strings.Join(filePaths, "\",\""+ul)
 		builder.WriteString(" [")
 		if !scanopts.OutputWithNoColor {
 			builder.WriteString(aurora.Yellow("FileFuzz:").String())
-			builder.WriteString(aurora.Yellow("\"" + URL.String() + filePaths + "\"").String())
+			builder.WriteString(aurora.Yellow("\"" + ul + filePaths + "\"").String())
 		} else {
-			builder.WriteString("FileFuzz: \"" + URL.String() + filePaths + "\"")
+			builder.WriteString("FileFuzz: \"" + ul + filePaths + "\"")
 		}
 		builder.WriteRune(']')
 	}

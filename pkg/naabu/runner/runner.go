@@ -39,8 +39,9 @@ type Runner struct {
 	stats       *clistats.Statistics
 }
 
+var Naabuipports = make(map[string]map[int]struct{})
+
 func (r *Runner) httpxrun() error {
-	var Naabuipports = make(map[string]map[int]struct{})
 	for hostIP, ports := range r.scanner.ScanResults.IPPorts {
 		dt, err := r.scanner.IPRanger.GetHostsByIP(hostIP)
 		if err != nil {
