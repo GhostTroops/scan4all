@@ -38,7 +38,7 @@ type Options struct {
 	ExcludePorts      string // ExcludePorts is the list of ports to exclude from enumeration
 	ExcludeIps        string // Ips or cidr to be excluded from the scan
 	ExcludeIpsFile    string // File containing Ips or cidr to exclude from the scan
-	TopPorts          string // Tops ports to scan
+	TopPorts          string // Top Ports to scan (full/http/top-100/top-1000，default http)
 	SourceIP          string // SourceIP to use in TCP packets
 	Interface         string // Interface to use for TCP packets
 	ConfigFile        string // Config file contains a scan configuration
@@ -70,7 +70,7 @@ func ParseOptions() *Options {
 
 	createGroup(flagSet, "port", "Port",
 		flagSet.StringVarP(&options.Ports, "p", "port", "", "Ports to scan (80, 80,443, 100-200"),
-		flagSet.StringVarP(&options.TopPorts, "tp", "top-ports", "", "Top Ports to scan (default top 100)"),
+		flagSet.StringVarP(&options.TopPorts, "tp", "top-ports", "", "Top Ports to scan (full/http/top-100/top-1000，default http)"),
 		flagSet.StringVarP(&options.ExcludePorts, "ep", "exclude-ports", "", "Ports to exclude from scan"),
 		flagSet.StringVarP(&options.PortsFile, "pf", "ports-file", "", "File containing ports to scan for"),
 		flagSet.BoolVarP(&options.ExcludeCDN, "ec", "exclude-cdn", false, "Skip full port scans for CDNs (only checks for 80,443)"),
