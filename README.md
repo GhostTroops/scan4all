@@ -22,7 +22,7 @@ INPUT:
 
 PORT:
    -port, -p string            Ports to scan (80, 80,443, 100-200
-   -top-ports, -tp string      Top Ports to scan (default top 100)
+   -top-ports, -tp string      Top Ports to scan (full/http/top-100/top-1000，default http)
    -exclude-ports, -ep string  Ports to exclude from scan
    -ports-file, -pf string     File containing ports to scan for
    -exclude-cdn, -ec           Skip full port scans for CDNs (only checks for 80,443)
