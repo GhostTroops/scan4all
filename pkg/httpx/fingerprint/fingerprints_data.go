@@ -15,7 +15,8 @@ var fingerprints = `
 		},
 		"JSON": {
 			"html": [
-				"data.*?:.*?json.stringify"
+				"data.*?:.*?json.stringify",
+				"json"
 			]
 		},
 		"seeyon": {

