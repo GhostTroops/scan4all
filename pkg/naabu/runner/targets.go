@@ -112,9 +112,33 @@ func (r *Runner) AddTarget(target string) error {
 			gologger.Warning().Msgf("%s\n", err)
 		}
 	} else if strings.HasPrefix(target, "http") {
-		if _, err := url.Parse(target); err == nil {
+		if u, err := url.Parse(target); err == nil {
+			if ipranger.IsIP(u.Hostname()) && !r.scanner.IPRanger.Contains(u.Hostname()) {
+				if err := r.scanner.IPRanger.AddHostWithMetadata(u.Hostname(), "ip"); err != nil {
+					gologger.Warning().Msgf("%s\n", err)
+				}
+			} else {
+				ips, err := r.resolveFQDN(u.Hostname())
+				if err != nil {
+					return err
+				}
+				for _, ip := range ips {
+					if err := r.scanner.IPRanger.AddHostWithMetadata(ip, u.Hostname()); err != nil {
+						gologger.Warning().Msgf("%s\n", err)
+					}
+				}
+			}
 			Naabuipports[target] = make(map[int]struct{})
 			Naabuipports[target][80] = struct{}{}
+			ips, err := r.resolveFQDN(u.Host)
+			if err != nil {
+				return err
+			}
+			for _, ip := range ips {
+				if err := r.scanner.IPRanger.AddHostWithMetadata(ip, target); err != nil {
+					gologger.Warning().Msgf("%s\n", err)
+				}
+			}
 		}
 	} else {
 		ips, err := r.resolveFQDN(target)
