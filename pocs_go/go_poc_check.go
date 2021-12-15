@@ -93,7 +93,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 				technologies = append(technologies, fmt.Sprintf("brute-jboss|%s:%s", username, password))
 			}
 		case "JSON":
-			fastjsonRceType := fastjson.Check(URL)
+			fastjsonRceType := fastjson.Check(URL, finalURL)
 			if fastjsonRceType != "" {
 				technologies = append(technologies, fmt.Sprintf("exp-FastJson|%s", fastjsonRceType))
 			}
@@ -153,14 +153,16 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 				technologies = append(technologies, "exp-seeyon|Backdoor")
 			}
 		case "LoginPage":
-			username, password, loginurl := brute.Admin_brute(URL)
+			username, password, loginurl := brute.Admin_brute(finalURL)
 			if loginurl != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 			}
+		case "log4j":
+			if log4j.Check(URL, finalURL) {
+				technologies = append(technologies, "exp-log4j|JNDI RCE")
+			}
 		}
 	}
-	if log4j.Check(URL) {
-		technologies = append(technologies, "exp-log4j|JNDI RCE")
-	}
+
 	return technologies
 }
