@@ -9,7 +9,7 @@ vscan
 # 1.options
 ```
 Examples:
- ./vscan -l hosts.txt -top-ports http -o out.txt -ceyeapi xxx -ceyedomain xxxxxx.ceye.io
+ ./vscan -l hosts.txt -top-ports http -o out.txt -local-jndi  xxx.xxx.xxx.xxx:1234 -ceyeapi xxx -ceyedomain xxxxxx.ceye.io
 
 Usage:
   ./vscan [flags]
@@ -37,6 +37,8 @@ OUTPUT:
 
 CONFIGURATION:
    -proxy                 Httpx Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)   
+   -skip-admin-brute      Skip brute admin password
+   -local-jndi            Local Jndi Server and Port (eg: 8.8.8.8:1234，如需外网访问，IP请填写外网IP)
    -ceyeapi               ceye.io api key  //扫描时最好添加dnslog，有些漏洞检测需要dnslog验证
    -ceyedomain            ceye.io subdomain  //扫描时最好添加dnslog，有些漏洞检测需要dnslog验证
    -no-color              Don't Use colors in output	
@@ -109,6 +111,7 @@ pocs_go:
  +-------------------+------------------+-------------------------------------------------------------+
  | 系统               | 编号             | 描述                                                         |
  +-------------------+------------------+-------------------------------------------------------------+
+ | Apache Log4j      | CVE-2021-44228   | 2.0 <= Apache log4j2 <= 2.14.1, log4j remote code execution |
  | Apache Shiro      | CVE-2016-4437    | <= 1.2.4, shiro-550, rememberme deserialization rce         |
  | Apache Tomcat     | CVE-2017-12615   | 7.0.0 - 7.0.81, put method any files upload                 |
  | Apache Tomcat     | CVE-2020-1938    | 6, 7 < 7.0.100, 8 < 8.5.51, 9 < 9.0.31 arbitrary file read  |
@@ -193,6 +196,18 @@ case "Apache Tomcat":
 ## 3.5 敏感文件扫描
 
 扫描 备份、swagger-ui、spring actuator、上传接口、测试文件等敏感文件，字典在 ./brute/dicts.go 内置，可自行修改
+
+## 3.6 JNDILOG
+
+JNDI漏洞支持两种验证方式、
+
+1.本机-local-jndi参数启动JNDIlog进行验证
+
+2.外网DNSLOG验证
+
+如两个参数都使用，GOPOC使用JNDILOG进行，YMLPOC还是会使用DNSLOG。
+
+总结：建议扫描时使用 JNDILOG 功能的同时使用 DNSLOG
 
 ## Licenses
 
