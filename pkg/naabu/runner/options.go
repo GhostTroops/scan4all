@@ -23,7 +23,9 @@ type Options struct {
 	ExcludeCDN        bool // Excludes ip of knows CDN ranges for full port scan
 	Nmap              bool // Invoke nmap detailed scan on results
 	InterfacesList    bool // InterfacesList show interfaces list
+	SkipAdminBrute    bool
 	Proxy             string
+	LocalJndiAddress  string
 	CeyeApi           string
 	CeyeDomain        string
 	Retries           int    // Retries is the number of retries for the port
@@ -88,6 +90,8 @@ func ParseOptions() *Options {
 
 	createGroup(flagSet, "config", "Configuration",
 		flagSet.StringVar(&options.Proxy, "proxy", "", "HTTP Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)"),
+		flagSet.BoolVar(&options.SkipAdminBrute, "skip-admin-brute", false, "Skip brute admin password"),
+		flagSet.StringVar(&options.LocalJndiAddress, "local-jndi", "", "Local Jndi Server and Port (eg: 8.8.8.8:1234)"),
 		flagSet.StringVar(&options.CeyeApi, "ceyeapi", "", "ceye.io api key"),
 		flagSet.StringVar(&options.CeyeDomain, "ceyedomain", "", "ceye.io subdomain"),
 		flagSet.BoolVar(&options.ScanAllIPS, "scan-all-ips", false, "Scan all the ips"),
