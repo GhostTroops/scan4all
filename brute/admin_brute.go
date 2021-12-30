@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+var SkipAdminBrute bool
+
 func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl string, ismd5 bool) {
 	usernamekey = "username"
 	passwordkey = "password"
@@ -71,6 +73,9 @@ func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl
 }
 
 func Admin_brute(u string) (username string, password string, loginurl string) {
+	if SkipAdminBrute {
+		return "", "", ""
+	}
 	usernamekey, passwordkey, loginurl, ismd5 := getinput(u)
 	var (
 		adminfalsedata        = fmt.Sprintf("%s=admin&%s=Qweasd123admin", usernamekey, passwordkey)

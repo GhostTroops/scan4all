@@ -174,7 +174,7 @@ func makePayload(host string, port int16) []byte {
 	ajp_msg_append_int8(&payloadBuffer, 2)
 	ajp_msg_append_int8(&payloadBuffer, 2)
 	ajp_msg_append_string(&payloadBuffer, "HTTP/1.1") //protocol
-	ajp_msg_append_string(&payloadBuffer, "/vscan")   //req_uri
+	ajp_msg_append_string(&payloadBuffer, "/vtest")   //req_uri
 	ajp_msg_append_string(&payloadBuffer, host)       //remote_addr (client)
 	ajp_msg_append_string(&payloadBuffer, "")         //remote_host (client)
 	ajp_msg_append_string(&payloadBuffer, host)       //server_name (server)
