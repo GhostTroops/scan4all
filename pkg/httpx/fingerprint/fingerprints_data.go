@@ -91,6 +91,11 @@ var fingerprints = `
 				"<title>nacos<\/title>"
 			]
 		},
+		"Sunlogin": {
+			"html": [
+				"{\"success\":false,\"msg\":\"verification failure\"}"
+			]
+		},
 		"Amtt-Hiboss": {
 			"html": [
 				"<title>酒店宽带运营系统<\/title>"

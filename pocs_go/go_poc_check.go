@@ -11,6 +11,7 @@ import (
 	"github.com/veo/vscan/pocs_go/phpunit"
 	"github.com/veo/vscan/pocs_go/seeyon"
 	"github.com/veo/vscan/pocs_go/shiro"
+	"github.com/veo/vscan/pocs_go/sunlogin"
 	"github.com/veo/vscan/pocs_go/tomcat"
 	"github.com/veo/vscan/pocs_go/weblogic"
 	"net/url"
@@ -160,6 +161,10 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 		case "log4j":
 			if log4j.Check(URL, finalURL) {
 				technologies = append(technologies, "exp-log4j|JNDI RCE")
+			}
+		case "Sunlogin":
+			if sunlogin.SunloginRCE(URL) {
+				technologies = append(technologies, "exp-Sunlogin|RCE")
 			}
 		}
 	}
