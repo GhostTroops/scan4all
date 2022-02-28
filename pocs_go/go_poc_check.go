@@ -14,6 +14,7 @@ import (
 	"github.com/veo/vscan/pocs_go/sunlogin"
 	"github.com/veo/vscan/pocs_go/tomcat"
 	"github.com/veo/vscan/pocs_go/weblogic"
+	"github.com/veo/vscan/pocs_go/zabbix"
 	"net/url"
 )
 
@@ -165,6 +166,10 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 		case "Sunlogin":
 			if sunlogin.SunloginRCE(URL) {
 				technologies = append(technologies, "exp-Sunlogin|RCE")
+			}
+		case "ZabbixSAML":
+			if zabbix.CVE_2022_23131(URL) {
+				technologies = append(technologies, "exp-ZabbixSAML|bypass-login")
 			}
 		}
 	}
