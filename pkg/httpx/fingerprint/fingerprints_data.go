@@ -335,6 +335,11 @@ var fingerprints = `
 				"ufida software co.ltd all rights reserved"
 			]
 		},
+		"ZabbixSAML": {
+			"html": [
+				"sign in with single sign-on"
+			]
+		},
 		"Zabbix": {
 			"meta": {
 				"author": [
