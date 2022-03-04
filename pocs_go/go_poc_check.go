@@ -3,6 +3,7 @@ package pocs_go
 import (
 	"fmt"
 	"github.com/veo/vscan/brute"
+	"github.com/veo/vscan/pocs_go/Springboot"
 	"github.com/veo/vscan/pocs_go/ThinkPHP"
 	"github.com/veo/vscan/pocs_go/fastjson"
 	"github.com/veo/vscan/pocs_go/jboss"
@@ -170,6 +171,10 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 		case "ZabbixSAML":
 			if zabbix.CVE_2022_23131(URL) {
 				technologies = append(technologies, "exp-ZabbixSAML|bypass-login")
+			}
+		case "SpringGateway":
+			if Springboot.CVE_2022_22947(URL) {
+				technologies = append(technologies, "exp-SpringGateway|CVE_2022_22947")
 			}
 		}
 	}
