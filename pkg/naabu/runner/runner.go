@@ -232,6 +232,7 @@ func (r *Runner) RunEnumeration() error {
 	r.wgscan.Wait()
 	_ = r.stats.Stop()
 	gologger.Info().Msg("Port scan over,web scan starting")
+	time.Sleep(time.Second * 2) // wait for the last scan to finish
 	r.httpxrun()
 
 	if r.options.WarmUpTime > 0 {
