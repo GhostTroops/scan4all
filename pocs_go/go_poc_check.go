@@ -172,6 +172,10 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 			if zabbix.CVE_2022_23131(URL) {
 				technologies = append(technologies, "exp-ZabbixSAML|bypass-login")
 			}
+		case "Spring":
+			if Springboot.CVE_2022_22965(finalURL) {
+				technologies = append(technologies, "exp-Spring4Shell|CVE_2022_22965")
+			}
 		case "SpringGateway":
 			if Springboot.CVE_2022_22947(URL) {
 				technologies = append(technologies, "exp-SpringGateway|CVE_2022_22947")
