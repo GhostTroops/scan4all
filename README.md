@@ -9,7 +9,7 @@ vscan
 # 1.options
 ```
 Examples:
- ./vscan -l hosts.txt -top-ports http -o out.txt -local-jndi  xxx.xxx.xxx.xxx:1234 -ceyeapi xxx -ceyedomain xxxxxx.ceye.io
+ ./vscan -l hosts.txt -local-jndi  xxx.xxx.xxx.xxx:1234 -ceyeapi xxx -ceyedomain xxxxxx.ceye.io
 
 Usage:
   ./vscan [flags]
@@ -33,17 +33,18 @@ RATE-LIMIT:
 
 OUTPUT:
    -o, -output string  File to write output to (optional)
-   -json               Write output in JSON lines Format
 
 CONFIGURATION:
    -proxy                 Httpx Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)   
    -skip-admin-brute      Skip brute admin password
+   -np                    Skip POC check
    -local-jndi            Local Jndi Server and Port (eg: 8.8.8.8:1234，如需外网访问，IP请填写外网IP)
    -ceyeapi               ceye.io api key  //扫描时最好添加dnslog，有些漏洞检测需要dnslog验证
    -ceyedomain            ceye.io subdomain  //扫描时最好添加dnslog，有些漏洞检测需要dnslog验证
    -no-color              Don't Use colors in output	
    -scan-all-ips          Scan all the ips
    -scan-type, -s string  Port scan type (SYN/CONNECT) (default s)
+   -port-info             Show port scan results
    -source-ip string      Source Ip
    -interface-list, -il   List available interfaces and public ip
    -interface, -i string  Network Interface to use for port scan
@@ -111,6 +112,8 @@ pocs_go:
  +-------------------+------------------+-------------------------------------------------------------+
  | 系统               | 编号             | 描述                                                         |
  +-------------------+------------------+-------------------------------------------------------------+
+ | Springboot        | CVE-2022-22965   | Spring Framework RCE via Data Binding on JDK 9+             |
+ | Springboot        | CVE-2022-22947   | spring cloud gateway 3.1.1+ and 3.0.7+ remote code execution|
  | Apache Log4j      | CVE-2021-44228   | 2.0 <= Apache log4j2 <= 2.14.1, log4j remote code execution |
  | Apache Shiro      | CVE-2016-4437    | <= 1.2.4, shiro-550, rememberme deserialization rce         |
  | Apache Tomcat     | CVE-2017-12615   | 7.0.0 - 7.0.81, put method any files upload                 |
