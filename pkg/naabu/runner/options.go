@@ -24,6 +24,8 @@ type Options struct {
 	Nmap              bool // Invoke nmap detailed scan on results
 	InterfacesList    bool // InterfacesList show interfaces list
 	SkipAdminBrute    bool
+	NoPOC             bool
+	PortInfo          bool // PortInfo show port information
 	Proxy             string
 	LocalJndiAddress  string
 	CeyeApi           string
@@ -91,11 +93,13 @@ func ParseOptions() *Options {
 	createGroup(flagSet, "config", "Configuration",
 		flagSet.StringVar(&options.Proxy, "proxy", "", "HTTP Proxy, eg (http://127.0.0.1:8080|socks5://127.0.0.1:1080)"),
 		flagSet.BoolVar(&options.SkipAdminBrute, "skip-admin-brute", false, "Skip brute admin password"),
+		flagSet.BoolVar(&options.NoPOC, "np", false, "Skip POC check"),
 		flagSet.StringVar(&options.LocalJndiAddress, "local-jndi", "", "Local Jndi Server and Port (eg: 8.8.8.8:1234)"),
 		flagSet.StringVar(&options.CeyeApi, "ceyeapi", "", "ceye.io api key"),
 		flagSet.StringVar(&options.CeyeDomain, "ceyedomain", "", "ceye.io subdomain"),
 		flagSet.BoolVar(&options.ScanAllIPS, "scan-all-ips", false, "Scan all the ips"),
 		flagSet.StringVarP(&options.ScanType, "s", "scan-type", SynScan, "Port scan type (SYN/CONNECT)"),
+		flagSet.BoolVar(&options.PortInfo, "port-info", false, "Show port info"),
 		flagSet.StringVar(&options.SourceIP, "source-ip", "", "Source Ip"),
 		flagSet.BoolVarP(&options.InterfacesList, "il", "interface-list", false, "List available interfaces and public ip"),
 		flagSet.StringVarP(&options.Interface, "i", "interface", "", "Network Interface to use for port scan"),

@@ -203,6 +203,7 @@ func New(options *Options) (*Runner, error) {
 	scanopts.Pipeline = options.Pipeline
 	scanopts.HTTP2Probe = options.HTTP2Probe
 	scanopts.OutputMethod = options.OutputMethod
+	scanopts.NoPOC = options.NoPOC
 	scanopts.OutputIP = options.OutputIP
 	scanopts.CeyeApi = options.CeyeApi
 	scanopts.CeyeDomain = options.CeyeDomain
@@ -1118,36 +1119,40 @@ retry:
 				ul = strings.TrimSuffix(ul, "/")
 			}
 		}
-		technologies1 := append(technologies, "log4j") //所有链接都检测log4j
 
-		poctechnologies1 = pocs_go.POCcheck(technologies1, ul, finalURL) //通过wappalyzer.Fingerprint 获取到的指纹进行 漏洞扫描
-		for _, technology := range technologies1 {
-			pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology))
-		}
+		if !scanopts.NoPOC {
+			technologies1 := append(technologies, "log4j") //所有链接都检测log4j
 
-		filePaths, filefuzzTechnologies = brute.FileFuzz(ul, resp.StatusCode, resp.ContentLength, resp.Raw) // 敏感文件扫描
-		filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)                                  // filefuzz指纹去重
-		poctechnologies2 = pocs_go.POCcheck(filefuzzTechnologies, ul, finalURL)                             //// 通过敏感文件扫描 获取到的指纹进行 漏洞扫描
-		for _, technology := range filefuzzTechnologies {
-			pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology))
-		}
-
-		technologies = append(technologies, filefuzzTechnologies...) // 输出加入 敏感文件扫描 获取到的指纹
-
-		if !scanopts.OutputWithNoColor { // poctechnologies1 加色处理
-			for _, poctech := range poctechnologies1 {
-				technologies = append(technologies, aurora.Red(poctech).String())
+			poctechnologies1 = pocs_go.POCcheck(technologies1, ul, finalURL) //通过wappalyzer.Fingerprint 获取到的指纹进行 漏洞扫描
+			for _, technology := range technologies1 {
+				pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology))
 			}
-		} else {
-			technologies = append(technologies, poctechnologies1...)
-		}
 
-		if !scanopts.OutputWithNoColor { // poctechnologies2 加色处理
-			for _, poctech := range poctechnologies2 {
-				technologies = append(technologies, aurora.Red(poctech).String())
+			filePaths, filefuzzTechnologies = brute.FileFuzz(ul, resp.StatusCode, resp.ContentLength, resp.Raw) // 敏感文件扫描
+			filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)                                  // filefuzz指纹去重
+			poctechnologies2 = pocs_go.POCcheck(filefuzzTechnologies, ul, finalURL)                             //// 通过敏感文件扫描 获取到的指纹进行 漏洞扫描
+			for _, technology := range filefuzzTechnologies {
+				pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology))
 			}
-		} else {
-			technologies = append(technologies, poctechnologies2...)
+
+			technologies = append(technologies, filefuzzTechnologies...) // 输出加入 敏感文件扫描 获取到的指纹
+
+			if !scanopts.OutputWithNoColor { // poctechnologies1 加色处理
+				for _, poctech := range poctechnologies1 {
+					technologies = append(technologies, aurora.Red(poctech).String())
+				}
+			} else {
+				technologies = append(technologies, poctechnologies1...)
+			}
+
+			if !scanopts.OutputWithNoColor { // poctechnologies2 加色处理
+				for _, poctech := range poctechnologies2 {
+					technologies = append(technologies, aurora.Red(poctech).String())
+				}
+			} else {
+				technologies = append(technologies, poctechnologies2...)
+			}
+
 		}
 
 		technologies = SliceRemoveDuplicates(technologies) // 总体指纹去重

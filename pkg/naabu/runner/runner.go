@@ -68,6 +68,7 @@ func (r *Runner) httpxrun() error {
 	httpxoptions.Silent = r.options.Silent
 	httpxoptions.Output = r.options.Output
 	httpxoptions.HTTPProxy = r.options.Proxy
+	httpxoptions.NoPOC = r.options.NoPOC
 	jndi.JndiAddress = r.options.LocalJndiAddress
 	brute.SkipAdminBrute = r.options.SkipAdminBrute
 	pkg.CeyeApi = r.options.CeyeApi
@@ -231,6 +232,10 @@ func (r *Runner) RunEnumeration() error {
 
 	r.wgscan.Wait()
 	_ = r.stats.Stop()
+	if r.options.PortInfo {
+		r.handleOutput()
+	}
+
 	gologger.Info().Msg("Port scan over,web scan starting")
 	time.Sleep(time.Second * 2) // wait for the last scan to finish
 	r.httpxrun()
@@ -245,8 +250,6 @@ func (r *Runner) RunEnumeration() error {
 	if r.options.Verify {
 		r.ConnectVerification()
 	}
-
-	//r.handleOutput()
 
 	// handle nmap
 	r.handleNmap()
