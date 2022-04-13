@@ -31,6 +31,7 @@ type scanOptions struct {
 	VHost                     bool
 	CeyeApi                   string
 	CeyeDomain                string
+	NoPOC                     bool
 	OutputTitle               bool
 	OutputStatusCode          bool
 	OutputLocation            bool
@@ -154,6 +155,7 @@ type Options struct {
 	Version                   bool
 	Verbose                   bool
 	NoColor                   bool
+	NoPOC                     bool
 	CeyeApi                   string
 	CeyeDomain                string
 	OutputServerHeader        bool
