@@ -1,6 +1,6 @@
 package structs
 
 type Task struct {
-	Poc    *Poc
+	Poc    Poc
 	Target string
 }

@@ -1,0 +1,94 @@
+# 使用方法介绍
+
+## 输入
+
+```shell    
+vscan -host 127.0.0.1
+```
+会对 127.0.0.1 进行http常用端口扫描，扫描完端口后对端口地址进行检测，检测完后在控制台输出结果。
+
+```shell    
+vscan -host http://127.0.0.1:7001
+```
+不会对 127.0.0.1 进行端口扫描，而是直接对 http://127.0.0.1:7001 地址进行检测，检测完后在控制台输出结果。
+
+```shell    
+vscan -host 192.168.1.1/24
+```
+对 192.168.1.1/24 C段进行端口扫描，扫描完端口后对端口地址进行检测，检测完后在控制台输出结果。
+
+```shell    
+vscan -l ips.txt
+```
+对 ips.txt 内的 ip/域名/c段/url地址 进行检测，逐行检测，检测完后在控制台输出结果。(如果有url地址，则不会进行端口扫描)
+
+
+```shell    
+echo 127.0.0.1|vscan
+```
+可以使用管道进行输入并扫描
+
+
+## 端口选择
+
+```shell    
+vscan -host 127.0.0.1 -p 7001,7002
+```
+对 127.0.0.1 的7001,7002端口进行检测
+
+```shell    
+vscan -host 127.0.0.1 -top-ports 1000
+```
+对 127.0.0.1 进行 NmapTop1000 端口进行检测
+
+
+
+
+## 使用DNSLOG功能
+
+```shell    
+vscan -host 127.0.0.1 -ceyeapi xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx -ceyedomain xxxxxx.ceye.io
+```
+使用DNSLOG功能可以更好的进行POC检测，有些POC的检测要用到DNSLOG功能
+
+## 输出/导出功能
+
+```shell    
+vscan -host 127.0.0.1 -json -o 1.json
+```
+输出json格式的结果，并且输出到1.json文件中。端口扫描结果保存在port.1.json中
+
+
+```shell    
+vscan -host 127.0.0.1 -csv -o 1.csv
+```
+输出csv格式的结果，并且输出到1.csv文件中。端口扫描结果保存在port.1.csv中
+
+
+## 只做端口扫描和指纹识别，不检测POC
+
+```shell
+vscan -host 127.0.0.1 -np
+```
+
+## 取消颜色输出
+
+```shell    
+vscan -host 127.0.0.1 -no-color
+```
+
+## 设置线程和线程速率
+
+```shell    
+vscan -host 127.0.0.1 -c 25 -rate 1000
+```
+
+## 代理功能
+
+```shell    
+vscan -host 127.0.0.1 -proxy socks5://127.0.0.1:1080
+```
+
+## 其他
+
+见 [Usage](/static/usage.md)

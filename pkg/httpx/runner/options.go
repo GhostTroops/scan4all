@@ -1,12 +1,9 @@
 package runner
 
 import (
-	"math"
-	"os"
-	"regexp"
-
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goconfig"
+	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/formatter"
 	"github.com/projectdiscovery/gologger/levels"
@@ -14,13 +11,20 @@ import (
 	"github.com/veo/vscan/pkg/httpx/common/customlist"
 	customport "github.com/veo/vscan/pkg/httpx/common/customports"
 	fileutilz "github.com/veo/vscan/pkg/httpx/common/fileutil"
+	"github.com/veo/vscan/pkg/httpx/common/slice"
 	"github.com/veo/vscan/pkg/httpx/common/stringz"
+	"math"
+	"os"
+	"regexp"
+	"strings"
 )
 
 const (
-	maxFileNameLength = 255
-	two               = 2
-	DefaultResumeFile = "resume.cfg"
+	// The maximum file length is 251 (255 - 4 bytes for ".ext" suffix)
+	maxFileNameLength      = 251
+	two                    = 2
+	DefaultResumeFile      = "resume.cfg"
+	DefaultOutputDirectory = "output"
 )
 
 type scanOptions struct {
@@ -29,9 +33,6 @@ type scanOptions struct {
 	RequestURI                string
 	RequestBody               string
 	VHost                     bool
-	CeyeApi                   string
-	CeyeDomain                string
-	NoPOC                     bool
 	OutputTitle               bool
 	OutputStatusCode          bool
 	OutputLocation            bool
@@ -65,6 +66,16 @@ type scanOptions struct {
 	extractRegex              *regexp.Regexp
 	ExcludeCDN                bool
 	HostMaxErrors             int
+	ProbeAllIPS               bool
+	Favicon                   bool
+	LeaveDefaultPorts         bool
+	OutputLinesCount          bool
+	OutputWordsCount          bool
+	Hashes                    string
+	//
+	CeyeApi    string
+	CeyeDomain string
+	NoPOC      bool
 }
 
 func (s *scanOptions) Clone() *scanOptions {
@@ -104,6 +115,11 @@ func (s *scanOptions) Clone() *scanOptions {
 		MaxResponseBodySizeToSave: s.MaxResponseBodySizeToSave,
 		MaxResponseBodySizeToRead: s.MaxResponseBodySizeToRead,
 		HostMaxErrors:             s.HostMaxErrors,
+		Favicon:                   s.Favicon,
+		LeaveDefaultPorts:         s.LeaveDefaultPorts,
+		OutputLinesCount:          s.OutputLinesCount,
+		OutputWordsCount:          s.OutputWordsCount,
+		Hashes:                    s.Hashes,
 	}
 }
 
@@ -155,9 +171,6 @@ type Options struct {
 	Version                   bool
 	Verbose                   bool
 	NoColor                   bool
-	NoPOC                     bool
-	CeyeApi                   string
-	CeyeDomain                string
 	OutputServerHeader        bool
 	OutputWebSocket           bool
 	responseInStdout          bool
@@ -172,6 +185,8 @@ type Options struct {
 	OutputCName               bool
 	Unsafe                    bool
 	Debug                     bool
+	DebugRequests             bool
+	DebugResponse             bool
 	Pipeline                  bool
 	HTTP2Probe                bool
 	OutputCDN                 bool
@@ -182,6 +197,7 @@ type Options struct {
 	TLSGrab                   bool
 	protocol                  string
 	ShowStatistics            bool
+	StatsInterval             int
 	RandomAgent               bool
 	StoreChain                bool
 	Deny                      customlist.CustomList
@@ -190,6 +206,7 @@ type Options struct {
 	MaxResponseBodySizeToRead int
 	OutputExtractRegex        string
 	RateLimit                 int
+	RateLimitMinute           int
 	Probe                     bool
 	Resume                    bool
 	resumeCfg                 *ResumeCfg
@@ -197,89 +214,132 @@ type Options struct {
 	HostMaxErrors             int
 	Stream                    bool
 	SkipDedupe                bool
-	Naabuinput                map[string]map[int]struct{}
+	ProbeAllIPS               bool
+	Resolvers                 goflags.NormalizedStringSlice
+	Favicon                   bool
+	OutputFilterFavicon       goflags.NormalizedStringSlice
+	OutputMatchFavicon        goflags.NormalizedStringSlice
+	LeaveDefaultPorts         bool
+	OutputLinesCount          bool
+	OutputMatchLinesCount     string
+	matchLinesCount           []int
+	OutputFilterLinesCount    string
+	filterLinesCount          []int
+	OutputWordsCount          bool
+	OutputMatchWordsCount     string
+	matchWordsCount           []int
+	OutputFilterWordsCount    string
+	filterWordsCount          []int
+	Hashes                    string
+	Jarm                      bool
+	Asn                       bool
+	//
+	CeyeApi    string
+	CeyeDomain string
+	NoPOC      bool
 }
 
 // ParseOptions parses the command line options for application
 func ParseOptions() *Options {
 	options := &Options{}
+
 	options.InputFile = ""
 	options.InputRawRequest = ""
 	options.StatusCode = true
-	options.TechDetect = true
 	options.ContentLength = false
-	options.OutputServerHeader = false
 	options.OutputContentType = false
-	options.OutputResponseTime = false
-	options.ExtractTitle = true
 	options.Location = false
+	options.Favicon = false
+	options.Hashes = ""
+	options.Jarm = false
+	options.OutputResponseTime = false
+	options.OutputLinesCount = false
+	options.OutputWordsCount = true
+	options.ExtractTitle = true
+	options.OutputServerHeader = false
+	options.TechDetect = true
 	options.OutputMethod = false
 	options.OutputWebSocket = false
 	options.OutputIP = false
 	options.OutputCName = false
+	options.Asn = false
 	options.OutputCDN = false
 	options.Probe = false
-	options.NoFallback = false
 	options.OutputMatchStatusCode = ""
 	options.OutputMatchContentLength = ""
+	options.OutputMatchLinesCount = ""
+	options.OutputMatchWordsCount = ""
+	options.OutputMatchFavicon = []string{}
 	options.OutputMatchString = ""
 	options.OutputMatchRegex = ""
 	options.OutputExtractRegex = ""
 	options.OutputFilterStatusCode = ""
 	options.OutputFilterContentLength = ""
+	options.OutputFilterLinesCount = ""
+	options.OutputFilterWordsCount = ""
+	options.OutputFilterFavicon = []string{}
 	options.OutputFilterString = ""
 	options.OutputFilterRegex = ""
 	options.Threads = 50
 	options.RateLimit = 150
-	options.TLSGrab = false
+	options.RateLimitMinute = 0
+	options.ProbeAllIPS = false
+	options.CustomPorts = nil
+	options.RequestURIs = ""
 	options.TLSProbe = false
 	options.CSPProbe = false
+	options.TLSGrab = false
 	options.Pipeline = false
 	options.HTTP2Probe = false
 	options.VHost = false
-	options.CustomPorts = nil
-	options.RequestURIs = ""
-	options.RequestURIs = ""
 	options.Output = ""
 	options.StoreResponse = false
-	options.StoreResponseDir = "output"
+	options.StoreResponseDir = ""
+	options.CSVOutput = false
 	options.JSONOutput = false
 	options.responseInStdout = false
 	options.chainInStdout = false
 	options.StoreChain = false
-	options.CSVOutput = false
-	options.MaxResponseBodySizeToSave = math.MaxInt32
-	options.MaxResponseBodySizeToRead = math.MaxInt32
+	options.Resolvers = []string{}
 	options.Allow = nil
 	options.Deny = nil
 	options.RandomAgent = true
 	options.CustomHeaders = nil
 	options.HTTPProxy = ""
-	options.CeyeApi = ""
-	options.CeyeDomain = ""
 	options.Unsafe = false
 	options.Resume = false
-	options.NoColor = false
-	options.NoFallbackScheme = false
 	options.FollowRedirects = true
-	options.FollowHostRedirects = false
 	options.MaxRedirects = 10
+	options.FollowHostRedirects = false
 	options.VHostInput = false
 	options.Methods = ""
 	options.RequestBody = ""
 	options.Stream = false
 	options.SkipDedupe = false
-	options.Silent = true
-	options.Verbose = false
-	options.Version = false
+	options.LeaveDefaultPorts = false
 	options.Debug = false
+	options.DebugRequests = false
+	options.DebugResponse = false
+	options.Version = false
 	options.ShowStatistics = false
-	options.Retries = 0
-	options.Timeout = 5
+	options.Silent = false
+	options.Verbose = false
+	options.StatsInterval = 0
+	options.NoColor = false
+	options.NoFallback = false
+	options.NoFallbackScheme = false
 	options.HostMaxErrors = 30
 	options.ExcludeCDN = false
-	options.Naabuinput = nil
+	options.Retries = 0
+	options.Timeout = 5
+	options.MaxResponseBodySizeToSave = math.MaxInt32
+	options.MaxResponseBodySizeToRead = math.MaxInt32
 
+	if options.StatsInterval != 0 {
+		options.ShowStatistics = true
+	}
+
+	// Read the inputs and configure the logging
 	options.configureOutput()
 
 	err := options.configureResume()
@@ -336,6 +396,59 @@ func (options *Options) validateOptions() {
 			gologger.Fatal().Msgf("Invalid value for match regex option: %s\n", err)
 		}
 	}
+	if options.matchLinesCount, err = stringz.StringToSliceInt(options.OutputMatchLinesCount); err != nil {
+		gologger.Fatal().Msgf("Invalid value for match lines count option: %s\n", err)
+	}
+	if options.matchWordsCount, err = stringz.StringToSliceInt(options.OutputMatchWordsCount); err != nil {
+		gologger.Fatal().Msgf("Invalid value for match words count option: %s\n", err)
+	}
+	if options.filterLinesCount, err = stringz.StringToSliceInt(options.OutputFilterLinesCount); err != nil {
+		gologger.Fatal().Msgf("Invalid value for filter lines count option: %s\n", err)
+	}
+	if options.filterWordsCount, err = stringz.StringToSliceInt(options.OutputFilterWordsCount); err != nil {
+		gologger.Fatal().Msgf("Invalid value for filter words count option: %s\n", err)
+	}
+
+	var resolvers []string
+	for _, resolver := range options.Resolvers {
+		if fileutil.FileExists(resolver) {
+			chFile, err := fileutil.ReadFile(resolver)
+			if err != nil {
+				gologger.Fatal().Msgf("Couldn't process resolver file \"%s\": %s\n", resolver, err)
+			}
+			for line := range chFile {
+				resolvers = append(resolvers, line)
+			}
+		} else {
+			resolvers = append(resolvers, resolver)
+		}
+	}
+	options.Resolvers = resolvers
+	if len(options.Resolvers) > 0 {
+		gologger.Debug().Msgf("Using resolvers: %s\n", strings.Join(options.Resolvers, ","))
+	}
+
+	if options.StoreResponse && options.StoreResponseDir == "" {
+		gologger.Debug().Msgf("Store response directory not specified, using \"%s\"\n", DefaultOutputDirectory)
+		options.StoreResponseDir = DefaultOutputDirectory
+	}
+	if options.StoreResponseDir != "" && !options.StoreResponse {
+		gologger.Debug().Msgf("Store response directory specified, enabling \"sr\" flag automatically\n")
+		options.StoreResponse = true
+	}
+
+	if options.Favicon {
+		gologger.Debug().Msgf("Setting single path to \"favicon.ico\" and ignoring multiple paths settings\n")
+		options.RequestURIs = "/favicon.ico"
+	}
+
+	if options.Hashes != "" {
+		for _, hashType := range strings.Split(options.Hashes, ",") {
+			if !slice.StringSliceContains([]string{"md5", "sha1", "sha256", "sha512", "mmh3", "simhash"}, strings.ToLower(hashType)) {
+				gologger.Error().Msgf("Unsupported hash type: %s\n", hashType)
+			}
+		}
+	}
 }
 
 // configureOutput configures the output on the screen
@@ -374,9 +487,9 @@ func (options *Options) ShouldSaveResume() bool {
 	return true
 }
 
-//func createGroup(flagSet *goflags.FlagSet, groupName, description string, flags ...*goflags.FlagData) {
-//	flagSet.SetGroup(groupName, description)
-//	for _, currentFlag := range flags {
-//		currentFlag.Group(groupName)
-//	}
-//}
+func createGroup(flagSet *goflags.FlagSet, groupName, description string, flags ...*goflags.FlagData) {
+	flagSet.SetGroup(groupName, description)
+	for _, currentFlag := range flags {
+		currentFlag.Group(groupName)
+	}
+}

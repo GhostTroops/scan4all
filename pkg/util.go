@@ -25,9 +25,10 @@ type Response struct {
 }
 
 var (
-	HttpProxy  string
-	CeyeApi    string
-	CeyeDomain string
+	HttpProxy   string
+	CeyeApi     string
+	CeyeDomain  string
+	Fuzzthreads = 20
 )
 
 func HttpRequsetBasic(username string, password string, urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {

@@ -1,6 +1,8 @@
 package httpx
 
 import (
+	"net/http"
+	"strings"
 	"time"
 )
 
@@ -36,6 +38,8 @@ type Options struct {
 	MaxResponseBodySizeToSave int64
 	MaxResponseBodySizeToRead int64
 	UnsafeURI                 string
+	Resolvers                 []string
+	customCookies             []*http.Cookie
 }
 
 // DefaultOptions contains the default options
@@ -55,5 +59,19 @@ var DefaultOptions = Options{
 	VHostIgnoreNumberOfLines: false,
 	VHostStripHTML:           false,
 	VHostSimilarityRatio:     85,
-	DefaultUserAgent:         "httpx - Open-source project (github.com/projectdiscovery/httpx)",
+	DefaultUserAgent:         "httpx - Open-source project (github.com/veo/vscan/pkg/httpx)",
+}
+
+func (options *Options) parseCustomCookies() {
+	// parse and fill the custom field
+	for k, v := range options.CustomHeaders {
+		if strings.EqualFold(k, "cookie") {
+			req := http.Request{Header: http.Header{"Cookie": []string{v}}}
+			options.customCookies = req.Cookies()
+		}
+	}
+}
+
+func (options *Options) hasCustomCookies() bool {
+	return len(options.customCookies) > 0
 }

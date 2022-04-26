@@ -2,229 +2,464 @@ package check
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
 	"github.com/veo/vscan/pkg"
-	"math/rand"
+	"io"
+	"net"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
-	"regexp"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 
-	common_structs "github.com/veo/vscan/pocs_yml/pkg/common/structs"
+	"github.com/google/cel-go/checker/decls"
 	"github.com/veo/vscan/pocs_yml/pkg/xray/cel"
 	"github.com/veo/vscan/pocs_yml/pkg/xray/requests"
-	"github.com/veo/vscan/pocs_yml/pkg/xray/structs"
-	"github.com/veo/vscan/pocs_yml/utils"
+	xray_structs "github.com/veo/vscan/pocs_yml/pkg/xray/structs"
+	"gopkg.in/yaml.v2"
 )
 
-func Start(target string, pocs []*structs.Poc) {
+var (
+	BodyBufPool = sync.Pool{
+		New: func() interface{} {
+			return make([]byte, 1024)
+		},
+	}
+	BodyPool = sync.Pool{
+		New: func() interface{} {
+			return make([]byte, 4096)
+		},
+	}
+	VariableMapPool = sync.Pool{
+		New: func() interface{} {
+			return make(map[string]interface{})
+		},
+	}
+)
+
+type RequestFuncType func(ruleName string, rule xray_structs.Rule) error
+
+func Start(target string, pocs []*xray_structs.Poc) []string {
+	var Vullist []string
 	for _, poc := range pocs {
 		if req, err := http.NewRequest("GET", target, nil); err == nil {
-			isVul, err := executePoc(req, poc)
+			isVul, err := executeXrayPoc(req, target, poc)
 			if err != nil {
 				gologger.Error().Msgf("Execute Poc (%v) error: %v", poc.Name, err.Error())
 			}
 			if isVul {
 				pkg.YmlPocLog(fmt.Sprintf("%s (%s)\n", target, poc.Name))
+				Vullist = append(Vullist, poc.Name)
 			}
 		}
 	}
+	return Vullist
 }
 
-func executePoc(oReq *http.Request, p *structs.Poc) (bool, error) {
-	//utils.DebugF("Check Poc [%#v] (%#v)", oReq.URL.String(), p.Name)
+func executeXrayPoc(oReq *http.Request, target string, poc *xray_structs.Poc) (isVul bool, err error) {
+	isVul = false
 
-	c := cel.NewEnvOption()
+	var (
+		milliseconds int64
+		tcpudpType   = ""
 
-	set := make(map[string]string, 0)
-	for _, item := range p.Set {
-		set[item.Key.(string)] = item.Value.(string)
-	}
+		request       *http.Request
+		response      *http.Response
+		oProtoRequest *xray_structs.Request
+		protoRequest  *xray_structs.Request
+		protoResponse *xray_structs.Response
+		variableMap   = VariableMapPool.Get().(map[string]interface{})
+		requestFunc   cel.RequestFuncType
+	)
 
-	c.UpdateCompileOptions(set)
-	env, err := cel.NewEnv(&c)
+	// 异常处理
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.Wrapf(r.(error), "Run Xray Poc[%s] error", poc.Name)
+			isVul = false
+		}
+	}()
+	// 回收
+	defer func() {
+		if protoRequest != nil {
+			requests.PutUrlType(protoRequest.Url)
+			requests.PutRequest(protoRequest)
 
-	if err != nil {
-		//utils.ErrorF("Environment creation error: %s\n", err.Error())
-		return false, err
-	}
+		}
+		if oProtoRequest != nil {
+			requests.PutUrlType(oProtoRequest.Url)
+			requests.PutRequest(oProtoRequest)
 
-	variableMap := make(map[string]interface{})
-	req, err := requests.ParseRequest(oReq)
-	if err != nil {
-		//utils.Error(err)
-		return false, err
-	}
-	variableMap["request"] = req
-
-	// 现在假定set中payload作为最后产出，那么先解析其他的自定义变量，更新map[string]interface{}后再来解析payload
-	for k, expression := range set {
-		if k != "payload" {
-			if expression == "newReverse()" {
-				variableMap[k] = newReverse()
-				continue
+		}
+		if protoResponse != nil {
+			requests.PutUrlType(protoResponse.Url)
+			if protoResponse.Conn != nil {
+				requests.PutAddrType(protoResponse.Conn.Source)
+				requests.PutAddrType(protoResponse.Conn.Destination)
+				requests.PutConnectInfo(protoResponse.Conn)
 			}
-			out, err := cel.Evaluate(env, expression, variableMap)
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-			switch value := out.Value().(type) {
-			case *structs.UrlType:
-				variableMap[k] = cel.UrlTypeToString(value)
-			case int64:
-				variableMap[k] = int(value)
+			requests.PutResponse(protoResponse)
+		}
+
+		for _, v := range variableMap {
+			switch v.(type) {
+			case *xray_structs.Reverse:
+				cel.PutReverse(v)
 			default:
-				variableMap[k] = fmt.Sprintf("%v", out)
 			}
 		}
-	}
+		VariableMapPool.Put(variableMap)
+	}()
 
-	// 执行payload
-	if set["payload"] != "" {
-		out, err := cel.Evaluate(env, set["payload"], variableMap)
-		if err != nil {
-			return false, err
+	// 初始赋值
+	// 设置原始请求变量
+	oProtoRequest, _ = requests.ParseHttpRequest(oReq)
+	variableMap["request"] = oProtoRequest
+
+	// 判断transport，如果不合法则跳过
+	transport := poc.Transport
+	if transport == "tcp" || transport == "udp" {
+		if strings.HasPrefix(target, "http://") || strings.HasPrefix(target, "https://") {
+			return
 		}
-		variableMap["payload"] = fmt.Sprintf("%v", out)
+	} else {
+		_, err = url.ParseRequestURI(target)
+		if err != nil {
+			return
+		}
 	}
 
-	success := false
+	// 初始化cel-go环境，并在函数返回时回收
+	c := cel.NewEnvOption()
+	defer cel.PutCustomLib(c)
 
-	// 处理单条Rule
-	DealWithRule := func(rule structs.Rule) (bool, error) {
-		var (
-			flag, ok bool
-		)
+	env, err := cel.NewEnv(&c)
+	if err != nil {
+		return false, err
+	}
 
+	// 请求中的全局变量
+
+	// 定义渲染函数
+	render := func(v string) string {
 		for k1, v1 := range variableMap {
 			_, isMap := v1.(map[string]string)
 			if isMap {
 				continue
 			}
-			value := fmt.Sprintf("%v", v1)
-			for k2, v2 := range rule.Headers {
-				rule.Headers[k2] = strings.ReplaceAll(v2, "{{"+k1+"}}", value)
+			v1Value := fmt.Sprintf("%v", v1)
+			t := "{{" + k1 + "}}"
+			if !strings.Contains(v, t) {
+				continue
 			}
-			rule.Path = strings.ReplaceAll(strings.TrimSpace(rule.Path), "{{"+k1+"}}", value)
-			rule.Body = strings.ReplaceAll(strings.TrimSpace(rule.Body), "{{"+k1+"}}", value)
+			v = strings.ReplaceAll(v, t, v1Value)
 		}
+		return v
+	}
+	ReCreateEnv := func() error {
+		env, err = cel.NewEnv(&c)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 
-		if oReq.URL.Path != "" && oReq.URL.Path != "/" {
-			req.Url.Path = fmt.Sprint(oReq.URL.Path, rule.Path)
+	// 定义evaluateUpdateVariableMap
+	evaluateUpdateVariableMap := func(set yaml.MapSlice) {
+		for _, item := range set {
+			k, expression := item.Key.(string), item.Value.(string)
+			// ? 需要重新生成一遍环境，否则之前增加的变量定义不生效
+			if err := ReCreateEnv(); err != nil {
+
+			}
+
+			out, err := cel.Evaluate(env, expression, variableMap)
+			if err != nil {
+				continue
+			}
+
+			// 设置variableMap并且更新CompileOption
+			switch value := out.Value().(type) {
+			case *xray_structs.UrlType:
+				variableMap[k] = cel.UrlTypeToString(value)
+				c.UpdateCompileOption(k, cel.UrlTypeType)
+			case *xray_structs.Reverse:
+				variableMap[k] = value
+				c.UpdateCompileOption(k, cel.ReverseType)
+			case int64:
+				variableMap[k] = int(value)
+				c.UpdateCompileOption(k, decls.Int)
+			case map[string]string:
+				variableMap[k] = value
+				c.UpdateCompileOption(k, cel.StrStrMapType)
+			default:
+				variableMap[k] = value
+				c.UpdateCompileOption(k, decls.String)
+			}
+		}
+		// ? 最后再生成一遍环境，否则之前增加的变量定义不生效
+		if err := ReCreateEnv(); err != nil {
+
+		}
+	}
+
+	// 处理set
+	evaluateUpdateVariableMap(poc.Set)
+
+	// 处理payload
+	for _, setMapVal := range poc.Payloads.Payloads {
+		setMap := setMapVal.Value.(yaml.MapSlice)
+		evaluateUpdateVariableMap(setMap)
+	}
+	// 渲染detail
+	detail := &poc.Detail
+	detail.Author = render(detail.Author)
+	for k, v := range poc.Detail.Links {
+		detail.Links[k] = render(v)
+	}
+	fingerPrint := &detail.FingerPrint
+	for _, info := range fingerPrint.Infos {
+		info.ID = render(info.ID)
+		info.Name = render(info.Name)
+		info.Version = render(info.Version)
+		info.Type = render(info.Type)
+	}
+	fingerPrint.HostInfo.Hostname = render(fingerPrint.HostInfo.Hostname)
+	vulnerability := &detail.Vulnerability
+	vulnerability.ID = render(vulnerability.ID)
+	vulnerability.Match = render(vulnerability.Match)
+
+	// transport=http: request处理
+	HttpRequestInvoke := func(rule xray_structs.Rule) error {
+		var (
+			ok               bool
+			err              error
+			ruleReq          = rule.Request
+			rawHeaderBuilder strings.Builder
+		)
+
+		// 渲染请求头，请求路径和请求体
+		for k, v := range ruleReq.Headers {
+			ruleReq.Headers[k] = render(v)
+		}
+		ruleReq.Path = render(strings.TrimSpace(ruleReq.Path))
+		ruleReq.Body = render(strings.TrimSpace(ruleReq.Body))
+
+		// 尝试获取缓存
+		if request, protoRequest, protoResponse, ok = requests.XrayGetHttpRequestCache(&ruleReq); !ok || !rule.Request.Cache {
+			// 获取protoRequest
+			protoRequest, err = requests.ParseHttpRequest(oReq)
+			if err != nil {
+				return err
+			}
+
+			// 处理Path
+			if strings.HasPrefix(ruleReq.Path, "/") {
+				protoRequest.Url.Path = strings.Trim(oReq.URL.Path, "/") + "/" + ruleReq.Path[1:]
+			} else if strings.HasPrefix(ruleReq.Path, "^") {
+				protoRequest.Url.Path = "/" + ruleReq.Path[1:]
+			}
+
+			if !strings.HasPrefix(protoRequest.Url.Path, "/") {
+				protoRequest.Url.Path = "/" + protoRequest.Url.Path
+			}
+
+			// 某些poc没有区分path和query，需要处理
+			protoRequest.Url.Path = strings.ReplaceAll(protoRequest.Url.Path, " ", "%20")
+			protoRequest.Url.Path = strings.ReplaceAll(protoRequest.Url.Path, "+", "%20")
+
+			// 克隆请求对象
+			request, err = http.NewRequest(ruleReq.Method, fmt.Sprintf("%s://%s%s", protoRequest.Url.Scheme, protoRequest.Url.Host, protoRequest.Url.Path), strings.NewReader(ruleReq.Body))
+			if err != nil {
+				return err
+			}
+
+			// 处理请求头
+			request.Header = oReq.Header.Clone()
+			for k, v := range ruleReq.Headers {
+				request.Header.Set(k, v)
+				rawHeaderBuilder.WriteString(k)
+				rawHeaderBuilder.WriteString(": ")
+				rawHeaderBuilder.WriteString(v)
+				rawHeaderBuilder.WriteString("\n")
+			}
+
+			protoRequest.RawHeader = []byte(strings.Trim(rawHeaderBuilder.String(), "\n"))
+
+			// 额外处理protoRequest.Raw
+			protoRequest.Raw, _ = httputil.DumpRequestOut(request, true)
+
+			// 发起请求
+			response, milliseconds, err = requests.DoRequest(request, ruleReq.FollowRedirects)
+			if err != nil {
+				return err
+			}
+
+			// 获取protoResponse
+			protoResponse, err = requests.ParseHttpResponse(response, milliseconds)
+			if err != nil {
+				return err
+			}
+
+			// 设置缓存
+			requests.XraySetHttpRequestCache(&ruleReq, request, protoRequest, protoResponse)
+
 		} else {
-			req.Url.Path = rule.Path
-		}
-		// 某些poc没有区分path和query，需要处理
-		req.Url.Path = strings.ReplaceAll(req.Url.Path, " ", "%20")
-		req.Url.Path = strings.ReplaceAll(req.Url.Path, "+", "%20")
-
-		newRequest, _ := http.NewRequest(rule.Method, fmt.Sprintf("%s://%s%s", req.Url.Scheme, req.Url.Host, req.Url.Path), strings.NewReader(rule.Body))
-
-		newRequest.Header = oReq.Header.Clone()
-		for k, v := range rule.Headers {
-			newRequest.Header.Set(k, v)
 		}
 
-		resp, err := requests.DoRequest(newRequest, rule.FollowRedirects)
+		return nil
+	}
+
+	// transport=tcp/udp: request处理
+	TCPUDPRequestInvoke := func(rule xray_structs.Rule) error {
+		var (
+			buffer = BodyBufPool.Get().([]byte)
+
+			content      = rule.Request.Content
+			connectionID = rule.Request.ConnectionID
+			conn         net.Conn
+			connCache    *net.Conn
+			responseRaw  []byte
+			readTimeout  int
+
+			ok  bool
+			err error
+		)
+		defer BodyBufPool.Put(buffer)
+
+		// 获取response缓存
+		if responseRaw, protoResponse, ok = requests.XrayGetTcpUdpResponseCache(rule.Request.Content); !ok || !rule.Request.Cache {
+			responseRaw = BodyPool.Get().([]byte)
+			defer BodyPool.Put(responseRaw)
+
+			// 获取connectionID缓存
+			if connCache, ok = requests.XrayGetTcpUdpConnectionCache(connectionID); !ok {
+				// 处理timeout
+				readTimeout, err = strconv.Atoi(rule.Request.ReadTimeout)
+				if err != nil {
+					return err
+				}
+
+				// 发起连接
+				conn, err = net.Dial(tcpudpType, target)
+				if err != nil {
+					return err
+				}
+
+				// 设置读取超时
+				err := conn.SetReadDeadline(time.Now().Add(time.Duration(readTimeout) * time.Second))
+				if err != nil {
+					return err
+				}
+
+				// 设置连接缓存
+				requests.XraySetTcpUdpConnectionCache(connectionID, &conn)
+			} else {
+				conn = *connCache
+			}
+
+			// 获取protoRequest
+			protoRequest, _ = requests.ParseTCPUDPRequest([]byte(content))
+
+			// 发送数据
+			_, err = conn.Write([]byte(content))
+			if err != nil {
+				return err
+			}
+
+			// 接收数据
+			for {
+				n, err := conn.Read(buffer)
+				if err != nil {
+					if err == io.EOF {
+					} else if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+					} else {
+						return err
+					}
+					break
+				}
+				responseRaw = append(responseRaw, buffer[:n]...)
+			}
+
+			// 获取protoResponse
+			protoResponse, _ = requests.ParseTCPUDPResponse(responseRaw, &conn, tcpudpType)
+
+			// 设置响应缓存
+			requests.XraySetTcpUdpResponseCache(content, responseRaw, protoResponse)
+
+		}
+		return nil
+	}
+
+	// reqeusts总处理
+	RequestInvoke := func(requestFunc cel.RequestFuncType, ruleName string, rule xray_structs.Rule) (bool, error) {
+		var (
+			flag bool
+			ok   bool
+			err  error
+		)
+		err = requestFunc(rule)
 		if err != nil {
 			return false, err
 		}
 
-		variableMap["response"] = resp
-
-		// 先判断响应页面是否匹配search规则
-		if rule.Search != "" {
-			result := doSearch(strings.TrimSpace(rule.Search), string(resp.Body))
-			if result != nil && len(result) > 0 { // 正则匹配成功
-				for k, v := range result {
-					variableMap[k] = v
-				}
-			} else {
-				return false, nil
-			}
-		}
+		variableMap["request"] = protoRequest
+		variableMap["response"] = protoResponse
 
 		// 执行表达式
 		out, err := cel.Evaluate(env, rule.Expression, variableMap)
+
 		if err != nil {
 			return false, err
 		}
 
-		// 判断最后执行表达式结果
+		// 判断表达式结果
 		flag, ok = out.Value().(bool)
 		if !ok {
 			flag = false
 		}
+
+		// 处理output
+		evaluateUpdateVariableMap(rule.Output)
+
 		return flag, nil
 	}
 
-	DealWithRules := func(rules []structs.Rule) bool {
-		successFlag := false
-		for _, rule := range rules {
-			flag, err := DealWithRule(rule)
-			if err != nil {
-				gologger.Error().Msgf("Execute Rule error: %#v", err.Error())
-			}
-
-			if err != nil || !flag { //如果false不继续执行后续rule
-				successFlag = false // 如果其中一步为flag，则直接break
-				break
-			}
-			successFlag = true
-		}
-		return successFlag
+	// 判断transport类型，设置requestInvoke
+	if poc.Transport == "tcp" {
+		tcpudpType = "tcp"
+		requestFunc = TCPUDPRequestInvoke
+	} else if poc.Transport == "udp" {
+		tcpudpType = "udp"
+		requestFunc = TCPUDPRequestInvoke
+	} else {
+		requestFunc = HttpRequestInvoke
 	}
 
-	// Rules
-	if len(p.Rules) > 0 {
-		success = DealWithRules(p.Rules)
-	} else { // Groups
-		for _, rules := range p.Groups {
-			success = DealWithRules(rules)
-			if success {
-				break
-			}
-		}
+	ruleSlice := poc.Rules
+	// 提前定义名为ruleName的函数
+	for _, ruleItem := range ruleSlice {
+		c.DefineRuleFunction(requestFunc, ruleItem.Key, ruleItem.Value, RequestInvoke)
 	}
 
-	return success, nil
-}
+	// ? 最后再生成一遍环境，否则之前增加的变量定义不生效
+	if err := ReCreateEnv(); err != nil {
 
-func doSearch(re string, body string) map[string]string {
-	r, err := regexp.Compile(re)
-	//fmt.Sprintf("Regexp compile error: %v", err.Error())
+	}
+
+	// 执行rule 并判断poc总体表达式结果
+	successVal, err := cel.Evaluate(env, poc.Expression, variableMap)
 	if err != nil {
-		return nil
+		return false, err
 	}
-	result := r.FindStringSubmatch(body)
-	names := r.SubexpNames()
-	if len(result) > 1 && len(names) > 1 {
-		paramsMap := make(map[string]string)
-		for i, name := range names {
-			if i > 0 && i <= len(result) {
-				paramsMap[name] = result[i]
-			}
-		}
-		return paramsMap
-	}
-	return nil
-}
 
-func newReverse() *structs.Reverse {
-	letters := "1234567890abcdefghijklmnopqrstuvwxyz"
-	randSource := rand.New(rand.NewSource(time.Now().Unix()))
-	sub := utils.RandomStr(randSource, letters, 8)
-	if common_structs.CeyeDomain == "" {
-		return &structs.Reverse{}
+	isVul, ok := successVal.Value().(bool)
+	if !ok {
+		isVul = false
 	}
-	urlStr := fmt.Sprintf("http://%s.%s", sub, common_structs.CeyeDomain)
-	u, _ := url.Parse(urlStr)
-	return &structs.Reverse{
-		Url:                requests.ParseUrl(u),
-		Domain:             u.Hostname(),
-		Ip:                 "",
-		IsDomainNameServer: false,
-	}
+
+	return isVul, nil
 }

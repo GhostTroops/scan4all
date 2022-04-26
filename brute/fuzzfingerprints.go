@@ -12,7 +12,7 @@ func addfingerprints404(technologies []string, req *pkg.Response) []string {
 		technologies = append(technologies, "ThinkPHP")
 	}
 	if strings.Contains(req.Body, "Hypertext Transfer Protocol") {
-		technologies = append(technologies, "WebLogic")
+		technologies = append(technologies, "Weblogic")
 	}
 	if strings.Contains(req.Body, "font-family:Tahoma,Arial,sans-serif") {
 		technologies = append(technologies, "Apache Tomcat")
@@ -41,11 +41,11 @@ func addfingerprintsnormal(payload string, technologies []string, req *pkg.Respo
 		}
 	case "/console/login/LoginForm.jsp":
 		if req.StatusCode == 200 && strings.Contains(req.Body, "Oracle") {
-			technologies = append(technologies, "WebLogic")
+			technologies = append(technologies, "Weblogic")
 		}
 	case "/wls-wsat", "/wls-wsat/CoordinatorPortType", "/wls-wsat/CoordinatorPortType11", "/_async/AsyncResponseService", "/_async/AsyncResponseServiceSoap12", "/uddiexplorer/SearchPublicRegistries.jsp", "/ws_utc/config.do":
 		if req.StatusCode == 200 && (strings.Contains(req.Body, "weblogic") || strings.Contains(req.Body, "www.bea.com")) {
-			technologies = append(technologies, "WebLogic")
+			technologies = append(technologies, "Weblogic")
 		}
 	case "/jmx-console/":
 		if req.StatusCode == 200 && strings.Contains(req.Body, "jboss.css") {
