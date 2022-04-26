@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"github.com/spaolacci/murmur3"
-	"hash"
 	"math/rand"
 	"time"
 )
