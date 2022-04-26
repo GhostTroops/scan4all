@@ -51,7 +51,7 @@ case "Apache Tomcat":
 字典在 ./brute/dicts.go 内置，可自行修改
 
 
-## 3.5 敏感文件扫描 字典
+##  敏感文件扫描 字典
 
 扫描 备份、swagger-ui、spring actuator、上传接口、测试文件等敏感文件
 
