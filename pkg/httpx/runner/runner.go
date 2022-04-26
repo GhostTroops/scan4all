@@ -3,14 +3,15 @@ package runner
 import (
 	"bufio"
 	"bytes"
-	"crypto/sha256"
+	"context"
 	"encoding/csv"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"github.com/veo/vscan/brute"
+	"github.com/veo/vscan/pkg/fingerprint"
 	"github.com/veo/vscan/pocs_go"
 	"github.com/veo/vscan/pocs_yml"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -18,6 +19,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"sort"
@@ -25,14 +27,17 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ammario/ipisp/v2"
 	"github.com/bluele/gcache"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/clistats"
 	"github.com/projectdiscovery/cryptoutil"
 	"github.com/projectdiscovery/goconfig"
+	"github.com/projectdiscovery/retryablehttp-go"
 	"github.com/projectdiscovery/stringsutil"
 	"github.com/projectdiscovery/urlutil"
+	"github.com/veo/vscan/pkg/httpx/common/hashes"
 
 	// automatic fd max increase if running as root
 	_ "github.com/projectdiscovery/fdmax/autofdmax"
@@ -43,6 +48,7 @@ import (
 	"github.com/projectdiscovery/iputil"
 	"github.com/projectdiscovery/mapcidr"
 	"github.com/projectdiscovery/rawhttp"
+	wappalyzer "github.com/projectdiscovery/wappalyzergo"
 	"github.com/remeh/sizedwaitgroup"
 	customport "github.com/veo/vscan/pkg/httpx/common/customports"
 	fileutilz "github.com/veo/vscan/pkg/httpx/common/fileutil"
@@ -50,12 +56,7 @@ import (
 	"github.com/veo/vscan/pkg/httpx/common/httpx"
 	"github.com/veo/vscan/pkg/httpx/common/slice"
 	"github.com/veo/vscan/pkg/httpx/common/stringz"
-	wappalyzer "github.com/veo/vscan/pkg/httpx/fingerprint"
 	"go.uber.org/ratelimit"
-)
-
-const (
-	statsDisplayInterval = 5
 )
 
 // Runner is a client for running the enumeration process.
@@ -70,6 +71,8 @@ type Runner struct {
 	HostErrorsCache gcache.Cache
 }
 
+var Naabubuffer = bytes.Buffer{}
+
 // New creates a new client for running enumeration process.
 func New(options *Options) (*Runner, error) {
 	runner := &Runner{
@@ -78,6 +81,7 @@ func New(options *Options) (*Runner, error) {
 	var err error
 	if options.TechDetect {
 		runner.wappalyzer, err = wappalyzer.New()
+		err = fingerprint.New()
 	}
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create wappalyzer client")
@@ -109,6 +113,7 @@ func New(options *Options) (*Runner, error) {
 	if httpxOptions.MaxResponseBodySizeToSave > httpxOptions.MaxResponseBodySizeToRead {
 		httpxOptions.MaxResponseBodySizeToSave = httpxOptions.MaxResponseBodySizeToRead
 	}
+	httpxOptions.Resolvers = options.Resolvers
 
 	var key, value string
 	httpxOptions.CustomHeaders = make(map[string]string)
@@ -154,6 +159,7 @@ func New(options *Options) (*Runner, error) {
 		}
 		scanopts.RequestBody = rrBody
 		options.rawRequest = string(rawRequest)
+		options.RequestBody = rrBody
 	}
 
 	// disable automatic host header for rawhttp if manually specified
@@ -204,9 +210,9 @@ func New(options *Options) (*Runner, error) {
 	scanopts.HTTP2Probe = options.HTTP2Probe
 	scanopts.OutputMethod = options.OutputMethod
 	scanopts.NoPOC = options.NoPOC
-	scanopts.OutputIP = options.OutputIP
 	scanopts.CeyeApi = options.CeyeApi
 	scanopts.CeyeDomain = options.CeyeDomain
+	scanopts.OutputIP = options.OutputIP
 	scanopts.OutputCName = options.OutputCName
 	scanopts.OutputCDN = options.OutputCDN
 	scanopts.OutputResponseTime = options.OutputResponseTime
@@ -229,12 +235,21 @@ func New(options *Options) (*Runner, error) {
 
 	scanopts.ExcludeCDN = options.ExcludeCDN
 	scanopts.HostMaxErrors = options.HostMaxErrors
+	scanopts.ProbeAllIPS = options.ProbeAllIPS
+	scanopts.Favicon = options.Favicon
+	scanopts.LeaveDefaultPorts = options.LeaveDefaultPorts
+	scanopts.OutputLinesCount = options.OutputLinesCount
+	scanopts.OutputWordsCount = options.OutputWordsCount
+	scanopts.Hashes = options.Hashes
 	runner.scanopts = scanopts
 
 	if options.ShowStatistics {
 		runner.stats, err = clistats.New()
 		if err != nil {
 			return nil, err
+		}
+		if options.StatsInterval == 0 {
+			options.StatsInterval = 5
 		}
 	}
 
@@ -246,7 +261,9 @@ func New(options *Options) (*Runner, error) {
 	}
 	runner.hm = hm
 
-	if options.RateLimit > 0 {
+	if options.RateLimitMinute > 0 {
+		runner.ratelimiter = ratelimit.New(options.RateLimitMinute, ratelimit.Per(60*time.Second))
+	} else if options.RateLimit > 0 {
 		runner.ratelimiter = ratelimit.New(options.RateLimit)
 	} else {
 		runner.ratelimiter = ratelimit.NewUnlimited()
@@ -262,26 +279,67 @@ func New(options *Options) (*Runner, error) {
 	return runner, nil
 }
 
-func (r *Runner) prepareInput() {
+func (r *Runner) prepareInputPaths() {
+	// most likely, the user would provide the most simplified path to an existing file
+	isAbsoluteOrRelativePath := filepath.Clean(r.options.RequestURIs) == r.options.RequestURIs
 	// Check if the user requested multiple paths
-	if fileutil.FileExists(r.options.RequestURIs) {
+	if isAbsoluteOrRelativePath && fileutil.FileExists(r.options.RequestURIs) {
 		r.options.requestURIs = fileutilz.LoadFile(r.options.RequestURIs)
 	} else if r.options.RequestURIs != "" {
 		r.options.requestURIs = strings.Split(r.options.RequestURIs, ",")
 	}
+}
 
+func (r *Runner) prepareInput() {
 	// check if file has been provided
 	var numHosts int
-	numHosts, err := r.loadAndCloseFile(r.options.Naabuinput)
+	//if fileutil.FileExists(r.options.InputFile) {
+	//	finput, err := os.Open(r.options.InputFile)
+	//	if err != nil {
+	//		gologger.Fatal().Msgf("Could not read input file '%s': %s\n", r.options.InputFile, err)
+	//	}
+	//	numHosts, err = r.loadAndCloseFile(finput)
+	//	if err != nil {
+	//		gologger.Fatal().Msgf("Could not read input file '%s': %s\n", r.options.InputFile, err)
+	//	}
+	//} else if r.options.InputFile != "" {
+	//	files, err := fileutilz.ListFilesWithPattern(r.options.InputFile)
+	//	if err != nil {
+	//		gologger.Fatal().Msgf("No input provided: %s", err)
+	//	}
+	//	for _, file := range files {
+	//		finput, err := os.Open(file)
+	//		if err != nil {
+	//			gologger.Fatal().Msgf("Could not read input file '%s': %s\n", r.options.InputFile, err)
+	//		}
+	//		numTargetsFile, err := r.loadAndCloseFile(finput)
+	//		if err != nil {
+	//			gologger.Fatal().Msgf("Could not read input file '%s': %s\n", r.options.InputFile, err)
+	//		}
+	//		numHosts += numTargetsFile
+	//	}
+	//}
+	//if fileutil.HasStdin() {
+	//	numTargetsStdin, err := r.loadAndCloseFile(os.Stdin)
+	//	if err != nil {
+	//		gologger.Fatal().Msgf("Could not read input from stdin: %s\n", err)
+	//	}
+	//	numHosts += numTargetsStdin
+	//}
+
+	numTargetsStdin, err := r.loadAndCloseFile(strings.NewReader(Naabubuffer.String()))
 	if err != nil {
-		gologger.Fatal().Msgf("Could read input from stdin: %s\n", err)
+		gologger.Fatal().Msgf("Could not read input from stdin: %s\n", err)
 	}
+	numHosts += numTargetsStdin
+
 	if r.options.ShowStatistics {
 		r.stats.AddStatic("totalHosts", numHosts)
 		r.stats.AddCounter("hosts", 0)
 		r.stats.AddStatic("startedAt", time.Now())
 		r.stats.AddCounter("requests", 0)
-		err := r.stats.Start(makePrintCallback(), time.Duration(statsDisplayInterval)*time.Second)
+
+		err := r.stats.Start(makePrintCallback(), time.Duration(r.options.StatsInterval)*time.Second)
 		if err != nil {
 			gologger.Warning().Msgf("Could not create statistics: %s\n", err)
 		}
@@ -359,40 +417,7 @@ func (r *Runner) streamInput() (chan string, error) {
 	return out, nil
 }
 
-func (r *Runner) loadAndCloseFile(ipPorts map[string]map[int]struct{}) (numTargets int, err error) {
-	for host, ports := range ipPorts {
-		if strings.HasPrefix(host, "http") {
-			target := strings.TrimSpace(fmt.Sprintf("%s", host))
-			if _, ok := r.hm.Get(target); ok {
-				continue
-			}
-			if len(r.options.requestURIs) > 0 {
-				numTargets += len(r.options.requestURIs)
-			} else {
-				numTargets++
-			}
-			r.hm.Set(target, nil) //nolint
-		} else {
-			for port := range ports {
-				target := strings.TrimSpace(fmt.Sprintf("%s:%d", host, port))
-				// Used just to get the exact number of targets
-				if _, ok := r.hm.Get(target); ok {
-					continue
-				}
-
-				if len(r.options.requestURIs) > 0 {
-					numTargets += len(r.options.requestURIs)
-				} else {
-					numTargets++
-				}
-				r.hm.Set(target, nil) //nolint
-			}
-		}
-	}
-	return numTargets, err
-}
-
-func (r *Runner) loadAndCloseFilex(finput *os.File) (numTargets int, err error) {
+func (r *Runner) loadAndCloseFile(finput io.Reader) (numTargets int, err error) {
 	scanner := bufio.NewScanner(finput)
 	for scanner.Scan() {
 		target := strings.TrimSpace(scanner.Text())
@@ -417,26 +442,19 @@ func (r *Runner) loadAndCloseFilex(finput *os.File) (numTargets int, err error) 
 		numTargets += expandedTarget
 		r.hm.Set(target, nil) //nolint
 	}
-	err = finput.Close()
+	//err = finput.Close()
 	return numTargets, err
 }
 
 var (
-	lastPrint         time.Time
 	lastRequestsCount float64
 )
 
 func makePrintCallback() func(stats clistats.StatisticsClient) {
 	builder := &strings.Builder{}
 	return func(stats clistats.StatisticsClient) {
-		var duration time.Duration
-		now := time.Now()
-		if lastPrint.IsZero() {
-			startedAt, _ := stats.GetStatic("startedAt")
-			duration = time.Since(startedAt.(time.Time))
-		} else {
-			duration = time.Since(lastPrint)
-		}
+		startedAt, _ := stats.GetStatic("startedAt")
+		duration := time.Since(startedAt.(time.Time))
 
 		builder.WriteRune('[')
 		builder.WriteString(clistats.FmtDuration(duration))
@@ -473,7 +491,6 @@ func makePrintCallback() func(stats clistats.StatisticsClient) {
 		fmt.Fprintf(os.Stderr, "%s", builder.String())
 		builder.Reset()
 
-		lastPrint = now
 		lastRequestsCount = currentRequests
 	}
 }
@@ -496,6 +513,8 @@ func (r *Runner) RunEnumeration() {
 			gologger.Fatal().Msgf("Could not create output directory '%s': %s\n", r.options.StoreResponseDir, err)
 		}
 	}
+
+	r.prepareInputPaths()
 
 	var streamChan chan string
 	if r.options.Stream {
@@ -523,11 +542,7 @@ func (r *Runner) RunEnumeration() {
 		var f *os.File
 		if r.options.Output != "" {
 			var err error
-			_, err = os.Create(r.options.Output)
-			if err != nil {
-				gologger.Fatal().Msgf("Could not create output file '%s': %s\n", r.options.Output, err)
-			}
-			f, err = os.OpenFile(r.options.Output, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
+			f, err = os.Create(r.options.Output)
 			if err != nil {
 				gologger.Fatal().Msgf("Could not create output file '%s': %s\n", r.options.Output, err)
 			}
@@ -535,8 +550,9 @@ func (r *Runner) RunEnumeration() {
 		}
 		if r.options.CSVOutput {
 			header := Result{}.CSVHeader()
-			gologger.Silent().Msgf("%s\n", header)
+			//gologger.Silent().Msgf("%s\n", header)
 			if f != nil {
+				f.WriteString("\xEF\xBB\xBF")
 				//nolint:errcheck // this method needs a small refactor to reduce complexity
 				f.WriteString(header + "\n")
 			}
@@ -557,10 +573,19 @@ func (r *Runner) RunEnumeration() {
 			if len(r.options.filterContentLength) > 0 && slice.IntSliceContains(r.options.filterContentLength, resp.ContentLength) {
 				continue
 			}
+			if len(r.options.filterLinesCount) > 0 && slice.IntSliceContains(r.options.filterLinesCount, resp.Lines) {
+				continue
+			}
+			if len(r.options.filterWordsCount) > 0 && slice.IntSliceContains(r.options.filterWordsCount, resp.Words) {
+				continue
+			}
 			if r.options.filterRegex != nil && r.options.filterRegex.MatchString(resp.raw) {
 				continue
 			}
 			if r.options.OutputFilterString != "" && strings.Contains(strings.ToLower(resp.raw), strings.ToLower(r.options.OutputFilterString)) {
+				continue
+			}
+			if len(r.options.OutputFilterFavicon) > 0 && stringsutil.EqualFoldAny(resp.FavIconMMH3, r.options.OutputFilterFavicon...) {
 				continue
 			}
 			if len(r.options.matchStatusCode) > 0 && !slice.IntSliceContains(r.options.matchStatusCode, resp.StatusCode) {
@@ -575,15 +600,27 @@ func (r *Runner) RunEnumeration() {
 			if r.options.OutputMatchString != "" && !strings.Contains(strings.ToLower(resp.raw), strings.ToLower(r.options.OutputMatchString)) {
 				continue
 			}
+			if len(r.options.OutputMatchFavicon) > 0 && !stringsutil.EqualFoldAny(resp.FavIconMMH3, r.options.OutputMatchFavicon...) {
+				continue
+			}
+			if len(r.options.matchLinesCount) > 0 && !slice.IntSliceContains(r.options.matchLinesCount, resp.Lines) {
+				continue
+			}
+			if len(r.options.matchWordsCount) > 0 && !slice.IntSliceContains(r.options.matchWordsCount, resp.Words) {
+				continue
+			}
 
 			row := resp.str
 			if r.options.JSONOutput {
 				row = resp.JSON(&r.scanopts)
+				gologger.Silent().Msgf("%s\n", row)
 			} else if r.options.CSVOutput {
+				gologger.Silent().Msgf("%s\n", row)
 				row = resp.CSVRow(&r.scanopts)
+			} else {
+				gologger.Silent().Msgf("%s\n", row)
 			}
 
-			gologger.Silent().Msgf("%s\n", row)
 			if f != nil {
 				//nolint:errcheck // this method needs a small refactor to reduce complexity
 				f.WriteString(row + "\n")
@@ -622,6 +659,7 @@ func (r *Runner) RunEnumeration() {
 
 		return nil
 	}
+
 	if r.options.Stream {
 		for item := range streamChan {
 			_ = processItem(item)
@@ -645,7 +683,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 		protocols = []string{httpx.HTTPS, httpx.HTTP}
 	}
 
-	for target := range targets(stringz.TrimProtocol(t, scanopts.NoFallback || scanopts.NoFallbackScheme)) {
+	for target := range r.targets(hp, stringz.TrimProtocol(t, scanopts.NoFallback || scanopts.NoFallbackScheme)) {
 		// if no custom ports specified then test the default ones
 		if len(customport.Ports) == 0 {
 			for _, method := range scanopts.Methods {
@@ -658,15 +696,24 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 						if scanopts.TLSProbe && result.TLSData != nil {
 							scanopts.TLSProbe = false
 							for _, tt := range result.TLSData.DNSNames {
+								if !r.testAndSet(tt) {
+									continue
+								}
 								r.process(tt, wg, hp, protocol, scanopts, output)
 							}
 							for _, tt := range result.TLSData.CommonName {
+								if !r.testAndSet(tt) {
+									continue
+								}
 								r.process(tt, wg, hp, protocol, scanopts, output)
 							}
 						}
 						if scanopts.CSPProbe && result.CSPData != nil {
 							scanopts.CSPProbe = false
 							for _, tt := range result.CSPData.Domains {
+								if !r.testAndSet(tt) {
+									continue
+								}
 								r.process(tt, wg, hp, protocol, scanopts, output)
 							}
 						}
@@ -691,9 +738,15 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 						if scanopts.TLSProbe && result.TLSData != nil {
 							scanopts.TLSProbe = false
 							for _, tt := range result.TLSData.DNSNames {
+								if !r.testAndSet(tt) {
+									continue
+								}
 								r.process(tt, wg, hp, protocol, scanopts, output)
 							}
 							for _, tt := range result.TLSData.CommonName {
+								if !r.testAndSet(tt) {
+									continue
+								}
 								r.process(tt, wg, hp, protocol, scanopts, output)
 							}
 						}
@@ -708,7 +761,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 }
 
 // returns all the targets within a cidr range or the single target
-func targets(target string) chan string {
+func (r *Runner) targets(hp *httpx.HTTPX, target string) chan string {
 	results := make(chan string)
 	go func() {
 		defer close(results)
@@ -716,8 +769,12 @@ func targets(target string) chan string {
 		// A valid target does not contain:
 		// *
 		// spaces
-		if strings.ContainsAny(target, " *") {
-			return
+		if strings.ContainsAny(target, "*") || strings.HasPrefix(target, ".") {
+			// trim * and/or . (prefix) from the target to return the domain instead of wildard
+			target = strings.TrimPrefix(strings.Trim(target, "*"), ".")
+			if !r.testAndSet(target) {
+				return
+			}
 		}
 
 		// test if the target is a cidr
@@ -728,6 +785,18 @@ func targets(target string) chan string {
 			}
 			for _, ip := range cidrIps {
 				results <- ip
+			}
+		} else if r.options.ProbeAllIPS {
+			URL, err := urlutil.Parse(target)
+			if err != nil {
+				results <- target
+			}
+			ips, _, err := getDNSData(hp, URL.Host)
+			if err != nil || len(ips) == 0 {
+				results <- target
+			}
+			for _, ip := range ips {
+				results <- strings.Join([]string{ip, target}, ",")
 			}
 		} else {
 			results <- target
@@ -743,7 +812,14 @@ func (r *Runner) analyze(hp *httpx.HTTPX, protocol, domain, method, origInput st
 	}
 	retried := false
 retry:
-	var customHost string
+	var customHost, customIP string
+	if scanopts.ProbeAllIPS {
+		parts := strings.SplitN(domain, ",", 2)
+		if len(parts) == 2 {
+			customIP = parts[0]
+			domain = parts[1]
+		}
+	}
 	if scanopts.VHostInput {
 		parts := strings.Split(domain, ",")
 		//nolint:gomnd // not a magic number
@@ -776,6 +852,7 @@ retry:
 	if URL.Port == "443" || URL.Port == "8443" {
 		protocol = httpx.HTTPS
 	}
+
 	URL.Scheme = protocol
 
 	if !strings.Contains(domain, URL.Port) {
@@ -792,13 +869,29 @@ retry:
 		// in case of standard requests append the new path to the existing one
 		URL.RequestURI += scanopts.RequestURI
 	}
-	req, err := hp.NewRequest(method, URL.String())
+	var req *retryablehttp.Request
+	if customIP != "" {
+		customHost = URL.Host
+		ctx := context.WithValue(context.Background(), "ip", customIP) //nolint
+		req, err = hp.NewRequestWithContext(ctx, method, URL.String())
+	} else {
+		req, err = hp.NewRequest(method, URL.String())
+	}
 	if err != nil {
 		return Result{URL: URL.String(), Input: origInput, err: err}
 	}
 
 	if customHost != "" {
 		req.Host = customHost
+	}
+
+	if !scanopts.LeaveDefaultPorts {
+		switch {
+		case protocol == httpx.HTTP && strings.HasSuffix(req.Host, ":80"):
+			req.Host = strings.TrimSuffix(req.Host, ":80")
+		case protocol == httpx.HTTPS && strings.HasSuffix(req.Host, ":443"):
+			req.Host = strings.TrimSuffix(req.Host, ":443")
+		}
 	}
 
 	hp.SetCustomHeaders(req, hp.CustomHeaders)
@@ -848,14 +941,26 @@ retry:
 	}
 	// fix the final output url
 	fullURL := req.URL.String()
-	parsedURL, _ := urlutil.Parse(fullURL)
-	if r.options.Unsafe {
-		parsedURL.RequestURI = reqURI
-		// if the full url doesn't end with the custom path we pick the original input value
-	} else if !stringsutil.HasSuffixAny(fullURL, scanopts.RequestURI) {
-		parsedURL.RequestURI = scanopts.RequestURI
+	if parsedURL, errParse := urlutil.Parse(fullURL); errParse != nil {
+		return Result{URL: URL.String(), Input: origInput, err: errParse}
+	} else {
+		if r.options.Unsafe {
+			parsedURL.RequestURI = reqURI
+			// if the full url doesn't end with the custom path we pick the original input value
+		} else if !stringsutil.HasSuffixAny(fullURL, scanopts.RequestURI) {
+			parsedURL.RequestURI = scanopts.RequestURI
+		}
+		fullURL = parsedURL.String()
 	}
-	fullURL = parsedURL.String()
+
+	if r.options.Debug || r.options.DebugRequests {
+		gologger.Info().Msgf("Dumped HTTP request for %s\n\n", fullURL)
+		gologger.Print().Msgf("%s", string(requestDump))
+	}
+	if (r.options.Debug || r.options.DebugResponse) && resp != nil {
+		gologger.Info().Msgf("Dumped HTTP response for %s\n\n", fullURL)
+		gologger.Print().Msgf("%s", string(resp.Raw))
+	}
 
 	builder := &strings.Builder{}
 	builder.WriteString(stringz.RemoveURLDefaultPort(fullURL))
@@ -878,7 +983,6 @@ retry:
 
 		builder.WriteRune(']')
 	}
-
 	if err != nil {
 		errString := ""
 		errString = err.Error()
@@ -1050,20 +1154,39 @@ retry:
 		}
 	}
 	ip := hp.Dialer.GetDialedIP(URL.Host)
-	if scanopts.OutputIP {
+	var asnResponse interface{ String() string }
+	if r.options.Asn {
+		lookupResult, err := ipisp.LookupIP(context.Background(), net.ParseIP(ip))
+		if err != nil {
+			gologger.Warning().Msg(err.Error())
+		}
+		if lookupResult != nil {
+			lookupResult.ISPName = stringsutil.TrimSuffixAny(strings.ReplaceAll(lookupResult.ISPName, lookupResult.Country, ""), ", ", " ")
+			asnResponse = AsnResponse{
+				AsNumber:  lookupResult.ASN.String(),
+				AsName:    lookupResult.ISPName,
+				AsCountry: lookupResult.Country,
+				AsRange:   lookupResult.Range.String(),
+			}
+			builder.WriteString(" [")
+			if !scanopts.OutputWithNoColor {
+				builder.WriteString(aurora.Magenta(asnResponse.String()).String())
+			} else {
+				builder.WriteString(asnResponse.String())
+			}
+			builder.WriteRune(']')
+		}
+	}
+	// hp.Dialer.GetDialedIP would return only the last dialed one
+	if customIP != "" {
+		ip = customIP
+	}
+	if scanopts.OutputIP || scanopts.ProbeAllIPS {
 		builder.WriteString(fmt.Sprintf(" [%s]", ip))
 	}
 
-	var (
-		ips    []string
-		cnames []string
-	)
-	dnsData, err := hp.Dialer.GetDNSData(URL.Host)
-	if dnsData != nil && err == nil {
-		ips = append(ips, dnsData.A...)
-		ips = append(ips, dnsData.AAAA...)
-		cnames = dnsData.CNAME
-	} else {
+	ips, cnames, err := getDNSData(hp, domain)
+	if err != nil {
 		ips = append(ips, ip)
 	}
 
@@ -1072,9 +1195,9 @@ retry:
 		builder.WriteString(fmt.Sprintf(" [%s]", cnames[0]))
 	}
 
-	isCDN, err := hp.CdnCheck(ip)
+	isCDN, cdnName, err := hp.CdnCheck(ip)
 	if scanopts.OutputCDN && isCDN && err == nil {
-		builder.WriteString(" [cdn]")
+		builder.WriteString(fmt.Sprintf(" [%s]", cdnName))
 	}
 
 	if scanopts.OutputResponseTime {
@@ -1088,12 +1211,22 @@ retry:
 		finalURL = URL.String()
 	}
 	var technologies []string
+	var Vullist []string
 	var filePaths []string
 	var poctechnologies1 []string
 	var poctechnologies2 []string
 	var filefuzzTechnologies []string
 	ul := req.URL.String()
+
 	if scanopts.TechDetect {
+		matches := r.wappalyzer.Fingerprint(resp.Headers, resp.Data)
+		for match := range matches {
+			technologies = append(technologies, match)
+		}
+		matchlocals := fingerprint.FingerScan(resp.Headers, resp.Data, title, ul)
+		for _, matchlocal := range matchlocals {
+			technologies = append(technologies, matchlocal)
+		}
 		SliceRemoveDuplicates := func(slice []string) []string {
 			sort.Strings(slice)
 			i := 0
@@ -1109,59 +1242,70 @@ retry:
 			}
 			return slice
 		}
-		matches := r.wappalyzer.Fingerprint(resp.Headers, resp.Data)
-		for match := range matches {
-			technologies = append(technologies, match)
-		}
-		if req.URL.Path != "" { //获取二级目录，支持完整链接扫描
-			ul = strings.TrimSuffix(ul, path.Base(req.URL.Path))
-			if strings.HasSuffix(ul, "/") {
-				ul = strings.TrimSuffix(ul, "/")
-			}
-		}
+		technologies = SliceRemoveDuplicates(technologies) // 指纹去重
 
 		if !scanopts.NoPOC {
-			technologies1 := append(technologies, "log4j") //所有链接都检测log4j
+			intersect := func(slice1, slice2 []string) []string {
+				m := make(map[string]int)
+				nn := make([]string, 0)
+				for _, v := range slice1 {
+					m[v]++
+				}
 
-			poctechnologies1 = pocs_go.POCcheck(technologies1, ul, finalURL) //通过wappalyzer.Fingerprint 获取到的指纹进行 漏洞扫描
-			for _, technology := range technologies1 {
-				pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology))
+				for _, v := range slice2 {
+					times, _ := m[v]
+					if times == 1 {
+						nn = append(nn, v)
+					}
+				}
+				return nn
 			}
 
+			difference := func(slice1, slice2 []string) []string {
+				m := make(map[string]int)
+				nn := make([]string, 0)
+				inter := intersect(slice1, slice2)
+				for _, v := range inter {
+					m[v]++
+				}
+
+				for _, value := range slice1 {
+					times, _ := m[value]
+					if times == 0 {
+						nn = append(nn, value)
+					}
+				}
+				return nn
+			}
+			poctechnologies1 = pocs_go.POCcheck(technologies, ul, finalURL, false) // //通过wFingerprint获取到的指纹进行检测gopoc check
+			Vullist = append(Vullist, poctechnologies1...)
+			for _, technology := range technologies {
+				pocYmlList1 := pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology)) // 通过wFingerprint获取到的指纹进行ymlpoc check
+				Vullist = append(Vullist, pocYmlList1...)
+			}
 			filePaths, filefuzzTechnologies = brute.FileFuzz(ul, resp.StatusCode, resp.ContentLength, resp.Raw) // 敏感文件扫描
-			filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)                                  // filefuzz指纹去重
-			poctechnologies2 = pocs_go.POCcheck(filefuzzTechnologies, ul, finalURL)                             //// 通过敏感文件扫描 获取到的指纹进行 漏洞扫描
+			filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)
+			filefuzzTechnologies = difference(filefuzzTechnologies, technologies) // 取差集合
+
+			poctechnologies2 = pocs_go.POCcheck(filefuzzTechnologies, ul, finalURL, true) //通过敏感文件扫描获取到的指纹进行检测gopoc check
+			Vullist = append(Vullist, poctechnologies2...)
 			for _, technology := range filefuzzTechnologies {
-				pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology))
+				pocYmlList2 := pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology)) //通过敏感文件扫描获取到的指纹进行检测ymlpoc check
+				Vullist = append(Vullist, pocYmlList2...)
 			}
-
-			technologies = append(technologies, filefuzzTechnologies...) // 输出加入 敏感文件扫描 获取到的指纹
-
-			if !scanopts.OutputWithNoColor { // poctechnologies1 加色处理
-				for _, poctech := range poctechnologies1 {
-					technologies = append(technologies, aurora.Red(poctech).String())
-				}
-			} else {
-				technologies = append(technologies, poctechnologies1...)
-			}
-
-			if !scanopts.OutputWithNoColor { // poctechnologies2 加色处理
-				for _, poctech := range poctechnologies2 {
-					technologies = append(technologies, aurora.Red(poctech).String())
-				}
-			} else {
-				technologies = append(technologies, poctechnologies2...)
-			}
-
+			technologies = append(technologies, filefuzzTechnologies...) // 输出加入敏感文件扫描 获取到的指纹
+			technologies = SliceRemoveDuplicates(technologies)           // 指纹去重
 		}
-
-		technologies = SliceRemoveDuplicates(technologies) // 总体指纹去重
-
-		if len(technologies) > 0 { //输出 指纹
+		if len(technologies) > 0 {
 			sort.Strings(technologies)
 			technologies := strings.Join(technologies, ",")
+
 			builder.WriteString(" [")
-			builder.WriteString(technologies)
+			if !scanopts.OutputWithNoColor {
+				builder.WriteString(aurora.Magenta(technologies).String())
+			} else {
+				builder.WriteString(technologies)
+			}
 			builder.WriteRune(']')
 		}
 	}
@@ -1184,14 +1328,116 @@ retry:
 		builder.WriteRune(']')
 	}
 
+	if scanopts.OutputWordsCount {
+		builder.WriteString(" [")
+		if !scanopts.OutputWithNoColor {
+			builder.WriteString(aurora.Magenta(resp.Words).String())
+		} else {
+			builder.WriteString(fmt.Sprint(resp.Words))
+		}
+		builder.WriteRune(']')
+	}
+
 	if len(filePaths) > 0 {
-		filePaths := strings.Join(filePaths, "\",\""+ul)
+		filePaths := strings.Join(filePaths, "\",\"")
 		builder.WriteString(" [")
 		if !scanopts.OutputWithNoColor {
 			builder.WriteString(aurora.Yellow("FileFuzz:").String())
-			builder.WriteString(aurora.Yellow("\"" + ul + filePaths + "\"").String())
+			builder.WriteString(aurora.Yellow("\"" + filePaths + "\"").String())
 		} else {
-			builder.WriteString("FileFuzz: \"" + ul + filePaths + "\"")
+			builder.WriteString("FileFuzz: \"" + filePaths + "\"")
+		}
+		builder.WriteRune(']')
+	}
+
+	if len(Vullist) > 0 {
+		Vullist := strings.Join(Vullist, "\",\"")
+		builder.WriteString(" [")
+		if !scanopts.OutputWithNoColor {
+			builder.WriteString(aurora.Red("POC:").String())
+			builder.WriteString(aurora.Red("\"" + Vullist + "\"").String())
+		} else {
+			builder.WriteString("FileFuzz: \"" + Vullist + "\"")
+		}
+		builder.WriteRune(']')
+	}
+
+	var faviconMMH3 string
+	if scanopts.Favicon {
+		faviconMMH3 = fmt.Sprintf("%d", stringz.FaviconHash(resp.Data))
+		builder.WriteString(" [")
+		if !scanopts.OutputWithNoColor {
+			builder.WriteString(aurora.Magenta(faviconMMH3).String())
+		} else {
+			builder.WriteString(faviconMMH3)
+		}
+		builder.WriteRune(']')
+	}
+	// adding default hashing for json output format
+	if r.options.JSONOutput && len(scanopts.Hashes) == 0 {
+		scanopts.Hashes = "md5,mmh3,sha256,simhash"
+	}
+	var hashesMap = map[string]string{}
+	if scanopts.Hashes != "" {
+		hs := strings.Split(scanopts.Hashes, ",")
+		builder.WriteString(" [")
+		for index, hashType := range hs {
+			var (
+				hashHeader, hashBody string
+			)
+			hashType = strings.ToLower(hashType)
+			switch hashType {
+			case "md5":
+				hashBody = hashes.Md5(resp.Data)
+				hashHeader = hashes.Md5([]byte(resp.RawHeaders))
+			case "mmh3":
+				hashBody = hashes.Mmh3(resp.Data)
+				hashHeader = hashes.Mmh3([]byte(resp.RawHeaders))
+			case "sha1":
+				hashBody = hashes.Sha1(resp.Data)
+				hashHeader = hashes.Sha1([]byte(resp.RawHeaders))
+			case "sha256":
+				hashBody = hashes.Sha256(resp.Data)
+				hashHeader = hashes.Sha256([]byte(resp.RawHeaders))
+			case "sha512":
+				hashBody = hashes.Sha512(resp.Data)
+				hashHeader = hashes.Sha512([]byte(resp.RawHeaders))
+			case "simhash":
+				hashBody = hashes.Simhash(resp.Data)
+				hashHeader = hashes.Simhash([]byte(resp.RawHeaders))
+			}
+			if hashBody != "" {
+				hashesMap[fmt.Sprintf("body-%s", hashType)] = hashBody
+				hashesMap[fmt.Sprintf("header-%s", hashType)] = hashHeader
+				if !scanopts.OutputWithNoColor {
+					builder.WriteString(aurora.Magenta(hashBody).String())
+				} else {
+					builder.WriteString(hashBody)
+				}
+				if index != len(hs)-1 {
+					builder.WriteString(",")
+				}
+			}
+		}
+		builder.WriteRune(']')
+	}
+	if scanopts.OutputLinesCount {
+		builder.WriteString(" [")
+		if !scanopts.OutputWithNoColor {
+			builder.WriteString(aurora.Magenta(resp.Lines).String())
+		} else {
+			builder.WriteString(fmt.Sprint(resp.Lines))
+		}
+		builder.WriteRune(']')
+	}
+	jarmhash := ""
+	if r.options.Jarm {
+		jarmhash = hashes.Jarm(fullURL, r.options.Timeout)
+		builder.WriteString(" [")
+		if !scanopts.OutputWithNoColor {
+			builder.WriteString(aurora.Magenta(jarmhash).String())
+		} else {
+			builder.WriteString(fmt.Sprint(jarmhash))
 		}
 		builder.WriteRune(']')
 	}
@@ -1204,7 +1450,7 @@ retry:
 		// Truncating length at 255
 		if len(domainFile) >= maxFileNameLength {
 			// leaving last 4 bytes free to append ".txt"
-			domainFile = domainFile[:maxFileNameLength-1]
+			domainFile = domainFile[:maxFileNameLength]
 		}
 
 		domainFile = strings.ReplaceAll(domainFile, "/", "_") + ".txt"
@@ -1245,15 +1491,6 @@ retry:
 	if finalPath == "" {
 		finalPath = "/"
 	}
-
-	hasher := sha256.New()
-	_, _ = hasher.Write(resp.Data)
-	bodySha := hex.EncodeToString(hasher.Sum(nil))
-	hasher.Reset()
-
-	_, _ = hasher.Write([]byte(resp.RawHeaders))
-	headersSha := hex.EncodeToString(hasher.Sum(nil))
-
 	var chainStatusCodes []int
 	if resp.HasChain() {
 		chainStatusCodes = append(chainStatusCodes, resp.GetChainStatusCodes()...)
@@ -1270,8 +1507,6 @@ retry:
 		Scheme:           parsed.Scheme,
 		Port:             finalPort,
 		Path:             finalPath,
-		BodySHA256:       bodySha,
-		HeaderSHA256:     headersSha,
 		raw:              resp.Raw,
 		URL:              fullURL,
 		Input:            origInput,
@@ -1296,9 +1531,18 @@ retry:
 		A:                ips,
 		CNAMEs:           cnames,
 		CDN:              isCDN,
+		CDNName:          cdnName,
 		ResponseTime:     resp.Duration.String(),
 		Technologies:     technologies,
+		FileFuzz:         filePaths,
+		POC:              Vullist,
 		FinalURL:         finalURL,
+		FavIconMMH3:      faviconMMH3,
+		Hashes:           hashesMap,
+		Jarm:             jarmhash,
+		Lines:            resp.Lines,
+		Words:            resp.Words,
+		ASN:              asnResponse,
 	}
 }
 
@@ -1310,34 +1554,46 @@ func (r *Runner) SaveResumeConfig() error {
 	return goconfig.Save(resumeCfg, DefaultResumeFile)
 }
 
+type AsnResponse struct {
+	AsNumber  string `json:"as-number" csv:"as-number"`
+	AsName    string `json:"as-name" csv:"as-name"`
+	AsCountry string `json:"as-country" csv:"as-country"`
+	AsRange   string `json:"as-range" csv:"as-range"`
+}
+
+func (o AsnResponse) String() string {
+	return fmt.Sprintf("%v, %v, %v, %v", o.AsNumber, o.AsName, o.AsCountry, o.AsRange)
+}
+
 // Result of a scan
 type Result struct {
-	Timestamp        time.Time `json:"timestamp,omitempty" csv:"timestamp"`
-	Request          string    `json:"request,omitempty" csv:"request"`
-	ResponseHeader   string    `json:"response-header,omitempty" csv:"response-header"`
-	Scheme           string    `json:"scheme,omitempty" csv:"scheme"`
-	Port             string    `json:"port,omitempty" csv:"port"`
-	Path             string    `json:"path,omitempty" csv:"path"`
-	BodySHA256       string    `json:"body-sha256,omitempty" csv:"body-sha256"`
-	HeaderSHA256     string    `json:"header-sha256,omitempty" csv:"header-sha256"`
-	A                []string  `json:"a,omitempty" csv:"a"`
-	CNAMEs           []string  `json:"cnames,omitempty" csv:"cnames"`
+	Scheme           string   `json:"scheme,omitempty" csv:"scheme"`
+	Port             string   `json:"port,omitempty" csv:"port"`
+	URL              string   `json:"url,omitempty" csv:"url"`
+	StatusCode       int      `json:"status-code,omitempty" csv:"status-code"`
+	Title            string   `json:"title,omitempty" csv:"title"`
+	Technologies     []string `json:"technologies,omitempty" csv:"technologies"`
+	ContentType      string   `json:"content-type,omitempty" csv:"content-type"`
+	Method           string   `json:"method,omitempty" csv:"method"`
+	Host             string   `json:"host,omitempty" csv:"host"`
+	Lines            int      `json:"lines" csv:"lines"`
+	Words            int      `json:"words" csv:"words"`
+	FinalURL         string   `json:"final-url,omitempty" csv:"final-url"`
+	POC              []string `json:"POC,omitempty" csv:"POC"`
+	FileFuzz         []string `json:"file-fuzz,omitempty" csv:"file-fuzz"`
+	Path             string   `json:"path,omitempty" csv:"path"`
+	A                []string `json:"a,omitempty" csv:"a"`
+	CNAMEs           []string `json:"cnames,omitempty" csv:"cnames"`
 	raw              string
-	URL              string `json:"url,omitempty" csv:"url"`
 	Input            string `json:"input,omitempty" csv:"input"`
 	Location         string `json:"location,omitempty" csv:"location"`
-	Title            string `json:"title,omitempty" csv:"title"`
 	str              string
 	err              error
 	Error            string              `json:"error,omitempty" csv:"error"`
 	WebServer        string              `json:"webserver,omitempty" csv:"webserver"`
 	ResponseBody     string              `json:"response-body,omitempty" csv:"response-body"`
-	ContentType      string              `json:"content-type,omitempty" csv:"content-type"`
-	Method           string              `json:"method,omitempty" csv:"method"`
-	Host             string              `json:"host,omitempty" csv:"host"`
 	ContentLength    int                 `json:"content-length,omitempty" csv:"content-length"`
 	ChainStatusCodes []int               `json:"chain-status-codes,omitempty" csv:"chain-status-codes"`
-	StatusCode       int                 `json:"status-code,omitempty" csv:"status-code"`
 	TLSData          *cryptoutil.TLSData `json:"tls-grab,omitempty" csv:"tls-grab"`
 	CSPData          *httpx.CSPData      `json:"csp,omitempty" csv:"csp"`
 	VHost            bool                `json:"vhost,omitempty" csv:"vhost"`
@@ -1345,11 +1601,17 @@ type Result struct {
 	Pipeline         bool                `json:"pipeline,omitempty" csv:"pipeline"`
 	HTTP2            bool                `json:"http2,omitempty" csv:"http2"`
 	CDN              bool                `json:"cdn,omitempty" csv:"cdn"`
+	CDNName          string              `json:"cdn-name,omitempty" csv:"cdn-name"`
 	ResponseTime     string              `json:"response-time,omitempty" csv:"response-time"`
-	Technologies     []string            `json:"technologies,omitempty" csv:"technologies"`
 	Chain            []httpx.ChainItem   `json:"chain,omitempty" csv:"chain"`
-	FinalURL         string              `json:"final-url,omitempty" csv:"final-url"`
 	Failed           bool                `json:"failed" csv:"failed"`
+	FavIconMMH3      string              `json:"favicon-mmh3,omitempty" csv:"favicon-mmh3"`
+	Hashes           map[string]string   `json:"hashes,omitempty" csv:"hashes"`
+	ASN              interface{}         `json:"asn,omitempty" csv:"asn"`
+	Jarm             string              `json:"jarm,omitempty" csv:"jarm"`
+	Timestamp        time.Time           `json:"timestamp,omitempty" csv:"timestamp"`
+	Request          string              `json:"request,omitempty" csv:"request"`
+	ResponseHeader   string              `json:"response-header,omitempty" csv:"response-header"`
 }
 
 // JSON the result
@@ -1413,12 +1675,22 @@ func (r Result) CSVRow(scanopts *scanOptions) string { //nolint
 			str = "'" + str
 		}
 
+		listChar, _ := regexp.Compile(`\[.*?\]`)
+
+		if listChar.Match([]byte(str)) {
+			str = strings.Replace(str, " ", "\n", -1)
+			str = strings.Replace(str, "[", "", -1)
+			str = strings.Replace(str, "]", "", -1)
+			str = "\"" + str + "\n\""
+		}
+
 		cells = append(cells, str)
 	}
 	_ = writer.Write(cells)
 	writer.Flush()
-
-	return strings.TrimSpace(buffer.String()) // remove "\n" in the end
+	out := buffer.String()
+	out = strings.Replace(out, "\"\"\"", "\"", -1)
+	return strings.TrimSpace(out) // remove "\n" in the end
 }
 
 func (r *Runner) skipCDNPort(host string, port string) bool {
@@ -1440,7 +1712,7 @@ func (r *Runner) skipCDNPort(host string, port string) bool {
 	// pick the first ip as target
 	hostIP := dnsData.A[0]
 
-	isCdnIP, err := r.hp.CdnCheck(hostIP)
+	isCdnIP, _, err := r.hp.CdnCheck(hostIP)
 	if err != nil {
 		return false
 	}
@@ -1451,4 +1723,16 @@ func (r *Runner) skipCDNPort(host string, port string) bool {
 	}
 
 	return false
+}
+
+func getDNSData(hp *httpx.HTTPX, hostname string) (ips, cnames []string, err error) {
+	dnsData, err := hp.Dialer.GetDNSData(hostname)
+	if err != nil {
+		return nil, nil, err
+	}
+	ips = make([]string, 0, len(dnsData.A)+len(dnsData.AAAA))
+	ips = append(ips, dnsData.A...)
+	ips = append(ips, dnsData.AAAA...)
+	cnames = dnsData.CNAME
+	return
 }

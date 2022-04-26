@@ -13,12 +13,28 @@ message UrlType {
   string fragment = 7;
 }
 
+message addrType {
+  string transport = 1;
+  string addr = 2;
+  string port = 3;
+}
+
+message connInfoType {
+  addrType source = 1;
+  addrType destination = 2;
+}
+
 message Request {
   UrlType url = 1;
   string method = 2;
   map<string, string> headers = 3;
   string content_type = 4;
   bytes body = 5;
+  bytes raw = 6;
+  bytes raw_header = 7;
+  string content = 8;
+  string read_timeout = 9;
+  string connection_id = 10;
 }
 
 message Response {
@@ -27,6 +43,15 @@ message Response {
   map<string, string> headers = 3;
   string content_type = 4;
   bytes body = 5;
+  bytes raw = 6;
+  bytes raw_header = 7;
+  int64 latency = 8;
+  connInfoType conn = 9;
+}
+
+enum ReverseType {
+  Ceye = 0;
+  DnslogCN =  1;
 }
 
 message Reverse {
@@ -34,4 +59,5 @@ message Reverse {
   string domain = 2;
   string ip = 3;
   bool is_domain_name_server = 4;
+  ReverseType reverse_type = 5;
 }

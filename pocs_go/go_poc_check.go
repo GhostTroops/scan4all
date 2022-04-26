@@ -19,7 +19,7 @@ import (
 	"net/url"
 )
 
-func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []string {
+func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool) []string {
 	var HOST string
 	var technologies []string
 	if host, err := url.Parse(URL); err == nil {
@@ -48,44 +48,44 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 			if username != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-basic|%s:%s", username, password))
 			}
-		case "WebLogic":
+		case "Weblogic":
 			username, password := brute.Weblogic_brute(URL)
 			if username != "" {
 				if username == "login_page" {
-					technologies = append(technologies, "WebLogic_login_page")
+					technologies = append(technologies, "Weblogic_login_page")
 				} else {
-					technologies = append(technologies, fmt.Sprintf("brute-WebLogic|%s:%s", username, password))
+					technologies = append(technologies, fmt.Sprintf("brute-Weblogic|%s:%s", username, password))
 				}
 			}
 			if weblogic.CVE_2014_4210(URL) {
-				technologies = append(technologies, "exp-WebLogic|CVE_2014_4210")
+				technologies = append(technologies, "exp-Weblogic|CVE_2014_4210")
 			}
 			if weblogic.CVE_2017_3506(URL) {
-				technologies = append(technologies, "exp-WebLogic|CVE_2017_3506")
+				technologies = append(technologies, "exp-Weblogic|CVE_2017_3506")
 			}
 			if weblogic.CVE_2017_10271(URL) {
-				technologies = append(technologies, "exp-WebLogic|CVE_2017_10271")
+				technologies = append(technologies, "exp-Weblogic|CVE_2017_10271")
 			}
 			if weblogic.CVE_2018_2894(URL) {
-				technologies = append(technologies, "exp-WebLogic|CVE_2018_2894")
+				technologies = append(technologies, "exp-Weblogic|CVE_2018_2894")
 			}
 			if weblogic.CVE_2019_2725(URL) {
-				technologies = append(technologies, "exp-WebLogic|CVE_2019_2725")
+				technologies = append(technologies, "exp-Weblogic|CVE_2019_2725")
 			}
 			if weblogic.CVE_2019_2729(URL) {
-				technologies = append(technologies, "exp-WebLogic|CVE_2019_2729")
+				technologies = append(technologies, "exp-Weblogic|CVE_2019_2729")
 			}
 			if weblogic.CVE_2020_2883(URL) {
-				technologies = append(technologies, "exp-WebLogic|CVE_2020_2883")
+				technologies = append(technologies, "exp-Weblogic|CVE_2020_2883")
 			}
 			if weblogic.CVE_2020_14882(URL) {
-				technologies = append(technologies, "exp-WebLogic|CVE_2020_14882")
+				technologies = append(technologies, "exp-Weblogic|CVE_2020_14882")
 			}
 			if weblogic.CVE_2020_14883(URL) {
-				technologies = append(technologies, "exp-WebLogic|CVE_2020_14883")
+				technologies = append(technologies, "exp-Weblogic|CVE_2020_14883")
 			}
 			if weblogic.CVE_2021_2109(URL) {
-				technologies = append(technologies, "exp-WebLogic|CVE_2021_2109")
+				technologies = append(technologies, "exp-Weblogic|CVE_2021_2109")
 			}
 		case "JBoss":
 			if jboss.CVE_2017_12149(URL) {
@@ -160,10 +160,6 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 			if loginurl != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 			}
-		case "log4j":
-			if log4j.Check(URL, finalURL) {
-				technologies = append(technologies, "exp-log4j|JNDI RCE")
-			}
 		case "Sunlogin":
 			if sunlogin.SunloginRCE(URL) {
 				technologies = append(technologies, "exp-Sunlogin|RCE")
@@ -179,6 +175,11 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string) []st
 		case "SpringGateway":
 			if Springboot.CVE_2022_22947(URL) {
 				technologies = append(technologies, "exp-SpringGateway|CVE_2022_22947")
+			}
+		}
+		if checklog4j {
+			if log4j.Check(URL, finalURL) {
+				technologies = append(technologies, "exp-log4j|JNDI RCE")
 			}
 		}
 	}

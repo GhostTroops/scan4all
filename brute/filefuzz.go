@@ -100,7 +100,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 			other200Contentlen = append(other200Contentlen, url404req.ContentLength)
 		}
 	}
-	ch := make(chan struct{}, 20)
+	ch := make(chan struct{}, pkg.Fuzzthreads)
 	for _, payload := range filedic {
 		var is404Page = false
 		if errorTimes > 20 {
@@ -116,7 +116,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		go func(payload string) {
 			if url, req, err := reqPage(u + payload); err == nil {
 				if url.is403 && (pkg.SliceInString(url.title, page403title) || pkg.SliceInString(req.Body, page403Content)) && !skip403 {
-					path = append(path, payload)
+					path = append(path, u+payload)
 					technologies = addfingerprints403(payload, technologies) // 基于403页面文件扫描指纹添加
 				}
 				if !pkg.IntInSlice(req.StatusCode, page200CodeList) {
@@ -183,7 +183,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 					payload200Title = append(payload200Title, url.title)
 					payload200Contentlen = append(payload200Contentlen, req.ContentLength)
 					if !is404Page {
-						path = append(path, payload)
+						path = append(path, u+payload)
 						technologies = addfingerprintsnormal(payload, technologies, req) // 基于200页面文件扫描指纹添加
 					}
 				}
