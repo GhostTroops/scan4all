@@ -29,7 +29,7 @@
 - 快速的登录密码爆破功能
 - 快速的POC检测功能
 - 轻量、开源、跨平台使用
-- 支持多种类型的输入 - **STDIN/HOST/IP/CIDR/DOMAIN**
+- 支持多种类型的输入 - **STDIN/HOST/IP/CIDR/DOMAIN/URL**
 - 支持多种类型的输出 - **JSON/TXT/CSV/STDOUT**
 
 
