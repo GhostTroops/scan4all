@@ -7,7 +7,7 @@ cd vscan
 go build
 ```
 
-# 安装
+# 安装/运行
 
 1.在运行vscan之前，你必须先安装libpcap库
 
