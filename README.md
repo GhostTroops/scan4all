@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="/static/Installation.md">编译/安装</a> •
+  <a href="/static/Installation.md">编译/安装/运行</a> •
   <a href="/static/usage.md">参数说明</a> •
   <a href="/static/running.md">使用方法</a> •
   <a href="/static/scenario.md">使用场景</a> •
@@ -29,7 +29,7 @@
 - 快速的登录密码爆破功能
 - 快速的POC检测功能
 - 轻量、开源、跨平台使用
-- 支持多种类型的输入 - **STDIN/HOST/IP/CIDR/DOMAIN/URL**
+- 支持多种类型的输入 - **STDIN/HOST/IP/CIDR/URL/TXT**
 - 支持多种类型的输出 - **JSON/TXT/CSV/STDOUT**
 
 
