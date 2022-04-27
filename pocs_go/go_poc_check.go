@@ -6,6 +6,7 @@ import (
 	"github.com/veo/vscan/pocs_go/Springboot"
 	"github.com/veo/vscan/pocs_go/ThinkPHP"
 	"github.com/veo/vscan/pocs_go/fastjson"
+	"github.com/veo/vscan/pocs_go/gitlab"
 	"github.com/veo/vscan/pocs_go/jboss"
 	"github.com/veo/vscan/pocs_go/jenkins"
 	"github.com/veo/vscan/pocs_go/log4j"
@@ -175,6 +176,10 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 		case "SpringGateway":
 			if Springboot.CVE_2022_22947(URL) {
 				technologies = append(technologies, "exp-SpringGateway|CVE_2022_22947")
+			}
+		case "GitLab":
+			if gitlab.CVE_2021_22205(URL) {
+				technologies = append(technologies, "exp-gitlab|CVE_2021_22205")
 			}
 		}
 		if checklog4j {
