@@ -6,7 +6,9 @@
 
 <p align="center">
 <a href="https://github.com/veo/vscan/issues"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat"></a>
+<a href="https://github.com/veo/vscan"><img alt="Release" src="https://img.shields.io/badge/LICENSE-BSD-important"></a>
 <a href="https://github.com/veo/vscan/releases"><img src="https://img.shields.io/github/release/veo/vscan"></a>
+<a href="https://github.com/veo/vscan/releases"><img src="https://img.shields.io/github/downloads/veo/vscan/total?color=blueviolet"></a>
 </p>
 
 <p align="center">
