@@ -1,6 +1,8 @@
 package structs
 
-import "gopkg.in/yaml.v2"
+import (
+	"gopkg.in/yaml.v2"
+)
 
 var ORDER = 0
 
@@ -118,9 +120,11 @@ func (m *RuleMapSlice) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	newRuleSlice := make([]RuleMapItem, len(tempMap))
 
 	for roleName, role := range tempMap {
-		newRuleSlice[role.order] = RuleMapItem{
-			Key:   roleName,
-			Value: role,
+		if role.order < len(tempMap) {
+			newRuleSlice[role.order] = RuleMapItem{
+				Key:   roleName,
+				Value: role,
+			}
 		}
 	}
 
