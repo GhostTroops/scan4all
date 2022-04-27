@@ -4322,27 +4322,27 @@ var localFinger = `{
 		"location": "body",
 		"keyword": ["content=\"Gitea - Git with a cup of tea\""]
 	},{
-		"cms": "gitlab",
+		"cms": "GitLab",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["gon.default_issues_tracker"]
 	},{
-		"cms": "gitlab",
+		"cms": "GitLab",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["content=\"gitlab community edition\""]
 	},{
-		"cms": "gitlab",
+		"cms": "GitLab",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["content=\"gitlab "]
 	},{
-		"cms": "gitlab",
+		"cms": "GitLab",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["<a href=\"https://about.gitlab.com/\">about gitlab"]
 	},{
-		"cms": "gitlab",
+		"cms": "GitLab",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["class=\"col-sm-7 brand-holder pull-left\""]

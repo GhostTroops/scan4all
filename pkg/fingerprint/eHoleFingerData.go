@@ -207,7 +207,7 @@ var eHoleFinger = `{
 		"location": "body",
 		"keyword": ["jboss.css"]
 	}, {
-		"cms": "Gitlab",
+		"cms": "GitLab",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["assets/gitlab_logo"]
@@ -762,7 +762,7 @@ var eHoleFinger = `{
 		"location": "body",
 		"keyword": ["1835479497"]
 	}, {
-		"cms": "Gitlab",
+		"cms": "GitLab",
 		"method": "faviconhash",
 		"location": "body",
 		"keyword": ["1278323681"]
@@ -1227,7 +1227,7 @@ var eHoleFinger = `{
 		"location": "body",
 		"keyword": ["2071993228"]
 	}, {
-		"cms": "Gitlab",
+		"cms": "GitLab",
 		"method": "faviconhash",
 		"location": "body",
 		"keyword": ["516963061"]
