@@ -2,10 +2,15 @@ package fingerprint
 
 var localFinger = `{
 	"fingerprint": [{
-		"cms": "08cms",
+		"cms": "登录页面",
 		"method": "keyword",
 		"location": "body",
-		"keyword": ["content=\"08cms"]
+		"keyword": ["登录","注册","忘记密码","Login","Sign up","Forgot password"]
+	},{
+		"cms": "登录页面",
+		"method": "regular",
+		"location": "body",
+		"keyword": ["<input.*pass","<input.*user"]
 	},{
 		"cms": "08cms",
 		"method": "keyword",

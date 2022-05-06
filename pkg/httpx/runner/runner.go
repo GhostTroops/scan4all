@@ -1242,8 +1242,10 @@ retry:
 			}
 			return slice
 		}
+		if brute.CheckLoginPage(finalURL) {
+			technologies = append(technologies, "登录页面")
+		}
 		technologies = SliceRemoveDuplicates(technologies) // 指纹去重
-
 		if !scanopts.NoPOC {
 			intersect := func(slice1, slice2 []string) []string {
 				m := make(map[string]int)

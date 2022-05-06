@@ -65,7 +65,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		path404              = "/file_not_support"
 		page200CodeList      = []int{200, 301, 302}
 		page404Title         = []string{"404", "不存在", "错误", "403", "禁止访问", "请求含有不合法的参数", "无法访问", "网络防火墙", "网站防火墙", "访问拦截", "由于安全原因JSP功能默认关闭"}
-		page404Content       = []string{"<script>document.getElementById(\"a-link\").click();</script>", "404 Not Found", "您所提交的请求含有不合法的参数，已被网站管理员设置拦截", "404.safedog.cn"}
+		page404Content       = []string{"<script>document.getElementById(\"a-link\").click();</script>", "404 Not Found", "您所提交的请求含有不合法的参数，已被网站管理员设置拦截", "404.safedog.cn", "URL was rejected"}
 		page403title         = []string{"403", "Forbidden", "ERROR", "error"}
 		page403Content       = []string{"403", "Forbidden", "ERROR", "error"}
 		location404          = []string{"/auth/login/", "error.html"}
