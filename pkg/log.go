@@ -2,14 +2,38 @@ package pkg
 
 import (
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/logrusorgru/aurora"
 	"github.com/projectdiscovery/gologger"
 	"os"
+	"runtime"
 	"strings"
 )
 
 var NoColor bool
 var Output = ""
+
+// log message，Easy to send to ES result server
+type LogMsg struct {
+	Url        string `json:"url"`
+	PluginName string `json:"pluginName"`
+	StatusCode int    `json:"statusCode"`
+	CheckRst   string `json:"checkRst"`
+}
+
+// 调用方法名作为插件名
+func GetPluginName(defaultVal string) string {
+	pc, _, _, ok := runtime.Caller(1)
+	details := runtime.FuncForPC(pc)
+	if ok && details != nil {
+		return details.Name()
+	}
+	return defaultVal
+}
+
+func LogJson(logMsg LogMsg) {
+	spew.Printf("%v", logMsg)
+}
 
 func GoPocLog(log string) {
 	builder := &strings.Builder{}
