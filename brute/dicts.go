@@ -5,16 +5,16 @@ import (
 	"strings"
 )
 
-type userpass struct {
+type Userpass struct {
 	username string
 	password string
 }
 
 var (
-	tomcatuserpass   = []userpass{}
-	jbossuserpass    = []userpass{}
+	tomcatuserpass   = []Userpass{}
+	jbossuserpass    = []Userpass{}
 	top100pass       = []string{}
-	weblogicuserpass = []userpass{}
+	weblogicuserpass = []Userpass{}
 	filedic          = []string{}
 )
 
@@ -33,7 +33,7 @@ var szFiledic string
 //go:embed dicts/top100pass.txt
 var szTop100pass string
 
-func cvtUps[T any](s string) []T {
+func CvtUps[T any](s string) []T {
 	a := strings.Split(s, "\n")
 	var aRst []T
 	for _, x := range a {
@@ -42,14 +42,13 @@ func cvtUps[T any](s string) []T {
 	}
 	return aRst
 }
-func cvtLines(s string) []string {
+func CvtLines(s string) []string {
 	return strings.Split(s, "\n")
 }
-
 func init() {
-	tomcatuserpass = cvtUps[userpass](szTomcatuserpass)
-	jbossuserpass = cvtUps[userpass](szJbossuserpass)
-	weblogicuserpass = cvtUps[userpass](szWeblogicuserpass)
-	filedic = append(filedic, cvtLines(szFiledic)...)
-	top100pass = append(top100pass, cvtLines(szTop100pass)...)
+	tomcatuserpass = CvtUps[Userpass](szTomcatuserpass)
+	jbossuserpass = CvtUps[Userpass](szJbossuserpass)
+	weblogicuserpass = CvtUps[Userpass](szWeblogicuserpass)
+	filedic = append(filedic, CvtLines(szFiledic)...)
+	top100pass = append(top100pass, CvtLines(szTop100pass)...)
 }
