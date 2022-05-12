@@ -1,0 +1,14 @@
+weblogic,weblogic
+weblogic,welcome1
+weblogic,Oracle@123
+weblogic,123456
+weblogic,weblogic123
+system,password
+guest,guest
+portaladmin,portaladmin
+admin,security
+joe,password
+mary,password
+system,security
+wlcsystem,wlcsystem
+wlcsystem,sipisystem
