@@ -33,12 +33,16 @@ var szFiledic string
 //go:embed dicts/top100pass.txt
 var szTop100pass string
 
-func cvtUps[T any](s string) []T {
+func cvtUps(s string) []userpass {
 	a := strings.Split(s, "\n")
-	var aRst []T
+	var aRst []userpass
 	for _, x := range a {
-		j := strings.Split(x, ",")
-		aRst = append(aRst, T{j[0], j[1]})
+		if x != "" {
+			j := strings.Split(x, ",")
+			if len(j) == 2 {
+				aRst = append(aRst, []userpass{{j[0], j[1]}}...)
+			}
+		}
 	}
 	return aRst
 }
@@ -47,9 +51,9 @@ func cvtLines(s string) []string {
 }
 
 func init() {
-	tomcatuserpass = cvtUps[userpass](szTomcatuserpass)
-	jbossuserpass = cvtUps[userpass](szJbossuserpass)
-	weblogicuserpass = cvtUps[userpass](szWeblogicuserpass)
+	tomcatuserpass = cvtUps(szTomcatuserpass)
+	jbossuserpass = cvtUps(szJbossuserpass)
+	weblogicuserpass = cvtUps(szWeblogicuserpass)
 	filedic = append(filedic, cvtLines(szFiledic)...)
 	top100pass = append(top100pass, cvtLines(szTop100pass)...)
 }
