@@ -12,6 +12,16 @@ var localFinger = `{
 		"location": "body",
 		"keyword": ["<input.*pass","<input.*user"]
 	},{
+		"cms": "JSON",
+		"method": "regular",
+		"location": "body",
+		"keyword": ["data.*?:.*?json.stringify","data.*?:.*?JSON.stringify"]
+	},{
+		"cms": "JSON",
+		"method": "keyword",
+		"location": "body",
+		"keyword": ["json"]
+	},{
 		"cms": "08cms",
 		"method": "keyword",
 		"location": "body",
@@ -822,7 +832,7 @@ var localFinger = `{
 		"location": "body",
 		"keyword": ["href=\"/oozie\">oozie console"]
 	},{
-		"cms": "apache-shiro",
+		"cms": "Shiro",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["</i> shiro</li>"]
@@ -837,32 +847,32 @@ var localFinger = `{
 		"location": "body",
 		"keyword": ["content=\"Struts2 Showcase for Apache Struts Project\""]
 	},{
-		"cms": "apache-tomcat",
+		"cms": "Apache Tomcat",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["<h3>Apache Tomcat/"]
 	},{
-		"cms": "apache-tomcat",
+		"cms": "Apache Tomcat",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["<title>Apache Tomcat/"]
 	},{
-		"cms": "apache-tomcat",
+		"cms": "Apache Tomcat",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["/manager/html","/manager/status"]
 	},{
-		"cms": "apache-tomcat",
+		"cms": "Apache Tomcat",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["href=\"tomcat.css"]
 	},{
-		"cms": "apache-tomcat",
+		"cms": "Apache Tomcat",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["this is the default tomcat home page"]
 	},{
-		"cms": "apache-tomcat",
+		"cms": "Apache Tomcat",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["<h3>apache tomcat"]
@@ -2057,42 +2067,42 @@ var localFinger = `{
 		"location": "body",
 		"keyword": ["正在使用腾讯qq帐号登录消防联网系统"]
 	},{
-		"cms": "citrix-access-gateway",
+		"cms": "citrix",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["\"/vpn/resources/{lang}\""]
 	},{
-		"cms": "citrix-access-gateway",
+		"cms": "citrix",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["href=\"/vpn/images/accessgateway.ico"]
 	},{
-		"cms": "citrix-access-gateway",
+		"cms": "citrix",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["class=\"citrixreceiverlogoaboutbox\""]
 	},{
-		"cms": "citrix-access-gateway",
+		"cms": "citrix",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["/vpn/js/gateway_login_view.js?"]
 	},{
-		"cms": "citrix-access-gateway",
+		"cms": "citrix",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["cloud.ottoworkfroce.eu/vpn/index.html"]
 	},{
-		"cms": "citrix-access-gateway",
+		"cms": "citrix",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["vpn/js/lsgateway_login_view.js"]
 	},{
-		"cms": "citrix-access-gateway",
+		"cms": "citrix",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["class=\"_ctxstxt_netscalergateway\""]
 	},{
-		"cms": "citrix-access-gateway",
+		"cms": "citrix",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["receiver/images/common/icon_vpn.ico"]
@@ -3280,87 +3290,42 @@ var localFinger = `{
 		"cms": "ecology-oa",
 		"method": "keyword",
 		"location": "body",
-		"keyword": ["/wui/common/css/w7ovfont.css"]
-	},{
-		"cms": "ecology-oa",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["typeof poppedwindow"]
-	},{
-		"cms": "ecology-oa",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["client/jquery.client_wev8.js"]
-	},{
-		"cms": "ecology-oa",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["/theme/ecology8/jquery/js/zdialog_wev8.js"]
-	},{
-		"cms": "ecology-oa",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["ecology8/lang/weaver_lang_7_wev8.js"]
+		"keyword": ["/wui/common/css/w7ovfont.css","typeof poppedwindow","client/jquery.client_wev8.js","/theme/ecology8/jquery/js/zdialog_wev8.js","ecology8/lang/weaver_lang_7_wev8.js"]
 	},{
 		"cms": "ecology泛微e-mobile",
 		"method": "keyword",
 		"location": "body",
-		"keyword": ["e-mobile","weaver"]
-	},{
-		"cms": "ecology泛微e-mobile",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["content=\"weaver e-mobile\""]
-	},{
-		"cms": "ecology泛微e-mobile",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["e-mobile&nbsp;"]
-	},{
-		"cms": "ecology泛微e-mobile",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["/images/login_logo@2x.png","action=\"/verifylogin.do"]
-	},{
-		"cms": "ecology泛微e-mobile",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["window.apiprifix = \"/emp\";"]
+		"keyword": ["e-mobile","weaver","content=\"weaver e-mobile\"","e-mobile&nbsp;","/images/login_logo@2x.png","action=\"/verifylogin.do","window.apiprifix = \"/emp\";"]
 	},{
 		"cms": "ecology泛微e-office",
 		"method": "keyword",
 		"location": "body",
-		"keyword": ["dynamiCode","iSignaturePortal"]
-	},{
-		"cms": "ecology泛微e-office",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["/general/login/view//images/updateload.gif"]
-	},{
-		"cms": "ecology泛微e-office",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["szfeatures"]
+		"keyword": ["dynamiCode","iSignaturePortal","/general/login/view//images/updateload.gif","szfeatures"]
 	},{
 		"cms": "ecology泛微云桥e-bridge",
 		"method": "keyword",
 		"location": "body",
-		"keyword": ["<meta name=\"searchtitle\" content=\"泛微云桥e-Bridge\"> "]
+		"keyword": ["<meta name=\"searchtitle\" content=\"泛微云桥e-Bridge\"> ","e-Bridge","wx.weaver","content=\"泛微云桥e-bridge\""]
 	},{
-		"cms": "ecology泛微云桥e-bridge",
+		"cms": "ecology",
 		"method": "keyword",
 		"location": "body",
-		"keyword": ["e-Bridge"]
+		"keyword": ["/wui/common/css/w7ovfont.css","typeof poppedwindow","client/jquery.client_wev8.js","/theme/ecology8/jquery/js/zdialog_wev8.js","ecology8/lang/weaver_lang_7_wev8.js"]
 	},{
-		"cms": "ecology泛微云桥e-bridge",
+		"cms": "ecology",
 		"method": "keyword",
 		"location": "body",
-		"keyword": ["wx.weaver"]
+		"keyword": ["e-mobile","weaver","content=\"weaver e-mobile\"","e-mobile&nbsp;","/images/login_logo@2x.png","action=\"/verifylogin.do","window.apiprifix = \"/emp\";"]
 	},{
-		"cms": "ecology泛微云桥e-bridge",
+		"cms": "ecology",
 		"method": "keyword",
 		"location": "body",
-		"keyword": ["content=\"泛微云桥e-bridge\""]
+		"keyword": ["dynamiCode","iSignaturePortal","/general/login/view//images/updateload.gif","szfeatures"]
+	},{
+		"cms": "ecology",
+		"method": "keyword",
+		"location": "body",
+		"keyword": ["<meta name=\"searchtitle\" content=\"泛微云桥e-Bridge\"> ","e-Bridge","wx.weaver","content=\"泛微云桥e-bridge\""]
 	},{
 		"cms": "ecshop",
 		"method": "keyword",
@@ -5272,10 +5237,10 @@ var localFinger = `{
 		"location": "body",
 		"keyword": ["<b>httpfs service</b"]
 	},{
-		"cms": "http基本认证",
+		"cms": "Basic",
 		"method": "keyword",
-		"location": "body",
-		"keyword": ["Unauthorized"]
+		"location": "header",
+		"keyword": ["WWW-Authenticate"]
 	},{
 		"cms": "huaease-medication",
 		"method": "keyword",
@@ -6042,17 +6007,17 @@ var localFinger = `{
 		"location": "body",
 		"keyword": ["<title>Jellyfin</title>","content=\"Jellyfin\""]
 	},{
-		"cms": "jenkins",
+		"cms": "Jenkins",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["hudson.model.Hudson.Administer"]
 	},{
-		"cms": "jenkins",
+		"cms": "Jenkins",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["jenkins-agent-protocols"]
 	},{
-		"cms": "jenkins",
+		"cms": "Jenkins",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["[Jenkins]"]
@@ -6617,12 +6582,12 @@ var localFinger = `{
 		"location": "body",
 		"keyword": ["/public/js/util/xg_oyang.js"]
 	},{
-		"cms": "laravel-admin",
+		"cms": "laravel",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["vendor/laravel-admin/"]
 	},{
-		"cms": "laravel-admin",
+		"cms": "laravel",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["欢迎登录laravel-admin</p>"]
@@ -10267,7 +10232,7 @@ var localFinger = `{
 		"location": "body",
 		"keyword": ["content=\"rcp, 管理平台\""]
 	},{
-		"cms": "ruijie-eg易网关",
+		"cms": "ruijie-eg",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["href=\"eg.css","ruijie"]
@@ -14067,50 +14032,10 @@ var localFinger = `{
 		"location": "body",
 		"keyword": ["href=\"clientfile/rmisupdate.exe"]
 	},{
-		"cms": "yonyou-seeyon-oa",
+		"cms": "seeyon",
 		"method": "keyword",
 		"location": "body",
-		"keyword": ["/seeyon/USER-DATA/IMAGES/LOGIN/login.gif"]
-	},{
-		"cms": "yonyou-seeyon-oa",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["/seeyon/common/"]
-	},{
-		"cms": "yonyou-seeyon-oa",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["M3 Server"]
-	},{
-		"cms": "yonyou-seeyon-oa",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["M1-Server"]
-	},{
-		"cms": "yonyou-seeyon-oa",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["/seeyon/user-data/images/login/login.gif"]
-	},{
-		"cms": "yonyou-seeyon-oa",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["seeyon","seeyonproductid"]
-	},{
-		"cms": "yonyou-seeyon-oa",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["var _ctxpath = '/seeyon'"]
-	},{
-		"cms": "yonyou-seeyon-oa",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["a8-v5企业版"]
-	},{
-		"cms": "yonyou-seeyon-oa",
-		"method": "keyword",
-		"location": "body",
-		"keyword": ["/seeyon/"]
+		"keyword": ["/seeyon/USER-DATA/IMAGES/LOGIN/login.gif","/seeyon/common/","M3 Server","M1-Server","/seeyon/user-data/images/login/login.gif","seeyon","seeyonproductid","var _ctxpath = '/seeyon'","A8-V5企业版","/seeyon/"]
 	},{
 		"cms": "yonyou-shop",
 		"method": "keyword",
@@ -14296,6 +14221,11 @@ var localFinger = `{
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["images/general/zabbix.ico"]
+	},{
+		"cms": "ZabbixSAML",
+		"method": "keyword",
+		"location": "body",
+		"keyword": ["Sign in with Single Sign-On"]
 	},{
 		"cms": "zbintel-system",
 		"method": "keyword",
@@ -15517,7 +15447,7 @@ var localFinger = `{
 		"location": "body",
 		"keyword": ["ccaq_kf@unisk.cn","信息安全综合管理平台"]
 	},{
-		"cms": "若依ruoyi管理系统",
+		"cms": "ruoyi",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["/ruoyi/css/ry-ui.css","/ruoyi/js/ry-ui.js"]
