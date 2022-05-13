@@ -10,6 +10,7 @@ var eHoleFinger = `{
 		"cms": "seeyon",
 		"method": "keyword",
 		"location": "body",
+
 		"keyword": ["/seeyon/common/"]
 	}, {
 		"cms": "Spring env",
@@ -377,7 +378,7 @@ var eHoleFinger = `{
 		"location": "body",
 		"keyword": ["1318124267"]
 	}, {
-		"cms": "Atlassian – Confluence",
+		"cms": "confluence",
 		"method": "faviconhash",
 		"location": "body",
 		"keyword": ["-305179312"]
@@ -442,7 +443,7 @@ var eHoleFinger = `{
 		"location": "body",
 		"keyword": ["420473080"]
 	}, {
-		"cms": "Atlassian – Confluence",
+		"cms": "confluence",
 		"method": "faviconhash",
 		"location": "body",
 		"keyword": ["-1642532491"]
@@ -2777,7 +2778,7 @@ var eHoleFinger = `{
 		"location": "body",
 		"keyword": ["-1249852061"]
 	}, {
-		"cms": "Hikvision IP Camera",
+		"cms": "Hikvision",
 		"method": "faviconhash",
 		"location": "body",
 		"keyword": ["999357577"]
@@ -2907,7 +2908,7 @@ var eHoleFinger = `{
 		"location": "body",
 		"keyword": ["IBOS","login-panel","loginsubmit"]
 	}, {
-		"cms": "若依(RuoYi)-管理系统",
+		"cms": "ruoyi",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["ry-ui","username","rememberme"]
@@ -2977,7 +2978,7 @@ var eHoleFinger = `{
 		"location": "body",
 		"keyword": ["安全系统","网御星云","login"]
 	}, {
-		"cms": "Citrix Access Gateway",
+		"cms": "Citrix",
 		"method": "keyword",
 		"location": "body",
 		"keyword": ["Citrix Access Gateway","login"]
@@ -3037,7 +3038,7 @@ var eHoleFinger = `{
 		"location": "body",
 		"keyword": ["DBAPPSecurity","安恒云堡垒机"]
 	}, {
-		"cms": "Citrix 虚拟桌面",
+		"cms": "Citrix",
 		"method": "faviconhash",
 		"location": "body",
 		"keyword": ["-1272756243"]
