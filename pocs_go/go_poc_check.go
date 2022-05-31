@@ -49,7 +49,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if username != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-basic|%s:%s", username, password))
 			}
-		case "Weblogic":
+		case "Weblogic", "WebLogic":
 			username, password := brute.Weblogic_brute(URL)
 			if username != "" {
 				if username == "login_page" {
@@ -88,7 +88,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if weblogic.CVE_2021_2109(URL) {
 				technologies = append(technologies, "exp-Weblogic|CVE_2021_2109")
 			}
-		case "JBoss":
+		case "JBoss", "JBoss Application Server 7", "jboss", "jboss-as", "jboss-eap", "JBoss Web", "JBoss Application Server":
 			if jboss.CVE_2017_12149(URL) {
 				technologies = append(technologies, "exp-jboss|CVE_2017_12149")
 			}
@@ -101,7 +101,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if fastjsonRceType != "" {
 				technologies = append(technologies, fmt.Sprintf("exp-FastJson|%s", fastjsonRceType))
 			}
-		case "Jenkins":
+		case "Jenkins", "jenkins":
 			if jenkins.Unauthorized(URL) {
 				technologies = append(technologies, "exp-jenkins|Unauthorized script")
 			}
@@ -114,7 +114,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if jenkins.CVE_2019_10003000(URL) {
 				technologies = append(technologies, "exp-jenkins|CVE_2019_10003000")
 			}
-		case "ThinkPHP":
+		case "ThinkPHP", "thinkphp":
 			if ThinkPHP.RCE(URL) {
 				technologies = append(technologies, "exp-ThinkPHP")
 			}
@@ -161,7 +161,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if loginurl != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 			}
-		case "Sunlogin":
+		case "Sunlogin", "sunlogin":
 			if sunlogin.SunloginRCE(URL) {
 				technologies = append(technologies, "exp-Sunlogin|RCE")
 			}
@@ -169,7 +169,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if zabbix.CVE_2022_23131(URL) {
 				technologies = append(technologies, "exp-ZabbixSAML|bypass-login")
 			}
-		case "Spring":
+		case "Spring", "Spring env", "spring-boot", "spring-framework", "spring-boot-admin":
 			if Springboot.CVE_2022_22965(finalURL) {
 				technologies = append(technologies, "exp-Spring4Shell|CVE_2022_22965")
 			}
