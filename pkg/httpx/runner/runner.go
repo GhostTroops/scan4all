@@ -1614,6 +1614,7 @@ type Result struct {
 	Timestamp        time.Time           `json:"timestamp,omitempty" csv:"timestamp"`
 	Request          string              `json:"request,omitempty" csv:"request"`
 	ResponseHeader   string              `json:"response-header,omitempty" csv:"response-header"`
+	PluginName       string              `json:"pluginName,omitempty" csv:"PluginName"`
 }
 
 // JSON the result
