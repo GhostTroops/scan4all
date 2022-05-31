@@ -13,16 +13,6 @@ import (
 var NoColor bool
 var Output = ""
 
-// log message，Easy to send to ES result server
-type LogMsg struct {
-	Url        string `json:"url"`
-	Title      string `json:"title,omitempty"`
-	BodyLength uint   `json:"bodyLength,omitempty"`
-	StatusCode int    `json:"statusCode,omitempty"`
-	PluginName string `json:"pluginName"`
-	CheckRst   string `json:"checkRst,omitempty"` // 返回的指纹信息，可以为空
-}
-
 // 调用方法名作为插件名
 func GetPluginName(defaultVal string) string {
 	pc, _, _, ok := runtime.Caller(1)
@@ -33,7 +23,8 @@ func GetPluginName(defaultVal string) string {
 	return defaultVal
 }
 
-func LogJson(logMsg LogMsg) {
+// log message，Easy to send to ES result server
+func LogJson(logMsg interface{}) {
 	spew.Printf("%v", logMsg)
 }
 
