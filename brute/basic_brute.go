@@ -1,7 +1,6 @@
 package brute
 
 import (
-	"fmt"
 	"github.com/veo/vscan/pkg"
 )
 
@@ -13,7 +12,7 @@ func Basic_brute(url string) (username string, password string) {
 				for passi := range top100pass {
 					if req2, err2 := pkg.HttpRequsetBasic(basicusers[useri], top100pass[passi], url, "HEAD", "", false, nil); err2 == nil {
 						if req2.StatusCode == 200 || req2.StatusCode == 403 {
-							pkg.LogJson(pkg.LogMsg{PluginName: pkg.GetPluginName("Basic_brute"), StatusCode: req2.StatusCode, Url: url, CheckRst: fmt.Sprintf("Found vuln basic password|%s:%s|%s", basicusers[useri], top100pass[passi], url)})
+							//pkg.LogJson(rst.Result{PluginName: pkg.GetPluginName("Basic_brute"), StatusCode: req2.StatusCode, URL: url, Technologies: []string{fmt.Sprintf("Found vuln basic password|%s:%s|%s", basicusers[useri], top100pass[passi], url)}})
 							return basicusers[useri], top100pass[passi]
 						}
 					}
