@@ -88,6 +88,7 @@ require (
 )
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/dlclark/regexp2 v1.4.0
 	github.com/google/cel-go v0.11.2
 	github.com/satori/go.uuid v1.2.0
@@ -99,7 +100,6 @@ require (
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220209173558-ad29539cd2e9 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
