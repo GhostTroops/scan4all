@@ -42,7 +42,9 @@ func CvtUps(s string) []UserPass {
 			continue
 		}
 		j := strings.Split(x, ",")
-		aRst = append(aRst, UserPass{username: j[0], password: j[1]})
+		if 1 < len(j) {
+			aRst = append(aRst, UserPass{username: j[0], password: j[1]})
+		}
 	}
 	return aRst
 }
