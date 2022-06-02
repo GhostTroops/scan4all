@@ -6,6 +6,9 @@
 *.dll
 *.so
 *.dylib
+vscan
+vscan_linux
+.DS_Store
 
 # Test binary, built with `go test -c`
 *.test
