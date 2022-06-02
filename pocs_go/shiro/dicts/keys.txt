@@ -81,7 +81,6 @@ Is9zJ3pzNh2cgTHB4ua3+Q==
 Jt3C93kMR9D5e8QzwfsiMw==
 KU471rVNQ6k7PQL4SqxgJg==
 L7RioUULEFhRyxM7a2R/Yg==
-LEGEND-CAMPUS-CIPHERKEY==
 M2djA70UBBUPDibGZBRvrA==
 MPdCMZ9urzEA50JDlDYYDg==
 MTIzNDU2Nzg5MGFiY2RlZg==
@@ -164,7 +163,6 @@ iycgIIyCatQofd0XXxbzEg==
 kPH+bIxk5D2deZiIxcaaaA==
 kPH+bIxk5D2deZiIxcabaA==
 kPH+bIxk5D2deZiIxcacaA==
-kPv59vyqzj00x11LXJZTjJ2UHW48jzHN
 l8cc6d2xpkT1yFtLIcLHCg==
 lT2UvDUmQwewm6mMoiw4Ig==
 m0/5ZZ9L4jjQXn7MREr/bw==
