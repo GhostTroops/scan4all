@@ -1,6 +1,8 @@
 package brute
 
 import (
+	_ "embed"
+	"github.com/antlabs/strsim"
 	"github.com/veo/vscan/pkg"
 	"regexp"
 	"strings"
@@ -16,8 +18,9 @@ type page struct {
 	is403        bool
 }
 
+// 获取标题
 func gettitle(body string) string {
-	domainreg2 := regexp.MustCompile(`<title>([\s\S]{1,200})</title>`)
+	domainreg2 := regexp.MustCompile(`<title>([^<]*)</title>`)
 	titlelist := domainreg2.FindStringSubmatch(body)
 	if len(titlelist) > 1 {
 		return titlelist[1]
@@ -25,9 +28,15 @@ func gettitle(body string) string {
 	return ""
 }
 
+//go:embed dicts/bakSuffix.txt
+var bakSuffix string
+
+//go:embed dicts/fuzzContentType1.txt
+var fuzzct string
+
 func reqPage(u string) (*page, *pkg.Response, error) {
 	page := &page{}
-	var backUpSuffixList = []string{".tar", ".tar.gz", ".zip", ".rar", ".7z", ".bz2", ".gz", ".war"}
+	var backUpSuffixList = strings.Split(strings.TrimSpace(bakSuffix), "\n")
 	var method = "GET"
 
 	for _, ext := range backUpSuffixList {
@@ -44,7 +53,7 @@ func reqPage(u string) (*page, *pkg.Response, error) {
 		}
 		page.title = gettitle(req.Body)
 		page.locationUrl = req.Location
-		regs := []string{"text/plain", "application/.*download", "application/.*file", "application/.*zip", "application/.*rar", "application/.*tar", "application/.*down", "application/.*compressed", "application/stream"}
+		regs := strings.Split(strings.TrimSpace(fuzzct), "\n")
 		for _, reg := range regs {
 			matched, _ := regexp.Match(reg, []byte(req.Header.Get("Content-Type")))
 			if matched {
@@ -60,28 +69,32 @@ func reqPage(u string) (*page, *pkg.Response, error) {
 	}
 }
 
+//go:embed dicts/fuzz404.txt
+var fuzz404 string
+
+//go:embed dicts/page404Content.txt
+var page404Content1 string
+
+// 文件fuzz
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
 	var (
-		path404              = "/file_not_support"
-		page200CodeList      = []int{200, 301, 302}
-		page404Title         = []string{"404", "不存在", "错误", "403", "禁止访问", "请求含有不合法的参数", "无法访问", "云防护", "网络防火墙", "网站防火墙", "访问拦截", "由于安全原因JSP功能默认关闭"}
-		page404Content       = []string{"<script>document.getElementById(\"a-link\").click();</script>", "404 Not Found", "您所提交的请求含有不合法的参数，已被网站管理员设置拦截", "404.safedog.cn", "URL was rejected"}
-		page403title         = []string{"403", "Forbidden", "ERROR", "error"}
-		page403Content       = []string{"403", "Forbidden", "ERROR", "error"}
-		location404          = []string{"/auth/login/", "error.html"}
-		payloadlocation404   []string
-		payload200Title      []string
-		payload200Contentlen []int
-		skip403              = false
-		skip302              = false
-		other200Contentlen   []int
-		other200Title        []string
-		errorTimes           = 0
-		technologies         []string
-		path                 []string
+		path404            = "/file_not_support"
+		page200CodeList    = []int{200, 301, 302}
+		page404Title       = strings.Split(strings.TrimSpace(fuzz404), "\n")
+		page404Content     = strings.Split(strings.TrimSpace(page404Content1), "\n")
+		page403title       = []string{"403", "Forbidden", "ERROR", "error"}
+		page403Content     = []string{"403", "Forbidden", "ERROR", "error"}
+		location404        = []string{"/auth/login/", "error.html"}
+		payloadlocation404 []string
+		payload200Title    []string
+		skip403            = false
+		skip302            = false
+		errorTimes         = 0
+		technologies       []string
+		path               []string
+		page404Len         int    // 404 page length
+		page404Body        string // 404 url
 	)
-	other200Contentlen = append(other200Contentlen, indexContentLength)
-	other200Title = append(other200Title, gettitle(indexbody))
 	if url404, url404req, err := reqPage(u + path404); err == nil {
 		if url404req.StatusCode == 404 {
 			technologies = addfingerprints404(technologies, url404req) //基于404页面文件扫描指纹添加
@@ -96,8 +109,9 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 			skip403 = true
 		}
 		if url404req.StatusCode == 200 {
-			other200Title = append(other200Title, url404.title)
-			other200Contentlen = append(other200Contentlen, url404req.ContentLength)
+			page404Title = append(page404Title, url404.title)
+			page404Len = url404req.ContentLength
+			page404Body = url404req.Body
 		}
 	}
 	ch := make(chan struct{}, pkg.Fuzzthreads)
@@ -127,6 +141,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 						is404Page = true
 					}
 				}
+
 				if pkg.SliceInString(url.title, page404Title) {
 					is404Page = true
 				}
@@ -152,36 +167,30 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 				}
 
 				if !is404Page {
-					for _, title := range other200Title {
-						if len(url.title) > 2 && url.title == title {
-							is404Page = true
-						}
-					}
-					for _, title := range payload200Title {
-						if len(url.title) > 2 && url.title == title {
-							is404Page = true
-						}
-					}
-					for _, l := range other200Contentlen {
-						reqlenabs := req.ContentLength - l
-						if reqlenabs < 0 {
-							reqlenabs = -reqlenabs
-						}
-						if reqlenabs <= 5 {
-							is404Page = true
-						}
-					}
-					for _, l := range payload200Contentlen {
-						reqlenabs := req.ContentLength - l
-						if reqlenabs < 0 {
-							reqlenabs = -reqlenabs
-						}
-						if reqlenabs <= 5 {
-							is404Page = true
-						}
+					// 不是很明白，为什么和历史title差不多就是404？
+					//for _, title := range payload200Title {
+					//	if len(url.title) > 2 && url.title == title {
+					//		is404Page = true
+					//	}
+					//}
+					//// 与 404，index页面做比较, 个字节差别，认定为 404
+					//if 5 > (req.ContentLength-page404Len)-(len(req.RequestUrl)-len(page404Url)) {
+					//	is404Page = true
+					//}
+					//for _, l := range other200Contentlen { // 这里的代码确实没有看明白，为什么要和index的长度判断为404
+					//	reqlenabs := req.ContentLength - l
+					//	if reqlenabs < 0 {
+					//		reqlenabs = -reqlenabs
+					//	}
+					//	if reqlenabs <= 5 {
+					//		is404Page = true
+					//	}
+					//}
+					// 和404页面 90%相似度，则认为是404
+					if page404Len > 0 && req.ContentLength > 0 && 0.9 < strsim.Compare(page404Body, req.Body) {
+						is404Page = true
 					}
 					payload200Title = append(payload200Title, url.title)
-					payload200Contentlen = append(payload200Contentlen, req.ContentLength)
 					if !is404Page {
 						path = append(path, u+payload)
 						technologies = addfingerprintsnormal(payload, technologies, req) // 基于200页面文件扫描指纹添加

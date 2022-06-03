@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/corpix/uarand"
+	"github.com/hbakhtiyor/strsim"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -28,7 +29,7 @@ var (
 	HttpProxy   string
 	CeyeApi     string
 	CeyeDomain  string
-	Fuzzthreads = 20
+	Fuzzthreads = 32 // 2,4,8,16,32,采用2的N次方的数字
 )
 
 func HttpRequsetBasic(username string, password string, urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
@@ -210,7 +211,8 @@ func SliceInString(str string, slice []string) bool {
 		return false
 	}
 	for _, v := range slice {
-		if strings.Contains(str, v) {
+		// 基于相似度计算
+		if 0.9 < strsim.Compare(str, v) {
 			return true
 		}
 	}

@@ -1,0 +1,8 @@
+.tar
+.tar.gz
+.zip
+.rar
+.7z
+.bz2
+.gz
+.war
