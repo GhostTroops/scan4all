@@ -9,6 +9,7 @@
 vscan
 vscan_linux
 .DS_Store
+nuclei_Yaml/nuclei_yaml
 
 # Test binary, built with `go test -c`
 *.test

@@ -208,7 +208,6 @@
 /Search-Replace-DB/
 /Server.yml
 /Systems/
-/TODO
 /Trace.axd
 /UPDATE.txt
 /UPGRADE
