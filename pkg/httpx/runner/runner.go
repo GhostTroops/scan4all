@@ -7,6 +7,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/ammario/ipisp/v2"
 	"github.com/veo/vscan/brute"
 	"github.com/veo/vscan/pkg/fingerprint"
 	"github.com/veo/vscan/pocs_go"
@@ -27,14 +28,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ammario/ipisp/v2"
 	"github.com/bluele/gcache"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/clistats"
 	"github.com/projectdiscovery/cryptoutil"
 	"github.com/projectdiscovery/goconfig"
-	"github.com/projectdiscovery/retryablehttp-go"
 	"github.com/projectdiscovery/stringsutil"
 	"github.com/projectdiscovery/urlutil"
 	"github.com/veo/vscan/pkg/httpx/common/hashes"
@@ -827,6 +826,8 @@ retry:
 			return Result{Input: origInput}
 		}
 		domain = parts[0]
+		//util "github.com/veo/vscan/pkg"
+		//util.Convert2Domains(domain)
 		customHost = parts[1]
 	}
 	URL, err := urlutil.Parse(domain)
