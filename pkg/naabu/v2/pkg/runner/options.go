@@ -13,6 +13,7 @@ import (
 // the port enumeration process.
 // nolint:maligned // just an option structure
 type Options struct {
+	UrlPrecise     bool // 精准url扫描，不去除url清单上下文 2022-06-08
 	Verbose        bool // Verbose flag indicates whether to show verbose output or not
 	NoColor        bool // No-Color disables the colored output
 	JSON           bool // JSON specifies whether to use json for output format or text file
@@ -78,6 +79,7 @@ func ParseOptions() *Options {
 		flagSet.StringVarP(&options.HostsFile, "l", "list", "", "list of hosts to scan ports (file)"),
 		flagSet.StringVarP(&options.ExcludeIps, "eh", "exclude-hosts", "", "hosts to exclude from the scan (comma-separated)"),
 		flagSet.StringVarP(&options.ExcludeIpsFile, "ef", "exclude-file", "", "list of hosts to exclude from scan (file)"),
+		flagSet.BoolVar(&options.UrlPrecise, "up", false, "set url lists Precise scan"),
 	)
 
 	flagSet.CreateGroup("port", "Port",

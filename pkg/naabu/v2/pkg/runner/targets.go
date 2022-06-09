@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/projectdiscovery/gologger"
@@ -124,7 +126,22 @@ func (r *Runner) AddTarget(target string) error {
 	} else {
 		if strings.HasPrefix(target, "http://") || strings.HasPrefix(target, "https://") {
 			if u, err := url.Parse(target); err == nil {
-				Naabubuffer.Write([]byte(fmt.Sprintf("%s\n", fmt.Sprintf("%s://%s", u.Scheme, u.Host))))
+				s1 := fmt.Sprintf("%s://%s", u.Scheme, u.Host)
+				Naabubuffer.Write([]byte(fmt.Sprintf("%s\n", s1)))
+				// target 长度 大于 s1才处理
+				if r.options.UrlPrecise && len(target) > len(s1) {
+					r1, err := regexp.Compile(`[^\/]`)
+					if nil == err {
+						s2 := r1.ReplaceAllString(target[len(s1):], "")
+						// 包含1个以上/表示有上下文
+						if 1 < len(s2) {
+							if r.options.Verbose {
+								log.Println("Precise scan: ", target)
+							}
+							Naabubuffer.Write([]byte(fmt.Sprintf("%s\n", target)))
+						}
+					}
+				}
 				return nil
 			}
 		}
