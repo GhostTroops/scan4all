@@ -7,6 +7,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/ammario/ipisp/v2"
 	"github.com/veo/vscan/brute"
 	"github.com/veo/vscan/pkg/fingerprint"
 	"github.com/veo/vscan/pocs_go"
@@ -27,14 +28,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ammario/ipisp/v2"
 	"github.com/bluele/gcache"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/clistats"
 	"github.com/projectdiscovery/cryptoutil"
 	"github.com/projectdiscovery/goconfig"
-	"github.com/projectdiscovery/retryablehttp-go"
 	"github.com/projectdiscovery/stringsutil"
 	"github.com/projectdiscovery/urlutil"
 	"github.com/veo/vscan/pkg/httpx/common/hashes"
@@ -48,6 +47,7 @@ import (
 	"github.com/projectdiscovery/iputil"
 	"github.com/projectdiscovery/mapcidr"
 	"github.com/projectdiscovery/rawhttp"
+	"github.com/projectdiscovery/retryablehttp-go"
 	wappalyzer "github.com/projectdiscovery/wappalyzergo"
 	"github.com/remeh/sizedwaitgroup"
 	customport "github.com/veo/vscan/pkg/httpx/common/customports"
@@ -827,6 +827,8 @@ retry:
 			return Result{Input: origInput}
 		}
 		domain = parts[0]
+		//util "github.com/veo/vscan/pkg"
+		//util.Convert2Domains(domain)
 		customHost = parts[1]
 	}
 	URL, err := urlutil.Parse(domain)
@@ -1614,6 +1616,7 @@ type Result struct {
 	Timestamp        time.Time           `json:"timestamp,omitempty" csv:"timestamp"`
 	Request          string              `json:"request,omitempty" csv:"request"`
 	ResponseHeader   string              `json:"response-header,omitempty" csv:"response-header"`
+	PluginName       string              `json:"pluginName,omitempty" csv:"PluginName"`
 }
 
 // JSON the result

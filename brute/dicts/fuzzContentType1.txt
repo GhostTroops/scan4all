@@ -1,0 +1,9 @@
+text/plain
+application/.*download
+application/.*file
+application/.*zip
+application/.*rar
+application/.*tar
+application/.*down
+application/.*compressed
+application/stream

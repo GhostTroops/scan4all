@@ -3,10 +3,14 @@ package main
 import (
 	"github.com/projectdiscovery/gologger"
 	naaburunner "github.com/veo/vscan/pkg/naabu/v2/pkg/runner"
+	"runtime"
 )
 
 func main() {
 	options := naaburunner.ParseOptions()
+	if runtime.GOOS == "windows" {
+		options.NoColor = true
+	}
 	naabuRunner, err := naaburunner.NewRunner(options)
 	if err != nil {
 		gologger.Fatal().Msgf("Could not create runner: %s\n", err)
