@@ -35,7 +35,19 @@
 - 支持多种类型的输入 - **STDIN/HOST/IP/CIDR/URL/TXT**
 - 支持多种类型的输出 - **JSON/TXT/CSV/STDOUT**
 
+# 站在巨人肩膀上、扫描流程（顺序）
+- 【端口扫描]集成了naabu（2.1k），大名顶顶的nuclei官方出品
+- 【web扫描】集成了httpx（3.2k）,大名顶顶的nuclei官方出品
+- 【指纹识别】集成、并优化了EHole（1.4k）
+- 【漏洞扫描】
+   * （分支https://github.com/hktalent/vscan ）集成了nuclei（8.6k）+ nuclei-templates(4.5k优化版本，https://github.com/hktalent/nuclei-templates)
+   * 集成了xray 2.0（6.9k）,共354个POC
+- vscan自身实现了8个fuzz组件，同时实现集成了14类常见组件的漏洞检测
 
+# changelog
+- 2022-06-10 完成nuclei的集成
+- 2022-06-07 增加了相似度算法对404检测
+- 2022-06-07 增加了http url清单精准扫描参数-up
 
 # Licenses
 
