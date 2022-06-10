@@ -48,11 +48,11 @@ case "Apache Tomcat":
 4. weblogic弱口令检测
 5. jboss弱口令检测
 
-字典在 ./brute/dicts.go 内置，可自行修改
+字典在 ./brute/dicts/ 内置，可自行修改
 
 
 ##  敏感文件扫描 字典
 
 扫描 备份、swagger-ui、spring actuator、上传接口、测试文件等敏感文件
 
-字典在 ./brute/dicts.go 内置，可自行修改
+字典在 ./brute/dicts/ 内置，可自行修改
