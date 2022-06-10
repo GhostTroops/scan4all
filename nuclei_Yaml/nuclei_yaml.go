@@ -1,10 +1,12 @@
-package main
+package nuclei_Yaml
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/projectdiscovery/fileutil"
@@ -24,13 +26,14 @@ var (
 	options = &types.Options{}
 )
 
-func main() {
+func RunNuclei(buf bytes.Buffer) {
 	if err := runner.ConfigureOptions(); err != nil {
 		gologger.Fatal().Msgf("Could not initialize options: %s\n", err)
 	}
 
 	readConfig()
 
+	options.Targets = strings.Split(buf.String(), "\n")
 	runner.ParseOptions(options)
 
 	nucleiRunner, err := runner.New(options)
