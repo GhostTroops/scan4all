@@ -26,6 +26,7 @@ import (
 	"github.com/projectdiscovery/mapcidr"
 	"github.com/projectdiscovery/uncover/uncover/agent/shodanidb"
 	"github.com/remeh/sizedwaitgroup"
+	"github.com/veo/vscan/nuclei_Yaml"
 	httpxrunner "github.com/veo/vscan/pkg/httpx/runner"
 	"github.com/veo/vscan/pkg/naabu/v2/pkg/privileges"
 	"github.com/veo/vscan/pkg/naabu/v2/pkg/scan"
@@ -49,6 +50,8 @@ var Naabubuffer = bytes.Buffer{}
 
 func (r *Runner) Httpxrun() error {
 	httpxrunner.Naabubuffer = Naabubuffer
+	// 集成nuclei
+	go nuclei_Yaml.RunNuclei(httpxrunner.Naabubuffer)
 	httpxoptions := httpxrunner.ParseOptions()
 	httpxoptions.Output = r.options.Output
 	httpxoptions.CSVOutput = r.options.CSV
