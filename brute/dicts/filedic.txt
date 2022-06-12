@@ -6,6 +6,7 @@
 .51pwn_com.jsp
 .51pwn_com.jsp?51pwn_comw=1
 .51pwn_com.jsp?pass=1
+.O01551922179807.jsp
 .O01556091894819.jsp
 .O01556092210000.jsp
 .O01556093257679.jsp
@@ -69,6 +70,7 @@
 .shell.jsp
 .shell.jsp?cmd=whoami
 .shell.jspx
+.shell123.jsp
 .sjn4gwl3l191.jsp
 .test.jsp
 .text2.jsp
@@ -1994,6 +1996,7 @@ pyth.jsp
 qq.jsp
 queryDong.jsp
 re.jsp
+reDuh.jsp
 rebel.jsp
 rebel1.jsp
 regApp.jsp
@@ -2075,6 +2078,7 @@ test2222.jsp
 test2j.jsp
 test66.jsp
 test9527.jsp
+testAnt.jsp
 test_.jsp
 test_.jsp?51pwn_comw=1
 test_.jsp?pass=1
@@ -2084,6 +2088,7 @@ thx.jsp
 tianzi.jsp
 time.jsp
 tmpbutian.jsp
+tomcatwar.jsp
 tree.jsp
 tset.jsp
 tst.jsp
