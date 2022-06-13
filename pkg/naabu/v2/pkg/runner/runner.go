@@ -50,8 +50,9 @@ var Naabubuffer = bytes.Buffer{}
 
 func (r *Runner) Httpxrun() error {
 	httpxrunner.Naabubuffer = Naabubuffer
+	var nucleiDone = make(chan bool)
 	// 集成nuclei
-	go nuclei_Yaml.RunNuclei(httpxrunner.Naabubuffer)
+	go nuclei_Yaml.RunNuclei(httpxrunner.Naabubuffer, nucleiDone)
 	httpxoptions := httpxrunner.ParseOptions()
 	httpxoptions.Output = r.options.Output
 	httpxoptions.CSVOutput = r.options.CSV
@@ -98,6 +99,13 @@ func (r *Runner) Httpxrun() error {
 	}
 	rx.RunEnumeration()
 	rx.Close()
+	// waite nuclei
+	for {
+		select {
+		case <-nucleiDone:
+			break
+		}
+	}
 	return nil
 }
 
