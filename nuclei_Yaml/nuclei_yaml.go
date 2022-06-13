@@ -26,7 +26,7 @@ var (
 	options = &types.Options{}
 )
 
-func RunNuclei(buf bytes.Buffer) {
+func RunNuclei(buf bytes.Buffer, xx chan bool) {
 	if err := runner.ConfigureOptions(); err != nil {
 		gologger.Fatal().Msgf("Could not initialize options: %s\n", err)
 	}
@@ -75,6 +75,7 @@ func RunNuclei(buf bytes.Buffer) {
 	if fileutil.FileExists(resumeFileName) {
 		os.Remove(resumeFileName)
 	}
+	close(xx)
 }
 
 func readConfig() {
