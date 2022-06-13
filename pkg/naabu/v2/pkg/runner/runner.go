@@ -99,7 +99,7 @@ func (r *Runner) Httpxrun() error {
 	}
 	rx.RunEnumeration()
 	rx.Close()
-	// waite nuclei
+	// wait nuclei
 	for {
 		select {
 		case <-nucleiDone:
