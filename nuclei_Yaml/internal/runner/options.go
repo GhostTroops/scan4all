@@ -39,7 +39,7 @@ func ParseOptions(options *types.Options) {
 	// Read the inputs and configure the logging
 	configureOutput(options)
 	// Show the user the banner
-	showBanner()
+	//showBanner()
 
 	if options.TemplatesDirectory != "" && !filepath.IsAbs(options.TemplatesDirectory) {
 		cwd, _ := os.Getwd()
