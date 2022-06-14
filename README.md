@@ -44,6 +44,13 @@
    * 集成了xray 2.0（6.9k）,共354个POC
 - vscan自身实现了8个fuzz组件，同时实现集成了14类常见组件的漏洞检测
 
+# How use
+```bash
+go build -o vscan main.go
+# 精准扫描 UrlPrecise=true
+UrlPrecise=true ./main -l xx.txt
+```
+
 # changelog
 - 2022-06-10 完成nuclei的集成
 - 2022-06-07 增加了相似度算法对404检测
