@@ -4,6 +4,8 @@ before:
   hooks:
     - go mod tidy
 project_name: vscan
+permissions:
+  contents: write
 builds:
   - id: vscan-darwin
     ldflags:
