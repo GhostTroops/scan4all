@@ -1,0 +1,88 @@
+run:
+  tests: true
+  max-same-issues: 50
+  skip-dirs:
+    - resources
+    - old
+  skip-files:
+    - cmd/protopkg/main.go
+
+output:
+  print-issued-lines: false
+
+linters:
+  enable-all: true
+  disable:
+    - maligned
+    - megacheck
+    - lll
+    - typecheck # `go build` catches this, and it doesn't currently work with Go 1.11 modules
+    - goimports # horrendously slow with go modules :(
+    - dupl # has never been actually useful
+    - gochecknoglobals
+    - gochecknoinits
+    - interfacer # author deprecated it because it provides bad suggestions
+    - funlen
+    - whitespace
+    - godox
+    - wsl
+    - dogsled
+    - gomnd
+    - gocognit
+    - gocyclo
+    - scopelint
+    - godot
+    - nestif
+    - testpackage
+    - goerr113
+    - gci
+    - gofumpt
+    - exhaustivestruct
+    - nlreturn
+    - forbidigo
+    - cyclop
+    - paralleltest
+    - ifshort # so annoying
+    - golint
+    - tagliatelle
+    - forcetypeassert
+    - wrapcheck
+    - revive
+    - structcheck
+    - stylecheck
+    - exhaustive
+
+linters-settings:
+  govet:
+    check-shadowing: true
+    use-installed-packages: true
+  dupl:
+    threshold: 100
+  goconst:
+    min-len: 8
+    min-occurrences: 3
+  gocyclo:
+    min-complexity: 20
+  gocritic:
+    disabled-checks:
+      - ifElseChain
+
+
+issues:
+  max-per-linter: 0
+  max-same: 0
+  exclude-use-default: false
+  exclude:
+    # Captured by errcheck.
+    - '^(G104|G204):'
+    # Very commonly not checked.
+    - 'Error return value of .(.*\.Help|.*\.MarkFlagRequired|(os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*Print(f|ln|)|os\.(Un)?Setenv). is not checked'
+    # Weird error only seen on Kochiku...
+    - 'internal error: no range for'
+    - 'exported method `.*\.(MarshalJSON|UnmarshalJSON|URN|Payload|GoString|Close|Provides|Requires|ExcludeFromHash|MarshalText|UnmarshalText|Description|Check|Poll|Severity)` should have comment or be unexported'
+    - 'composite literal uses unkeyed fields'
+    - 'declaration of "err" shadows declaration'
+    - 'by other packages, and that stutters'
+    - 'Potential file inclusion via variable'
+    - 'at least one file in a package should have a package comment'
+    - 'bad syntax for struct tag pair'
