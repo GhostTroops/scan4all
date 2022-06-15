@@ -223,7 +223,7 @@ on extensive configurability, massive extensibility and ease of use.`)
 		flagSet.IntVarP(&options.MetricsPort, "metrics-port", "mp", 9092, "port to expose nuclei metrics on"),
 	)
 
-	_ = flagSet.Parse()
+	//_ = flagSet.Parse()
 
 	if options.LeaveDefaultPorts {
 		http.LeaveDefaultPorts = true
