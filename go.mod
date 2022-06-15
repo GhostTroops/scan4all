@@ -72,7 +72,6 @@ require (
 	github.com/projectdiscovery/urlutil v0.0.0-20210805190935-3d83726391c1
 	github.com/projectdiscovery/wappalyzergo v0.0.45
 	github.com/rs/xid v1.4.0
-	github.com/smartystreets/assertions v1.0.0 // indirect
 	go.etcd.io/bbolt v1.3.6 // indirect
 )
 
@@ -82,6 +81,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/RumbleDiscovery/jarm-go v0.0.6
 	github.com/ammario/ipisp/v2 v2.0.0
+	github.com/antlabs/strsim v0.0.2
 	github.com/apex/log v1.9.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/dlclark/regexp2 v1.4.0
@@ -91,6 +91,7 @@ require (
 	github.com/mfonda/simhash v0.0.0-20151007195837-79f94a1100d6
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/projectdiscovery/folderutil v0.0.0-20220215113126-add60a1e8e08
+	github.com/projectdiscovery/interactsh v1.0.4
 	github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220426154149-cfff962815ba
 	github.com/projectdiscovery/nuclei/v2 v2.7.2
 	github.com/satori/go.uuid v1.2.0
@@ -112,7 +113,6 @@ require (
 	github.com/andygrunwald/go-jira v1.15.1 // indirect
 	github.com/antchfx/htmlquery v1.2.5 // indirect
 	github.com/antchfx/xpath v1.2.1 // indirect
-	github.com/antlabs/strsim v0.0.2 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220418222510-f25a4f6275ed // indirect
 	github.com/aws/aws-sdk-go v1.44.27 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
@@ -168,7 +168,6 @@ require (
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/projectdiscovery/filekv v0.0.0-20210915124239-3467ef45dd08 // indirect
-	github.com/projectdiscovery/interactsh v1.0.4 // indirect
 	github.com/projectdiscovery/reflectutil v0.0.0-20210804085554-4d90952bf92f // indirect
 	github.com/projectdiscovery/yamldoc-go v1.0.3-0.20211126104922-00d2c6bb43b6 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
