@@ -1,0 +1,14 @@
+language: go
+
+go:
+  - 1.8
+  - 1.9
+  - tip
+
+go_import_path: gopkg.in/corvus-ch/zbase32.v1
+
+script:
+  - make test test_args="-coverprofile=coverage.txt -covermode=atomic -v"
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
