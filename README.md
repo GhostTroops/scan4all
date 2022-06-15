@@ -54,7 +54,7 @@ UrlPrecise=true ./main -l xx.txt
 # changelog
 - 2022-06-10 完成nuclei的集成
 - 2022-06-07 增加了相似度算法对404检测
-- 2022-06-07 增加了http url清单精准扫描参数-up
+- 2022-06-07 增加了http url清单精准扫描参数,基于环境变量UrlPrecise=true 开启
 
 # Licenses
 
