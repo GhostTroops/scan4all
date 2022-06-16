@@ -40,7 +40,7 @@
 - 【web扫描】集成了httpx（3.2k）,大名顶顶的nuclei官方出品
 - 【指纹识别】集成、并优化了EHole（1.4k）
 - 【漏洞扫描】
-   * （分支https://github.com/hktalent/vscan ）集成了nuclei（8.6k）+ nuclei-templates(4.5k优化版本，https://github.com/hktalent/nuclei-templates)
+   * （分支https://github.com/hktalent/vscan ）集成了nuclei（8.6k）+ nuclei-templates(4.5k优化版本,共3659个yaml POC，https://github.com/hktalent/nuclei-templates)
    * 集成了xray 2.0（6.9k）,共354个POC
 - vscan自身实现了8个fuzz组件，同时实现集成了14类常见组件的漏洞检测
 
