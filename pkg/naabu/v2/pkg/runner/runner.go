@@ -100,12 +100,7 @@ func (r *Runner) Httpxrun() error {
 	rx.RunEnumeration()
 	rx.Close()
 	// wait nuclei
-	for {
-		select {
-		case <-nucleiDone:
-			break
-		}
-	}
+	<-nucleiDone
 	return nil
 }
 

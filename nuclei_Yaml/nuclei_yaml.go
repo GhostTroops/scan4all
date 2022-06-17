@@ -28,6 +28,7 @@ var (
 
 func RunNuclei(buf bytes.Buffer, xx chan bool) {
 	defer func() {
+		xx <- true
 		close(xx)
 	}()
 	if err := runner.ConfigureOptions(); err != nil {
@@ -62,6 +63,7 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 					gologger.Error().Msgf("Couldn't create resume file: %s\n", err)
 				}
 			}
+			os.Exit(1)
 		}
 	}()
 
