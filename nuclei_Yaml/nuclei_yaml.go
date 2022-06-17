@@ -27,6 +27,9 @@ var (
 )
 
 func RunNuclei(buf bytes.Buffer, xx chan bool) {
+	defer func() {
+		close(xx)
+	}()
 	if err := runner.ConfigureOptions(); err != nil {
 		gologger.Fatal().Msgf("Could not initialize options: %s\n", err)
 	}
@@ -59,7 +62,6 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 					gologger.Error().Msgf("Couldn't create resume file: %s\n", err)
 				}
 			}
-			os.Exit(1)
 		}
 	}()
 
@@ -75,7 +77,6 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 	if fileutil.FileExists(resumeFileName) {
 		os.Remove(resumeFileName)
 	}
-	close(xx)
 }
 
 func readConfig() {
