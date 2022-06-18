@@ -36,11 +36,11 @@
 - 支持多种类型的输出 - **JSON/TXT/CSV/STDOUT**
 
 # 站在巨人肩膀上、扫描流程（顺序）
-- 【端口扫描]集成了naabu（2.1k），大名顶顶的nuclei官方出品
-- 【web扫描】集成了httpx（3.2k）,大名顶顶的nuclei官方出品
+- 【端口扫描]集成了<a href=https://github.com/projectdiscovery/naabu>naabu</a>（2.1k），大名顶顶的nuclei官方出品，同时"NMAP integration for service discovery"
+- 【web扫描】集成了<a href=https://github.com/projectdiscovery/httpx>httpx</a>（3.2k）,大名顶顶的nuclei官方出品
 - 【指纹识别】集成、并优化了EHole（1.4k）
 - 【漏洞扫描】
-   * （分支https://github.com/hktalent/vscan ）集成了nuclei（8.6k）+ nuclei-templates(4.5k优化版本,共3659个yaml POC，https://github.com/hktalent/nuclei-templates)
+   * （分支https://github.com/hktalent/vscan ）集成了<a href=https://github.com/projectdiscovery/nuclei>nuclei</a>（8.6k）+ nuclei-templates(4.5k优化版本,共3662个yaml POC，<a href=https://github.com/hktalent/nuclei-templates>nuclei-templates</a>)
    * 集成了xray 2.0（6.9k）,共354个POC
 - vscan自身实现了8个fuzz组件，同时实现集成了14类常见组件的漏洞检测
 
