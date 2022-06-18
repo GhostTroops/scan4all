@@ -52,7 +52,9 @@ UrlPrecise=true ./main -l xx.txt
 ```
 
 # changelog
-- 2022-06-10 完成nuclei的集成
+- 2022-06-17 优化一个域名多个ip的情况，所有ip都会被端口扫描，然后走后续的扫描流程
+- 2022-06-15 该版本增加了若干过去实战中获得的weblogic密码字典，以及webshell字典
+- 2022-06-10 完成nuclei的集成，当然也包含nuclei模版的集成
 - 2022-06-07 增加了相似度算法对404检测
 - 2022-06-07 增加了http url清单精准扫描参数,基于环境变量UrlPrecise=true 开启
 
