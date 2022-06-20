@@ -78,7 +78,6 @@ func ParseOptions() *Options {
 		flagSet.StringVarP(&options.HostsFile, "l", "list", "", "list of hosts to scan ports (file)"),
 		flagSet.StringVarP(&options.ExcludeIps, "eh", "exclude-hosts", "", "hosts to exclude from the scan (comma-separated)"),
 		flagSet.StringVarP(&options.ExcludeIpsFile, "ef", "exclude-file", "", "list of hosts to exclude from scan (file)"),
-		//flagSet.BoolVar(&options.UrlPrecise, "up", false, "set url lists Precise scan"),
 	)
 
 	flagSet.CreateGroup("port", "Port",

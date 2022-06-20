@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/hktalent/scan4all/subfinder"
-	"os"
 	"reflect"
 	"strings"
 )
@@ -37,7 +36,7 @@ func doAppends(a []string, s []string) []string {
 // 获取DNS 的所有子域名信息，start from here
 func DoDns(s string) (aRst []string, err1 error) {
 	if "*." == s[:2] {
-		EnableSubfinder := os.Getenv("EnableSubfinder")
+		EnableSubfinder := GetVal("EnableSubfinder")
 		if "" != EnableSubfinder {
 			var out = make(chan string, 1000)
 			var close chan bool

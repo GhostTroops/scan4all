@@ -75,6 +75,13 @@ var fuzz404 string
 //go:embed dicts/page404Content.txt
 var page404Content1 string
 
+func init() {
+	bakSuffix = pkg.GetVal4File("bakSuffix", bakSuffix)
+	fuzzct = pkg.GetVal4File("fuzzct", fuzzct)
+	fuzz404 = pkg.GetVal4File("fuzz404", fuzz404)
+	page404Content1 = pkg.GetVal4File("page404Content1", page404Content1)
+}
+
 // 文件fuzz
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
 	var (

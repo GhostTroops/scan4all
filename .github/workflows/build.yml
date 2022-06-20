@@ -4,7 +4,9 @@ on:
     tags:
       - v*
   workflow_dispatch:
-
+  push:
+    branches:
+      - 'main'
 jobs:
   build-mac:
     runs-on: macos-latest

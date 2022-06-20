@@ -138,7 +138,7 @@ func (r *Runner) AddTarget(target string) error {
 				Naabubuffer.Write([]byte(fmt.Sprintf("%s\n", s1)))
 				// target 长度 大于 s1才处理
 				////UrlPrecise     bool // 精准url扫描，不去除url清单上下文 2022-06-08
-				UrlPrecise := os.Getenv("UrlPrecise")
+				UrlPrecise := pkg.GetVal("UrlPrecise")
 				if "true" == UrlPrecise && len(target) > len(s1) {
 					r1, err := regexp.Compile(`[^\/]`)
 					if nil == err {

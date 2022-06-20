@@ -2,6 +2,7 @@ package brute
 
 import (
 	_ "embed"
+	"github.com/hktalent/scan4all/pkg"
 	"strings"
 )
 
@@ -52,9 +53,10 @@ func CvtLines(s string) []string {
 	return strings.Split(s, "\n")
 }
 func init() {
-	tomcatuserpass = CvtUps(szTomcatuserpass)
-	jbossuserpass = CvtUps(szJbossuserpass)
-	weblogicuserpass = CvtUps(szWeblogicuserpass)
-	filedic = append(filedic, CvtLines(szFiledic)...)
-	top100pass = append(top100pass, CvtLines(szTop100pass)...)
+	tomcatuserpass = CvtUps(pkg.GetVal4File("tomcatuserpass", szTomcatuserpass))
+	jbossuserpass = CvtUps(pkg.GetVal4File("jbossuserpass", szJbossuserpass))
+	weblogicuserpass = CvtUps(pkg.GetVal4File("weblogicuserpass", szWeblogicuserpass))
+	filedic = append(filedic, CvtLines(pkg.GetVal4File("filedic", szFiledic))...)
+	top100pass = append(top100pass, CvtLines(pkg.GetVal4File("top100pass", szTop100pass))...)
+
 }

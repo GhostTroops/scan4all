@@ -50,6 +50,11 @@
    * 集成了xray 2.0（6.9k）,共354个POC
    * vscan自身实现了8个fuzz组件，同时实现集成了14类常见组件的漏洞检测
 
+# How Install
+```bash
+go install github.com/hktalent/scan4all@2.1.5
+scan4all -h
+```
 # How use
 使用前请自行先安装nmap
 ```bash

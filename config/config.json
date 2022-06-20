@@ -1,0 +1,13 @@
+{
+  "tomcatuserpass": "brute/dicts/tomcatuserpass.txt",
+  "jbossuserpass": "brute/dicts/jbossuserpass.txt",
+  "weblogicuserpass": "brute/dicts/weblogicuserpass.txt",
+  "filedic": "brute/dicts/filedic.txt",
+  "top100pass": "brute/dicts/top100pass.txt",
+  "bakSuffix": "brute/dicts/bakSuffix.txt",
+  "fuzzct": "brute/dicts/fuzzContentType1.txt",
+  "fuzz404": "brute/dicts/fuzz404.txt",
+  "page404Content1": "brute/dicts/page404Content.txt",
+  "UrlPrecise": true,
+  "EnableSubfinder": false
+}
