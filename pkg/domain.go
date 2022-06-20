@@ -33,8 +33,7 @@ func doAppends(a []string, s []string) []string {
 	return a
 }
 
-// 获取DNS 的所有子域名信息，start from here
-func DoDns(s string) (aRst []string, err1 error) {
+func doSub(s string) (aRst []string, err1 error) {
 	if "*." == s[:2] {
 		EnableSubfinder := GetVal("EnableSubfinder")
 		if "" != EnableSubfinder {
@@ -56,17 +55,55 @@ func DoDns(s string) (aRst []string, err1 error) {
 		} else {
 			aRst = append(aRst, s[2:])
 		}
-	} else {
-		aRst = append(aRst, s)
 	}
+	return aRst, nil
+}
+
+// 获取DNS 的所有子域名信息，start from here
+func DoDns(s string) (aRst []string, err1 error) {
+	if -1 < strings.Index(s, "://") {
+		s = strings.Split(s, "://")[1]
+	}
+	if -1 < strings.Index(s, ":") {
+		s = strings.Split(s, ":")[0]
+	}
+
+	a1, err := GetSSLDNS(s)
+	if nil != err {
+		aRst = append(aRst, s)
+	} else {
+		aRst = append(aRst, a1...)
+	}
+
 	var aRst1 = []string{}
 	for _, x := range aRst {
 		a, err := GetSSLDNS(x)
-		if nil == err {
+		if nil == err && 0 < len(a) {
+			fmt.Println("GetSSLDNS ", x, " ", a)
 			aRst1 = doAppends(aRst1, a)
 		}
 	}
-	return aRst1, nil
+	if 0 == len(aRst1) {
+		aRst1 = aRst
+	}
+	for _, x := range aRst1 {
+		if -1 < strings.Index(x, "*.") {
+			a1, err := doSub(x)
+			if nil == err && 0 < len(a1) {
+				aRst1 = doAppends(aRst1, a1)
+			} else {
+				aRst1 = doAppends(aRst1, []string{x[2:]})
+			}
+		}
+	}
+	aRst = []string{}
+	for j, x := range aRst1 {
+		if -1 < strings.Index(x, "*.") {
+			aRst1[j] = x[2:]
+		}
+	}
+	aRst = doAppends(aRst, aRst1)
+	return aRst, nil
 }
 
 // get ssl info DNS

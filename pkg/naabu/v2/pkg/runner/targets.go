@@ -97,7 +97,17 @@ func (r *Runner) PreProcessTargets() error {
 		wg.Add()
 		func(target string) {
 			defer wg.Done()
-			if err := r.AddTarget(target); err != nil {
+			// 处理ssl 数字证书中包含的域名信息，深度挖掘漏洞
+			aH, err := pkg.DoDns(target)
+			if nil == err && 0 < len(aH) {
+				for _, x := range aH {
+					gologger.Debug().Msg("add " + x)
+					if err := r.AddTarget(x); err != nil {
+						gologger.Warning().Msgf("%s\n", err)
+					}
+					r.DoDns(x)
+				}
+			} else if err := r.AddTarget(target); err != nil {
 				gologger.Warning().Msgf("%s\n", err)
 			}
 		}(s.Text())
@@ -126,14 +136,6 @@ func (r *Runner) AddTarget(target string) error {
 	} else {
 		if strings.HasPrefix(target, "http://") || strings.HasPrefix(target, "https://") {
 			if u, err := url.Parse(target); err == nil {
-
-				// 处理ssl 数字证书中包含的域名信息，深度挖掘漏洞
-				aH, err := pkg.DoDns(u.Host)
-				if nil == err && 0 < len(aH) {
-					for _, x := range aH {
-						Naabubuffer.Write([]byte(fmt.Sprintf("%s\n", fmt.Sprintf("%s://%s", u.Scheme, x))))
-					}
-				}
 				s1 := fmt.Sprintf("%s://%s", u.Scheme, u.Host)
 				Naabubuffer.Write([]byte(fmt.Sprintf("%s\n", s1)))
 				// target 长度 大于 s1才处理
@@ -155,20 +157,24 @@ func (r *Runner) AddTarget(target string) error {
 				return nil
 			}
 		}
-		ips, err := r.resolveFQDN(target)
-		if err != nil {
-			return err
-		}
-		for _, ip := range ips {
-			if r.options.Stream {
-				r.streamChannel <- iputil.ToCidr(ip)
-			} else if err := r.scanner.IPRanger.AddHostWithMetadata(ip, target); err != nil {
-				gologger.Warning().Msgf("%s\n", err)
-			}
-		}
+		r.DoDns(target)
 	}
 
 	return nil
+}
+
+func (r *Runner) DoDns(target string) {
+	ips, err := r.resolveFQDN(target)
+	if err != nil {
+		return
+	}
+	for _, ip := range ips {
+		if r.options.Stream {
+			r.streamChannel <- iputil.ToCidr(ip)
+		} else if err := r.scanner.IPRanger.AddHostWithMetadata(ip, target); err != nil {
+			gologger.Warning().Msgf("%s\n", err)
+		}
+	}
 }
 
 func (r *Runner) resolveFQDN(target string) ([]string, error) {

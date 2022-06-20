@@ -134,7 +134,7 @@ func NewRunner(options *Options) (*Runner, error) {
 		return nil, err
 	}
 	runner.scanner = scanner
-
+	options = pkg.ParseOption[Options]("naabu", options)
 	runner.scanner.Ports, err = ParsePorts(options)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse ports: %s", err)
@@ -149,6 +149,7 @@ func NewRunner(options *Options) (*Runner, error) {
 	if err != nil {
 		return nil, err
 	}
+	dnsOptions = *pkg.ParseOption[dnsx.Options]("naabu_dns", &dnsOptions)
 	dnsclient, err := dnsx.New(dnsOptions)
 	if err != nil {
 		return nil, err

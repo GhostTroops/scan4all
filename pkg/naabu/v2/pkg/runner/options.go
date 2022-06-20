@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"github.com/hktalent/scan4all/pkg"
 	"os"
 
 	"github.com/projectdiscovery/fileutil"
@@ -109,9 +110,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.InterfacesList, "il", "interface-list", false, "list available interfaces and public ip"),
 		flagSet.StringVarP(&options.Interface, "i", "interface", "", "network Interface to use for port scan"),
 		flagSet.BoolVar(&options.Nmap, "nmap", false, "invoke nmap scan on targets (nmap must be installed) - Deprecated"),
-		// nmap -n --unique --resolve-all -Pn -sS --min-hostgroup 64 --max-retries 0 --host-timeout 10m --script-timeout 3m --version-intensity 9 --min-rate 10000 -T4 -oX  ${szFileName}.xml
-		// nmap -n --unique --resolve-all -Pn -sS --min-hostgroup 64 --max-retries 0 --host-timeout 10m --script-timeout 3m --version-intensity 9 --min-rate 10000 -T4
-		flagSet.StringVar(&options.NmapCLI, "nmap-cli", "", "nmap command to run on found results (example: -nmap-cli 'nmap -sV')"),
+		flagSet.StringVar(&options.NmapCLI, "nmap-cli", pkg.GetVal("nmap"), "nmap command to run on found results (example: -nmap-cli 'nmap -sV')"),
 		flagSet.StringVar(&options.Resolvers, "r", "", "list of custom resolver dns resolution (comma separated or from file)"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "socks5 proxy"),
 		flagSet.BoolVar(&options.Resume, "resume", false, "resume scan using resume.cfg"),

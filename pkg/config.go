@@ -17,6 +17,7 @@ type Config4scanAllModel struct {
 var Config4scanAll = Config4scanAllModel{}
 var mData = map[string]interface{}{}
 
+// 优先使用配置文件中的配置，否则从环境变量中读取
 func GetVal(key string) string {
 	if s, ok := mData[key]; ok {
 		return s.(string)
@@ -24,6 +25,7 @@ func GetVal(key string) string {
 	return os.Getenv(key)
 }
 
+// 从配置json中读取naabu、httpx、nuclei等的细化配置
 func ParseOption[T any](key string, opt *T) *T {
 	m1 := GetVal4Any[map[string]interface{}](key)
 	bA, err := json.Marshal(m1)
@@ -45,6 +47,8 @@ func GetVal4Any[T any](key string) T {
 	}
 	return t1
 }
+
+// 读区配置中的字典文件
 func GetVal4File(key, szDefault string) string {
 	s := GetVal(key)
 	if "" != s {
