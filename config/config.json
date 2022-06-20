@@ -14,7 +14,7 @@
   "UrlPrecise": true,
   "EnableSubfinder": false,
   "naabu_dns": {},
-  "naabu": {"TopPorts": "full"},
+  "naabu": {"TopPorts": "1000"},
   "nuclei": {},
   "httpx": {}
 }
