@@ -54,7 +54,11 @@ func loadProvidersFrom(location string, options *runner.Options) {
 	}
 }
 
-func DoSubfinder(a []string, out chan string) {
+func DoSubfinder(a []string, out chan string, done chan bool) {
+	defer func() {
+		done <- true
+		close(done)
+	}()
 	// Parse the command line flags and read config files
 	options := &runner.Options{
 		Verbose:            false,

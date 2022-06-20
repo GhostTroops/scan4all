@@ -26,7 +26,7 @@ var (
 )
 
 func RunNuclei(buf bytes.Buffer, xx chan bool) {
-	go func() {
+	defer func() {
 		xx <- true
 		close(xx)
 	}()
