@@ -38,6 +38,7 @@
 - 深度分析、自动化关联扫描：自动获取ssl中域名信息，针对*.xxx.com这种情况，且配置了允许自动子域名遍历，将自动完成子域名遍历，并将目标添加到扫描列表中
 - 输入target（目标）是ip时，自动从51pwn云端赋能关联所有域名、指纹信息、历史端口信息，并进行处理（云端服务功能需要授权）
 - 自动化供应链分析及扫描，该项功能需要授权才可用
+- 允许通过config/config.json配置定义自己的字典，或设置相关开关,可以在这里定义nuclei、httx、naabu若干Options
 
 # 执行流程
 - 0、【子域名】集成了Subfinder，export EnableSubfinder=true启动,自动深度钻取ssl证书中的域名信息
@@ -65,6 +66,7 @@ UrlPrecise=true ./main -l xx.txt
 
 # changelog
 - 2022-06-20 集成了Subfinder，做子域名爆破，启动参数export EnableSubfinder=true，注意，启动后很慢；自动深度钻取ssl证书中的域名信息
+             允许通过config/config.json配置定义自己的字典，或设置相关开关
 - 2022-06-17 优化一个域名多个ip的情况，所有ip都会被端口扫描，然后走后续的扫描流程
 - 2022-06-15 该版本增加了若干过去实战中获得的weblogic密码字典，以及webshell字典
 - 2022-06-10 完成nuclei的集成，当然也包含nuclei模版的集成

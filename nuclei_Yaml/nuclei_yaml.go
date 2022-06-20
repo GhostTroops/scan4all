@@ -3,6 +3,7 @@ package nuclei_Yaml
 import (
 	"bytes"
 	"fmt"
+	"github.com/hktalent/scan4all/pkg"
 	"os"
 	"path/filepath"
 	"strings"
@@ -30,6 +31,8 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 		xx <- true
 		close(xx)
 	}()
+	// json 控制参数
+	options = pkg.ParseOption[types.Options]("nuclei", options)
 	if err := runner.ConfigureOptions(); err != nil {
 		gologger.Fatal().Msgf("Could not initialize options: %s\n", err)
 	}
@@ -37,6 +40,16 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 	readConfig()
 	options.Targets = strings.Split(buf.String(), "\n")
 	runner.ParseOptions(options)
+	/////////////////////////////////////
+	if nil != pkg.G_Options {
+		x01, ok := pkg.G_Options.(types.Options)
+		if ok {
+			options.Output = x01.Output
+			options.JSON = x01.JSON
+		}
+	}
+	options.Verbose = false
+	////////////////////////////////////*/
 
 	nucleiRunner, err := runner.New(options)
 	if err != nil {

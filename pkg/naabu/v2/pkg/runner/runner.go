@@ -93,6 +93,9 @@ func (r *Runner) Httpxrun() error {
 	//if jndi.JndiAddress != "" {
 	//	go jndi.JndiServer()
 	//}
+
+	// json 控制参数
+	httpxoptions = pkg.ParseOption[httpxrunner.Options]("httpx", httpxoptions)
 	rx, err := httpxrunner.New(httpxoptions)
 	if err != nil {
 		return err

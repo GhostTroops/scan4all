@@ -8,6 +8,10 @@
   "fuzzct": "brute/dicts/fuzzContentType1.txt",
   "fuzz404": "brute/dicts/fuzz404.txt",
   "page404Content1": "brute/dicts/page404Content.txt",
+  "eHoleFinger": "pkg/fingerprint/dicts/eHoleFinger.json",
+  "localFinger": "pkg/fingerprint/dicts/localFinger.json",
   "UrlPrecise": true,
-  "EnableSubfinder": false
+  "EnableSubfinder": false,
+  "nuclei": {},
+  "httpx": {}
 }

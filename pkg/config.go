@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"encoding/json"
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
@@ -22,6 +23,28 @@ func GetVal(key string) string {
 	}
 	return os.Getenv(key)
 }
+
+func ParseOption[T any](key string, opt *T) *T {
+	m1 := GetVal4Any[map[string]interface{}](key)
+	bA, err := json.Marshal(m1)
+	if nil == err && 0 < len(bA) {
+		json.Unmarshal(bA, opt)
+	}
+	return opt
+}
+
+// 其他类型
+func GetVal4Any[T any](key string) T {
+	var t1 T
+	if s, ok := mData[key]; ok {
+		t2, ok := s.(T)
+		t1 = t2
+		if ok {
+			return t2
+		}
+	}
+	return t1
+}
 func GetVal4File(key, szDefault string) string {
 	s := GetVal(key)
 	if "" != s {
@@ -34,14 +57,14 @@ func GetVal4File(key, szDefault string) string {
 }
 
 func init() {
-	var ConfigName = "config.json"
+	var ConfigName = "config/config.json"
 	config := viper.New()
 	config.AddConfigPath("./")
-	config.AddConfigPath("./config")
+	config.AddConfigPath("./config/")
 	config.AddConfigPath("$HOME")
 	config.AddConfigPath("/etc/")
 	// 显示调用
-	//config.SetConfigType("json")
+	config.SetConfigType("json")
 	if "" != ConfigName {
 		config.SetConfigFile(ConfigName)
 	}
@@ -58,3 +81,5 @@ func init() {
 	config.Unmarshal(&mData)
 	viper.Set("Verbose", false)
 }
+
+var G_Options interface{}

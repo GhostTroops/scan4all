@@ -1,13 +1,15 @@
 package main
 
 import (
-	"github.com/projectdiscovery/gologger"
+	"github.com/hktalent/scan4all/pkg"
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
+	"github.com/projectdiscovery/gologger"
 	"runtime"
 )
 
 func main() {
 	options := naaburunner.ParseOptions()
+	pkg.G_Options = options
 	if runtime.GOOS == "windows" {
 		options.NoColor = true
 	}
