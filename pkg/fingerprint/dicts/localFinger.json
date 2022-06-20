@@ -2450,7 +2450,7 @@
     "location": "body",
     "keyword": ["content=\"commonspot"]
   },{
-    "cms": "confluence",
+    "cms": "Confluence",
     "method": "keyword",
     "location": "body",
     "keyword": ["id=\"com-atlassian-confluence","name=\"confluence-base-url\""]
@@ -3810,12 +3810,12 @@
     "location": "body",
     "keyword": ["name=\"generator\" content=\"eyoucms"]
   },{
-    "cms": "f5-big-ip",
+    "cms": "f5 Big IP",
     "method": "keyword",
     "location": "body",
     "keyword": ["content=\"F5 Networks, Inc.\""]
   },{
-    "cms": "f5-bigip",
+    "cms": "f5 Big IP",
     "method": "keyword",
     "location": "body",
     "keyword": ["content=\"f5 networks, inc."]
@@ -11560,7 +11560,7 @@
     "location": "body",
     "keyword": ["尚景流量管理平台"]
   },{
-    "cms": "sunlogin",
+    "cms": "Sunlogin",
     "method": "keyword",
     "location": "body",
     "keyword": ["{\"success\":false,\"msg\":\"Verification failure\"}"]

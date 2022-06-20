@@ -5,6 +5,8 @@ import (
 	"github.com/hktalent/scan4all/brute"
 	"github.com/hktalent/scan4all/pocs_go/Springboot"
 	"github.com/hktalent/scan4all/pocs_go/ThinkPHP"
+	"github.com/hktalent/scan4all/pocs_go/confluence"
+	"github.com/hktalent/scan4all/pocs_go/f5"
 	"github.com/hktalent/scan4all/pocs_go/fastjson"
 	"github.com/hktalent/scan4all/pocs_go/gitlab"
 	"github.com/hktalent/scan4all/pocs_go/jboss"
@@ -161,7 +163,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if loginurl != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 			}
-		case "Sunlogin", "sunlogin":
+		case "Sunlogin":
 			if sunlogin.SunloginRCE(URL) {
 				technologies = append(technologies, "exp-Sunlogin|RCE")
 			}
@@ -180,6 +182,26 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 		case "GitLab":
 			if gitlab.CVE_2021_22205(URL) {
 				technologies = append(technologies, "exp-gitlab|CVE_2021_22205")
+			}
+		case "Confluence":
+			if confluence.CVE_2021_26084(URL) {
+				technologies = append(technologies, "exp-confluence|CVE_2021_26084")
+			}
+			if confluence.CVE_2021_26085(URL) {
+				technologies = append(technologies, "exp-confluence|CVE_2021_26085")
+			}
+			if confluence.CVE_2022_26134(URL) {
+				technologies = append(technologies, "exp-confluence|CVE_2022_26134")
+			}
+		case "f5 Big IP":
+			if f5.CVE_2020_5902(URL) {
+				technologies = append(technologies, "exp-f5-Big-IP|CVE_2020_5902")
+			}
+			if f5.CVE_2021_22986(URL) {
+				technologies = append(technologies, "exp-f5-Big-IP|CVE_2021_22986")
+			}
+			if f5.CVE_2022_1388(URL) {
+				technologies = append(technologies, "exp-f5-Big-IP|CVE_2022_1388")
 			}
 		}
 		if checklog4j {
