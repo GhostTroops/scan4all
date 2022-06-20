@@ -39,7 +39,8 @@ jobs:
         with:
           go-version: 1.18
       - name: Install Dependences
-        run: sudo apt install libpcap-dev
+        run:  sudo apt install -yy libpcap
+
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
