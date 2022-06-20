@@ -7,9 +7,14 @@ import (
 
 func main() {
 	var out = make(chan string, 1000)
-	go subfinder.DoSubfinder([]string{"qq.com"}, out)
+	var close chan bool
+	go subfinder.DoSubfinder([]string{"51pwn.com"}, out, close)
+
+Close:
 	for {
 		select {
+		case <-close:
+			break Close
 		case ok := <-out:
 			fmt.Println(ok)
 		}

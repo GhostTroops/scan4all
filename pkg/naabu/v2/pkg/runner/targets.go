@@ -4,6 +4,13 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
+	"github.com/projectdiscovery/gologger"
+	"github.com/projectdiscovery/ipranger"
+	"github.com/projectdiscovery/iputil"
+	"github.com/remeh/sizedwaitgroup"
 	"io"
 	"io/ioutil"
 	"log"
@@ -11,13 +18,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-
-	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/ipranger"
-	"github.com/projectdiscovery/iputil"
-	"github.com/remeh/sizedwaitgroup"
-	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
-	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
 )
 
 func (r *Runner) Load() error {
@@ -126,6 +126,14 @@ func (r *Runner) AddTarget(target string) error {
 	} else {
 		if strings.HasPrefix(target, "http://") || strings.HasPrefix(target, "https://") {
 			if u, err := url.Parse(target); err == nil {
+
+				// 处理ssl 数字证书中包含的域名信息，深度挖掘漏洞
+				aH, err := pkg.DoDns(u.Host)
+				if nil == err && 0 < len(aH) {
+					for _, x := range aH {
+						Naabubuffer.Write([]byte(fmt.Sprintf("%s\n", fmt.Sprintf("%s://%s", u.Scheme, x))))
+					}
+				}
 				s1 := fmt.Sprintf("%s://%s", u.Scheme, u.Host)
 				Naabubuffer.Write([]byte(fmt.Sprintf("%s\n", s1)))
 				// target 长度 大于 s1才处理

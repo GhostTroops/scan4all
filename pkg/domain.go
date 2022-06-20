@@ -2,14 +2,84 @@ package pkg
 
 import (
 	"crypto/tls"
+	"fmt"
+	"github.com/hktalent/scan4all/subfinder"
+	"os"
+	"reflect"
+	"strings"
 )
+
+// 判断s是否在数组a中
+// 支持任何类型，支持泛型
+func Contains[T any](a []T, s T) bool {
+	for _, x := range a {
+		if reflect.DeepEqual(s, x) {
+			return true
+		}
+	}
+	return false
+}
+
+func doAppend(a []string, s string) []string {
+	if !Contains[string](a, s) {
+		a = append(a, s)
+		return a
+	}
+	return a
+}
+func doAppends(a []string, s []string) []string {
+	for _, x := range s {
+		a = doAppend(a, x)
+	}
+	return a
+}
+
+// 获取DNS 的所有子域名信息，start from here
+func DoDns(s string) (aRst []string, err1 error) {
+	if "*." == s[:2] {
+		EnableSubfinder := os.Getenv("EnableSubfinder")
+		if "" != EnableSubfinder {
+			var out = make(chan string, 1000)
+			var close chan bool
+			go subfinder.DoSubfinder([]string{s[2:]}, out, close)
+		Close:
+			for {
+				select {
+				case <-close:
+					break Close
+				case ok := <-out:
+					if "" != ok {
+						aRst = append(aRst, ok)
+						fmt.Println("out ===> ", ok)
+					}
+				}
+			}
+		} else {
+			aRst = append(aRst, s[2:])
+		}
+	} else {
+		aRst = append(aRst, s)
+	}
+	var aRst1 = []string{}
+	for _, x := range aRst {
+		a, err := GetSSLDNS(x)
+		if nil == err {
+			aRst1 = doAppends(aRst1, a)
+		}
+	}
+	return aRst1, nil
+}
 
 // get ssl info DNS
 func GetSSLDNS(s string) (aRst []string, err1 error) {
 	conf := &tls.Config{
 		InsecureSkipVerify: true,
 	}
-	conn, err := tls.Dial("tcp", s+":443", conf)
+	host := s + ":443"
+	if -1 < strings.Index(s, ":") {
+		host = s
+	}
+	conn, err := tls.Dial("tcp", host, conf)
 	if err != nil {
 		err1 = err
 		return aRst, err1

@@ -32,7 +32,7 @@
 - 支持多种类型的输出 - **JSON/TXT/CSV/STDOUT**
 ## 通过配置文件、环境变量 控制的新特性
 - 带上下文路径的url列表，开启精准扫描 UrlPrecise=true ./main -l xx.txt
-- 开启智能的子域名遍历
+- 开启智能的子域名遍历, export EnableSubfinder=true
 - 自动识别一个domain(DNS)关联多个ip的情况，自动对关联的多个ip进行扫描
 - 预处理，列表中多个域名相同的ip时，端口扫描合并处理，从而提高效率
 - 深度分析、自动化关联扫描：自动获取ssl中域名信息，针对*.xxx.com这种情况，且配置了允许自动子域名遍历，将自动完成子域名遍历，并将目标添加到扫描列表中
@@ -58,6 +58,7 @@ UrlPrecise=true ./main -l xx.txt
 ```
 
 # changelog
+- 2022-06-20 集成了Subfinder，做子域名爆破，启动参数export EnableSubfinder=true，注意，启动后很慢
 - 2022-06-17 优化一个域名多个ip的情况，所有ip都会被端口扫描，然后走后续的扫描流程
 - 2022-06-15 该版本增加了若干过去实战中获得的weblogic密码字典，以及webshell字典
 - 2022-06-10 完成nuclei的集成，当然也包含nuclei模版的集成
