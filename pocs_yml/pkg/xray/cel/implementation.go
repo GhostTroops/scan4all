@@ -5,8 +5,8 @@ import (
 	"crypto/md5"
 	"encoding/base64"
 	"fmt"
-	structs2 "github.com/veo/vscan/pocs_yml/pkg/common/structs"
-	"github.com/veo/vscan/pocs_yml/utils"
+	structs2 "github.com/hktalent/scan4all/pocs_yml/pkg/common/structs"
+	"github.com/hktalent/scan4all/pocs_yml/utils"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -21,8 +21,8 @@ import (
 	"github.com/google/cel-go/common/types"
 	"github.com/google/cel-go/common/types/ref"
 	"github.com/google/cel-go/interpreter/functions"
-	"github.com/veo/vscan/pocs_yml/pkg/xray/requests"
-	"github.com/veo/vscan/pocs_yml/pkg/xray/structs"
+	"github.com/hktalent/scan4all/pocs_yml/pkg/xray/requests"
+	"github.com/hktalent/scan4all/pocs_yml/pkg/xray/structs"
 )
 
 var (

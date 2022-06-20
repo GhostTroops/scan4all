@@ -4,7 +4,7 @@ import (
 	"github.com/google/cel-go/cel"
 	"github.com/google/cel-go/checker/decls"
 	"github.com/google/cel-go/common/types/ref"
-	"github.com/veo/vscan/pocs_yml/pkg/xray/structs"
+	"github.com/hktalent/scan4all/pocs_yml/pkg/xray/structs"
 	exprpb "google.golang.org/genproto/googleapis/api/expr/v1alpha1"
 )
 

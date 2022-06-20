@@ -2,7 +2,7 @@ package tomcat
 
 import (
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/hktalent/scan4all/pkg"
 )
 
 func CVE_2017_12615(url string) bool {

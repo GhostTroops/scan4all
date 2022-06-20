@@ -59,7 +59,7 @@ var DefaultOptions = Options{
 	VHostIgnoreNumberOfLines: false,
 	VHostStripHTML:           false,
 	VHostSimilarityRatio:     85,
-	DefaultUserAgent:         "httpx - Open-source project (github.com/veo/vscan/pkg/httpx)",
+	DefaultUserAgent:         "httpx - Open-source project (github.com/hktalent/scan4all/pkg/httpx)",
 }
 
 func (options *Options) parseCustomCookies() {

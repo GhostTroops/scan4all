@@ -2,7 +2,7 @@ package seeyon
 
 import (
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/hktalent/scan4all/pkg"
 )
 
 //DownExcelBeanServlet 用户敏感信息泄露

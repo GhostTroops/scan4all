@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/projectdiscovery/gologger"
-	naaburunner "github.com/veo/vscan/pkg/naabu/v2/pkg/runner"
+	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
 	"runtime"
 )
 

@@ -3,12 +3,12 @@ env:
 before:
   hooks:
     - go mod tidy
-project_name: vscan
+project_name: scan4all
 builds:
-  - id: vscan-darwin
+  - id: scan4all-darwin
     ldflags:
       - -s -w
-    binary: vscan
+    binary: scan4all
     env:
       - CGO_ENABLED=1
     main: main.go

@@ -43,7 +43,7 @@ import (
 	yamlwrapper "github.com/projectdiscovery/nuclei/v2/pkg/utils/yaml"
 	"github.com/projectdiscovery/retryablehttp-go"
 	"github.com/projectdiscovery/stringsutil"
-	"github.com/veo/vscan/nuclei_Yaml/internal/colorizer"
+	"github.com/hktalent/scan4all/nuclei_Yaml/internal/colorizer"
 )
 
 // Runner is a client for running the enumeration process.

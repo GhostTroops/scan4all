@@ -3,7 +3,7 @@ package weblogic
 import (
 	"encoding/hex"
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/hktalent/scan4all/pkg"
 	"net"
 	"net/url"
 	"regexp"

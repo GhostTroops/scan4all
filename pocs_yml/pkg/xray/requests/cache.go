@@ -7,8 +7,8 @@ import (
 	"sort"
 
 	"github.com/bluele/gcache"
-	"github.com/veo/vscan/pocs_yml/pkg/xray/structs"
-	"github.com/veo/vscan/pocs_yml/utils"
+	"github.com/hktalent/scan4all/pocs_yml/pkg/xray/structs"
+	"github.com/hktalent/scan4all/pocs_yml/utils"
 )
 
 var (

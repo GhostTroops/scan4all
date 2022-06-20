@@ -16,8 +16,8 @@ import (
 	"github.com/projectdiscovery/ipranger"
 	"github.com/projectdiscovery/iputil"
 	"github.com/remeh/sizedwaitgroup"
-	"github.com/veo/vscan/pkg/naabu/v2/pkg/privileges"
-	"github.com/veo/vscan/pkg/naabu/v2/pkg/scan"
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
 )
 
 func (r *Runner) Load() error {

@@ -3,7 +3,7 @@ package brute
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/hktalent/scan4all/pkg"
 	"net/url"
 	"regexp"
 	"strings"

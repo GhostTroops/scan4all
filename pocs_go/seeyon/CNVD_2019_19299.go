@@ -3,7 +3,7 @@ package seeyon
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/hktalent/scan4all/pkg"
 	"strings"
 )
 

@@ -8,10 +8,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ammario/ipisp/v2"
-	"github.com/veo/vscan/brute"
-	"github.com/veo/vscan/pkg/fingerprint"
-	"github.com/veo/vscan/pocs_go"
-	"github.com/veo/vscan/pocs_yml"
+	"github.com/hktalent/scan4all/brute"
+	"github.com/hktalent/scan4all/pkg/fingerprint"
+	"github.com/hktalent/scan4all/pocs_go"
+	"github.com/hktalent/scan4all/pocs_yml"
 	"io"
 	"io/ioutil"
 	"net"
@@ -36,7 +36,7 @@ import (
 	"github.com/projectdiscovery/goconfig"
 	"github.com/projectdiscovery/stringsutil"
 	"github.com/projectdiscovery/urlutil"
-	"github.com/veo/vscan/pkg/httpx/common/hashes"
+	"github.com/hktalent/scan4all/pkg/httpx/common/hashes"
 
 	// automatic fd max increase if running as root
 	_ "github.com/projectdiscovery/fdmax/autofdmax"
@@ -50,12 +50,12 @@ import (
 	"github.com/projectdiscovery/retryablehttp-go"
 	wappalyzer "github.com/projectdiscovery/wappalyzergo"
 	"github.com/remeh/sizedwaitgroup"
-	customport "github.com/veo/vscan/pkg/httpx/common/customports"
-	fileutilz "github.com/veo/vscan/pkg/httpx/common/fileutil"
-	"github.com/veo/vscan/pkg/httpx/common/httputilz"
-	"github.com/veo/vscan/pkg/httpx/common/httpx"
-	"github.com/veo/vscan/pkg/httpx/common/slice"
-	"github.com/veo/vscan/pkg/httpx/common/stringz"
+	customport "github.com/hktalent/scan4all/pkg/httpx/common/customports"
+	fileutilz "github.com/hktalent/scan4all/pkg/httpx/common/fileutil"
+	"github.com/hktalent/scan4all/pkg/httpx/common/httputilz"
+	"github.com/hktalent/scan4all/pkg/httpx/common/httpx"
+	"github.com/hktalent/scan4all/pkg/httpx/common/slice"
+	"github.com/hktalent/scan4all/pkg/httpx/common/stringz"
 	"go.uber.org/ratelimit"
 )
 
@@ -827,7 +827,7 @@ retry:
 			return Result{Input: origInput}
 		}
 		domain = parts[0]
-		//util "github.com/veo/vscan/pkg"
+		//util "github.com/hktalent/scan4all/pkg"
 		//util.Convert2Domains(domain)
 		customHost = parts[1]
 	}

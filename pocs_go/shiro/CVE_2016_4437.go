@@ -9,7 +9,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	uuid "github.com/satori/go.uuid"
-	"github.com/veo/vscan/pkg"
+	"github.com/hktalent/scan4all/pkg"
 	"io"
 	"log"
 	"regexp"

@@ -2,7 +2,7 @@
 
 ```sh
 sudo apt install -y libpcap-dev golang git
-git clone https://github.com/veo/vscan.git
+git clone https://github.com/hktalent/scan4all.git
 cd vscan
 go build
 ```
@@ -16,7 +16,7 @@ sudo apt install -y libpcap-dev
 ```
 
 2.前往
-[https://github.com/veo/vscan/releases/](https://github.com/veo/vscan/releases/)
+[https://github.com/hktalent/scan4all/releases/](https://github.com/hktalent/scan4all/releases/)
 下载vscan最新版运行:
 
 ## 运行时动态库版本问题

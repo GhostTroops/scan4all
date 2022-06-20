@@ -10,7 +10,7 @@ import (
 	"regexp"
 
 	"github.com/projectdiscovery/fileutil"
-	"github.com/veo/vscan/pkg/httpx/common/stringz"
+	"github.com/hktalent/scan4all/pkg/httpx/common/stringz"
 )
 
 // HasStdin determines if the user has piped input

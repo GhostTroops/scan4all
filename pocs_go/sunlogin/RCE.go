@@ -3,7 +3,7 @@ package sunlogin
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/hktalent/scan4all/pkg"
 	"strings"
 )
 

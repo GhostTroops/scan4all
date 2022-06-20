@@ -1,7 +1,7 @@
 package brute
 
 import (
-	"github.com/veo/vscan/pkg"
+	"github.com/hktalent/scan4all/pkg"
 	"net/url"
 	"regexp"
 	"strings"

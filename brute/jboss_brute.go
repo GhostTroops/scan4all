@@ -2,7 +2,7 @@ package brute
 
 import (
 	"fmt"
-	"github.com/veo/vscan/pkg"
+	"github.com/hktalent/scan4all/pkg"
 )
 
 func Jboss_brute(url string) (username string, password string) {

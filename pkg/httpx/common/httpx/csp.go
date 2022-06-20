@@ -6,7 +6,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/projectdiscovery/stringsutil"
-	"github.com/veo/vscan/pkg/httpx/common/slice"
+	"github.com/hktalent/scan4all/pkg/httpx/common/slice"
 )
 
 // CSPHeaders is an incomplete list of most common CSP headers

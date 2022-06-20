@@ -1,7 +1,7 @@
 package structs
 
 import (
-	"github.com/veo/vscan/pocs_yml/pkg/xray/structs"
+	"github.com/hktalent/scan4all/pocs_yml/pkg/xray/structs"
 	"net/http"
 	"strings"
 )

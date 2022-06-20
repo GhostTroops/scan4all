@@ -3,12 +3,12 @@ env:
 before:
   hooks:
     - go mod tidy
-project_name: vscan
+project_name: scan4all
 builds:
-  - id: vscan-windows
+  - id: scan4all-windows
     ldflags:
       - -s -w
-    binary: vscan
+    binary: scan4all
     env:
       - CGO_ENABLED=1
       - CC=x86_64-w64-mingw32-gcc

@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/fileutil"
-	"github.com/veo/vscan/pkg/naabu/v2/pkg/privileges"
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/formatter"

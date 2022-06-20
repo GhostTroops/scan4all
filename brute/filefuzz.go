@@ -3,7 +3,7 @@ package brute
 import (
 	_ "embed"
 	"github.com/antlabs/strsim"
-	"github.com/veo/vscan/pkg"
+	"github.com/hktalent/scan4all/pkg"
 	"regexp"
 	"strings"
 	"time"

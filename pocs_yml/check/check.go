@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
-	"github.com/veo/vscan/pkg"
+	"github.com/hktalent/scan4all/pkg"
 	"io"
 	"net"
 	"net/http"
@@ -16,9 +16,9 @@ import (
 	"time"
 
 	"github.com/google/cel-go/checker/decls"
-	"github.com/veo/vscan/pocs_yml/pkg/xray/cel"
-	"github.com/veo/vscan/pocs_yml/pkg/xray/requests"
-	xray_structs "github.com/veo/vscan/pocs_yml/pkg/xray/structs"
+	"github.com/hktalent/scan4all/pocs_yml/pkg/xray/cel"
+	"github.com/hktalent/scan4all/pocs_yml/pkg/xray/requests"
+	xray_structs "github.com/hktalent/scan4all/pocs_yml/pkg/xray/structs"
 	"gopkg.in/yaml.v2"
 )
 

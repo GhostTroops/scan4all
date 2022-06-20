@@ -7,7 +7,7 @@ import (
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/sliceutil"
 
-	"github.com/veo/vscan/pkg/httpx/common/httpx"
+	"github.com/hktalent/scan4all/pkg/httpx/common/httpx"
 )
 
 //nolint:gochecknoinits // this flag var needs a small refactor to avoid the use of the init function

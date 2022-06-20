@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/retryablehttp-go"
-	"github.com/veo/vscan/pkg"
+	"github.com/hktalent/scan4all/pkg"
 	"net"
 	"net/http"
 	"net/url"
@@ -26,10 +26,10 @@ import (
 	"github.com/projectdiscovery/mapcidr"
 	"github.com/projectdiscovery/uncover/uncover/agent/shodanidb"
 	"github.com/remeh/sizedwaitgroup"
-	"github.com/veo/vscan/nuclei_Yaml"
-	httpxrunner "github.com/veo/vscan/pkg/httpx/runner"
-	"github.com/veo/vscan/pkg/naabu/v2/pkg/privileges"
-	"github.com/veo/vscan/pkg/naabu/v2/pkg/scan"
+	"github.com/hktalent/scan4all/nuclei_Yaml"
+	httpxrunner "github.com/hktalent/scan4all/pkg/httpx/runner"
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
 	"go.uber.org/ratelimit"
 )
 
