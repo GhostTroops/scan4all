@@ -5,9 +5,9 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/hktalent/scan4all/pkg"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/retryablehttp-go"
-	"github.com/hktalent/scan4all/pkg"
 	"net"
 	"net/http"
 	"net/url"
@@ -17,6 +17,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hktalent/scan4all/nuclei_Yaml"
+	httpxrunner "github.com/hktalent/scan4all/pkg/httpx/runner"
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/blackrock"
 	"github.com/projectdiscovery/clistats"
@@ -26,10 +30,6 @@ import (
 	"github.com/projectdiscovery/mapcidr"
 	"github.com/projectdiscovery/uncover/uncover/agent/shodanidb"
 	"github.com/remeh/sizedwaitgroup"
-	"github.com/hktalent/scan4all/nuclei_Yaml"
-	httpxrunner "github.com/hktalent/scan4all/pkg/httpx/runner"
-	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
-	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
 	"go.uber.org/ratelimit"
 )
 
@@ -100,12 +100,7 @@ func (r *Runner) Httpxrun() error {
 	rx.RunEnumeration()
 	rx.Close()
 	// wait nuclei
-	for {
-		select {
-		case <-nucleiDone:
-			break
-		}
-	}
+	<-nucleiDone
 	return nil
 }
 

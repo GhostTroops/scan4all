@@ -27,6 +27,7 @@ var (
 
 func RunNuclei(buf bytes.Buffer, xx chan bool) {
 	go func() {
+		xx <- true
 		close(xx)
 	}()
 	if err := runner.ConfigureOptions(); err != nil {
