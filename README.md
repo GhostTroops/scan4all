@@ -40,6 +40,7 @@
 - 自动化供应链分析及扫描，该项功能需要授权才可用
 
 # 执行流程
+- 0、【子域名】集成了Subfinder，export EnableSubfinder=true启动,自动深度钻取ssl证书中的域名信息
 - 1、【端口扫描]集成了naabu（2.1k），大名顶顶的nuclei官方出品
 - 2、【服务识别]naabu调用系统安装的nmap，请自己先安装nmap
 - 3、【指纹识别】nmap + 集成、并优化了EHole（1.4k），后期将持续集成更多指纹识别
@@ -58,7 +59,7 @@ UrlPrecise=true ./main -l xx.txt
 ```
 
 # changelog
-- 2022-06-20 集成了Subfinder，做子域名爆破，启动参数export EnableSubfinder=true，注意，启动后很慢
+- 2022-06-20 集成了Subfinder，做子域名爆破，启动参数export EnableSubfinder=true，注意，启动后很慢；自动深度钻取ssl证书中的域名信息
 - 2022-06-17 优化一个域名多个ip的情况，所有ip都会被端口扫描，然后走后续的扫描流程
 - 2022-06-15 该版本增加了若干过去实战中获得的weblogic密码字典，以及webshell字典
 - 2022-06-10 完成nuclei的集成，当然也包含nuclei模版的集成
