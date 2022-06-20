@@ -3,7 +3,6 @@ env:
 before:
   hooks:
     - go mod tidy
-    - go generate -x main.go
 project_name: scan4all
 builds:
   - id: scan4all-linux
