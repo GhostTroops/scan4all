@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/hktalent/scan4all/nuclei_Yaml/internal/runner"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
@@ -18,7 +18,6 @@ import (
 	"github.com/projectdiscovery/nuclei/v2/pkg/protocols/http"
 	templateTypes "github.com/projectdiscovery/nuclei/v2/pkg/templates/types"
 	"github.com/projectdiscovery/nuclei/v2/pkg/types"
-	"github.com/hktalent/scan4all/nuclei_Yaml/internal/runner"
 )
 
 var (
@@ -27,12 +26,14 @@ var (
 )
 
 func RunNuclei(buf bytes.Buffer, xx chan bool) {
+	go func() {
+		close(xx)
+	}()
 	if err := runner.ConfigureOptions(); err != nil {
 		gologger.Fatal().Msgf("Could not initialize options: %s\n", err)
 	}
 
 	readConfig()
-
 	options.Targets = strings.Split(buf.String(), "\n")
 	runner.ParseOptions(options)
 
@@ -43,26 +44,6 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 	if nucleiRunner == nil {
 		return
 	}
-
-	// Setup graceful exits
-	resumeFileName := types.DefaultResumeFilePath()
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt)
-	go func() {
-		for range c {
-			gologger.Info().Msgf("CTRL+C pressed: Exiting\n")
-			nucleiRunner.Close()
-			if options.ShouldSaveResume() {
-				gologger.Info().Msgf("Creating resume file: %s\n", resumeFileName)
-				err := nucleiRunner.SaveResumeConfig(resumeFileName)
-				if err != nil {
-					gologger.Error().Msgf("Couldn't create resume file: %s\n", err)
-				}
-			}
-			os.Exit(1)
-		}
-	}()
-
 	if err := nucleiRunner.RunEnumeration(); err != nil {
 		if options.Validate {
 			gologger.Fatal().Msgf("Could not validate templates: %s\n", err)
@@ -71,11 +52,6 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 		}
 	}
 	nucleiRunner.Close()
-	// on successful execution remove the resume file in case it exists
-	if fileutil.FileExists(resumeFileName) {
-		os.Remove(resumeFileName)
-	}
-	close(xx)
 }
 
 func readConfig() {
