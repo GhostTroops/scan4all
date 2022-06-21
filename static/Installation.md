@@ -3,13 +3,13 @@
 ```sh
 sudo apt install -y libpcap-dev golang git
 git clone https://github.com/hktalent/scan4all.git
-cd vscan
+cd scan4all
 go build
 ```
 
 # 安装/运行
 
-1.在运行vscan之前，你必须先安装libpcap库
+1.在运行scan4all之前，你必须先安装libpcap库
 
 ```sh
 sudo apt install -y libpcap-dev
@@ -17,7 +17,7 @@ sudo apt install -y libpcap-dev
 
 2.前往
 [https://github.com/hktalent/scan4all/releases/](https://github.com/hktalent/scan4all/releases/)
-下载vscan最新版运行:
+下载scan4all最新版运行:
 
 ## 运行时动态库版本问题
 

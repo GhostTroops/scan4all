@@ -19,49 +19,47 @@
 # Features
 
 <h1 align="center">
-  <img src="static/vscan-run.png" alt="vscan" width="850px"></a>
+  <img src="static/scan4all-run.png" alt="scan4all" width="850px"></a>
   <br>
 </h1>
 
-- 快速的端口扫描、指纹探测功能
-- 快速的登录密码爆破功能
-- 快速的POC检测功能
-- 快速的敏感文件检测功能
-- 轻量、开源、跨平台使用
-- 支持多种类型的输入 - **STDIN/HOST/IP/CIDR/URL/TXT**
-- 支持多种类型的输出 - **JSON/TXT/CSV/STDOUT**
-## 通过配置文件、环境变量 控制的新特性
-- 带上下文路径的url列表，开启精准扫描 UrlPrecise=true ./main -l xx.txt
-- 开启智能的子域名遍历, export EnableSubfinder=true
-- 自动识别一个domain(DNS)关联多个ip的情况，自动对关联的多个ip进行扫描
-- 预处理，列表中多个域名相同的ip时，端口扫描合并处理，从而提高效率
-- 深度分析、自动化关联扫描：自动获取ssl中域名信息，针对*.xxx.com这种情况，且配置了允许自动子域名遍历，将自动完成子域名遍历，并将目标添加到扫描列表中
-- 输入target（目标）是ip时，自动从51pwn云端赋能关联所有域名、指纹信息、历史端口信息，并进行处理（云端服务功能需要授权）
-- 自动化供应链分析及扫描，该项功能需要授权才可用
-- 允许通过config/config.json配置定义自己的字典，或设置相关开关,可以在这里定义nuclei、httx、naabu若干Options
-
-# 执行流程
-- 0、【子域名】集成了Subfinder，export EnableSubfinder=true启动,自动深度钻取ssl证书中的域名信息
-- 1、【端口扫描]集成了naabu（2.1k），大名顶顶的nuclei官方出品
-- 2、【服务识别]naabu调用系统安装的nmap，请自己先安装nmap
-- 3、【指纹识别】nmap + 集成、并优化了EHole（1.4k），后期将持续集成更多指纹识别
-- 4、【web扫描】集成了httpx（3.2k）,大名顶顶的nuclei官方出品
-- 5、【漏洞扫描】
-   * 集成了nuclei（8.6k）+ nuclei-templates(4.5k优化版本，https://github.com/hktalent/nuclei-templates)
-   * 集成了xray 2.0（6.9k）,共354个POC
-   * vscan自身实现了8个fuzz组件，同时实现集成了14类常见组件的漏洞检测
-
+- Fast port scan, fingerprint detection function
+- Fast login password blasting function
+- Fast POC detection function
+- Fast sensitive file detection
+- Lightweight, open source, cross-platform use
+- Supports multiple types of input - STDIN/HOST/IP/CIDR/URL/TXT
+- Supports multiple types of output - JSON/TXT/CSV/STDOUT
+## New features controlled by configuration files, environment variables
+- url list with context path, enable precise scan UrlPrecise=true ./main -l xx.txt
+- Enable smart subdomain traversal, export EnableSubfinder=true
+- Automatically identify the situation that a domain (DNS) is associated with multiple IPs, and automatically scan the associated multiple IPs
+- Preprocessing, when multiple domain names in the list have the same ip, port scans are merged to improve efficiency
+- In-depth analysis, automatic correlation scan: automatically obtain domain name information in ssl, in the case of *.xxx.com, and configured to allow automatic subdomain traversal, the subdomain traversal will be automatically completed, and the target will be added to the scan list
+- When the input target (target) is ip, all domain names, fingerprint information, historical port information will be automatically associated from the 51pwn cloud, and processed (the cloud service function requires authorization)
+- Automated supply chain analysis and scanning, which requires authorization to use
+- Allows to define your own dictionary through config/config.json configuration, or set related switches, you can define several Options for nuclei, httx, naabu here
+# Implementation process
+- 0. [Subdomain] integrates Subfinder, export EnableSubfinder=true starts, automatically drills deep into the domain name information in the ssl certificate
+- 1. [Port Scanning] Integrate naabu (2.1k), the official product of Nuclei, the famous name Dingding
+- 2. [Service Identification] naabu calls the nmap installed by the system, please install nmap yourself first
+- 3. [Fingerprint recognition] nmap + integrated and optimized EHole (1.4k), and will continue to integrate more fingerprint recognition later
+- 4. [Web Scanning] Integrated httpx (3.2k), officially produced by Nuclei, the famous name Dingding
+- 5. [Vulnerability Scanning]
+    * Integrated nuclei (8.6k) + nuclei-templates (4.5k optimized version, https://github.com/hktalent/nuclei-templates)
+    * Integrated xray 2.0 (6.9k), a total of 354 POCs
+    * scan4all itself implements 8 fuzz components, and at the same time implements vulnerability detection that integrates 14 types of common components
 # How Install
 ```bash
 go install github.com/hktalent/scan4all@2.1.5
 scan4all -h
 ```
 # How use
-使用前请自行先安装nmap
+Please install nmap by yourself before use
 ```bash
-go build -o vscan main.go
-# 精准扫描 UrlPrecise=true
-UrlPrecise=true ./main -l xx.txt
+go build -o scan4all main.go
+# Precise scanning UrlPrecise=true
+UrlPrecise=true ./scan4all -l xx.txt
 ```
 
 # changelog

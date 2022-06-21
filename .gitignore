@@ -6,8 +6,8 @@
 *.dll
 *.so
 *.dylib
-vscan
-vscan_linux
+scan4all
+scan4all_linux
 .DS_Store
 nuclei_Yaml/nuclei_yaml
 
