@@ -84,6 +84,7 @@ require (
 	github.com/apex/log v1.9.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/denisenkom/go-mssqldb v0.12.2
+	github.com/dgraph-io/badger v1.6.2
 	github.com/dlclark/regexp2 v1.4.0
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-sql-driver/mysql v1.6.0
@@ -135,7 +136,6 @@ require (
 	github.com/c4milo/unpackit v0.1.0 // indirect
 	github.com/caddyserver/certmagic v0.16.1 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
-	github.com/dgraph-io/badger v1.6.2 // indirect
 	github.com/dgraph-io/ristretto v0.0.3 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
