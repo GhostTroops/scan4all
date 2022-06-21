@@ -136,6 +136,11 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		ch <- struct{}{}
 		go func(payload string) {
 			if url, req, err := reqPage(u + payload); err == nil {
+				// 403 by pass
+				if url.is403{
+					a11:=ByPass403(&u,&payload)
+					path = append(path, a11...)
+				}
 				if url.is403 && (pkg.SliceInString(url.title, page403title) || pkg.SliceInString(req.Body, page403Content)) && !skip403 {
 					path = append(path, u+payload)
 					technologies = addfingerprints403(payload, technologies) // 基于403页面文件扫描指纹添加
