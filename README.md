@@ -1,10 +1,10 @@
 <p align="center">
-  <a href="/static/Installation.md">编译/安装/运行</a> •
-  <a href="/static/usage.md">参数说明</a> •
-  <a href="/static/running.md">使用方法</a> •
-  <a href="/static/scenario.md">使用场景</a> •
-  <a href="/static/pocs.md">POC列表</a> •
-  <a href="/static/development.md">自定义扫描器</a>
+   <a href="/static/Installation.md">Compile/Install/Run</a> •
+   <a href="/static/usage.md">Parameter Description</a> •
+   <a href="/static/running.md">How To</a> •
+   <a href="/static/scenario.md">Scenario</a> •
+   <a href="/static/pocs.md">POC List</a> •
+   <a href="/static/development.md">Custom Scanner</a>
 </p>
 
 # Features
