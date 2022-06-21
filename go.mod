@@ -11,7 +11,7 @@ require (
 	github.com/projectdiscovery/clistats v0.0.8
 	github.com/projectdiscovery/dnsx v1.0.7-0.20210927160546-05f957862698
 	github.com/projectdiscovery/fdmax v0.0.3
-	github.com/projectdiscovery/fileutil v0.0.0-20220427234316-40b2541a84b8
+	github.com/projectdiscovery/fileutil v0.0.0-20220609150212-453ac591c36c
 	github.com/projectdiscovery/goflags v0.0.8-0.20220412061559-5119d6086323
 	github.com/projectdiscovery/gologger v1.1.4
 	github.com/projectdiscovery/ipranger v0.0.3-0.20210831161617-ac80efae0961
@@ -20,7 +20,7 @@ require (
 	github.com/projectdiscovery/networkpolicy v0.0.1
 	github.com/remeh/sizedwaitgroup v1.0.0
 	go.uber.org/ratelimit v0.2.0
-	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2
+	golang.org/x/net v0.0.0-20220617184016-355a448f1bc9
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
 )
 
@@ -29,7 +29,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/projectdiscovery/retryablehttp-go v1.0.3-0.20220506110515-811d938bd26d
 	github.com/projectdiscovery/uncover v0.0.5
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.2
 )
 
 require (
@@ -46,7 +46,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/projectdiscovery/hmap v0.0.2-0.20210917080408-0fd7bd286bfa
 	github.com/projectdiscovery/retryabledns v1.0.13 // indirect
-	github.com/projectdiscovery/stringsutil v0.0.0-20220422150559-b54fb5dc6833
+	github.com/projectdiscovery/stringsutil v0.0.0-20220612082425-0037ce9f89f3
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/yl2chen/cidranger v1.0.2 // indirect
 	go.uber.org/atomic v1.9.0
@@ -93,7 +93,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/projectdiscovery/folderutil v0.0.0-20220215113126-add60a1e8e08
 	github.com/projectdiscovery/interactsh v1.0.4
-	github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220426154149-cfff962815ba
+	github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220612112524-9b1adac8563c
 	github.com/projectdiscovery/nuclei/v2 v2.7.2
 	github.com/projectdiscovery/subfinder/v2 v2.5.2
 	github.com/satori/go.uuid v1.2.0
@@ -191,6 +191,7 @@ require (
 	github.com/projectdiscovery/reflectutil v0.0.0-20210804085554-4d90952bf92f // indirect
 	github.com/projectdiscovery/yamldoc-go v1.0.3-0.20211126104922-00d2c6bb43b6 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/segmentio/ksuid v1.0.4 // indirect
 	github.com/shirou/gopsutil/v3 v3.22.5 // indirect
 	github.com/sijms/go-ora/v2 v2.4.25 // indirect
