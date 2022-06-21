@@ -1,0 +1,10 @@
+vendor/
+node_modules/
+tmp/
+
+.git
+.dockerignore
+*.out
+rod.test
+package-lock.json
+package.json

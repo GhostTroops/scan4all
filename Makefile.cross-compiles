@@ -15,7 +15,7 @@ app:
 		gomips=$(shell echo "$(n)" | cut -d : -f 3);\
 		target_suffix=$${os}_$${arch};\
 		echo "Build $${os}-$${arch}...";\
-		env CGO_ENABLED=0 GOOS=$${os} GOARCH=$${arch} GOMIPS=$${gomips} go build -trimpath -ldflags "$(LDFLAGS)" -o ./release/scan4all_$${target_suffix} .;\
+		env CGO_ENABLED=1 GOOS=$${os} GOARCH=$${arch} GOMIPS=$${gomips} go build -trimpath -ldflags "$(LDFLAGS)" -o ./release/scan4all_$${target_suffix} .;\
 		echo "Build $${os}-$${arch} done";\
 	)
 	@mv ./release/scan4all_windows_386 ./release/scan4all_windows_386.exe
