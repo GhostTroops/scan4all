@@ -3,6 +3,7 @@ package runner
 import (
 	"github.com/hktalent/scan4all/pkg"
 	"os"
+	"strings"
 
 	"github.com/projectdiscovery/fileutil"
 
@@ -72,7 +73,11 @@ func ParseOptions() *Options {
 	options := &Options{}
 
 	flagSet := goflags.NewFlagSet()
-	flagSet.SetDescription(`Naabu is a port scanning tool written in Go that allows you to enumerate open ports for hosts in a fast and reliable manner.`)
+	flagSet.SetDescription(`scan4all is Integrated subfinder -> naabu(+nmap) -> httpx
+  => xray v.2
+  =>ehole
+  => nuclei
+  => vscan`)
 
 	flagSet.CreateGroup("input", "Input",
 		flagSet.NormalizedStringSliceVarP(&options.Host, "host", "", []string{}, "hosts to scan ports for (comma-separated)"),
@@ -99,7 +104,15 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.JSON, "json", false, "write output in JSON lines format"),
 		flagSet.BoolVar(&options.CSV, "csv", false, "write output in csv format"),
 	)
-
+	// 读取结果
+	szNmap := pkg.GetVal("nmap")
+	if "" != szNmap {
+		tempInput := pkg.GetTempFile("naabu")
+		if tempInput != nil {
+			szNmap = strings.ReplaceAll(szNmap, "{filename}", tempInput.Name())
+		}
+		//defer tempInput.Close()
+	}
 	flagSet.CreateGroup("config", "Configuration",
 		flagSet.StringVar(&options.CeyeApi, "ceyeapi", "", "ceye.io api key"),
 		flagSet.StringVar(&options.CeyeDomain, "ceyedomain", "", "ceye.io subdomain"),
@@ -110,7 +123,8 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.InterfacesList, "il", "interface-list", false, "list available interfaces and public ip"),
 		flagSet.StringVarP(&options.Interface, "i", "interface", "", "network Interface to use for port scan"),
 		flagSet.BoolVar(&options.Nmap, "nmap", false, "invoke nmap scan on targets (nmap must be installed) - Deprecated"),
-		flagSet.StringVar(&options.NmapCLI, "nmap-cli", pkg.GetVal("nmap"), "nmap command to run on found results (example: -nmap-cli 'nmap -sV')"),
+
+		flagSet.StringVar(&options.NmapCLI, "nmap-cli", szNmap, "nmap command to run on found results (example: -nmap-cli 'nmap -sV')"),
 		flagSet.StringVar(&options.Resolvers, "r", "", "list of custom resolver dns resolution (comma separated or from file)"),
 		flagSet.StringVar(&options.Proxy, "proxy", "", "socks5 proxy"),
 		flagSet.BoolVar(&options.Resume, "resume", false, "resume scan using resume.cfg"),

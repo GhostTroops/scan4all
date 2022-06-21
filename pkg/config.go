@@ -16,6 +16,10 @@ type Config4scanAllModel struct {
 
 var Config4scanAll = Config4scanAllModel{}
 var mData = map[string]interface{}{}
+var (
+	UrlPrecise = "UrlPrecise"
+	CacheName  = "CacheName"
+)
 
 // 优先使用配置文件中的配置，否则从环境变量中读取
 func GetVal(key string) string {
@@ -23,6 +27,17 @@ func GetVal(key string) string {
 		return s.(string)
 	}
 	return os.Getenv(key)
+}
+
+func GetTempFile(t string) *os.File {
+	tempInput, err := ioutil.TempFile("", "scan4all-out*")
+	if err != nil {
+		log.Println(err)
+		return nil
+	} else {
+		//szNmap = strings.ReplaceAll(szNmap, "{filename}", tempInput.Name())
+	}
+	return tempInput
 }
 
 // 从配置json中读取naabu、httpx、nuclei等的细化配置

@@ -1,6 +1,9 @@
 # git.mills.io/prologic/smtpd v0.0.0-20210710122116-a525b76c287a
 ## explicit; go 1.14
 git.mills.io/prologic/smtpd
+# github.com/AndreasBriese/bbloom v0.0.0-20190825152654-46b345b51c96
+## explicit
+github.com/AndreasBriese/bbloom
 # github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible
 ## explicit
 github.com/Knetic/govaluate
@@ -104,6 +107,9 @@ github.com/c4milo/unpackit
 # github.com/caddyserver/certmagic v0.16.1
 ## explicit; go 1.17
 github.com/caddyserver/certmagic
+# github.com/cespare/xxhash v1.1.0
+## explicit
+github.com/cespare/xxhash
 # github.com/cnf/structhash v0.0.0-20201127153200-e1b16c1ebc08
 ## explicit
 github.com/cnf/structhash
@@ -120,6 +126,18 @@ github.com/denisenkom/go-mssqldb/internal/cp
 github.com/denisenkom/go-mssqldb/internal/decimal
 github.com/denisenkom/go-mssqldb/internal/querytext
 github.com/denisenkom/go-mssqldb/msdsn
+# github.com/dgraph-io/badger v1.6.2
+## explicit; go 1.12
+github.com/dgraph-io/badger
+github.com/dgraph-io/badger/options
+github.com/dgraph-io/badger/pb
+github.com/dgraph-io/badger/skl
+github.com/dgraph-io/badger/table
+github.com/dgraph-io/badger/trie
+github.com/dgraph-io/badger/y
+# github.com/dgraph-io/ristretto v0.0.3
+## explicit; go 1.12
+github.com/dgraph-io/ristretto/z
 # github.com/dimchansky/utfbom v1.1.1
 ## explicit
 github.com/dimchansky/utfbom
@@ -138,6 +156,9 @@ github.com/dsnet/compress/bzip2/internal/sais
 github.com/dsnet/compress/internal
 github.com/dsnet/compress/internal/errors
 github.com/dsnet/compress/internal/prefix
+# github.com/dustin/go-humanize v1.0.0
+## explicit
+github.com/dustin/go-humanize
 # github.com/fatih/structs v1.1.0
 ## explicit
 github.com/fatih/structs
@@ -953,10 +974,12 @@ golang.org/x/net/idna
 golang.org/x/net/internal/iana
 golang.org/x/net/internal/socket
 golang.org/x/net/internal/socks
+golang.org/x/net/internal/timeseries
 golang.org/x/net/ipv4
 golang.org/x/net/ipv6
 golang.org/x/net/proxy
 golang.org/x/net/publicsuffix
+golang.org/x/net/trace
 # golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 ## explicit; go 1.11
 golang.org/x/oauth2

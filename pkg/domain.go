@@ -2,11 +2,14 @@ package pkg
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"github.com/hktalent/scan4all/subfinder"
 	"reflect"
 	"strings"
 )
+
+var DbCache = NewKvDbOp()
 
 // 判断s是否在数组a中
 // 支持任何类型，支持泛型
@@ -67,6 +70,12 @@ func DoDns(s string) (aRst []string, err1 error) {
 	if -1 < strings.Index(s, ":") {
 		s = strings.Split(s, ":")[0]
 	}
+	// read from cache
+	data, err := DbCache.Get(s)
+	if nil == err && 0 < len(data) {
+		json.Unmarshal(data, &aRst)
+		return
+	}
 
 	a1, err := GetSSLDNS(s)
 	if nil != err {
@@ -103,6 +112,7 @@ func DoDns(s string) (aRst []string, err1 error) {
 		}
 	}
 	aRst = doAppends(aRst, aRst1)
+	PutAny[[]string](s, aRst)
 	return aRst, nil
 }
 

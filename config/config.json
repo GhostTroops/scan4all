@@ -1,4 +1,5 @@
 {
+  "CacheName": ".DbCache",
   "tomcatuserpass": "brute/dicts/tomcatuserpass.txt",
   "jbossuserpass": "brute/dicts/jbossuserpass.txt",
   "weblogicuserpass": "brute/dicts/weblogicuserpass.txt",
@@ -10,7 +11,7 @@
   "page404Content1": "brute/dicts/page404Content.txt",
   "eHoleFinger": "pkg/fingerprint/dicts/eHoleFinger.json",
   "localFinger": "pkg/fingerprint/dicts/localFinger.json",
-  "nmap": "nmap -n --unique --resolve-all -Pn --min-hostgroup 64 --max-retries 0 --host-timeout 10m --script-timeout 3m --version-intensity 9 --min-rate 10000 -T4",
+  "nmap": "nmap -n --unique --resolve-all -Pn --min-hostgroup 64 --max-retries 0 --host-timeout 10m --script-timeout 3m -oX {filename} --version-intensity 9 --min-rate 10000 -T4",
   "HydraUser": "",
   "HydraPass": "",
   "UrlPrecise": true,

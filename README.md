@@ -42,7 +42,7 @@
     * scan4all itself implements 8 fuzz components, and at the same time implements vulnerability detection that integrates 14 types of common components
 # How Install
 ```bash
-go install github.com/hktalent/scan4all@2.1.5
+go install github.com/hktalent/scan4all@2.2.3
 scan4all -h
 ```
 # How use
