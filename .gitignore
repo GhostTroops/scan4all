@@ -8,6 +8,7 @@
 *.dylib
 scan4all
 release
+.DbCache
 scan4all_linux
 .DS_Store
 nuclei_Yaml/nuclei_yaml

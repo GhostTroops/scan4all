@@ -3,7 +3,6 @@ package pkg
 import (
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"github.com/hktalent/scan4all/subfinder"
 	"reflect"
 	"strings"
@@ -38,7 +37,7 @@ func doAppends(a []string, s []string) []string {
 
 func doSub(s string) (aRst []string, err1 error) {
 	if "*." == s[:2] {
-		EnableSubfinder := GetVal("EnableSubfinder")
+		EnableSubfinder := GetVal(EnableSubfinder)
 		if "" != EnableSubfinder {
 			var out = make(chan string, 1000)
 			var close chan bool
@@ -51,7 +50,7 @@ func doSub(s string) (aRst []string, err1 error) {
 				case ok := <-out:
 					if "" != ok {
 						aRst = append(aRst, ok)
-						fmt.Println("out ===> ", ok)
+						//fmt.Println("out ===> ", ok)
 					}
 				}
 			}
@@ -67,9 +66,13 @@ func DoDns(s string) (aRst []string, err1 error) {
 	if -1 < strings.Index(s, "://") {
 		s = strings.Split(s, "://")[1]
 	}
+	if -1 < strings.Index(s, "/") {
+		s = strings.Split(s, "/")[0]
+	}
 	if -1 < strings.Index(s, ":") {
 		s = strings.Split(s, ":")[0]
 	}
+	
 	// read from cache
 	data, err := DbCache.Get(s)
 	if nil == err && 0 < len(data) {
@@ -83,35 +86,16 @@ func DoDns(s string) (aRst []string, err1 error) {
 	} else {
 		aRst = append(aRst, a1...)
 	}
-
-	var aRst1 = []string{}
 	for _, x := range aRst {
-		a, err := GetSSLDNS(x)
-		if nil == err && 0 < len(a) {
-			fmt.Println("GetSSLDNS ", x, " ", a)
-			aRst1 = doAppends(aRst1, a)
-		}
-	}
-	if 0 == len(aRst1) {
-		aRst1 = aRst
-	}
-	for _, x := range aRst1 {
 		if -1 < strings.Index(x, "*.") {
 			a1, err := doSub(x)
 			if nil == err && 0 < len(a1) {
-				aRst1 = doAppends(aRst1, a1)
+				aRst = doAppends(aRst, a1)
 			} else {
-				aRst1 = doAppends(aRst1, []string{x[2:]})
+				aRst = doAppends(aRst, []string{x[2:]})
 			}
 		}
 	}
-	aRst = []string{}
-	for j, x := range aRst1 {
-		if -1 < strings.Index(x, "*.") {
-			aRst1[j] = x[2:]
-		}
-	}
-	aRst = doAppends(aRst, aRst1)
 	PutAny[[]string](s, aRst)
 	return aRst, nil
 }

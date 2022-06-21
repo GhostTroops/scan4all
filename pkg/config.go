@@ -17,8 +17,9 @@ type Config4scanAllModel struct {
 var Config4scanAll = Config4scanAllModel{}
 var mData = map[string]interface{}{}
 var (
-	UrlPrecise = "UrlPrecise"
-	CacheName  = "CacheName"
+	UrlPrecise      = "UrlPrecise"
+	CacheName       = "CacheName"
+	EnableSubfinder = "EnableSubfinder"
 )
 
 // 优先使用配置文件中的配置，否则从环境变量中读取
@@ -67,8 +68,10 @@ func GetVal4Any[T any](key string) T {
 func GetVal4File(key, szDefault string) string {
 	s := GetVal(key)
 	if "" != s {
+		//log.Println("start read config file ", s)
 		b, err := ioutil.ReadFile(s)
 		if nil == err && 0 < len(b) {
+			//log.Println("read config file ok: ", s)
 			return string(b)
 		}
 	}
