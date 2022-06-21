@@ -1,12 +1,3 @@
-<p align="center">开源、轻量、快速、跨平台 的网站漏洞扫描工具，帮助您快速检测网站安全隐患。</p>
-
-<p align="center">
-<a href="https://github.com/hktalent/scan4all/issues"><img src="https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat"></a>
-<a href="https://github.com/hktalent/scan4all"><img alt="Release" src="https://img.shields.io/badge/LICENSE-BSD-important"></a>
-<a href="https://github.com/hktalent/scan4all/releases"><img src="https://img.shields.io/github/release/hktalent/scan4all"></a>
-<a href="https://github.com/hktalent/scan4all/releases"><img src="https://img.shields.io/github/downloads/hktalent/scan4all/total?color=blueviolet"></a>
-</p>
-
 <p align="center">
   <a href="/static/Installation.md">编译/安装/运行</a> •
   <a href="/static/usage.md">参数说明</a> •
