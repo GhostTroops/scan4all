@@ -63,11 +63,10 @@ UrlPrecise=true ./scan4all -l xx.txt
 ```
 
 # changelog
-- 2022-06-20 集成了Subfinder，做子域名爆破，启动参数export EnableSubfinder=true，注意，启动后很慢；自动深度钻取ssl证书中的域名信息
-             允许通过config/config.json配置定义自己的字典，或设置相关开关
-- 2022-06-17 优化一个域名多个ip的情况，所有ip都会被端口扫描，然后走后续的扫描流程
-- 2022-06-15 该版本增加了若干过去实战中获得的weblogic密码字典，以及webshell字典
-- 2022-06-10 完成nuclei的集成，当然也包含nuclei模版的集成
-- 2022-06-07 增加了相似度算法对404检测
-- 2022-06-07 增加了http url清单精准扫描参数,基于环境变量UrlPrecise=true 开启
-
+- 2022-06-20 Integrated Subfinder, domain name blasting, startup parameter export EnableSubfinder=true, note that it is very slow after startup; automatic deep drilling of domain name information in ssl certificate
+  Allows to define your own dictionary through config/config.json configuration, or set related switches
+- 2022-06-17 Optimize the case of multiple IPs in one domain name, all IPs will be port scanned, and then follow the subsequent scanning process
+- 2022-06-15 This version adds several weblogic password dictionaries and webshell dictionaries obtained in actual combat in the past
+- 2022-06-10 Complete the integration of nuclei, including the integration of nuclei templates of course
+- 2022-06-07 Added similarity algorithm to detect 404
+- 2022-06-07 Added the http url list precise scan parameter, which is enabled based on the environment variable UrlPrecise=true
