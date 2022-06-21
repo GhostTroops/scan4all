@@ -19,7 +19,7 @@
 # Features
 
 <h1 align="center">
-  <img src="static/scan4all-run.png" alt="scan4all" width="850px"></a>
+  <img src="static/vscan-run.png" alt="scan4all" width="850px"></a>
   <br>
 </h1>
 
