@@ -1,0 +1,21 @@
+# Binaries for programs and plugins
+.idea
+*.iml
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+scan4all
+scan4all_linux
+.DS_Store
+nuclei_Yaml/nuclei_yaml
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/

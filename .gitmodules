@@ -1,0 +1,3 @@
+[submodule "nuclei-templates"]
+	path = nuclei-templates
+	url = git@github.com:hktalent/nuclei-templates.git
