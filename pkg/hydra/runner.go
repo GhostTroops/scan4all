@@ -3,6 +3,7 @@ package hydra
 import (
 	"fmt"
 	"github.com/hktalent/scan4all/pkg"
+	"log"
 	"strings"
 )
 
@@ -25,7 +26,14 @@ func init() {
 // 密码破解
 func Start(IPAddr string, Port int, Protocol string) {
 	authInfo := NewAuthInfo(IPAddr, Port, Protocol)
-	crack := NewCracker(authInfo, false, 16)
+	crack := NewCracker(authInfo, false, 64)
 	fmt.Printf("[hydra]->开始对%v:%v[%v]进行暴力破解，字典长度为：%d", IPAddr, Port, Protocol, crack.Length())
 	go crack.Run()
+	//爆破结果获取
+	var out AuthInfo
+	for info := range crack.Out {
+		out = info
+	}
+	log.Println(out)
+	//crack.Pool.Wait()
 }

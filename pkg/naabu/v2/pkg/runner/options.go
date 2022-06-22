@@ -73,9 +73,11 @@ func ParseOptions() *Options {
 	options := &Options{}
 
 	flagSet := goflags.NewFlagSet()
-	flagSet.SetDescription(`scan4all is Integrated subfinder -> naabu(+nmap) -> httpx
-  => xray v.2
-  =>ehole
+	flagSet.SetDescription(`scan4all is Integrated subfinder -> naabu(+nmap)
+  => kscan
+  => httpx
+  => xray
+  => ehole
   => nuclei
   => vscan`)
 
@@ -107,7 +109,7 @@ func ParseOptions() *Options {
 	// 读取结果
 	szNmap := pkg.GetVal("nmap")
 	if "" != szNmap {
-		tempInput := pkg.GetTempFile("naabu")
+		tempInput := pkg.GetTempFile(pkg.Naabu)
 		if tempInput != nil {
 			szNmap = strings.ReplaceAll(szNmap, "{filename}", tempInput.Name())
 		}

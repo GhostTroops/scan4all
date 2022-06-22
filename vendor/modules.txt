@@ -50,6 +50,9 @@ github.com/andygrunwald/go-jira
 # github.com/antchfx/htmlquery v1.2.5
 ## explicit; go 1.14
 github.com/antchfx/htmlquery
+# github.com/antchfx/xmlquery v1.3.11
+## explicit; go 1.14
+github.com/antchfx/xmlquery
 # github.com/antchfx/xpath v1.2.1
 ## explicit; go 1.14
 github.com/antchfx/xpath

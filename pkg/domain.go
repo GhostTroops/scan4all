@@ -8,8 +8,6 @@ import (
 	"strings"
 )
 
-var DbCache = NewKvDbOp()
-
 // 判断s是否在数组a中
 // 支持任何类型，支持泛型
 func Contains[T any](a []T, s T) bool {
@@ -74,7 +72,7 @@ func DoDns(s string) (aRst []string, err1 error) {
 	}
 
 	// read from cache
-	data, err := DbCache.Get(s)
+	data, err := Cache1.Get(s)
 	if nil == err && 0 < len(data) {
 		json.Unmarshal(data, &aRst)
 		return

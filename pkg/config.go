@@ -30,13 +30,24 @@ func GetVal(key string) string {
 	return os.Getenv(key)
 }
 
+var (
+	Naabu = "naabu"
+)
+
+var TmpFile = map[string][]*os.File{}
+
+// 临时结果文件，例如 nmap
 func GetTempFile(t string) *os.File {
 	tempInput, err := ioutil.TempFile("", "scan4all-out*")
 	if err != nil {
 		log.Println(err)
 		return nil
 	} else {
-		//szNmap = strings.ReplaceAll(szNmap, "{filename}", tempInput.Name())
+		if t1, ok := TmpFile[t]; ok {
+			t1 = append(t1, tempInput)
+		} else {
+			TmpFile[t] = []*os.File{tempInput}
+		}
 	}
 	return tempInput
 }
@@ -64,10 +75,18 @@ func GetVal4Any[T any](key string) T {
 	return t1
 }
 
+// 判断文件是否存在
+func FileExists(s string) bool {
+	if _, err := os.Stat(s); err == nil {
+		return true
+	}
+	return false
+}
+
 // 读区配置中的字典文件
 func GetVal4File(key, szDefault string) string {
 	s := GetVal(key)
-	if "" != s {
+	if "" != s && FileExists(s) {
 		//log.Println("start read config file ", s)
 		b, err := ioutil.ReadFile(s)
 		if nil == err && 0 < len(b) {

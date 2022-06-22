@@ -80,6 +80,7 @@ require (
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/RumbleDiscovery/jarm-go v0.0.6
 	github.com/ammario/ipisp/v2 v2.0.0
+	github.com/antchfx/xmlquery v1.3.11
 	github.com/antlabs/strsim v0.0.2
 	github.com/apex/log v1.9.0
 	github.com/blang/semver v3.5.1+incompatible

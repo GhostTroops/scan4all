@@ -3,8 +3,8 @@ package hydra
 import "strings"
 
 type Auth struct {
-	Username string
-	Password string
+	Username string `json:"username"`
+	Password string `json:"password"`
 	Other    map[string]string
 }
 

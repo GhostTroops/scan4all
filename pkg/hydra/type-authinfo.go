@@ -6,11 +6,11 @@ import (
 )
 
 type AuthInfo struct {
-	Protocol string
-	Port     int
-	IPAddr   string
-	Auth     Auth
-	Status   bool
+	Protocol string `json:"Protocol"`
+	Port     int    `json:"Port"`
+	IPAddr   string `json:"IPAddr"`
+	Auth     Auth   `json:"Auth,omitempty"`
+	Status   bool   `json:"status,omitempty"`
 }
 
 func NewAuthInfo(IPAddr string, Port int, Protocol string) *AuthInfo {

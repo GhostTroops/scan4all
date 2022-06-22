@@ -61,7 +61,7 @@ func NewCracker(info *AuthInfo, isAuthUpdate bool, threads int) *Cracker {
 		return list
 	}()
 	c.Out = make(chan AuthInfo)
-	c.Pool.Interval = time.Second * 1
+	c.Pool.Interval = time.Microsecond * 13
 
 	return c
 }
@@ -151,17 +151,17 @@ func InitDefaultAuthMap() {
 		//"db2":        NewAuthList(),
 
 	}
-	m["rdp"] = DefaultRdpList()
-	m["ssh"] = DefaultSshList()
-	m["mysql"] = DefaultMysqlList()
-	m["mssql"] = DefaultMssqlList()
-	m["oracle"] = DefaultOracleList()
-	m["postgresql"] = DefaultPostgresqlList()
-	m["redis"] = DefaultRedisList()
-	m["ftp"] = DefaultFtpList()
-	m["mongodb"] = DefaultMongodbList()
-	m["smb"] = DefaultSmbList()
-	m["telnet"] = DefaultTelnetList()
+	m["rdp"] = GetDefaultFtpList("rdp")
+	m["ssh"] = GetDefaultFtpList("ssh")
+	m["mysql"] = GetDefaultFtpList("mysql")
+	m["mssql"] = GetDefaultFtpList("mssql")
+	m["oracle"] = GetDefaultFtpList("oracle")
+	m["postgresql"] = GetDefaultFtpList("postgresql")
+	m["redis"] = GetDefaultFtpList("redis")
+	m["ftp"] = GetDefaultFtpList("ftp")
+	m["mongodb"] = GetDefaultFtpList("mongodb")
+	m["smb"] = GetDefaultFtpList("smb")
+	m["telnet"] = GetDefaultFtpList("telnet")
 	DefaultAuthMap = m
 }
 
