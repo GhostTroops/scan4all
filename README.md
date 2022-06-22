@@ -49,6 +49,8 @@ scan4all -h
 Please install nmap by yourself before use
 ```bash
 go build -o scan4all main.go
+# or
+go build
 # Precise scanning UrlPrecise=true
 UrlPrecise=true ./scan4all -l xx.txt
 ```

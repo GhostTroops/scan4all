@@ -72,7 +72,7 @@ func DoDns(s string) (aRst []string, err1 error) {
 	if -1 < strings.Index(s, ":") {
 		s = strings.Split(s, ":")[0]
 	}
-	
+
 	// read from cache
 	data, err := DbCache.Get(s)
 	if nil == err && 0 < len(data) {
