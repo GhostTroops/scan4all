@@ -1,0 +1,4 @@
+anonymous	anonymous
+ftp	ftp
+admin	admin
+admin	123456

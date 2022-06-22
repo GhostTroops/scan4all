@@ -1,0 +1,3 @@
+simpleUser	simplePass
+
+adminUser	adminPass

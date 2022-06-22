@@ -1,0 +1,3 @@
+guest	guest
+guest	123456
+db2admin	db2admin
