@@ -121,8 +121,27 @@ func (r *Runner) PreProcessTargets() error {
 	return nil
 }
 
+// 避免重复
+var noRpt1 = map[string]string{}
+
+func Add2Naabubuffer(target string) {
+	target = strings.TrimSpace(target)
+	if _, ok := noRpt1[target]; ok {
+		return
+	}
+	noRpt1[target] = "1"
+	Naabubuffer.Write([]byte(target))
+}
+
+// 避免重复
+var noRpt = map[string]string{}
+
 func (r *Runner) AddTarget(target string) error {
 	target = strings.TrimSpace(target)
+	if _, ok := noRpt[target]; ok {
+		return nil
+	}
+	noRpt[target] = "1"
 	if target == "" {
 		return nil
 	} else if ipranger.IsCidr(target) {
@@ -141,7 +160,7 @@ func (r *Runner) AddTarget(target string) error {
 		if strings.HasPrefix(target, "http://") || strings.HasPrefix(target, "https://") {
 			if u, err := url.Parse(target); err == nil {
 				s1 := fmt.Sprintf("%s://%s", u.Scheme, u.Host)
-				Naabubuffer.Write([]byte(fmt.Sprintf("%s\n", s1)))
+				Add2Naabubuffer(fmt.Sprintf("%s\n", s1))
 				// target 长度 大于 s1才处理
 				////UrlPrecise     bool // 精准url扫描，不去除url清单上下文 2022-06-08
 				UrlPrecise := pkg.GetVal(pkg.UrlPrecise)
@@ -154,7 +173,7 @@ func (r *Runner) AddTarget(target string) error {
 							if r.options.Verbose {
 								log.Println("Precise scan: ", target)
 							}
-							Naabubuffer.Write([]byte(fmt.Sprintf("%s\n", target)))
+							Add2Naabubuffer(fmt.Sprintf("%s\n", target))
 						}
 					}
 				}
