@@ -5,10 +5,17 @@ import (
 	"github.com/hktalent/scan4all/pkg/hydra"
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/gologger"
+	"os"
 	"runtime"
 )
 
 func main() {
+	defer func() {
+		pkg.Cache1.Close()
+		if "true" == pkg.GetVal("autoRmCache") {
+			os.RemoveAll(pkg.GetVal(pkg.CacheName))
+		}
+	}()
 	options := naaburunner.ParseOptions()
 	pkg.G_Options = options
 	if runtime.GOOS == "windows" {

@@ -3,6 +3,7 @@ package runner
 import (
 	"github.com/hktalent/scan4all/pkg"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/projectdiscovery/fileutil"
@@ -109,6 +110,9 @@ func ParseOptions() *Options {
 	// 读取结果
 	szNmap := pkg.GetVal("nmap")
 	if "" != szNmap {
+		if runtime.GOOS == "windows" {
+			szNmap = strings.Replace(szNmap, "nmap", "nmap.exe", -1)
+		}
 		tempInput := pkg.GetTempFile(pkg.Naabu)
 		if tempInput != nil {
 			szNmap = strings.ReplaceAll(szNmap, "{filename}", tempInput.Name())

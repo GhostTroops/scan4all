@@ -34,6 +34,9 @@ func (r *KvDbOp) SetExpiresAt(ExpiresAt uint64) {
 
 func (r *KvDbOp) Init(szDb string) error {
 	opts := badger.DefaultOptions(szDb)
+	opts.CompactL0OnClose = true
+	opts.LevelOneSize = 256 << 10
+	opts.LevelSizeMultiplier = 20
 	db, err := badger.Open(opts)
 	if nil != err {
 		log.Println("Init k-v db 不能多个进程同时开启", err)

@@ -1,5 +1,6 @@
 {
   "CacheName": ".DbCache",
+  "autoRmCache": "true",
   "ssh_username": "pkg/hydra/dicts/ssh_user.txt",
   "ssh_pswd": "pkg/hydra/dicts/ssh_pswd.txt",
   "ssh_default": "pkg/hydra/dicts/ssh_default.txt",
