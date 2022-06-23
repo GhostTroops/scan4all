@@ -25,9 +25,9 @@ import (
 var noRpt = map[string]string{}
 
 func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool) []string {
-	if _, ok := noRpt[URL]; ok {
-		return []string{}
-	}
+	//if _, ok := noRpt[URL]; ok {
+	//	return []string{}
+	//}
 	noRpt[URL] = "1"
 	var HOST string
 	var technologies []string

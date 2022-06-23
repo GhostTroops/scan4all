@@ -122,27 +122,23 @@ func (r *Runner) PreProcessTargets() error {
 	return nil
 }
 
-// 避免重复
-var noRpt1 = map[string]string{}
-
 func Add2Naabubuffer(target string) {
-	if s1, ok := noRpt1[target]; ok {
-		log.Println("重复：", s1, " = ", target)
+	k1 := target + "_Add2Naabubuffer"
+	if b1, err := pkg.Cache1.Get(k1); nil == err && string(b1) == target {
+		log.Println("重复：", target)
 		return
 	}
-	noRpt1[target] = "1"
+	pkg.PutAny[string](k1, target)
 	Naabubuffer.Write([]byte(target))
 }
 
-// 避免重复
-var noRpt = map[string]string{}
-
 func (r *Runner) AddTarget(target string) error {
-	target = strings.TrimSpace(target)
-	if _, ok := noRpt[target]; ok {
+	k1 := target + "_AddTarget"
+	if b1, err := pkg.Cache1.Get(k1); nil == err && string(b1) == target {
+		log.Println("重复：", target)
 		return nil
 	}
-	noRpt[target] = "1"
+	pkg.PutAny[string](k1, target)
 	if target == "" {
 		return nil
 	} else if ipranger.IsCidr(target) {

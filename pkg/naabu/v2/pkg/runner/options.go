@@ -2,6 +2,9 @@ package runner
 
 import (
 	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
+	"net"
 	"os"
 	"runtime"
 	"strings"
@@ -68,6 +71,8 @@ type Options struct {
 
 // OnResultCallback (hostname, ip, ports)
 type OnResultCallback func(string, string, []int)
+
+const Version = `2.0.7`
 
 // ParseOptions parses the command line flags provided by a user
 func ParseOptions() *Options {
@@ -196,6 +201,53 @@ func ParseOptions() *Options {
 	showNetworkCapabilities(options)
 
 	return options
+}
+func showNetworkCapabilities(options *Options) {
+	var accessLevel, scanType string
+
+	switch {
+	case privileges.IsPrivileged && options.ScanType == SynScan:
+		accessLevel = "root"
+		if isLinux() {
+			accessLevel = "CAP_NET_RAW"
+		}
+		scanType = "SYN"
+	case options.Passive:
+		accessLevel = "non root"
+		scanType = "PASSIVE"
+	default:
+		accessLevel = "non root"
+		scanType = "CONNECT"
+	}
+
+	gologger.Info().Msgf("Running %s scan with %s privileges\n", scanType, accessLevel)
+}
+func showNetworkInterfaces() error {
+	// Interfaces List
+	interfaces, err := net.Interfaces()
+	if err != nil {
+		return err
+	}
+	for _, itf := range interfaces {
+		addresses, addErr := itf.Addrs()
+		if addErr != nil {
+			gologger.Warning().Msgf("Could not retrieve addresses for %s: %s\n", itf.Name, addErr)
+			continue
+		}
+		var addrstr []string
+		for _, address := range addresses {
+			addrstr = append(addrstr, address.String())
+		}
+		gologger.Info().Msgf("Interface %s:\nMAC: %s\nAddresses: %s\nMTU: %d\nFlags: %s\n", itf.Name, itf.HardwareAddr, strings.Join(addrstr, " "), itf.MTU, itf.Flags.String())
+	}
+	// External ip
+	externalIP, err := scan.WhatsMyIP()
+	if err != nil {
+		gologger.Warning().Msgf("Could not obtain public ip: %s\n", err)
+	}
+	gologger.Info().Msgf("External Ip: %s\n", externalIP)
+
+	return nil
 }
 
 // ShouldLoadResume resume file

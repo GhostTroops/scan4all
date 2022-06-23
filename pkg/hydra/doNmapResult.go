@@ -52,7 +52,6 @@ func DoParseXml(s string) {
 }
 
 func DoNmapRst() {
-	log.Println("start check weak passwd")
 	if x1, ok := pkg.TmpFile[pkg.Naabu]; ok {
 		for _, x := range x1 {
 			defer func(r *os.File) {
@@ -60,7 +59,6 @@ func DoNmapRst() {
 				os.RemoveAll(r.Name())
 			}(x)
 			b, err := ioutil.ReadFile(x.Name())
-			log.Println("nmap tmp file: ", x.Name(), " file size: ", len(b))
 			if nil == err && 0 < len(b) {
 				//log.Println("read config file ok: ", s)
 				DoParseXml(string(b))
