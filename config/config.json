@@ -48,6 +48,7 @@
   "HydraUser": "",
   "HydraPass": "",
   "UrlPrecise": true,
+  "ParseSSl": false,
   "EnableSubfinder": false,
   "naabu_dns": {},
   "naabu": {"TopPorts": "1000","ScanAllIPS":true},

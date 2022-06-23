@@ -98,16 +98,20 @@ func (r *Runner) PreProcessTargets() error {
 		func(target string) {
 			defer wg.Done()
 			// 处理ssl 数字证书中包含的域名信息，深度挖掘漏洞
-			aH, err := pkg.DoDns(target)
-			if nil == err && 0 < len(aH) {
-				for _, x := range aH {
-					gologger.Debug().Msg("add " + x)
-					if err := r.AddTarget(x); err != nil {
-						gologger.Warning().Msgf("%s\n", err)
+			if "true" == pkg.GetVal("ParseSSl") {
+				aH, err := pkg.DoDns(target)
+				if nil == err && 0 < len(aH) {
+					for _, x := range aH {
+						gologger.Debug().Msg("add " + x)
+						if err := r.AddTarget(x); err != nil {
+							gologger.Warning().Msgf("%s\n", err)
+						}
+						r.DoDns(x)
 					}
-					r.DoDns(x)
+					return
 				}
-			} else if err := r.AddTarget(target); err != nil {
+			}
+			if err := r.AddTarget(target); err != nil {
 				gologger.Warning().Msgf("%s\n", err)
 			}
 		}(s.Text())
