@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	CouldNotConnectError  = errors.New("could not connect to any address found for host")
 	NoAddressFoundError   = errors.New("no address found for host")
 	NoAddressAllowedError = errors.New("denied address found for host")
 	NoPortSpecifiedError  = errors.New("port was not specified")

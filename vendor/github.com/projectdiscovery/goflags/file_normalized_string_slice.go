@@ -1,5 +1,9 @@
 package goflags
 
+import (
+	"github.com/projectdiscovery/fileutil"
+)
+
 // FileNormalizedStringSlice is a slice of strings
 type FileNormalizedStringSlice []string
 
@@ -38,11 +42,17 @@ type FileStringSlice []string
 
 // Set appends a value to the string slice.
 func (fileStringSlice *FileStringSlice) Set(value string) error {
-	slice, err := ToFileStringSlice(value)
-	if err != nil {
-		return err
+	if fileutil.FileExists(value) {
+		linesChan, err := fileutil.ReadFile(value)
+		if err != nil {
+			return err
+		}
+		for line := range linesChan {
+			*fileStringSlice = append(*fileStringSlice, line)
+		}
+	} else {
+		*fileStringSlice = append(*fileStringSlice, value)
 	}
-	*fileStringSlice = append(*fileStringSlice, slice...)
 	return nil
 }
 
@@ -74,8 +84,4 @@ var DefaultFileStringSliceOptions = Options{
 	IsEmpty:    isEmpty,
 	Normalize:  normalizeTrailingParts,
 	IsFromFile: func(s string) bool { return true },
-}
-
-func ToFileStringSlice(value string) ([]string, error) {
-	return toStringSlice(value, DefaultFileStringSliceOptions)
 }

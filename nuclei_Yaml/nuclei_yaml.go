@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"github.com/hktalent/scan4all/pkg"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -65,12 +64,6 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 }
 
 func readConfig() {
-
-	flagSet := goflags.NewFlagSet()
-	//flagSet.SetDescription(`Nuclei is a fast, template based vulnerability scanner focusing on extensive configurability, massive extensibility and ease of use.`)
-	/* TODO Important: The defined default values, especially for slice/array types are NOT DEFAULT VALUES, but rather implicit values to which the user input is appended.
-	This can be very confusing and should be addressed
-	*/
 	options.Targets = []string{}
 	options.TargetsFilePath = ""
 	options.Resume = ""
@@ -97,7 +90,7 @@ func readConfig() {
 	options.Output = ""
 	options.StoreResponse = false
 	options.StoreResponseDir = runner.DefaultDumpTrafficOutputFolder
-	options.Silent = false
+	options.Silent = true
 	options.NoColor = false
 	options.JSON = false
 	options.JSONRequests = false
@@ -317,15 +310,6 @@ func readConfig() {
 		http.LeaveDefaultPorts = true
 	}
 
-	if cfgFile != "" {
-		if err := flagSet.MergeConfigFile(cfgFile); err != nil {
-			gologger.Fatal().Msgf("Could not read config: %s\n", err)
-		}
-		cfgFileFolder := filepath.Dir(cfgFile)
-		if err := config.OverrideIgnoreFilePath(cfgFileFolder); err != nil {
-			gologger.Warning().Msgf("Could not read ignore file from custom path: %s\n", err)
-		}
-	}
 	cleanupOldResumeFiles()
 }
 

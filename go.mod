@@ -12,7 +12,7 @@ require (
 	github.com/projectdiscovery/dnsx v1.0.7-0.20210927160546-05f957862698
 	github.com/projectdiscovery/fdmax v0.0.3
 	github.com/projectdiscovery/fileutil v0.0.0-20220609150212-453ac591c36c
-	github.com/projectdiscovery/goflags v0.0.8-0.20220412061559-5119d6086323
+	github.com/projectdiscovery/goflags v0.0.8-0.20220610073650-5d31a8c159e3
 	github.com/projectdiscovery/gologger v1.1.4
 	github.com/projectdiscovery/ipranger v0.0.3-0.20210831161617-ac80efae0961
 	github.com/projectdiscovery/iputil v0.0.0-20210804143329-3a30fcde43f3
@@ -20,7 +20,7 @@ require (
 	github.com/projectdiscovery/networkpolicy v0.0.1
 	github.com/remeh/sizedwaitgroup v1.0.0
 	go.uber.org/ratelimit v0.2.0
-	golang.org/x/net v0.0.0-20220617184016-355a448f1bc9
+	golang.org/x/net v0.0.0-20220622184535-263ec571b305
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
 )
 
@@ -63,13 +63,13 @@ require (
 	github.com/hbakhtiyor/strsim v0.0.0-20190107154042-4d2bbb273edf
 	github.com/microcosm-cc/bluemonday v1.0.18
 	github.com/projectdiscovery/cryptoutil v1.0.0
-	github.com/projectdiscovery/fastdialer v0.0.16-0.20220603192502-7d34c304eb65
+	github.com/projectdiscovery/fastdialer v0.0.16-0.20220609092737-7e3c7dcecf16
 	github.com/projectdiscovery/goconfig v0.0.0-20210804090219-f893ccd0c69c
 	github.com/projectdiscovery/httputil v0.0.0-20210816170244-86fd46bc09f5
 	github.com/projectdiscovery/rawhttp v0.0.8-0.20220526170355-03de6bb78f37
 	github.com/projectdiscovery/sliceutil v0.0.0-20220511171050-c7d9bc5cadd9
 	github.com/projectdiscovery/urlutil v0.0.0-20210805190935-3d83726391c1
-	github.com/projectdiscovery/wappalyzergo v0.0.45
+	github.com/projectdiscovery/wappalyzergo v0.0.47
 	github.com/rs/xid v1.4.0
 	go.etcd.io/bbolt v1.3.6 // indirect
 )
@@ -101,7 +101,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/projectdiscovery/folderutil v0.0.0-20220215113126-add60a1e8e08
 	github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220612112524-9b1adac8563c
-	github.com/projectdiscovery/nuclei/v2 v2.7.2
+	github.com/projectdiscovery/nuclei/v2 v2.7.3
 	github.com/projectdiscovery/subfinder/v2 v2.5.2
 	github.com/satori/go.uuid v1.2.0
 	github.com/sijms/go-ora/v2 v2.4.25
@@ -129,7 +129,7 @@ require (
 	github.com/antchfx/htmlquery v1.2.5 // indirect
 	github.com/antchfx/xpath v1.2.1 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220418222510-f25a4f6275ed // indirect
-	github.com/aws/aws-sdk-go v1.44.27 // indirect
+	github.com/aws/aws-sdk-go v1.44.37 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bits-and-blooms/bitset v1.2.0 // indirect
 	github.com/bits-and-blooms/bloom/v3 v3.0.1 // indirect
@@ -146,7 +146,7 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
-	github.com/go-rod/rod v0.106.8 // indirect
+	github.com/go-rod/rod v0.107.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/goburrow/cache v0.1.4 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect

@@ -536,7 +536,7 @@ const (
 )
 
 // AuditsAttributionReportingIssueDetails Details for issues around "Attribution Reporting API" usage.
-// Explainer: https://github.com/WICG/conversion-measurement-api
+// Explainer: https://github.com/WICG/attribution-reporting-api
 type AuditsAttributionReportingIssueDetails struct {
 
 	// ViolationType ...
@@ -638,9 +638,6 @@ const (
 	// AuditsDeprecationIssueTypeCSSSelectorInternalMediaControlsOverlayCastButton enum const
 	AuditsDeprecationIssueTypeCSSSelectorInternalMediaControlsOverlayCastButton AuditsDeprecationIssueType = "CSSSelectorInternalMediaControlsOverlayCastButton"
 
-	// AuditsDeprecationIssueTypeCustomCursorIntersectsViewport enum const
-	AuditsDeprecationIssueTypeCustomCursorIntersectsViewport AuditsDeprecationIssueType = "CustomCursorIntersectsViewport"
-
 	// AuditsDeprecationIssueTypeDeprecationExample enum const
 	AuditsDeprecationIssueTypeDeprecationExample AuditsDeprecationIssueType = "DeprecationExample"
 
@@ -671,9 +668,6 @@ const (
 	// AuditsDeprecationIssueTypeLocalCSSFileExtensionRejected enum const
 	AuditsDeprecationIssueTypeLocalCSSFileExtensionRejected AuditsDeprecationIssueType = "LocalCSSFileExtensionRejected"
 
-	// AuditsDeprecationIssueTypeMediaElementAudioSourceNode enum const
-	AuditsDeprecationIssueTypeMediaElementAudioSourceNode AuditsDeprecationIssueType = "MediaElementAudioSourceNode"
-
 	// AuditsDeprecationIssueTypeMediaSourceAbortRemove enum const
 	AuditsDeprecationIssueTypeMediaSourceAbortRemove AuditsDeprecationIssueType = "MediaSourceAbortRemove"
 
@@ -691,12 +685,6 @@ const (
 
 	// AuditsDeprecationIssueTypeObsoleteWebRtcCipherSuite enum const
 	AuditsDeprecationIssueTypeObsoleteWebRtcCipherSuite AuditsDeprecationIssueType = "ObsoleteWebRtcCipherSuite"
-
-	// AuditsDeprecationIssueTypePaymentRequestBasicCard enum const
-	AuditsDeprecationIssueTypePaymentRequestBasicCard AuditsDeprecationIssueType = "PaymentRequestBasicCard"
-
-	// AuditsDeprecationIssueTypePaymentRequestShowWithoutGesture enum const
-	AuditsDeprecationIssueTypePaymentRequestShowWithoutGesture AuditsDeprecationIssueType = "PaymentRequestShowWithoutGesture"
 
 	// AuditsDeprecationIssueTypePictureSourceSrc enum const
 	AuditsDeprecationIssueTypePictureSourceSrc AuditsDeprecationIssueType = "PictureSourceSrc"
@@ -748,9 +736,6 @@ const (
 
 	// AuditsDeprecationIssueTypeRtcpMuxPolicyNegotiate enum const
 	AuditsDeprecationIssueTypeRtcpMuxPolicyNegotiate AuditsDeprecationIssueType = "RtcpMuxPolicyNegotiate"
-
-	// AuditsDeprecationIssueTypeRTPDataChannel enum const
-	AuditsDeprecationIssueTypeRTPDataChannel AuditsDeprecationIssueType = "RTPDataChannel"
 
 	// AuditsDeprecationIssueTypeSharedArrayBufferConstructedWithoutIsolation enum const
 	AuditsDeprecationIssueTypeSharedArrayBufferConstructedWithoutIsolation AuditsDeprecationIssueType = "SharedArrayBufferConstructedWithoutIsolation"

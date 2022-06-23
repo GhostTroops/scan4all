@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net"
 	"strings"
 
@@ -203,9 +202,7 @@ func (d *Dialer) dial(ctx context.Context, network, address string, shouldUseTLS
 		}
 		hostPort := net.JoinHostPort(ip, port)
 		if shouldUseTLS {
-			log.Println(tlsconfig.MinVersion)
 			tlsconfigCopy := tlsconfig.Clone()
-			log.Println(tlsconfigCopy.MinVersion)
 			switch {
 			case d.options.SNIName != "":
 				tlsconfigCopy.ServerName = d.options.SNIName
@@ -255,15 +252,18 @@ func (d *Dialer) dial(ctx context.Context, network, address string, shouldUseTLS
 			break
 		}
 	}
+
 	if conn == nil {
 		if numInvalidIPS == len(IPS) {
 			return nil, NoAddressAllowedError
 		}
-		return nil, NoAddressFoundError
+		return nil, CouldNotConnectError
 	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	return
 }
 

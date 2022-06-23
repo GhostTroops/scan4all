@@ -69,7 +69,7 @@ github.com/apex/log
 # github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 ## explicit; go 1.13
 github.com/asaskevich/govalidator
-# github.com/aws/aws-sdk-go v1.44.27
+# github.com/aws/aws-sdk-go v1.44.37
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -182,7 +182,7 @@ github.com/go-playground/universal-translator
 # github.com/go-playground/validator/v10 v10.11.0
 ## explicit; go 1.13
 github.com/go-playground/validator/v10
-# github.com/go-rod/rod v0.106.8
+# github.com/go-rod/rod v0.107.1
 ## explicit; go 1.16
 github.com/go-rod/rod
 github.com/go-rod/rod/lib/assets
@@ -345,7 +345,6 @@ github.com/jmespath/go-jmespath
 github.com/json-iterator/go
 # github.com/julienschmidt/httprouter v1.3.0
 ## explicit; go 1.7
-github.com/julienschmidt/httprouter
 # github.com/karlseguin/ccache v2.0.3+incompatible
 ## explicit
 github.com/karlseguin/ccache
@@ -488,7 +487,7 @@ github.com/projectdiscovery/cryptoutil
 # github.com/projectdiscovery/dnsx v1.0.7-0.20210927160546-05f957862698
 ## explicit; go 1.16
 github.com/projectdiscovery/dnsx/libs/dnsx
-# github.com/projectdiscovery/fastdialer v0.0.16-0.20220603192502-7d34c304eb65
+# github.com/projectdiscovery/fastdialer v0.0.16-0.20220609092737-7e3c7dcecf16
 ## explicit; go 1.14
 github.com/projectdiscovery/fastdialer/fastdialer
 # github.com/projectdiscovery/fdmax v0.0.3
@@ -507,7 +506,7 @@ github.com/projectdiscovery/folderutil
 # github.com/projectdiscovery/goconfig v0.0.0-20210804090219-f893ccd0c69c
 ## explicit; go 1.14
 github.com/projectdiscovery/goconfig
-# github.com/projectdiscovery/goflags v0.0.8-0.20220412061559-5119d6086323
+# github.com/projectdiscovery/goflags v0.0.8-0.20220610073650-5d31a8c159e3
 ## explicit; go 1.17
 github.com/projectdiscovery/goflags
 # github.com/projectdiscovery/gologger v1.1.4
@@ -548,7 +547,7 @@ github.com/projectdiscovery/networkpolicy
 # github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220612112524-9b1adac8563c
 ## explicit; go 1.16
 github.com/projectdiscovery/nuclei-updatecheck-api/client
-# github.com/projectdiscovery/nuclei/v2 v2.7.2
+# github.com/projectdiscovery/nuclei/v2 v2.7.3
 ## explicit; go 1.17
 github.com/projectdiscovery/nuclei/v2/internal/colorizer
 github.com/projectdiscovery/nuclei/v2/pkg/catalog
@@ -618,7 +617,6 @@ github.com/projectdiscovery/nuclei/v2/pkg/reporting/trackers/jira
 github.com/projectdiscovery/nuclei/v2/pkg/templates
 github.com/projectdiscovery/nuclei/v2/pkg/templates/cache
 github.com/projectdiscovery/nuclei/v2/pkg/templates/types
-github.com/projectdiscovery/nuclei/v2/pkg/testutils
 github.com/projectdiscovery/nuclei/v2/pkg/types
 github.com/projectdiscovery/nuclei/v2/pkg/utils
 github.com/projectdiscovery/nuclei/v2/pkg/utils/stats
@@ -695,7 +693,7 @@ github.com/projectdiscovery/uncover/uncover/agent/shodanidb
 # github.com/projectdiscovery/urlutil v0.0.0-20210805190935-3d83726391c1
 ## explicit; go 1.16
 github.com/projectdiscovery/urlutil
-# github.com/projectdiscovery/wappalyzergo v0.0.45
+# github.com/projectdiscovery/wappalyzergo v0.0.47
 ## explicit; go 1.16
 github.com/projectdiscovery/wappalyzergo
 # github.com/projectdiscovery/yamldoc-go v1.0.3-0.20211126104922-00d2c6bb43b6
@@ -775,7 +773,6 @@ github.com/stoewer/go-strcase
 # github.com/stretchr/testify v1.7.2
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
-github.com/stretchr/testify/require
 # github.com/subosito/gotenv v1.3.0
 ## explicit; go 1.18
 github.com/subosito/gotenv
@@ -961,7 +958,7 @@ golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 # golang.org/x/mod v0.4.2
 ## explicit; go 1.12
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20220617184016-355a448f1bc9
+# golang.org/x/net v0.0.0-20220622184535-263ec571b305
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context

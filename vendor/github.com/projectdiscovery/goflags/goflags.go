@@ -13,9 +13,10 @@ import (
 	"strconv"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	"github.com/cnf/structhash"
-	"github.com/pkg/errors"
+	"github.com/projectdiscovery/fileutil"
 	"gopkg.in/yaml.v2"
 )
 
@@ -98,21 +99,16 @@ func (flagSet *FlagSet) Parse() error {
 	flagSet.CommandLine.Usage = flagSet.usageFunc
 	_ = flagSet.CommandLine.Parse(os.Args[1:])
 
-	appName := filepath.Base(os.Args[0])
-	// trim extension from app name
-	appName = strings.TrimSuffix(appName, filepath.Ext(appName))
-	homePath, err := os.UserHomeDir()
+	configFilePath, err := GetConfigFilePath()
 	if err != nil {
 		return err
 	}
-
-	config := filepath.Join(homePath, ".config", appName, "config.yaml")
-	_ = os.MkdirAll(filepath.Dir(config), os.ModePerm)
-	if _, err := os.Stat(config); os.IsNotExist(err) {
+	_ = os.MkdirAll(filepath.Dir(configFilePath), os.ModePerm)
+	if !fileutil.FileExists(configFilePath) {
 		configData := flagSet.generateDefaultConfig()
-		return ioutil.WriteFile(config, configData, os.ModePerm)
+		return ioutil.WriteFile(configFilePath, configData, os.ModePerm)
 	}
-	_ = flagSet.MergeConfigFile(config) // try to read default config after parsing flags
+	_ = flagSet.MergeConfigFile(configFilePath) // try to read default config after parsing flags
 	return nil
 }
 
@@ -186,29 +182,31 @@ func (flagSet *FlagSet) CreateGroup(groupName, description string, flags ...*Fla
 func (flagSet *FlagSet) readConfigFile(filePath string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
-		return errors.Wrap(err, "could not open config file")
+		return err
 	}
 	defer file.Close()
 
 	data := make(map[string]interface{})
 	err = yaml.NewDecoder(file).Decode(&data)
 	if err != nil {
-		return errors.Wrap(err, "could not unmarshal config file")
+		return err
 	}
 	flagSet.CommandLine.VisitAll(func(fl *flag.Flag) {
 		item, ok := data[fl.Name]
 		value := fl.Value.String()
 
 		if strings.EqualFold(fl.DefValue, value) && ok {
-			switch data := item.(type) {
+			switch itemValue := item.(type) {
 			case string:
-				_ = fl.Value.Set(data)
+				_ = fl.Value.Set(itemValue)
 			case bool:
-				_ = fl.Value.Set(strconv.FormatBool(data))
+				_ = fl.Value.Set(strconv.FormatBool(itemValue))
 			case int:
-				_ = fl.Value.Set(strconv.Itoa(data))
+				_ = fl.Value.Set(strconv.Itoa(itemValue))
+			case time.Duration:
+				_ = fl.Value.Set(itemValue.String())
 			case []interface{}:
-				for _, v := range data {
+				for _, v := range itemValue {
 					vStr, ok := v.(string)
 					if ok {
 						_ = fl.Value.Set(vStr)
@@ -721,6 +719,34 @@ func (flagSet *FlagSet) RuntimeMapVarP(field *RuntimeMap, long, short string, de
 		skipMarshal:  true,
 	}
 	flagSet.flagKeys.Set(short, flagData)
+	flagSet.flagKeys.Set(long, flagData)
+	return flagData
+}
+
+// DurationVarP adds a duration flag with a shortname and longname
+func (flagSet *FlagSet) DurationVarP(field *time.Duration, long, short string, defaultValue time.Duration, usage string) *FlagData {
+	flagSet.CommandLine.DurationVar(field, short, defaultValue, usage)
+	flagSet.CommandLine.DurationVar(field, long, defaultValue, usage)
+
+	flagData := &FlagData{
+		usage:        usage,
+		short:        short,
+		long:         long,
+		defaultValue: defaultValue,
+	}
+	flagSet.flagKeys.Set(short, flagData)
+	flagSet.flagKeys.Set(long, flagData)
+	return flagData
+}
+
+// DurationVar adds a duration flag with a longname
+func (flagSet *FlagSet) DurationVar(field *time.Duration, long string, defaultValue time.Duration, usage string) *FlagData {
+	flagSet.CommandLine.DurationVar(field, long, defaultValue, usage)
+	flagData := &FlagData{
+		usage:        usage,
+		long:         long,
+		defaultValue: defaultValue,
+	}
 	flagSet.flagKeys.Set(long, flagData)
 	return flagData
 }

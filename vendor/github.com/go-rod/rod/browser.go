@@ -1,5 +1,4 @@
 //go:generate go run ./lib/utils/setup
-//go:generate go run ./lib/launcher/revision
 //go:generate go run ./lib/proto/generate
 //go:generate go run ./lib/js/generate
 //go:generate go run ./lib/assets/generate
@@ -289,9 +288,7 @@ func (b *Browser) PageFromTarget(targetID proto.TargetTargetID) (*Page, error) {
 	}
 
 	page.root = page
-	page.Mouse = &Mouse{page: page, id: utils.RandString(8)}
-	page.Keyboard = &Keyboard{page: page}
-	page.Touch = &Touch{page: page}
+	page.newKeyboard().newMouse().newTouch()
 
 	if !b.defaultDevice.IsClear() {
 		err = page.Emulate(b.defaultDevice)
@@ -520,4 +517,9 @@ func (b *Browser) WaitDownload(dir string) func() (info *proto.PageDownloadWillB
 
 		return start
 	}
+}
+
+// Version info of the browser
+func (b *Browser) Version() (*proto.BrowserGetVersionResult, error) {
+	return proto.BrowserGetVersion{}.Call(b)
 }
