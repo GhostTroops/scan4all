@@ -52,6 +52,7 @@ func (r *Runner) Httpxrun() error {
 	httpxrunner.Naabubuffer = Naabubuffer
 	var nucleiDone = make(chan bool)
 	// 集成nuclei
+	//log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
 	go nuclei_Yaml.RunNuclei(httpxrunner.Naabubuffer, nucleiDone)
 	httpxoptions := httpxrunner.ParseOptions()
 	httpxoptions.Output = r.options.Output
@@ -563,7 +564,7 @@ func (r *Runner) handleOutput() {
 				host = hostIP
 			}
 			for port := range ports {
-				Naabubuffer.Write([]byte(fmt.Sprintf("%s:%d\n", host, port)))
+				Add2Naabubuffer(fmt.Sprintf("%s:%d\n", host, port))
 			}
 			gologger.Info().Msgf("Found %d ports on host %s (%s)\n", len(ports), host, hostIP)
 			// console output

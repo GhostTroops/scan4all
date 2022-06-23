@@ -100,7 +100,6 @@ require (
 	github.com/mfonda/simhash v0.0.0-20151007195837-79f94a1100d6
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/projectdiscovery/folderutil v0.0.0-20220215113126-add60a1e8e08
-	github.com/projectdiscovery/interactsh v1.0.4
 	github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220612112524-9b1adac8563c
 	github.com/projectdiscovery/nuclei/v2 v2.7.2
 	github.com/projectdiscovery/subfinder/v2 v2.5.2
@@ -198,6 +197,7 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/projectdiscovery/chaos-client v0.1.8 // indirect
 	github.com/projectdiscovery/filekv v0.0.0-20210915124239-3467ef45dd08 // indirect
+	github.com/projectdiscovery/interactsh v1.0.4 // indirect
 	github.com/projectdiscovery/reflectutil v0.0.0-20210804085554-4d90952bf92f // indirect
 	github.com/projectdiscovery/yamldoc-go v1.0.3-0.20211126104922-00d2c6bb43b6 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect

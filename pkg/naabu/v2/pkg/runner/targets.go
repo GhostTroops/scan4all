@@ -125,8 +125,8 @@ func (r *Runner) PreProcessTargets() error {
 var noRpt1 = map[string]string{}
 
 func Add2Naabubuffer(target string) {
-	target = strings.TrimSpace(target)
-	if _, ok := noRpt1[target]; ok {
+	if s1, ok := noRpt1[target]; ok {
+		log.Println("重复：", s1, " = ", target)
 		return
 	}
 	noRpt1[target] = "1"

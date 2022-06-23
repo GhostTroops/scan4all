@@ -56,7 +56,8 @@ func ParseOptions(options *types.Options) {
 			gologger.Fatal().Msgf("Could not read template configuration: %s\n", err)
 		}
 		gologger.Info().Msgf("Current nuclei-templates version: %s (%s)\n", configuration.TemplateVersion, configuration.TemplatesDirectory)
-		os.Exit(0)
+		//os.Exit(0)
+		return
 	}
 	if options.StoreResponseDir != DefaultDumpTrafficOutputFolder && !options.StoreResponse {
 		gologger.Debug().Msgf("Store response directory specified, enabling \"store-resp\" flag automatically\n")
