@@ -47,7 +47,8 @@ func ParseOptions(options *types.Options) {
 	}
 	if options.Version {
 		gologger.Info().Msgf("Current Version: %s\n", config.Version)
-		os.Exit(0)
+		//os.Exit(0)
+		return
 	}
 	if options.TemplatesVersion {
 		configuration, err := config.ReadConfiguration()

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/dgraph-io/badger"
 	"log"
+	"os"
 	"sync"
 )
 
@@ -33,8 +34,10 @@ func (r *KvDbOp) SetExpiresAt(ExpiresAt uint64) {
 }
 
 func (r *KvDbOp) Init(szDb string) error {
+	os.RemoveAll(szDb)
 	opts := badger.DefaultOptions(szDb)
 	opts.CompactL0OnClose = true
+	opts.EventLogging = false
 	opts.LevelOneSize = 256 << 10
 	opts.LevelSizeMultiplier = 20
 	db, err := badger.Open(opts)
