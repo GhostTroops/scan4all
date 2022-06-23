@@ -10,8 +10,7 @@
 # Features
 
 <h1 align="center">
-  <img src="static/vscan-run.png" alt="scan4all" width="850px"></a>
-  <br>
+<img width="966" alt="image" src="https://user-images.githubusercontent.com/18223385/175191886-aec31972-d81b-46f4-b6ac-70debd2508e7.png">
 </h1>
 
 - Fast port scan, fingerprint detection function
