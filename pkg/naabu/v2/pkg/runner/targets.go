@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"github.com/asaskevich/govalidator"
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
@@ -187,6 +188,9 @@ func (r *Runner) AddTarget(target string) error {
 }
 
 func (r *Runner) DoDns(target string) {
+	if govalidator.IsIP(target) {
+		return
+	}
 	ips, err := r.resolveFQDN(target)
 	if err != nil {
 		return
