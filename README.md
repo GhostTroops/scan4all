@@ -1,11 +1,11 @@
 <p align="center">
+   <a href="/README_EN.md">README_EN</a>
    <a href="/static/Installation.md">编译/安装/运行</a> •
    <a href="/static/usage.md">参数说明</a> •
    <a href="/static/running.md">如何使用</a> •
    <a href="/static/scenario.md">使用场景</a> •
    <a href="/static/pocs.md">POC列表</a> •
    <a href="/static/development.md">自定义扫描</a>
-  <a href="/README_EN.md">README_EN</a>
 </p>
 
 # 特性
