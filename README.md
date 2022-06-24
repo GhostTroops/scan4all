@@ -51,6 +51,7 @@ scan4all -h
 ```
 # 如何使用
 使用前请自行安装nmap
+<a href=https://github.com/hktalent/scan4all/discussions>使用帮助</a>
 ```bash
 go build
 # 精准扫描 url列表 UrlPrecise=true
