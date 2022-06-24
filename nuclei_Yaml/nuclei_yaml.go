@@ -44,6 +44,7 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 		}
 	}
 	options.Verbose = false
+	options.Stream = false
 	////////////////////////////////////*/
 
 	nucleiRunner, err := runner.New(options)
@@ -224,7 +225,7 @@ func readConfig() {
 	options.Retries = 1
 	options.LeaveDefaultPorts = false
 	options.MaxHostError = 30
-	options.Project = false
+	options.Project = true // 去重复
 	options.ProjectPath = os.TempDir()
 	options.StopAtFirstMatch = false
 	options.Stream = false

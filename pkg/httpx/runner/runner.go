@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/bluele/gcache"
+	"github.com/hktalent/scan4all/pkg/httpx/common/hashes"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/clistats"
@@ -36,8 +37,13 @@ import (
 	"github.com/projectdiscovery/goconfig"
 	"github.com/projectdiscovery/stringsutil"
 	"github.com/projectdiscovery/urlutil"
-	"github.com/hktalent/scan4all/pkg/httpx/common/hashes"
 
+	customport "github.com/hktalent/scan4all/pkg/httpx/common/customports"
+	fileutilz "github.com/hktalent/scan4all/pkg/httpx/common/fileutil"
+	"github.com/hktalent/scan4all/pkg/httpx/common/httputilz"
+	"github.com/hktalent/scan4all/pkg/httpx/common/httpx"
+	"github.com/hktalent/scan4all/pkg/httpx/common/slice"
+	"github.com/hktalent/scan4all/pkg/httpx/common/stringz"
 	// automatic fd max increase if running as root
 	_ "github.com/projectdiscovery/fdmax/autofdmax"
 	"github.com/projectdiscovery/fileutil"
@@ -50,12 +56,6 @@ import (
 	"github.com/projectdiscovery/retryablehttp-go"
 	wappalyzer "github.com/projectdiscovery/wappalyzergo"
 	"github.com/remeh/sizedwaitgroup"
-	customport "github.com/hktalent/scan4all/pkg/httpx/common/customports"
-	fileutilz "github.com/hktalent/scan4all/pkg/httpx/common/fileutil"
-	"github.com/hktalent/scan4all/pkg/httpx/common/httputilz"
-	"github.com/hktalent/scan4all/pkg/httpx/common/httpx"
-	"github.com/hktalent/scan4all/pkg/httpx/common/slice"
-	"github.com/hktalent/scan4all/pkg/httpx/common/stringz"
 	"go.uber.org/ratelimit"
 )
 
@@ -700,12 +700,20 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 									continue
 								}
 								r.process(tt, wg, hp, protocol, scanopts, output)
+								a1 := fingerprint.PreprocessingFingerScan(tt)
+								for _, x1 := range a1 {
+									r.process(x1, wg, hp, protocol, scanopts, output)
+								}
 							}
 							for _, tt := range result.TLSData.CommonName {
 								if !r.testAndSet(tt) {
 									continue
 								}
 								r.process(tt, wg, hp, protocol, scanopts, output)
+								a1 := fingerprint.PreprocessingFingerScan(tt)
+								for _, x1 := range a1 {
+									r.process(x1, wg, hp, protocol, scanopts, output)
+								}
 							}
 						}
 						if scanopts.CSPProbe && result.CSPData != nil {
@@ -715,6 +723,10 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 									continue
 								}
 								r.process(tt, wg, hp, protocol, scanopts, output)
+								a1 := fingerprint.PreprocessingFingerScan(tt)
+								for _, x1 := range a1 {
+									r.process(x1, wg, hp, protocol, scanopts, output)
+								}
 							}
 						}
 					}(target, method, prot)

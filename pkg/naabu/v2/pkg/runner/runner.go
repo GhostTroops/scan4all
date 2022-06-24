@@ -53,6 +53,8 @@ func (r *Runner) Httpxrun() error {
 	var nucleiDone = make(chan bool)
 	// 集成nuclei
 	//log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
+	//Naabubuffer1 := bytes.Buffer{}
+	//Naabubuffer1.Write(httpxrunner.Naabubuffer.Bytes())
 	go nuclei_Yaml.RunNuclei(httpxrunner.Naabubuffer, nucleiDone)
 	httpxoptions := httpxrunner.ParseOptions()
 	httpxoptions.Output = r.options.Output
