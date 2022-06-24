@@ -33,7 +33,9 @@
 - 允许通过config/config.json配置定义自己的字典，或者设置相关的开关，可以在这里定义nuclei、httx、naabu的几个Options
 
 # 工作流程
+
 <img src="static/workflow.jpg">
+
 - 0.【智能子域名爆破】集成Subfinder,当通过 export EnableSubfinder=true 开启后，ssl证书中的域名信息包含"*."开头时自动启动子域名遍历
 - 1.【端口扫描】集成Nuclei官方产品naabu ( > 2.1k)
 - 2.【服务识别】naabu调用系统安装的nmap，请先自行安装nmap
