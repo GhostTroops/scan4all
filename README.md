@@ -12,6 +12,8 @@
 
 <h1 align="center">
 <img width="969" alt="image" src="https://user-images.githubusercontent.com/18223385/175768143-8254f7c8-f253-4826-b247-578b5eca8a27.png">
+<img width="928" alt="image" src="https://user-images.githubusercontent.com/18223385/175768227-098c779b-6c5f-48ee-91b1-c56e3daa9c87.png">
+
 </h1>
 
 - 快速端口扫描，指纹检测功能
