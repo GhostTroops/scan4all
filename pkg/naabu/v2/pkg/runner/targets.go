@@ -193,9 +193,12 @@ func (r *Runner) DoDns(target string) {
 	}
 	for _, ip := range ips {
 		if r.options.Stream {
+			log.Println("Stream add ", ip)
 			r.streamChannel <- iputil.ToCidr(ip)
 		} else if err := r.scanner.IPRanger.AddHostWithMetadata(ip, target); err != nil {
 			gologger.Warning().Msgf("%s\n", err)
+		} else {
+			log.Println(" r.scanner.IPRanger.AddHostWithMetadata add ", ip, " ", target)
 		}
 	}
 }
