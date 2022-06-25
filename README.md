@@ -11,7 +11,7 @@
 # 特性
 
 <h1 align="center">
-<img width="966" alt="image" src="https://user-images.githubusercontent.com/18223385/175191886-aec31972-d81b-46f4-b6ac-70debd2508e7.png">
+<img width="969" alt="image" src="https://user-images.githubusercontent.com/18223385/175768143-8254f7c8-f253-4826-b247-578b5eca8a27.png">
 </h1>
 
 - 快速端口扫描，指纹检测功能
