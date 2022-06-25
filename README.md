@@ -31,6 +31,70 @@
 - 当输入目标（target）为ip时，所有域名、指纹信息、历史端口信息都会从51pwn云自动关联，并进行处理（云服务功能需要授权）
 - 自动化供应链分析和扫描，需要授权才能使用
 - 允许通过config/config.json配置定义自己的字典，或者设置相关的开关，可以在这里定义nuclei、httx、naabu的几个Options
+- 配置说明如下：
+```json
+{
+  "CacheName": ".DbCache", // 提速、优化、避免重复，缓存目录
+  "autoRmCache": "true",   // 程序自动删除缓存，如果你希望保留下次相同目标提速，可以保留
+  //////////各种不需要我说对可自定义字典，你可以配置相同文件 start///////////////
+  "ssh_username": "pkg/hydra/dicts/ssh_user.txt",
+  "ssh_pswd": "pkg/hydra/dicts/ssh_pswd.txt",
+  "ssh_default": "pkg/hydra/dicts/ssh_default.txt",
+  "ftpusername": "pkg/hydra/dicts/ftp_user.txt",
+  "ftp_pswd": "pkg/hydra/dicts/ftp_pswd.txt",
+  "ftp_default": "pkg/hydra/dicts/ftp_default.txt",
+  "rdpusername": "pkg/hydra/dicts/rdp_user.txt",
+  "rdp_pswd": "pkg/hydra/dicts/rdp_pswd.txt",
+  "rdp_default": "pkg/hydra/dicts/rdp_default.txt",
+  "mongodbusername": "pkg/hydra/dicts/mongodb_user.txt",
+  "mongodb_pswd": "pkg/hydra/dicts/mongodb_pswd.txt",
+  "mongodb_default": "pkg/hydra/dicts/mongodb_default.txt",
+  "mssqlusername": "pkg/hydra/dicts/mssql_user.txt",
+  "mssql_pswd": "pkg/hydra/dicts/mssql_pswd.txt",
+  "mssql_default": "pkg/hydra/dicts/mssql_default.txt",
+  "mysqlusername": "pkg/hydra/dicts/mysql_user.txt",
+  "mysql_pswd": "pkg/hydra/dicts/mysql_pswd.txt",
+  "mysql_default": "pkg/hydra/dicts/mysql_default.txt",
+  "oracleusername": "pkg/hydra/dicts/oracle_user.txt",
+  "oracle_pswd": "pkg/hydra/dicts/oracle_pswd.txt",
+  "oracle_default": "pkg/hydra/dicts/oracle_default.txt",
+  "postgresqlusername": "pkg/hydra/dicts/postgresql_user.txt",
+  "postgresql_pswd": "pkg/hydra/dicts/postgresql_pswd.txt",
+  "postgresql_default": "pkg/hydra/dicts/postgresql_default.txt",
+  "redisusername": "pkg/hydra/dicts/redis_user.txt",
+  "redis_pswd": "pkg/hydra/dicts/redis_pswd.txt",
+  "redis_default": "pkg/hydra/dicts/redis_default.txt",
+  "smbusername": "pkg/hydra/dicts/smb_user.txt",
+  "smb_pswd": "pkg/hydra/dicts/smb_pswd.txt",
+  "smb_default": "pkg/hydra/dicts/smb_default.txt",
+  "telnetusername": "pkg/hydra/dicts/telnet_user.txt",
+  "telnet_pswd": "pkg/hydra/dicts/telnet_pswd.txt",
+  "telnet_default": "pkg/hydra/dicts/telnet_default.txt",
+  "tomcatuserpass": "brute/dicts/tomcatuserpass.txt",
+  "jbossuserpass": "brute/dicts/jbossuserpass.txt",
+  "weblogicuserpass": "brute/dicts/weblogicuserpass.txt",
+  "filedic": "brute/dicts/filedic.txt",
+  "top100pass": "brute/dicts/top100pass.txt",
+  "bakSuffix": "brute/dicts/bakSuffix.txt",
+  "fuzzct": "brute/dicts/fuzzContentType1.txt",
+  "fuzz404": "brute/dicts/fuzz404.txt",
+  "page404Content1": "brute/dicts/page404Content.txt",
+  "eHoleFinger": "pkg/fingerprint/dicts/eHoleFinger.json",
+  "localFinger": "pkg/fingerprint/dicts/localFinger.json",
+  "HydraUser": "",
+  "HydraPass": "",
+  //////////各种不需要我说对可自定义字典，你可以配置相同文件 end///////////////
+  // naabu 扫描到到端口后自动调用nmap跑指纹，然后自动调用弱口令检测，windows自动加.exe你不需要关注
+  "nmap": "nmap -n --unique --resolve-all -Pn --min-hostgroup 64 --max-retries 0 --host-timeout 10m --script-timeout 3m -oX {filename} --version-intensity 9 --min-rate 10000 -T4",
+  "UrlPrecise": true, // -l 传入文件清单如果是http[s]带上下文，默认启动精准扫描
+  "ParseSSl": false,  // HW打点默认关闭，互联网赏金目标建议设置true
+  "EnableSubfinder": false, // 默认关闭ssl中证书子域名爆破,互联网赏金目标建议设置true
+  "naabu_dns": {},  // naabu工具对dns配置
+  "naabu": {"TopPorts": "1000","ScanAllIPS": true}, // naabu配置
+  "nuclei": {}, // nuclei配置，例如线程等
+  "httpx": {} // httpx 配置
+}
+```
 
 # 工作流程
 
