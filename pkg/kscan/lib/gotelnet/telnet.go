@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/hktalent/scan4all/pkg"
 	"github.com/lcvvvv/gonmap/lib/chinese"
 	"net"
 	"regexp"
@@ -141,10 +142,10 @@ func (c *Client) Connect() error {
 		for {
 			buf, err := c.read()
 			if err != nil {
-				if strings.Contains(err.Error(), "closed") {
+				if pkg.StrContains(err.Error(), "closed") {
 					break
 				}
-				if strings.Contains(err.Error(), "EOF") {
+				if pkg.StrContains(err.Error(), "EOF") {
 					break
 				}
 				//slog.Printf(slog.WARN, "%v:%v,telnet read is err:%v,", c.IPAddr, c.Port, err)
@@ -358,11 +359,11 @@ func (c *Client) MakeServerType() int {
 	response := strings.Split(responseString, "\n")
 	lastLine := response[len(response)-1]
 	lastLine = strings.ToLower(lastLine)
-	if strings.Contains(lastLine, "user") || strings.Contains(lastLine, "name") || strings.Contains(lastLine, "login") || strings.Contains(lastLine, "account") || strings.Contains(lastLine, "用户名") || strings.Contains(lastLine, "登录") {
+	if pkg.StrContains(lastLine, "user") || pkg.StrContains(lastLine, "name") || pkg.StrContains(lastLine, "login") || pkg.StrContains(lastLine, "account") || strings.Contains(lastLine, "用户名") || strings.Contains(lastLine, "登录") {
 		//slog.Printf(slog.INFO, "%v:%v,telnet mode is : usernameAndPassword ,response is :%v", c.IPAddr, c.Port, lastLine)
 		return UsernameAndPassword
 	}
-	if strings.Contains(lastLine, "pass") {
+	if pkg.StrContains(lastLine, "pass") {
 		//slog.Printf(slog.INFO, "%v:%v,telnet mode is : onlyPassword ,response is :%v", c.IPAddr, c.Port, lastLine)
 		return OnlyPassword
 	}

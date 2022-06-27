@@ -3,6 +3,7 @@ package httpx
 import (
 	"crypto/tls"
 	"fmt"
+	"github.com/hktalent/scan4all/pkg"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -175,7 +176,7 @@ get_response:
 	if err != nil {
 		// Edge case - some servers respond with gzip encoding header but uncompressed body, in this case the standard library configures the reader as gzip, triggering an error when read.
 		// The bytes slice is not accessible because of abstraction, therefore we need to perform the request again tampering the Accept-Encoding header
-		if !gzipRetry && strings.Contains(err.Error(), "gzip: invalid header") {
+		if !gzipRetry && pkg.StrContains(err.Error(), "gzip: invalid header") {
 			gzipRetry = true
 			req.Header.Set("Accept-Encoding", "identity")
 			goto get_response

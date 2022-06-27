@@ -7,7 +7,6 @@ import (
 	"mime/multipart"
 	"net/textproto"
 	"regexp"
-	"strings"
 )
 
 func CVE_2021_22205(url string) bool {
@@ -57,7 +56,7 @@ func upload(u string, cookie string, csrf string) bool {
 	header["Cookie"] = cookie
 	header["X-CSRF-Token"] = csrf
 	if req, err := pkg.HttpRequset(u+"/uploads/user", "POST", buf.String(), false, header); err == nil {
-		if strings.Contains(req.Body, "Failed to process image") {
+		if pkg.StrContains(req.Body, "Failed to process image") {
 			pkg.GoPocLog(fmt.Sprintf("Found vuln gitlab CVE_2021_22205|%s\n", u))
 			return true
 		}

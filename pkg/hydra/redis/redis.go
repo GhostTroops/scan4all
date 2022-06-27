@@ -2,8 +2,8 @@ package redis
 
 import (
 	"fmt"
+	"github.com/hktalent/scan4all/pkg"
 	"net"
-	"strings"
 	"time"
 )
 
@@ -27,7 +27,7 @@ func Check(Host, Password string, Port int) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if strings.Contains(reply, "+OK") == false {
+	if pkg.StrContains(reply, "+OK") == false {
 		return false, err
 	}
 	return true, err

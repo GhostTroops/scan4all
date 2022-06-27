@@ -20,7 +20,7 @@ func BackdoorScan(u string) bool {
 	var vuln = false
 	for _, backurl := range backurls {
 		if req, err := pkg.HttpRequset(u+backurl, "GET", "", false, nil); err == nil {
-			if req.StatusCode == 200 && (!strings.Contains(req.Body, "error") || strings.Contains(req.Body, "java.lang.NullPointerException")) && !strings.Contains(req.Body, "Burp") {
+			if req.StatusCode == 200 && (!pkg.StrContains(req.Body, "error") || strings.Contains(req.Body, "java.lang.NullPointerException")) && !strings.Contains(req.Body, "Burp") {
 				pkg.GoPocLog(fmt.Sprintf("Found vuln seeyon Backdoor|%s\n", u+backurl))
 				vuln = true
 			}

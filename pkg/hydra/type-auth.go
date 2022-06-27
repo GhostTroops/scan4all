@@ -1,6 +1,9 @@
 package hydra
 
-import "strings"
+import (
+	"github.com/hktalent/scan4all/pkg"
+	"strings"
+)
 
 type Auth struct {
 	Username string `json:"username"`
@@ -43,7 +46,7 @@ func NewSpecialAuth(username, password string) Auth {
 }
 
 func (a *Auth) MakePassword() {
-	if strings.Contains(a.Password, "%user%") {
+	if pkg.StrContains(a.Password, "%user%") {
 		a.Password = strings.ReplaceAll(a.Password, "%user%", a.Username)
 	}
 }

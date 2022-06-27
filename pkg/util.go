@@ -152,7 +152,7 @@ func HttpRequset(urlstring string, method string, postdata string, isredirect bo
 func Dnslogchek(randomstr string) bool {
 	urlStr := fmt.Sprintf("http://api.ceye.io/v1/records?token=%s&type=dns&filter=%s", CeyeApi, randomstr)
 	if resp, err := HttpRequset(urlStr, "GET", "", false, nil); err == nil {
-		if !strings.Contains(resp.Body, `"data": []`) && strings.Contains(resp.Body, `{"code": 200, "message": "OK"}`) { // api返回结果不为空
+		if !StrContains(resp.Body, `"data": []`) && strings.Contains(resp.Body, `{"code": 200, "message": "OK"}`) { // api返回结果不为空
 			return true
 		}
 	}

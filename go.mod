@@ -5,7 +5,7 @@ go 1.18
 //naabu
 require (
 	github.com/google/gopacket v1.1.19
-	github.com/phayes/freeport v0.0.0-20180830031419-95f893ade6f2
+	github.com/phayes/freeport v0.0.0-20220201140144-74d24b5ae9f5
 	github.com/projectdiscovery/blackrock v0.0.0-20210415162320-b38689ae3a2e
 	github.com/projectdiscovery/cdncheck v0.0.4-0.20220322144854-b2d8ce308abb
 	github.com/projectdiscovery/clistats v0.0.8
@@ -133,9 +133,11 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bits-and-blooms/bitset v1.2.0 // indirect
 	github.com/bits-and-blooms/bloom/v3 v3.0.1 // indirect
+	github.com/boy-hack/ksubdomain v1.9.5 // indirect
 	github.com/c4milo/unpackit v0.1.0 // indirect
 	github.com/caddyserver/certmagic v0.16.1 // indirect
 	github.com/cespare/xxhash v1.1.0 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/dgraph-io/ristretto v0.0.3 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
@@ -181,6 +183,7 @@ require (
 	github.com/lor00x/goldap v0.0.0-20180618054307-a546dffdd1a3 // indirect
 	github.com/lufia/plan9stats v0.0.0-20211012122336-39d0f177ccd0 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mholt/acmez v1.0.2 // indirect
@@ -200,6 +203,7 @@ require (
 	github.com/projectdiscovery/reflectutil v0.0.0-20210804085554-4d90952bf92f // indirect
 	github.com/projectdiscovery/yamldoc-go v1.0.3-0.20211126104922-00d2c6bb43b6 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
+	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/segmentio/ksuid v1.0.4 // indirect
 	github.com/shirou/gopsutil/v3 v3.22.5 // indirect
@@ -215,6 +219,7 @@ require (
 	github.com/trivago/tgo v1.0.7 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/ulule/deepcopier v0.0.0-20200430083143-45decc6639b6 // indirect
+	github.com/urfave/cli/v2 v2.10.3 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/weppos/publicsuffix-go v0.15.1-0.20210928183822-5ee35905bd95 // indirect
@@ -223,6 +228,7 @@ require (
 	github.com/xdg-go/scram v1.0.2 // indirect
 	github.com/xdg-go/stringprep v1.0.2 // indirect
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8 // indirect
+	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
 	github.com/ysmood/goob v0.4.0 // indirect
 	github.com/ysmood/gson v0.7.1 // indirect
@@ -235,6 +241,7 @@ require (
 	goftp.io/server/v2 v2.0.0 // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
 	golang.org/x/tools v0.1.6-0.20210726203631-07bc1bf47fb2 // indirect
 	golang.org/x/xerrors v0.0.0-20220517211312-f3a8303e98df // indirect

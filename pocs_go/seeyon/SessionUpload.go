@@ -7,7 +7,6 @@ import (
 	"mime/multipart"
 	"net/textproto"
 	"regexp"
-	"strings"
 	"time"
 )
 
@@ -31,7 +30,7 @@ func getsession(u string) string {
 	header := make(map[string]string)
 	header["Content-Type"] = "application/x-www-form-urlencoded"
 	if req, err := pkg.HttpRequset(u+"/seeyon/thirdpartyController.do", "POST", data, false, header); err == nil {
-		if req.StatusCode == 200 && strings.Contains(req.Body, "a8genius.do") && req.Header.Get("Set-Cookie") != "" {
+		if req.StatusCode == 200 && pkg.StrContains(req.Body, "a8genius.do") && req.Header.Get("Set-Cookie") != "" {
 			return req.Header.Get("Set-Cookie")
 		}
 	}
@@ -60,7 +59,7 @@ func upload(u string, cookie string) string {
 	header["Content-Type"] = "multipart/form-data; boundary=" + boundary
 	header["Cookie"] = cookie
 	if req, err := pkg.HttpRequset(u+"/seeyon/fileUpload.do?method=processUpload", "POST", buf.String(), false, header); err == nil {
-		if req.StatusCode == 200 && strings.Contains(req.Body, "fileurls=fileurls") {
+		if req.StatusCode == 200 && pkg.StrContains(req.Body, "fileurls=fileurls") {
 			filenamelist := regexp.MustCompile(`fileurls=fileurls\+["'],["']\+["'](.+)["']`).FindStringSubmatch(req.Body)
 			if filenamelist != nil {
 				filename := filenamelist[len(filenamelist)-1:][0]

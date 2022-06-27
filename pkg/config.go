@@ -6,7 +6,12 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 )
+
+func StrContains(s1, s2 string) bool {
+	return strings.Contains(strings.ToLower(s1), strings.ToLower(s2))
+}
 
 type Config4scanAllModel struct {
 	EsUlr           string `json:"EsUlr"`

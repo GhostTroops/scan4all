@@ -91,7 +91,7 @@ func getinputurl(domainurl string) (domainurlx []string, inputlist []string) {
 	domainlist := domainreg.FindStringSubmatch(req.Body)
 	if domainlist != nil {
 		domainx := domainlist[len(domainlist)-1:][0]
-		if strings.Contains(domainx, "http") {
+		if pkg.StrContains(domainx, "http") {
 			loginurl = append(loginurl, domainx)
 		} else if domainx == "" {
 			loginurl = loginurl
@@ -107,7 +107,7 @@ func getinputurl(domainurl string) (domainurlx []string, inputlist []string) {
 	if domainlist2 != nil {
 		for _, a := range domainlist2 {
 			domainx := a[1]
-			if strings.Contains(domainx, "http") {
+			if pkg.StrContains(domainx, "http") {
 				loginurl = append(loginurl, domainx)
 			} else if domainx == "" {
 				loginurl = append(loginurl, domainurl)

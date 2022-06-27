@@ -25,7 +25,7 @@ func CheckLoginPage(inputurl string) bool {
 				}
 				hrefurl := u.ResolveReference(href)
 				if reqcss, err := pkg.HttpRequset(hrefurl.String(), "GET", "", true, nil); err == nil {
-					if strings.Contains(reqcss.Body, "login") || strings.Contains(reqcss.Body, "Login") {
+					if pkg.StrContains(reqcss.Body, "login") {
 						return true
 					}
 				}

@@ -15,7 +15,7 @@ func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl
 	usernamekey = "username"
 	passwordkey = "password"
 	if req, err := pkg.HttpRequset(inputurl, "GET", "", true, nil); err == nil {
-		if strings.Contains(req.Body, "md5.js") {
+		if pkg.StrContains(req.Body, "md5.js") {
 			ismd5 = true
 		}
 		u, err := url.Parse(req.RequestUrl)

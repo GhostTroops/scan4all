@@ -9,7 +9,7 @@ func iskeyword(str string, keyword []string) bool {
 	var x bool
 	x = true
 	for _, k := range keyword {
-		if strings.Contains(str, k) {
+		if strings.Contains(strings.ToLower(str), strings.ToLower(k)) {
 			x = x && true
 		} else {
 			x = x && false
