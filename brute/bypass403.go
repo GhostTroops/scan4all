@@ -1,4 +1,5 @@
 package brute
+
 import (
 	"context"
 	"net/http"
@@ -29,7 +30,7 @@ const (
 
 type Result403 struct {
 	Url string
-	Ok bool
+	Ok  bool
 	Err error
 }
 
@@ -60,13 +61,15 @@ func constructEndpointPayloads(domain, path string) []string {
 	}
 }
 
-func PenetrateEndpoint(wg *sync.WaitGroup,url string, rst chan Result403, header ...string){
+func PenetrateEndpoint(wg *sync.WaitGroup, url string, rst chan Result403, header ...string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-	defer cancel()
-	defer wg.Done()
+	defer func() {
+		cancel()
+		wg.Done()
+	}()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		rst <- Result403{Ok:false,Url: url,Err: err}
+		rst <- Result403{Ok: false, Url: url, Err: err}
 		return
 	}
 
@@ -78,47 +81,47 @@ func PenetrateEndpoint(wg *sync.WaitGroup,url string, rst chan Result403, header
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		rst <- Result403{Ok:false,Url: url,Err: err}
+		rst <- Result403{Ok: false, Url: url, Err: err}
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		rst <- Result403{Ok:false,Url: url,Err: err}
+		rst <- Result403{Ok: false, Url: url, Err: err}
 		return
 	} else {
-		rst <- Result403{Ok:true,Url: url,Err: err}
+		rst <- Result403{Ok: true, Url: url, Err: err}
 		return
 	}
 }
 
-func ByPass403(domain,path *string)  []string{
+func ByPass403(domain, path *string) []string {
 	validDomain := getValidDomain(*domain)
 	validPath := strings.TrimSpace(*path)
 	endpoints := constructEndpointPayloads(validDomain, validPath)
 	var wg sync.WaitGroup
-	xL := len(endpoints) + len(headerPayloads)
-	var x01 = make(chan Result403,xL)
+	var xL int = len(endpoints) + len(headerPayloads)
+	var x01 = make(chan Result403, xL)
 
 	wg.Add(xL)
 	for _, e := range endpoints {
-		go PenetrateEndpoint(&wg,e,x01)
+		go PenetrateEndpoint(&wg, e, x01)
 	}
 	for _, h := range headerPayloads {
-		go PenetrateEndpoint(&wg,validDomain+"/"+validPath, x01,h)
+		go PenetrateEndpoint(&wg, validDomain+"/"+validPath, x01, h)
 	}
 	wg.Wait()
-	aR:=[]string{}
+	aR := []string{}
 	var n = 0
-	BreakAll:
-	for{
+BreakAll:
+	for {
 		select {
-		case x02 :=<-x01:
+		case x02 := <-x01:
 			n = n + 1
 			if x02.Ok {
 				aR = append(aR, x02.Url)
 			}
-			if n >= xL{
+			if n >= xL {
 				break BreakAll
 			}
 		}
