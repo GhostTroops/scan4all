@@ -23,7 +23,7 @@ func main() {
 	}
 	naabuRunner, err := naaburunner.NewRunner(options)
 	if err != nil {
-		gologger.Fatal().Msgf("Could not create runner: %s\n", err)
+		gologger.Fatal().Msgf("naaburunner.NewRunner Could not create runner: %s\n", err)
 	}
 	err = naabuRunner.RunEnumeration()
 	if err != nil {
@@ -34,6 +34,6 @@ func main() {
 	hydra.DoNmapRst()
 	err = naabuRunner.Httpxrun()
 	if err != nil {
-		gologger.Fatal().Msgf("Could not run httpRunner: %s\n", err)
+		gologger.Fatal().Msgf("naabuRunner.Httpxrun Could not run httpRunner: %s\n", err)
 	}
 }

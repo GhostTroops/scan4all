@@ -97,7 +97,7 @@ func DoSubfinder(a []string, out chan string, done chan bool) {
 	}
 	newRunner, err := runner.NewRunner(options)
 	if err != nil {
-		gologger.Fatal().Msgf("Could not create runner: %s\n", err)
+		gologger.Fatal().Msgf("newRunner, err := runner.NewRunner Could not create runner: %s\n", err)
 	}
 
 	err = newRunner.RunEnumeration(context.Background())

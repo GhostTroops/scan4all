@@ -2,6 +2,7 @@ package nuclei_Yaml
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/hktalent/scan4all/pkg"
 	"os"
 	"strings"
@@ -36,20 +37,24 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 	options.Targets = strings.Split(buf.String(), "\n")
 	runner.ParseOptions(options)
 	/////////////////////////////////////
+	options.Verbose = false
+	options.UpdateNuclei = false
+	options.Stream = false
 	if nil != pkg.G_Options {
 		x01, ok := pkg.G_Options.(types.Options)
 		if ok {
 			options.Output = x01.Output
 			options.JSON = x01.JSON
+			options.Stream = x01.Stream
+			options.Verbose = x01.Verbose
+			options.Debug = x01.Debug
 		}
 	}
-	options.Verbose = false
-	options.Stream = false
 	////////////////////////////////////*/
-
 	nucleiRunner, err := runner.New(options)
 	if err != nil {
-		gologger.Fatal().Msgf("Could not create runner: %s\n", err)
+		fmt.Println(options)
+		gologger.Fatal().Msgf("nucleiRunner Could not create runner: %s\n", err)
 	}
 	if nucleiRunner == nil {
 		return
@@ -225,7 +230,7 @@ func readConfig() {
 	options.Retries = 1
 	options.LeaveDefaultPorts = false
 	options.MaxHostError = 30
-	options.Project = true // 去重复
+	options.Project = false // 去重复
 	options.ProjectPath = os.TempDir()
 	options.StopAtFirstMatch = false
 	options.Stream = false
