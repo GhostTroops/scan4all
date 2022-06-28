@@ -230,7 +230,7 @@ func readConfig() {
 	options.Retries = 1
 	options.LeaveDefaultPorts = false
 	options.MaxHostError = 30
-	options.Project = false // 去重复
+	options.Project = false // 去重复，导致file missing
 	options.ProjectPath = os.TempDir()
 	options.StopAtFirstMatch = false
 	options.Stream = false

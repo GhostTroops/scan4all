@@ -1,18 +1,18 @@
 package runner
 
 import (
-	"github.com/projectdiscovery/fileutil"
-	"github.com/projectdiscovery/goconfig"
-	"github.com/projectdiscovery/goflags"
-	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/gologger/formatter"
-	"github.com/projectdiscovery/gologger/levels"
 	"github.com/hktalent/scan4all/pkg/httpx/common/customheader"
 	"github.com/hktalent/scan4all/pkg/httpx/common/customlist"
 	customport "github.com/hktalent/scan4all/pkg/httpx/common/customports"
 	fileutilz "github.com/hktalent/scan4all/pkg/httpx/common/fileutil"
 	"github.com/hktalent/scan4all/pkg/httpx/common/slice"
 	"github.com/hktalent/scan4all/pkg/httpx/common/stringz"
+	"github.com/projectdiscovery/fileutil"
+	"github.com/projectdiscovery/goconfig"
+	"github.com/projectdiscovery/goflags"
+	"github.com/projectdiscovery/gologger"
+	"github.com/projectdiscovery/gologger/formatter"
+	"github.com/projectdiscovery/gologger/levels"
 	"math"
 	"os"
 	"regexp"
@@ -249,18 +249,18 @@ func ParseOptions() *Options {
 	options.ContentLength = false
 	options.OutputContentType = false
 	options.Location = false
-	options.Favicon = false
+	options.Favicon = true
 	options.Hashes = ""
 	options.Jarm = false
 	options.OutputResponseTime = false
 	options.OutputLinesCount = false
-	options.OutputWordsCount = true
+	options.OutputWordsCount = false
 	options.ExtractTitle = true
-	options.OutputServerHeader = false
+	options.OutputServerHeader = true
 	options.TechDetect = true
-	options.OutputMethod = false
-	options.OutputWebSocket = false
-	options.OutputIP = false
+	options.OutputMethod = true
+	options.OutputWebSocket = true
+	options.OutputIP = true
 	options.OutputCName = false
 	options.Asn = false
 	options.OutputCDN = false
