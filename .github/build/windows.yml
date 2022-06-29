@@ -21,6 +21,8 @@ builds:
 
 archives:
   - format: zip
+    extra_files:
+      - glob: ./config
 
 checksum:
   name_template: "{{ .ProjectName }}-windows-checksums.txt"
