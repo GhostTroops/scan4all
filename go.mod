@@ -11,7 +11,7 @@ require (
 	github.com/projectdiscovery/clistats v0.0.8
 	github.com/projectdiscovery/dnsx v1.0.7-0.20210927160546-05f957862698
 	github.com/projectdiscovery/fdmax v0.0.3
-	github.com/projectdiscovery/fileutil v0.0.0-20220609150212-453ac591c36c
+	github.com/projectdiscovery/fileutil v0.0.0-20220625080234-94e882ca56cb
 	github.com/projectdiscovery/goflags v0.0.8-0.20220610073650-5d31a8c159e3
 	github.com/projectdiscovery/gologger v1.1.4
 	github.com/projectdiscovery/ipranger v0.0.3-0.20210831161617-ac80efae0961
@@ -20,7 +20,7 @@ require (
 	github.com/projectdiscovery/networkpolicy v0.0.1
 	github.com/remeh/sizedwaitgroup v1.0.0
 	go.uber.org/ratelimit v0.2.0
-	golang.org/x/net v0.0.0-20220622184535-263ec571b305
+	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
 )
 
@@ -29,7 +29,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/projectdiscovery/retryablehttp-go v1.0.3-0.20220506110515-811d938bd26d
 	github.com/projectdiscovery/uncover v0.0.5
-	github.com/stretchr/testify v1.7.2
+	github.com/stretchr/testify v1.7.5
 )
 
 require (
@@ -69,7 +69,7 @@ require (
 	github.com/projectdiscovery/rawhttp v0.0.8-0.20220526170355-03de6bb78f37
 	github.com/projectdiscovery/sliceutil v0.0.0-20220511171050-c7d9bc5cadd9
 	github.com/projectdiscovery/urlutil v0.0.0-20210805190935-3d83726391c1
-	github.com/projectdiscovery/wappalyzergo v0.0.47
+	github.com/projectdiscovery/wappalyzergo v0.0.48
 	github.com/rs/xid v1.4.0
 	go.etcd.io/bbolt v1.3.6 // indirect
 )
@@ -169,7 +169,7 @@ require (
 	github.com/hako/durafmt v0.0.0-20210316092057-3a2c319c1acd // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.1 // indirect
-	github.com/hashicorp/go-version v1.5.0 // indirect
+	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/iancoleman/orderedmap v0.0.0-20190318233801-ac98e3ecb4b0 // indirect
 	github.com/itchyny/gojq v0.12.8 // indirect

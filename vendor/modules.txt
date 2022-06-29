@@ -310,7 +310,7 @@ github.com/hashicorp/go-cleanhttp
 # github.com/hashicorp/go-retryablehttp v0.7.1
 ## explicit; go 1.13
 github.com/hashicorp/go-retryablehttp
-# github.com/hashicorp/go-version v1.5.0
+# github.com/hashicorp/go-version v1.6.0
 ## explicit
 github.com/hashicorp/go-version
 # github.com/hashicorp/hcl v1.0.0
@@ -515,7 +515,7 @@ github.com/projectdiscovery/fdmax/autofdmax
 # github.com/projectdiscovery/filekv v0.0.0-20210915124239-3467ef45dd08
 ## explicit; go 1.14
 github.com/projectdiscovery/filekv
-# github.com/projectdiscovery/fileutil v0.0.0-20220609150212-453ac591c36c
+# github.com/projectdiscovery/fileutil v0.0.0-20220625080234-94e882ca56cb
 ## explicit; go 1.14
 github.com/projectdiscovery/fileutil
 # github.com/projectdiscovery/folderutil v0.0.0-20220215113126-add60a1e8e08
@@ -711,7 +711,7 @@ github.com/projectdiscovery/uncover/uncover/agent/shodanidb
 # github.com/projectdiscovery/urlutil v0.0.0-20210805190935-3d83726391c1
 ## explicit; go 1.16
 github.com/projectdiscovery/urlutil
-# github.com/projectdiscovery/wappalyzergo v0.0.47
+# github.com/projectdiscovery/wappalyzergo v0.0.48
 ## explicit; go 1.16
 github.com/projectdiscovery/wappalyzergo
 # github.com/projectdiscovery/yamldoc-go v1.0.3-0.20211126104922-00d2c6bb43b6
@@ -791,7 +791,7 @@ github.com/stacktitan/smb/smb/encoder
 # github.com/stoewer/go-strcase v1.2.0
 ## explicit; go 1.11
 github.com/stoewer/go-strcase
-# github.com/stretchr/testify v1.7.2
+# github.com/stretchr/testify v1.7.5
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 # github.com/subosito/gotenv v1.3.0
@@ -986,7 +986,7 @@ golang.org/x/crypto/ssh/terminal
 # golang.org/x/mod v0.4.2
 ## explicit; go 1.12
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20220622184535-263ec571b305
+# golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context
