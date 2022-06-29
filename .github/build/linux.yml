@@ -17,7 +17,7 @@ builds:
     goarch:
       - amd64
 archives:
-  - format: zip
+- format: zip
 
 checksum:
   name_template: "{{ .ProjectName }}-linux-checksums.txt"
