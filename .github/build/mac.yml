@@ -19,8 +19,6 @@ builds:
 
 archives:
   - format: zip
-    extra_files:
-      - glob: ./config
     replacements:
         darwin: macOS
 
