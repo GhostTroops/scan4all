@@ -288,7 +288,7 @@ func readConfig() {
 
 	options.UpdateNuclei = false
 	options.UpdateTemplates = false
-	options.TemplatesDirectory = ""
+	options.TemplatesDirectory = "config/nuclei-templates"
 	options.NoUpdateTemplates = false
 	options.EnableProgressBar = false
 	options.StatsJSON = false
