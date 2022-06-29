@@ -18,9 +18,9 @@ builds:
       - amd64
 
 archives:
-- format: zip
-  replacements:
-      darwin: macOS
+  - format: zip
+    replacements:
+        darwin: macOS
 
 checksum:
   name_template: "{{ .ProjectName }}-mac-checksums.txt"
