@@ -1,19 +1,26 @@
 package main
 
 import (
-	"bytes"
-	"github.com/hktalent/scan4all/nuclei_Yaml"
+	"log"
+	"net/url"
 )
 
-var Naabubuffer bytes.Buffer = bytes.Buffer{}
+//var Naabubuffer bytes.Buffer = bytes.Buffer{}
 
 func main() {
-	var nucleiDone = make(chan bool)
-	Naabubuffer.Write([]byte("192.168.10.31\n"))
-	// 集成nuclei
-	//log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
-	nuclei_Yaml.RunNuclei(Naabubuffer, nucleiDone)
-	<-nucleiDone
+
+	s := "http://www.ddd.com:990/xxp"
+	if u, err := url.Parse(s); err == nil {
+		//s1 := fmt.Sprintf("%s://%s", u.Scheme, u.Host)
+		log.Println(u.Hostname())
+	}
+	//fmt.Println(fmt.Sprintf("%v", 333))
+	//var nucleiDone = make(chan bool)
+	//Naabubuffer.Write([]byte("192.168.10.31\n"))
+	//// 集成nuclei
+	////log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
+	//nuclei_Yaml.RunNuclei(Naabubuffer, nucleiDone)
+	//<-nucleiDone
 
 	//x := "test/4ee58a18fc884edd74ff1ec077e8c90c6048a45b.xml"
 	//b, err := ioutil.ReadFile(x)

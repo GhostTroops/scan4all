@@ -51,7 +51,13 @@ func (r *Runner) mergeToFile() (string, error) {
 	// target defined via CLI argument
 	if len(r.options.Host) > 0 {
 		for _, v := range r.options.Host {
-			fmt.Fprintf(tempInput, "%s\n", v)
+			if strings.HasPrefix(v, "https://") || strings.HasPrefix(v, "http://") {
+				if u, err := url.Parse(v); err == nil {
+					fmt.Fprintf(tempInput, "%s\n", u.Hostname())
+				}
+			} else {
+				fmt.Fprintf(tempInput, "%s\n", v)
+			}
 		}
 	}
 
@@ -158,6 +164,7 @@ func (r *Runner) AddTarget(target string) error {
 			if u, err := url.Parse(target); err == nil {
 				s1 := fmt.Sprintf("%s://%s", u.Scheme, u.Host)
 				Add2Naabubuffer(fmt.Sprintf("%s\n", s1))
+				//Add2Naabubuffer(u.Hostname())
 				// target 长度 大于 s1才处理
 				////UrlPrecise     bool // 精准url扫描，不去除url清单上下文 2022-06-08
 				UrlPrecise := pkg.GetVal(pkg.UrlPrecise)
