@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
@@ -29,8 +30,9 @@ var (
 
 // 优先使用配置文件中的配置，否则从环境变量中读取
 func GetVal(key string) string {
+	key = strings.ToLower(key)
 	if s, ok := mData[key]; ok {
-		return s.(string)
+		return fmt.Sprintf("%v", s)
 	}
 	return os.Getenv(key)
 }
