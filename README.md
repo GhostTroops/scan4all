@@ -134,7 +134,7 @@ config/CreateEs.sh nuclei
 config/CreateEs.sh vscan
 
 # 搜索语法，更多的查询方法，自己学 Elasticsearch
-http://127.0.0.1:9200/nmap_index/_doc/_search?q=92.168.0.111
+http://127.0.0.1:9200/nmap_index/_doc/_search?q=_id:192.168.0.111
 其中92.168.0.111 是要查询的目标
 
 ```
