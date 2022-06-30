@@ -288,6 +288,7 @@ func readConfig() {
 
 	options.UpdateNuclei = false
 	options.UpdateTemplates = false
+	// 嵌入式集成私人版本nuclei-templates 共3744个YAML POC
 	options.TemplatesDirectory = "config/nuclei-templates"
 	options.NoUpdateTemplates = true
 	options.EnableProgressBar = false
