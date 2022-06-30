@@ -56,5 +56,9 @@
   "naabu_dns": {},
   "naabu": {"TopPorts": "1000","ScanAllIPS": true},
   "nuclei": {},
-  "httpx": {}
+  "enablEmbedYaml": false,
+  "httpx": {},
+  "enableEsSv": true,
+  "esthread": 8,
+  "esUrl": "http://127.0.0.1:9200/"
 }

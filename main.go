@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/hydra"
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
@@ -8,6 +9,9 @@ import (
 	"os"
 	"runtime"
 )
+
+//go:embed config/*
+var config embed.FS
 
 func main() {
 	defer func() {

@@ -68,7 +68,6 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 	}
 	nucleiRunner.Close()
 }
-
 func readConfig() {
 	options.Targets = []string{}
 	options.TargetsFilePath = ""
@@ -111,7 +110,12 @@ func readConfig() {
 	options.FollowRedirects = false
 	options.MaxRedirects = 10
 	options.DisableRedirects = false
+
 	options.ReportingConfig = ""
+	// 启动es记录
+	if "true" == pkg.GetVal("enableEsSv") {
+		options.ReportingConfig = "config/nuclei_esConfig.yaml"
+	}
 	options.CustomHeaders = []string{}
 	options.Vars = goflags.RuntimeMap{}
 	options.ResolversFile = ""
@@ -186,7 +190,7 @@ func readConfig() {
 	//	flagSet.BoolVarP(&options.FollowRedirects, "follow-redirects", "fr", false, "enable following redirects for http templates"),
 	//	flagSet.IntVarP(&options.MaxRedirects, "max-redirects", "mr", 10, "max number of redirects to follow for http templates"),
 	//	flagSet.BoolVarP(&options.DisableRedirects, "disable-redirects", "dr", false, "disable redirects for http templates"),
-	//	flagSet.StringVarP(&options.ReportingConfig, "report-config", "rc", "", "nuclei reporting module configuration file"), // TODO merge into the config file or rename to issue-tracking
+	//	flagSet.StringVarP(&options.ReportingConfigReportingConfig, "report-config", "rc", "", "nuclei reporting module configuration file"), // TODO merge into the config file or rename to issue-tracking
 	//	flagSet.FileStringSliceVarP(&options.CustomHeaders, "header", "H", []string{}, "custom header/cookie to include in all http request in header:value format (cli, file)"),
 	//	flagSet.RuntimeMapVarP(&options.Vars, "var", "V", []string{}, "custom vars in key=value format"),
 	//	flagSet.StringVarP(&options.ResolversFile, "resolvers", "r", "", "file containing resolver list for nuclei"),
@@ -289,8 +293,13 @@ func readConfig() {
 	options.UpdateNuclei = false
 	options.UpdateTemplates = false
 	// 嵌入式集成私人版本nuclei-templates 共3744个YAML POC
-	options.TemplatesDirectory = "config/nuclei-templates"
-	options.NoUpdateTemplates = true
+	if "true" == pkg.GetVal("enablEmbedYaml") {
+		options.TemplatesDirectory = "config/nuclei-templates"
+		options.NoUpdateTemplates = true
+	} else {
+		options.TemplatesDirectory = ""
+		options.NoUpdateTemplates = false
+	}
 	options.EnableProgressBar = false
 	options.StatsJSON = false
 	options.StatsInterval = 5

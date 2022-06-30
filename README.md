@@ -22,6 +22,7 @@
 - 轻量级、开源、跨平台使用
 - 支持多种类型的输入 - STDIN/HOST/IP/CIDR/URL/TXT
 - 支持多种输出类型 - JSON/TXT/CSV/STDOUT
+- 可配置将结果统一存储到Elasticsearch
 
 ## 由配置文件、环境变量控制的新特性
 - 带有上下文路径的url列表，启用精确扫描 UrlPrecise=true ./main -l xx.txt
@@ -93,7 +94,10 @@
   "naabu_dns": {},  // naabu工具对dns配置
   "naabu": {"TopPorts": "1000","ScanAllIPS": true}, // naabu配置
   "nuclei": {}, // nuclei配置，例如线程等
-  "httpx": {} // httpx 配置
+  "httpx": {}   // httpx 配置,
+  "enableEsSv": true,        // 开启结果send 到es
+  "esthread": 8 // 结果写入Elasticsearch的线程数,
+  "esUrl": "http://127.0.0.1:9200/" // Elasticsearch url
 }
 ```
 
@@ -118,7 +122,22 @@ go install github.com/hktalent/scan4all@2.3.0
 scan4all -h
 ```
 # 如何使用
-使用前请自行安装nmap
+- 1、启动 Elasticsearch, 当然你可以使用传统方式输出、结果
+```bash
+mkdir -p logs data
+docker run --restart=always --ulimit nofile=65536:65536 -p 9200:9200 -p 9300:9300 -d --name es -v $PWD/logs:/usr/share/elasticsearch/logs -v $PWD/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml -v $PWD/config/jvm.options:/usr/share/elasticsearch/config/jvm.options  -v $PWD/data:/usr/share/elasticsearch/data  hktalent/elasticsearch:7.16.2
+# 初始化es 索引
+config/CreateEs.sh nmap
+config/CreateEs.sh naabu
+config/CreateEs.sh httpx
+config/CreateEs.sh nuclei
+
+# 搜索语法，更多的查询方法，自己学 Elasticsearch
+http://127.0.0.1:9200/nmap_index/_doc/_search?q=92.168.0.111
+其中92.168.0.111 是要查询的目标
+
+```
+- 使用前请自行安装nmap
 <a href=https://github.com/hktalent/scan4all/discussions>使用帮助</a>
 ```bash
 go build

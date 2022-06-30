@@ -598,9 +598,12 @@ func (r *Runner) handleOutput() {
 				writer.Flush()
 				gologger.Silent().Msgf("%s", buffer.String())
 			} else {
+				aN := []int{}
 				for port := range ports {
+					aN = append(aN, port)
 					gologger.Silent().Msgf("%s:%d\n", host, port)
 				}
+				go pkg.SendAData[int](host, aN, "naabu")
 			}
 			// file output
 			if file != nil {
