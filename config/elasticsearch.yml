@@ -1,0 +1,111 @@
+#集群名称
+cluster.name: my-application
+#节点名称
+node.name: node-1
+#数据和日志的存储目录
+path.data: /usr/share/elasticsearch/data
+path.logs: /usr/share/elasticsearch/logs
+#设置绑定的ip，设置为0.0.0.0以后就可以让任何计算机节点访问到了
+network.host: 0.0.0.0
+transport.host: 0.0.0.0
+network.publish_host: 192.168.0.107
+#端口
+http.port: 9200
+# 设置在集群中的所有节点名称，这个节点名称就是之前所修改的，当然你也可以采用默认的，目前是单机，放入一个节点即可
+discovery.seed_hosts: [ "192.168.0.112:9300","192.168.0.107:9301","192.168.0.107:9302", "192.168.0.107:9300"]
+cluster.initial_master_nodes: [ "192.168.0.112:9300","192.168.0.107:9301","192.168.0.107:9302", "192.168.0.107:9300"]
+cluster.routing.allocation.same_shard.host: true
+discovery.zen.fd.ping_timeout: 1m
+discovery.zen.fd.ping_retries: 5
+
+# 设置这个参数来保证集群中的节点可以知道其它N个有master资格的节点。默认为1，对于大的集群来说，可以设置大一点的值（2-4）
+# discovery.zen.minimum_master_nodes: 1
+# node.master: true
+# node.ingest: true
+# node.data: true
+
+# cluster.routing.allocation.node_initial_primaries_recoveries: 8
+# cluster.routing.allocation.node_concurrent_recoveries: 2
+# discovery.zen.fd.ping_interval: 10s
+# discovery.zen.fd.ping_timeout: 120s
+# discovery.zen.fd.ping_retries: 6
+
+# thread_pool.get.size: 16
+# # must be <= 5
+# thread_pool.write.size: 4
+# thread_pool.search.size: 8
+# thread_pool.get.queue_size: 8
+# thread_pool.write.queue_size: 4
+# thread_pool.search.queue_size: 4
+# thread_pool.listener.queue_size: 8
+# thread_pool.analyze.queue_size: 8
+# thread_pool.vectortile.queue_size: 4
+
+
+# threadpool.index.type: fixed
+# threadpool.index.size: 64
+# threadpool.index.queue_size: 1000
+# indices.memory.index_buffer_size: 20%
+
+# threadpool.search.size: 64
+# threadpool.search.type: fixed
+# threadpool.search.queue_size: 1000
+# threadpool.get.type: fixed
+# threadpool.get.size: 32
+# threadpool.get.queue_size: 1000
+# threadpool.bulk.size: 32
+# threadpool.bulk.queue_size: 1000
+# threadpool.flush.type: fixed
+# threadpool.flush.size: 32
+# threadpool.flush.queue_size: 1000
+
+# indices.store.throttle.max_bytes_per_sec: 100MB
+
+
+# index.analysis.analyzer.ik.type: "ik"
+# index.merge.scheduler.max_thread_count: 8
+# index.translog.flush_threshold_size: 200MB
+# index.translog.durability: async
+# index.translog.flush_threshold_ops: 500000
+
+# node.max_local_storage_nodes: 2
+# discovery.zen.ping.unicast.hosts: ["192.168.0.100"]
+# discovery.zen.minimum_master_nodes: 1
+# discovery.zen.ping.multicast.enabled: false
+# discovery.zen.ping.multicast.group: 224.2.2.4
+# discovery.zen.ping.multicast.port : 54328
+# discovery.zen.ping.multicast.ttl: 3
+# discovery.zen.ping.multicast.address: 0.0.0.0
+# node.master: true
+# node.data: true
+# index.number_of_shards: 5
+# index.number_of_replicas: 2
+#indices.fielddata.cache.size: 50%
+#
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+http.cors.allow-methods : OPTIONS, HEAD, GET, POST, PUT, DELETE
+http.cors.allow-headers : Authorization, X-Requested-With,X-Auth-Token,Content-Type, Content-Length
+
+
+transport.tcp.port: 9300
+# 设置节点之间交互的tcp端口，默认是9300。
+# transport.tcp.compress: true
+# 设置是否压缩tcp传输时的数据，默认为false，不压缩。
+
+# reindex.remote.whitelist: "192.168.0.100:9300"
+
+# https://docs.zammad.org/en/latest/install/elasticsearch.html#step-2-suggested-configuration
+# Performance may suffer if it is set too high.
+http.max_content_length: 400mb
+
+# Allows the engine to generate larger (more complex) search queries.
+# Elasticsearch will raise an error or deprecation notice if this value is too low,
+# but setting it too high can overload system resources (Default: 1024).
+#
+# Available in version 6.6+ only.
+indices.query.bool.max_clause_count: 20000
+# indexing_pressure.memory.limit: 30
+cluster.routing.allocation.disk.threshold_enabled: false
+# 开启就无法启动
+# bootstrap.memory_lock: true

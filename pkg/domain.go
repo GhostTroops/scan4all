@@ -34,6 +34,7 @@ func doAppends(a []string, s []string) []string {
 }
 
 func doSub(s string) (aRst []string, err1 error) {
+	bSend := false
 	if "*." == s[:2] {
 		EnableSubfinder := GetVal(EnableSubfinder)
 		if "" != EnableSubfinder {
@@ -52,9 +53,13 @@ func doSub(s string) (aRst []string, err1 error) {
 					}
 				}
 			}
+			bSend = true
 		} else {
 			aRst = append(aRst, s[2:])
 		}
+	}
+	if bSend {
+		go SendAData[string](s[:2], aRst, "subfinder")
 	}
 	return aRst, nil
 }

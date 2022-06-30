@@ -36,6 +36,13 @@ func GetVal(key string) string {
 	}
 	return os.Getenv(key)
 }
+func GetValByDefault(key, dftvl string) string {
+	s := GetVal(key)
+	if "" == s {
+		return dftvl
+	}
+	return s
+}
 
 var (
 	Naabu = "naabu"

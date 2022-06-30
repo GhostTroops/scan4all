@@ -34,18 +34,35 @@ func DoParseXml(s string) {
 		log.Println(err)
 		return
 	}
+	var enableEsSv = pkg.GetVal("enableEsSv")
+	m1 := make(map[string][][]string)
 	for _, n := range xmlquery.Find(doc, "//host") {
 		x1 := n.SelectElement("address").Attr[0].Value
 		ps := n.SelectElements("ports/port")
 		for _, x := range ps {
 			if "open" == x.SelectElement("state").Attr[0].Value {
 				ip := x1
-				port, _ := strconv.Atoi(GetAttr(x.Attr, "portid"))
+				szPort := GetAttr(x.Attr, "portid")
+				port, _ := strconv.Atoi(szPort)
 				service := GetAttr(x.SelectElement("service").Attr, "name")
 				go CheckWeakPassword(ip, service, port)
 				// 存储结果到其他地方
 				//x9 := AuthInfo{IPAddr: ip, Port: port, Protocol: service}
+				if "true" == enableEsSv {
+					var xx09 = [][]string{}
+					if a1, ok := m1[ip]; ok {
+						xx09 = a1
+					}
+					m1[ip] = append(xx09, []string{szPort, service})
+				}
 				//fmt.Printf("%s\t%d\t%s\n", ip, port, service)
+			}
+		}
+	}
+	if "true" == enableEsSv {
+		if 0 < len(m1) {
+			for k, x := range m1 {
+				pkg.SendAData[[]string](k, x, "nmap")
 			}
 		}
 	}

@@ -129,6 +129,7 @@ func (r *Runner) PreProcessTargets() error {
 }
 
 func Add2Naabubuffer(target string) {
+	//log.Println("Add2Naabubuffer：", target)
 	k1 := target + "_Add2Naabubuffer"
 	if b1, err := pkg.Cache1.Get(k1); nil == err && string(b1) == target {
 		log.Println("重复：", target)
