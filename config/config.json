@@ -58,7 +58,7 @@
   "nuclei": {},
   "enablEmbedYaml": false,
   "httpx": {},
-  "enableEsSv": true,
+  "enableEsSv": false,
   "esthread": 8,
   "esUrl": "http://127.0.0.1:9200/"
 }

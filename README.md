@@ -126,11 +126,12 @@ scan4all -h
 ```bash
 mkdir -p logs data
 docker run --restart=always --ulimit nofile=65536:65536 -p 9200:9200 -p 9300:9300 -d --name es -v $PWD/logs:/usr/share/elasticsearch/logs -v $PWD/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml -v $PWD/config/jvm.options:/usr/share/elasticsearch/config/jvm.options  -v $PWD/data:/usr/share/elasticsearch/data  hktalent/elasticsearch:7.16.2
-# 初始化es 索引
+# 初始化es 索引,每种工具的结果结构不一样，分开存储
 config/CreateEs.sh nmap
 config/CreateEs.sh naabu
 config/CreateEs.sh httpx
 config/CreateEs.sh nuclei
+config/CreateEs.sh vscan
 
 # 搜索语法，更多的查询方法，自己学 Elasticsearch
 http://127.0.0.1:9200/nmap_index/_doc/_search?q=92.168.0.111
