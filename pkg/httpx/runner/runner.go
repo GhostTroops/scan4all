@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/ammario/ipisp/v2"
 	"github.com/hktalent/scan4all/brute"
+	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"github.com/hktalent/scan4all/pocs_go"
 	"github.com/hktalent/scan4all/pocs_yml"
@@ -692,6 +693,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 					go func(target, method, protocol string) {
 						defer wg.Done()
 						result := r.analyze(hp, protocol, target, method, t, scanopts)
+						go pkg.SendAnyData(result, "httpx")
 						output <- result
 						if scanopts.TLSProbe && result.TLSData != nil {
 							scanopts.TLSProbe = false
@@ -746,6 +748,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 						defer wg.Done()
 						h, _ := urlutil.ChangePort(target, fmt.Sprint(port))
 						result := r.analyze(hp, protocol, h, method, t, scanopts)
+						go pkg.SendAnyData(result, "httpx")
 						output <- result
 						if scanopts.TLSProbe && result.TLSData != nil {
 							scanopts.TLSProbe = false
@@ -1256,10 +1259,12 @@ retry:
 			}
 			return slice
 		}
+		// 登陆页面检测
 		if brute.CheckLoginPage(finalURL) {
 			technologies = append(technologies, "登录页面")
 		}
-		technologies = SliceRemoveDuplicates(technologies) // 指纹去重
+		// 指纹去重
+		technologies = SliceRemoveDuplicates(technologies)
 		if !scanopts.NoPOC {
 			intersect := func(slice1, slice2 []string) []string {
 				m := make(map[string]int)
@@ -1293,15 +1298,18 @@ retry:
 				}
 				return nn
 			}
-			poctechnologies1 = pocs_go.POCcheck(technologies, ul, finalURL, false) // //通过wFingerprint获取到的指纹进行检测gopoc check
+			//通过wFingerprint获取到的指纹进行检测gopoc check
+			poctechnologies1 = pocs_go.POCcheck(technologies, ul, finalURL, false)
 			Vullist = append(Vullist, poctechnologies1...)
 			for _, technology := range technologies {
 				pocYmlList1 := pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology)) // 通过wFingerprint获取到的指纹进行ymlpoc check
 				Vullist = append(Vullist, pocYmlList1...)
 			}
-			filePaths, filefuzzTechnologies = brute.FileFuzz(ul, resp.StatusCode, resp.ContentLength, resp.Raw) // 敏感文件扫描
+			// 敏感文件扫描
+			filePaths, filefuzzTechnologies = brute.FileFuzz(ul, resp.StatusCode, resp.ContentLength, resp.Raw)
 			filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)
-			filefuzzTechnologies = difference(filefuzzTechnologies, technologies) // 取差集合
+			// 取差集合
+			filefuzzTechnologies = difference(filefuzzTechnologies, technologies)
 
 			poctechnologies2 = pocs_go.POCcheck(filefuzzTechnologies, ul, finalURL, true) //通过敏感文件扫描获取到的指纹进行检测gopoc check
 			Vullist = append(Vullist, poctechnologies2...)
@@ -1309,8 +1317,10 @@ retry:
 				pocYmlList2 := pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology)) //通过敏感文件扫描获取到的指纹进行检测ymlpoc check
 				Vullist = append(Vullist, pocYmlList2...)
 			}
-			technologies = append(technologies, filefuzzTechnologies...) // 输出加入敏感文件扫描 获取到的指纹
-			technologies = SliceRemoveDuplicates(technologies)           // 指纹去重
+			// 输出加入敏感文件扫描 获取到的指纹
+			technologies = append(technologies, filefuzzTechnologies...)
+			// 指纹去重
+			technologies = SliceRemoveDuplicates(technologies)
 		}
 		if len(technologies) > 0 {
 			sort.Strings(technologies)

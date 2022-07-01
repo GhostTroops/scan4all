@@ -2,9 +2,9 @@ package check
 
 import (
 	"fmt"
+	"github.com/hktalent/scan4all/pkg"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
-	"github.com/hktalent/scan4all/pkg"
 	"io"
 	"net"
 	"net/http"

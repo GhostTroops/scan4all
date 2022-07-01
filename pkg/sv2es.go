@@ -2,6 +2,8 @@ package pkg
 
 import (
 	"bytes"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -32,6 +34,17 @@ func Log(v ...any) {
 	log.Println(v...)
 }
 
+func SendAnyData(data interface{}, szType string) {
+	data1, _ := json.Marshal(data)
+	if 0 < len(data1) && "true" == GetVal("enableEsSv") {
+		hasher := sha1.New()
+		hasher.Write(data1)
+		k := hex.EncodeToString(hasher.Sum(nil))
+		go SendReq(data, k, szType)
+	}
+}
+
+// k is id
 func SendAData[T any](k string, data []T, szType string) {
 	if 0 < len(data) && "true" == GetVal("enableEsSv") {
 		m2 := make(map[string]interface{})
@@ -50,7 +63,7 @@ func SendReq(data1 interface{}, id, szType string) {
 	defer func() {
 		<-nThreads
 	}()
-	url := esUrl + szType + "_index/_doc/" + url.QueryEscape(id)
+	url := fmt.Sprintf(esUrl, szType, url.QueryEscape(id))
 	req, err := http.NewRequest("POST", url, bytes.NewReader(data))
 	if err != nil {
 		Log(fmt.Sprintf("%s error %v", id, err))

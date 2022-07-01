@@ -33,6 +33,7 @@ func Start(IPAddr string, Port int, Protocol string) {
 	var out AuthInfo
 	for info := range crack.Out {
 		out = info
+		pkg.SendAData[AuthInfo](fmt.Sprintf("%s:%d", out.IPAddr, out.Port), []AuthInfo{out}, "hydra")
 	}
 	log.Println(out)
 	//crack.Pool.Wait()
