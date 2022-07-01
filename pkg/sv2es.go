@@ -25,8 +25,6 @@ func init() {
 		n1, _ = strconv.Atoi(GetValByDefault("esthread", "4"))
 		//log.Println("es 初始化线程数 = ", n1)
 		nThreads = make(chan struct{}, n1)
-	} else {
-		Log(mData)
 	}
 }
 
