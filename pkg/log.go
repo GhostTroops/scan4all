@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/logrusorgru/aurora"
 	"github.com/projectdiscovery/gologger"
 	"os"
@@ -23,11 +22,6 @@ func GetPluginName(defaultVal string) string {
 	return defaultVal
 }
 
-// log message，Easy to send to ES result server
-func LogJson(logMsg interface{}) {
-	spew.Printf("%v", logMsg)
-}
-
 func GoPocLog(log string) {
 	builder := &strings.Builder{}
 	builder.WriteString("[")
@@ -39,9 +33,7 @@ func GoPocLog(log string) {
 	builder.WriteString("] ")
 	builder.WriteString(log)
 	fmt.Print(builder.String())
-	if Output != "" {
-		writeoutput(builder.String())
-	}
+	writeoutput(builder.String())
 }
 
 func YmlPocLog(log string) {
@@ -55,9 +47,7 @@ func YmlPocLog(log string) {
 	builder.WriteString("] ")
 	builder.WriteString(log)
 	fmt.Print(builder.String())
-	if Output != "" {
-		writeoutput(builder.String())
-	}
+	writeoutput(builder.String())
 }
 
 func BurteLog(log string) {
@@ -71,12 +61,14 @@ func BurteLog(log string) {
 	builder.WriteString("] ")
 	builder.WriteString(log)
 	fmt.Print(builder.String())
-	if Output != "" {
-		writeoutput(builder.String())
-	}
+	writeoutput(builder.String())
 }
 
 func writeoutput(log string) {
+	SendAnyData(log, "vscan")
+	if "" == Output {
+		return
+	}
 	f, err := os.OpenFile(Output, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		gologger.Fatal().Msgf("Could not create output fiale '%s': %s\n", Output, err)

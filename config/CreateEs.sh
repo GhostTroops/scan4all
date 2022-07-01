@@ -1,12 +1,12 @@
 #!/bin/bash
+#DELETE /${1}_index* HTTP/1.1
+#host:127.0.0.1:9200
+#User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15
+#Connection: keep-alive
+#Content-Type: application/json;charset=UTF-8
+#Content-Length: 0
+#
 sed $'s/$/\r/' <<EOF | nc 127.0.0.1 9200
-DELETE /${1}_index* HTTP/1.1
-host:127.0.0.1:9200
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15
-Connection: keep-alive
-Content-Type: application/json;charset=UTF-8
-Content-Length: 0
-
 PUT /${1}_index HTTP/1.1
 host:127.0.0.1:9200
 User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15

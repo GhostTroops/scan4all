@@ -60,5 +60,5 @@
   "httpx": {},
   "enableEsSv": false,
   "esthread": 8,
-  "esUrl": "http://127.0.0.1:9200/"
+  "esUrl": "http://127.0.0.1:9200/%s_index/_doc/%s"
 }
