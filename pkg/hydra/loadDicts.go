@@ -117,22 +117,22 @@ func init() {
 	md["ftp"] = PPDict{
 		Username:  pkg.GetVal4File("ftp_user", ftpusername),
 		Paswd:     pkg.GetVal4File("ftp_pswd", ftp_pswd),
-		DefaultUp: pkg.GetVal4File("ftp_default", ftp_default),
+		DefaultUp: pkg.GetVal4Filedefault("ftp_default", ftp_default),
 	}
 	md["ssh"] = PPDict{
 		Username:  pkg.GetVal4File("ssh_username", ftpusername),
 		Paswd:     pkg.GetVal4File("ssh_pswd", ftp_pswd),
-		DefaultUp: pkg.GetVal4File("ssh_default", ftp_default),
+		DefaultUp: pkg.GetVal4Filedefault("ssh_default", ftp_default),
 	}
 	md["mongodb"] = PPDict{
 		Username:  pkg.GetVal4File("mongodb_username", mongodbusername),
 		Paswd:     pkg.GetVal4File("mongodb_pswd", mongodb_pswd),
-		DefaultUp: pkg.GetVal4File("mongodb_default", mongodb_default),
+		DefaultUp: pkg.GetVal4Filedefault("mongodb_default", mongodb_default),
 	}
 	md["mssql"] = PPDict{
 		Username:  pkg.GetVal4File("mssql_username", mssqlusername),
 		Paswd:     pkg.GetVal4File("mssql_pswd", mssql_pswd),
-		DefaultUp: pkg.GetVal4File("mssql_default", mssql_default),
+		DefaultUp: pkg.GetVal4Filedefault("mssql_default", mssql_default),
 	}
 	md["mysql"] = PPDict{
 		Username:  pkg.GetVal4File("mysql_username", mysqlusername),
@@ -142,32 +142,32 @@ func init() {
 	md["oracle"] = PPDict{
 		Username:  pkg.GetVal4File("oracle_username", oracleusername),
 		Paswd:     pkg.GetVal4File("oracle_pswd", oracle_pswd),
-		DefaultUp: pkg.GetVal4File("oracleh_default", oracle_default),
+		DefaultUp: pkg.GetVal4Filedefault("oracleh_default", oracle_default),
 	}
 	md["postgresql"] = PPDict{
 		Username:  pkg.GetVal4File("postgresql_username", postgresqlusername),
 		Paswd:     pkg.GetVal4File("postgresql_pswd", postgresql_pswd),
-		DefaultUp: pkg.GetVal4File("postgresql_default", postgresql_default),
+		DefaultUp: pkg.GetVal4Filedefault("postgresql_default", postgresql_default),
 	}
 	md["rdp"] = PPDict{
 		Username:  pkg.GetVal4File("rdp_username", rdpusername),
 		Paswd:     pkg.GetVal4File("rdp_pswd", rdp_pswd),
-		DefaultUp: pkg.GetVal4File("rdp_default", rdp_default),
+		DefaultUp: pkg.GetVal4Filedefault("rdp_default", rdp_default),
 	}
 	md["redis"] = PPDict{
 		Username:  pkg.GetVal4File("redis_username", redisusername),
 		Paswd:     pkg.GetVal4File("redis_pswd", redis_pswd),
-		DefaultUp: pkg.GetVal4File("redis_default", redis_default),
+		DefaultUp: pkg.GetVal4Filedefault("redis_default", redis_default),
 	}
 	md["smb"] = PPDict{
 		Username:  pkg.GetVal4File("smb_username", smbusername),
 		Paswd:     pkg.GetVal4File("smb_pswd", smb_pswd),
-		DefaultUp: pkg.GetVal4File("smb_default", smb_default),
+		DefaultUp: pkg.GetVal4Filedefault("smb_default", smb_default),
 	}
 	md["telnet"] = PPDict{
 		Username:  pkg.GetVal4File("telnet_username", telnetusername),
 		Paswd:     pkg.GetVal4File("telnet_pswd", telnet_pswd),
-		DefaultUp: pkg.GetVal4File("telnet_default", telnet_default),
+		DefaultUp: pkg.GetVal4Filedefault("telnet_default", telnet_default),
 	}
 }
 

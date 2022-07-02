@@ -119,9 +119,12 @@ func (c *Cracker) Run() {
 	}
 	//go 任务下发器
 	go func() {
-		for _, a := range c.authList.Dict(c.onlyPassword) {
+		x1 := c.authList.Dict(c.onlyPassword)
+		//fmt.Println("破解任务下发器：", len(x1))
+		for _, a := range x1 {
 			if c.Pool.Done {
 				c.Pool.InDone()
+				//fmt.Println("hydra 1：线程结束")
 				return
 			}
 			c.authInfo.Auth = a

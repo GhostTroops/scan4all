@@ -6,6 +6,8 @@ import (
 	"github.com/hktalent/scan4all/pkg/hydra"
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/gologger"
+	"io"
+	"log"
 	"os"
 	"runtime"
 )
@@ -21,6 +23,11 @@ func main() {
 		}
 	}()
 	options := naaburunner.ParseOptions()
+	if false == options.Debug && false == options.Verbose {
+		// disable standard logger (ref: https://github.com/golang/go/issues/19895)
+		log.SetFlags(0)
+		log.SetOutput(io.Discard)
+	}
 	pkg.G_Options = options
 	if runtime.GOOS == "windows" {
 		options.NoColor = true
