@@ -150,6 +150,25 @@ UrlPrecise=true ./scan4all -l xx.txt
 - 2022-06-10 完成核的整合，当然包括核模板的整合
 - 2022-06-07 添加相似度算法来检测 404
 - 2022-06-07 增加http url列表精准扫描参数，根据环境变量UrlPrecise=true开启
+```
+    fix config处理、支持冒号分隔的字典文件 2022-07-02 23:05:1656774351
+    fix 1、-v -debug未显示成功爆破密码的bug \n2、优化密码字典 2022-07-02 22:34:1656772441
+    fix rm log 2022-07-01 13:43:1656654215
+    fix httpx，vscan结果未推送到ES的bug;2、更新workflow.jpg
+    fix Elasticsearch url双斜杠导致无法保存的bug 2022-06-30 23:37:1656603438
+    fix 默认不开启Elasticsearch存储结果
+    fix 1、集成Elasticsearch存储中间结果 2、嵌入整个config目录到程序中 2022-06-30 23:00:1656601220
+    fix 嵌入式集成私人版本nuclei-templates 共3744个YAML POC 2022-06-30 18:12:1656583979
+    fix nuclei-template to NoUpdateTemplates=true 2022-06-30 09:13:1656551609
+    fix config 参数大小写不兼容问题 2022-06-29 23:13:1656515621
+    fix -host http:/xxx.com can not run naabu 2022-06-29 23:07:1656515250
+    fix nuclei Project is true file missing bug 2022-06-28 15:01:1656399684
+    fix 中间结果重复传入下一节点的bug
+    fix 域名转ip时错将ip带入的bug
+    fix windows稳定性bug，fixnuclei参数冲突 2022-06-23 13:00:1655960405
+    fix "Init k-v db 不能多个进程同时开启"
+    fix密码爆破，测试代码中已经可以运行
+```
 # Donation
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |
 | --- | --- | --- | --- | --- |
