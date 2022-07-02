@@ -113,9 +113,9 @@ func GetVal4File(key, szDefault string) string {
 
 // 读区配置中的字典文件
 func GetVal4Filedefault(key, szDefault string) string {
-	s := GetVal4File(key,szDefault)
-	if 2 == len(strings.Split(strings.Split(s,"\n")[0],":"){
-		s = strings.ReplaceAll(s,":","\t")
+	s := GetVal4File(key, szDefault)
+	if 2 == len(strings.Split(strings.Split(s, "\n")[0], ":")) {
+		s = strings.ReplaceAll(s, ":", "\t")
 	}
 	return s
 }
