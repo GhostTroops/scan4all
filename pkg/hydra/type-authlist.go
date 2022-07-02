@@ -58,5 +58,6 @@ func (a *AuthList) Dict(onlyPassword bool) []Auth {
 	} else {
 		dict = append(dict, NewAuthFromUsernameAndPassword(a.Username, a.Password)...)
 	}
+	//log.Println("Dict: ", len(dict), " onlyPassword = ", onlyPassword)
 	return dict
 }
