@@ -23,8 +23,6 @@
 - 支持多种类型的输入 - STDIN/HOST/IP/CIDR/URL/TXT
 - 支持多种输出类型 - JSON/TXT/CSV/STDOUT
 - 可配置将结果统一存储到Elasticsearch
-
-## 由配置文件、环境变量控制的新特性
 - 带有上下文路径的url列表，启用精确扫描 UrlPrecise=true ./main -l xx.txt
 - 开启智能子域遍历， export EnableSubfinder=true
 - 自动识别域（DNS）关联多个IP的情况，并自动扫描关联的多个IP
