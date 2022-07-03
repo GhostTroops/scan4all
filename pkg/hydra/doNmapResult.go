@@ -13,7 +13,8 @@ import (
 // 弱口令检测
 func CheckWeakPassword(ip, service string, port int) {
 	// 在弱口令检测范围就开始检测，结果....
-	if pkg.Contains(ProtocolList, strings.ToLower(service)) {
+	service = strings.ToLower(service)
+	if pkg.Contains(ProtocolList, service) {
 		//log.Println("start CheckWeakPassword ", ip, ":", port, "(", service, ")")
 		Start(ip, port, service)
 	}
