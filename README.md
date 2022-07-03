@@ -30,7 +30,6 @@
 - 自动识别域（DNS）关联多个IP的情况，并自动扫描关联的多个IP
 - 预处理，当列表中多个域名的ip相同时，合并端口扫描，提高效率
 - 深入分析，自动关联扫描：自动获取ssl中的域名信息，如*.xxx.com，并配置允许自动子域遍历，子域遍历自动完成，添加目标到扫描列表
-- 当输入目标（target）为ip时，所有域名、指纹信息、历史端口信息都会从51pwn云自动关联，并进行处理（云服务功能需要授权）
 - 自动化供应链分析和扫描，需要授权才能使用
 - 允许通过config/config.json配置定义自己的字典，或者设置相关的开关，可以在这里定义nuclei、httx、naabu的几个Options
 - 配置说明如下：
@@ -143,6 +142,11 @@ UrlPrecise=true ./scan4all -l xx.txt
 ```
 
 # 变更日志
+- 2022-06-30 嵌入式集成私人版本nuclei-templates 共3744个YAML POC； 1、集成Elasticsearch存储中间结果 2、嵌入整个config目录到程序中
+- 2022-06-27 优化模糊匹配，提高正确率、鲁棒性;集成ksubdomain进度
+- 2022-06-24 优化指纹算法；增加工作流程图
+- 2022-06-23 添加参数ParseSSl，控制默认不深度分析SSL中的DNS信息，默认不对SSL中dns进行扫描；优化：nmap未自动加.exe的bug；优化windows下缓存文件未优化体积的bug
+- 2022-06-22 集成11种协议弱口令检测、密码爆破：ftp、mongodb、mssql、mysql、oracle、postgresql、rdp、redis、smb、ssh、telnet，同时优化支持外挂密码字典
 - 2022-06-20 集成Subfinder，域名爆破，启动参数导出EnableSubfinder=true，注意启动后很慢； ssl证书中域名信息的自动深度钻取
   允许通过 config/config.json 配置定义自己的字典，或设置相关开关
 - 2022-06-17 优化一个域名多个IP的情况，所有IP都会被端口扫描，然后按照后续的扫描流程
@@ -150,25 +154,7 @@ UrlPrecise=true ./scan4all -l xx.txt
 - 2022-06-10 完成核的整合，当然包括核模板的整合
 - 2022-06-07 添加相似度算法来检测 404
 - 2022-06-07 增加http url列表精准扫描参数，根据环境变量UrlPrecise=true开启
-```
-    fix config处理、支持冒号分隔的字典文件 2022-07-02 23:05:1656774351
-    fix 1、-v -debug未显示成功爆破密码的bug \n2、优化密码字典 2022-07-02 22:34:1656772441
-    fix rm log 2022-07-01 13:43:1656654215
-    fix httpx，vscan结果未推送到ES的bug;2、更新workflow.jpg
-    fix Elasticsearch url双斜杠导致无法保存的bug 2022-06-30 23:37:1656603438
-    fix 默认不开启Elasticsearch存储结果
-    fix 1、集成Elasticsearch存储中间结果 2、嵌入整个config目录到程序中 2022-06-30 23:00:1656601220
-    fix 嵌入式集成私人版本nuclei-templates 共3744个YAML POC 2022-06-30 18:12:1656583979
-    fix nuclei-template to NoUpdateTemplates=true 2022-06-30 09:13:1656551609
-    fix config 参数大小写不兼容问题 2022-06-29 23:13:1656515621
-    fix -host http:/xxx.com can not run naabu 2022-06-29 23:07:1656515250
-    fix nuclei Project is true file missing bug 2022-06-28 15:01:1656399684
-    fix 中间结果重复传入下一节点的bug
-    fix 域名转ip时错将ip带入的bug
-    fix windows稳定性bug，fixnuclei参数冲突 2022-06-23 13:00:1655960405
-    fix "Init k-v db 不能多个进程同时开启"
-    fix密码爆破，测试代码中已经可以运行
-```
+
 # Donation
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |
 | --- | --- | --- | --- | --- |
