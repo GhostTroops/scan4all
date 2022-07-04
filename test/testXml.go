@@ -7,7 +7,7 @@ import (
 
 //var Naabubuffer bytes.Buffer = bytes.Buffer{}
 
-func main() {
+func main9() {
 
 	s := "http://www.ddd.com:990/xxp"
 	if u, err := url.Parse(s); err == nil {
