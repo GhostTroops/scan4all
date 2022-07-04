@@ -322,9 +322,7 @@ func (p *Policy) sanitize(r io.Reader, w io.Writer) error {
 				aps = aa
 			}
 			if len(token.Attr) != 0 {
-				token.Attr = escapeAttributes(
-					p.sanitizeAttrs(token.Data, token.Attr, aps),
-				)
+				token.Attr = p.sanitizeAttrs(token.Data, token.Attr, aps)
 			}
 
 			if len(token.Attr) == 0 {
@@ -434,7 +432,7 @@ func (p *Policy) sanitize(r io.Reader, w io.Writer) error {
 			}
 
 			if len(token.Attr) != 0 {
-				token.Attr = escapeAttributes(p.sanitizeAttrs(token.Data, token.Attr, aps))
+				token.Attr = p.sanitizeAttrs(token.Data, token.Attr, aps)
 			}
 
 			if len(token.Attr) == 0 && !p.allowNoAttrs(token.Data) {
@@ -565,11 +563,9 @@ attrsLoop:
 			for _, ap := range apl {
 				if ap.regexp != nil {
 					if ap.regexp.MatchString(htmlAttr.Val) {
-						htmlAttr.Val = escapeAttribute(htmlAttr.Val)
 						cleanAttrs = append(cleanAttrs, htmlAttr)
 					}
 				} else {
-					htmlAttr.Val = escapeAttribute(htmlAttr.Val)
 					cleanAttrs = append(cleanAttrs, htmlAttr)
 				}
 			}
@@ -1111,19 +1107,4 @@ func normaliseElementName(str string) string {
 			`"`),
 		`"`,
 	)
-}
-
-func escapeAttributes(attrs []html.Attribute) []html.Attribute {
-	escapedAttrs := []html.Attribute{}
-	for _, attr := range attrs {
-		attr.Val = escapeAttribute(attr.Val)
-		escapedAttrs = append(escapedAttrs, attr)
-	}
-	return escapedAttrs
-}
-
-func escapeAttribute(val string) string {
-	val = strings.Replace(val, string([]rune{'\u00A0'}), `&nbsp;`, -1)
-	val = strings.Replace(val, `"`, `&quot;`, -1)
-	return val
 }

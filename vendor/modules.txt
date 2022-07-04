@@ -428,8 +428,8 @@ github.com/mholt/acmez/acme
 # github.com/mholt/archiver v3.1.1+incompatible
 ## explicit
 github.com/mholt/archiver
-# github.com/microcosm-cc/bluemonday v1.0.18
-## explicit; go 1.16
+# github.com/microcosm-cc/bluemonday v1.0.19
+## explicit; go 1.18
 github.com/microcosm-cc/bluemonday
 github.com/microcosm-cc/bluemonday/css
 # github.com/miekg/dns v1.1.49
@@ -711,7 +711,7 @@ github.com/projectdiscovery/uncover/uncover/agent/shodanidb
 # github.com/projectdiscovery/urlutil v0.0.0-20210805190935-3d83726391c1
 ## explicit; go 1.16
 github.com/projectdiscovery/urlutil
-# github.com/projectdiscovery/wappalyzergo v0.0.48
+# github.com/projectdiscovery/wappalyzergo v0.0.49
 ## explicit; go 1.16
 github.com/projectdiscovery/wappalyzergo
 # github.com/projectdiscovery/yamldoc-go v1.0.3-0.20211126104922-00d2c6bb43b6
