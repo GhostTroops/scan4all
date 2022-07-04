@@ -280,6 +280,49 @@ var (
 		"slategray", "slategrey", "snow", "springgreen", "steelblue", "tan",
 		"teal", "thistle", "tomato", "turquoise", "violet", "wheat", "white",
 		"whitesmoke", "yellow", "yellowgreen"}
+
+	Alpha             = regexp.MustCompile(`^[a-z]+$`)
+	Blur              = regexp.MustCompile(`^blur\([0-9]+px\)$`)
+	BrightnessCont    = regexp.MustCompile(`^(brightness|contrast)\([0-9]+\%\)$`)
+	Count             = regexp.MustCompile(`^[0-9]+[\.]?[0-9]*$`)
+	CubicBezier       = regexp.MustCompile(`^cubic-bezier\(([ ]*(0(.[0-9]+)?|1(.0)?),){3}[ ]*(0(.[0-9]+)?|1)\)$`)
+	Digits            = regexp.MustCompile(`^digits [2-4]$`)
+	DropShadow        = regexp.MustCompile(`drop-shadow\(([-]?[0-9]+px) ([-]?[0-9]+px)( [-]?[0-9]+px)?( ([-]?[0-9]+px))?`)
+	Font              = regexp.MustCompile(`^('[a-z \-]+'|[a-z \-]+)$`)
+	Grayscale         = regexp.MustCompile(`^grayscale\(([0-9]{1,2}|100)%\)$`)
+	GridTemplateAreas = regexp.MustCompile(`^['"]?[a-z ]+['"]?$`)
+	HexRGB            = regexp.MustCompile(`^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$`)
+	HSL               = regexp.MustCompile(`^hsl\([ ]*([012]?[0-9]{1,2}|3[0-5][0-9]|360),[ ]*([0-9]{0,2}|100)\%,[ ]*([0-9]{0,2}|100)\%\)$`)
+	HSLA              = regexp.MustCompile(`^hsla\(([ ]*[012]?[0-9]{1,2}|3[0-5][0-9]|360),[ ]*([0-9]{0,2}|100)\%,[ ]*([0-9]{0,2}|100)\%,[ ]*(1|1\.0|0|(0\.[0-9]+))\)$`)
+	HueRotate         = regexp.MustCompile(`^hue-rotate\(([12]?[0-9]{1,2}|3[0-5][0-9]|360)?\)$`)
+	Invert            = regexp.MustCompile(`^invert\(([0-9]{1,2}|100)%\)$`)
+	Length            = regexp.MustCompile(`^[\-]?([0-9]+|[0-9]*[\.][0-9]+)(%|cm|mm|in|px|pt|pc|em|ex|ch|rem|vw|vh|vmin|vmax|deg|rad|turn)?$`)
+	Matrix            = regexp.MustCompile(`^matrix\(([ ]*[0-9]+[\.]?[0-9]*,){5}([ ]*[0-9]+[\.]?[0-9]*)\)$`)
+	Matrix3D          = regexp.MustCompile(`^matrix3d\(([ ]*[0-9]+[\.]?[0-9]*,){15}([ ]*[0-9]+[\.]?[0-9]*)\)$`)
+	NegTime           = regexp.MustCompile(`^[\-]?[0-9]+[\.]?[0-9]*(s|ms)?$`)
+	Numeric           = regexp.MustCompile(`^[0-9]+$`)
+	NumericDecimal    = regexp.MustCompile(`^[0-9\.]+$`)
+	Opactiy           = regexp.MustCompile(`^opacity\(([0-9]{1,2}|100)%\)$`)
+	Perspective       = regexp.MustCompile(`perspective\(`)
+	Position          = regexp.MustCompile(`^[\-]*[0-9]+[cm|mm|in|px|pt|pc\%]* [[\-]*[0-9]+[cm|mm|in|px|pt|pc\%]*]*$`)
+	Opacity           = regexp.MustCompile(`^(0[.]?[0-9]*)|(1.0)$`)
+	QuotedAlpha       = regexp.MustCompile(`^["'][a-z]+["']$`)
+	Quotes            = regexp.MustCompile(`^([ ]*["'][\x{0022}\x{0027}\x{2039}\x{2039}\x{203A}\x{00AB}\x{00BB}\x{2018}\x{2019}\x{201C}-\x{201E}]["'] ["'][\x{0022}\x{0027}\x{2039}\x{2039}\x{203A}\x{00AB}\x{00BB}\x{2018}\x{2019}\x{201C}-\x{201E}]["'])+$`)
+	Rect              = regexp.MustCompile(`^rect\([0-9]+px,[ ]*[0-9]+px,[ ]*[0-9]+px,[ ]*[0-9]+px\)$`)
+	RGB               = regexp.MustCompile(`^rgb\(([ ]*((([0-9]{1,2}|100)\%)|(([01]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))),){2}([ ]*((([0-9]{1,2}|100)\%)|(([01]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))))\)$`)
+	RGBA              = regexp.MustCompile(`^rgba\(([ ]*((([0-9]{1,2}|100)\%)|(([01]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))),){3}[ ]*(1(\.0)?|0|(0\.[0-9]+))\)$`)
+	Rotate            = regexp.MustCompile(`^rotate(x|y|z)?\(([12]?|3[0-5][0-9]|360)\)$`)
+	Rotate3D          = regexp.MustCompile(`^rotate3d\(([ ]?(1(\.0)?|0\.[0-9]+),){3}([12]?|3[0-5][0-9]|360)\)$`)
+	Saturate          = regexp.MustCompile(`^saturate\([0-9]+%\)$`)
+	Sepia             = regexp.MustCompile(`^sepia\(([0-9]{1,2}|100)%\)$`)
+	Skew              = regexp.MustCompile(`skew(x|y)?\(`)
+	Span              = regexp.MustCompile(`^span [0-9]+$`)
+	Steps             = regexp.MustCompile(`^steps\([ ]*[0-9]+([ ]*,[ ]*(start|end)?)\)$`)
+	Time              = regexp.MustCompile(`^[0-9]+[\.]?[0-9]*(s|ms)?$`)
+	TransitionProp    = regexp.MustCompile(`^([a-zA-Z]+,[ ]?)*[a-zA-Z]+$`)
+	TranslateScale    = regexp.MustCompile(`(translate|translate3d|translatex|translatey|translatez|scale|scale3d|scalex|scaley|scalez)\(`)
+	URL               = regexp.MustCompile(`^url\([\"\']?((https|http)[a-z0-9\.\\/_:]+[\"\']?)\)$`)
+	ZIndex            = regexp.MustCompile(`^[\-]?[0-9]+$`)
 )
 
 func multiSplit(value string, seps ...string) []string {
@@ -388,9 +431,7 @@ func AnimationHandler(value string) bool {
 }
 
 func AnimationDelayHandler(value string) bool {
-	reg := regexp.MustCompile(`[\-]?[0-9]+[\.]?[0-9]*[s|ms]?`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if NegTime.MatchString(value) {
 		return true
 	}
 	values := []string{"initial", "inherit"}
@@ -405,9 +446,7 @@ func AnimationDirectionHandler(value string) bool {
 }
 
 func AnimationDurationHandler(value string) bool {
-	reg := regexp.MustCompile(`[0-9]+[\.]?[0-9]*[s|ms]?`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Time.MatchString(value) {
 		return true
 	}
 	values := []string{"initial", "inherit"}
@@ -422,9 +461,7 @@ func AnimationFillModeHandler(value string) bool {
 }
 
 func AnimationIterationCountHandler(value string) bool {
-	reg := regexp.MustCompile(`[0-9]+[\.]?[0-9]*`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Count.MatchString(value) {
 		return true
 	}
 	values := []string{"infinite", "initial", "inherit"}
@@ -433,9 +470,7 @@ func AnimationIterationCountHandler(value string) bool {
 }
 
 func AnimationNameHandler(value string) bool {
-	reg := regexp.MustCompile(`[a-z]+`)
-	reg.Longest()
-	return reg.FindString(value) == value && value != ""
+	return Alpha.MatchString(value)
 }
 
 func AnimationPlayStateHandler(value string) bool {
@@ -450,14 +485,10 @@ func TimingFunctionHandler(value string) bool {
 	if in(splitVals, values) {
 		return true
 	}
-	reg := regexp.MustCompile(`cubic-bezier\(([ ]*(0(.[0-9]+)?|1(.0)?),){3}[ ]*(0(.[0-9]+)?|1)\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if CubicBezier.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`steps\([ ]*[0-9]+([ ]*,[ ]*(start|end)?)\)`)
-	reg.Longest()
-	return reg.FindString(value) == value && value != ""
+	return Steps.MatchString(value)
 }
 
 func BackfaceVisibilityHandler(value string) bool {
@@ -518,9 +549,7 @@ func ImageHandler(value string) bool {
 	if in(splitVals, values) {
 		return true
 	}
-	reg := regexp.MustCompile(`url\([\"\']?((https|http)[a-z0-9\.\\/_:]+[\"\']?)\)`)
-	reg.Longest()
-	return reg.FindString(value) == value && value != ""
+	return URL.MatchString(value)
 }
 
 func BackgroundOriginHandler(value string) bool {
@@ -535,12 +564,7 @@ func BackgroundPositionHandler(value string) bool {
 	if in(splitVals, values) {
 		return true
 	}
-	reg := regexp.MustCompile(`[\-]*[0-9]+[cm|mm|in|px|pt|pc\%]* [[\-]*[0-9]+[cm|mm|in|px|pt|pc\%]*]*`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
-		return true
-	}
-	return false
+	return Position.MatchString(value)
 }
 
 func BackgroundRepeatHandler(value string) bool {
@@ -816,31 +840,19 @@ func CaretColorHandler(value string) bool {
 	if in(splitVals, colorValues) {
 		return true
 	}
-	reg := regexp.MustCompile(`#[0-9abcdef]{6}`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if HexRGB.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`rgb\(([ ]*((([0-9]{1,2}|100)\%)|(([01]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))),){2}([ ]*((([0-9]{1,2}|100)\%)|(([01]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))))\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if RGB.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`rgba\(([ ]*((([0-9]{1,2}|100)\%)|(([01]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))),){3}[ ]*(1(\.0)?|0|(0\.[0-9]+))\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if RGBA.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`hsl\([ ]*([012]?[0-9]{1,2}|3[0-5][0-9]|360),[ ]*([0-9]{0,2}|100)\%,[ ]*([0-9]{0,2}|100)\%\)`)
-	if reg.FindString(value) == value && value != "" {
+	if HSL.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`hsla\(([ ]*[012]?[0-9]{1,2}|3[0-5][0-9]|360),[ ]*([0-9]{0,2}|100)\%,[ ]*([0-9]{0,2}|100)\%,[ ]*(1|1\.0|0|(0\.[0-9]+))\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
-		return true
-	}
-	return false
+	return HSLA.MatchString(value)
 }
 
 func ClearHandler(value string) bool {
@@ -850,9 +862,7 @@ func ClearHandler(value string) bool {
 }
 
 func ClipHandler(value string) bool {
-	reg := regexp.MustCompile(`rect\([0-9]+px,[ ]*[0-9]+px,[ ]*[0-9]+px,[ ]*[0-9]+px\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Rect.MatchString(value) {
 		return true
 	}
 	values := []string{"auto", "initial", "inherit"}
@@ -865,38 +875,23 @@ func ColorHandler(value string) bool {
 	if in(splitVals, colorValues) {
 		return true
 	}
-	reg := regexp.MustCompile(`#[0-9abcdef]{6}`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if HexRGB.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`rgb\(([ ]*((([0-9]{1,2}|100)\%)|(([01]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))),){2}([ ]*((([0-9]{1,2}|100)\%)|(([01]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))))\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if RGB.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`rgba\(([ ]*((([0-9]{1,2}|100)\%)|(([01]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))),){3}[ ]*(1(\.0)?|0|(0\.[0-9]+))\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if RGBA.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`hsl\([ ]*([012]?[0-9]{1,2}|3[0-5][0-9]|360),[ ]*([0-9]{0,2}|100)\%,[ ]*([0-9]{0,2}|100)\%\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if HSL.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`hsla\(([ ]*[012]?[0-9]{1,2}|3[0-5][0-9]|360),[ ]*([0-9]{0,2}|100)\%,[ ]*([0-9]{0,2}|100)\%,[ ]*(1|1\.0|0|(0\.[0-9]+))\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
-		return true
-	}
-	return false
+	return HSLA.MatchString(value)
 }
 
 func ColumnCountHandler(value string) bool {
-	reg := regexp.MustCompile(`[0-9]+`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Numeric.MatchString(value) {
 		return true
 	}
 	values := []string{"auto", "initial", "inherit"}
@@ -1000,54 +995,35 @@ func FilterHandler(value string) bool {
 	if in(splitVals, values) {
 		return true
 	}
-	reg := regexp.MustCompile(`blur\([0-9]+px\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Blur.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`(brightness|contrast)\([0-9]+\%\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if BrightnessCont.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`drop-shadow\(([-]?[0-9]+px) ([-]?[0-9]+px)( [-]?[0-9]+px)?( ([-]?[0-9]+px))?`)
-	reg.Longest()
-	colorValue := strings.TrimSuffix(string(reg.ReplaceAll([]byte(value), []byte{})), ")")
+	if DropShadow.MatchString(value) {
+		return true
+	}
+	colorValue := strings.TrimSuffix(string(DropShadow.ReplaceAll([]byte(value), []byte{})), ")")
 	if ColorHandler(colorValue) {
 		return true
 	}
-	reg = regexp.MustCompile(`grayscale\(([0-9]{1,2}|100)%\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Grayscale.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`hue-rotate\(([12]?[0-9]{1,2}|3[0-5][0-9]|360)?\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if HueRotate.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`invert\(([0-9]{1,2}|100)%\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Invert.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`opacity\(([0-9]{1,2}|100)%\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Opacity.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`saturate\([0-9]+%\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Saturate.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`sepia\(([0-9]{1,2}|100)%\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
-		return true
-	}
-	//Not allowing URLs
-	return false
+	return Sepia.MatchString(value)
 }
 
 func FlexHandler(value string) bool {
@@ -1092,9 +1068,7 @@ func FlexFlowHandler(value string) bool {
 }
 
 func FlexGrowHandler(value string) bool {
-	reg := regexp.MustCompile(`[0-9\.]+`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if NumericDecimal.MatchString(value) {
 		return true
 	}
 	splitVals := strings.Split(value, ";")
@@ -1144,11 +1118,9 @@ func FontFamilyHandler(value string) bool {
 	if in(splitVals, values) {
 		return true
 	}
-	reg := regexp.MustCompile(`('[a-z \-]+'|[a-z \-]+)`)
-	reg.Longest()
 	for _, i := range splitVals {
 		i = strings.TrimSpace(i)
-		if reg.FindString(i) != i {
+		if Font.FindString(i) != i {
 			return false
 		}
 	}
@@ -1162,9 +1134,7 @@ func FontKerningHandler(value string) bool {
 }
 
 func FontLanguageOverrideHandler(value string) bool {
-	reg := regexp.MustCompile(`[a-z]+`)
-	reg.Longest()
-	return reg.FindString(value) == value && value != ""
+	return Alpha.MatchString(value)
 }
 
 func FontSizeHandler(value string) bool {
@@ -1177,9 +1147,7 @@ func FontSizeHandler(value string) bool {
 }
 
 func FontSizeAdjustHandler(value string) bool {
-	reg := regexp.MustCompile(`[0-9]+[\.]?[0-9]*`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Count.MatchString(value) {
 		return true
 	}
 	values := []string{"auto", "initial", "inherit"}
@@ -1298,9 +1266,7 @@ func GridColumnGapHandler(value string) bool {
 }
 
 func LengthHandler(value string) bool {
-	reg := regexp.MustCompile(`[\-]?[0-9]+[\.]?[0-9]*(%|cm|mm|in|px|pt|pc|em|ex|ch|rem|vw|vh|vmin|vmax|deg|rad|turn)?`)
-	reg.Longest()
-	return reg.FindString(value) == value && value != ""
+	return Length.MatchString(value)
 }
 
 func LineBreakHandler(value string) bool {
@@ -1310,12 +1276,10 @@ func LineBreakHandler(value string) bool {
 }
 
 func GridAxisStartEndHandler(value string) bool {
-	reg := regexp.MustCompile(`[0-9]+`)
-	if reg.FindString(value) == value && value != "" {
+	if Numeric.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`span [0-9]+`)
-	if reg.FindString(value) == value && value != "" {
+	if Span.MatchString(value) {
 		return true
 	}
 	values := []string{"auto"}
@@ -1366,9 +1330,7 @@ func GridTemplateAreasHandler(value string) bool {
 	if in([]string{value}, values) {
 		return true
 	}
-	reg := regexp.MustCompile(`['"]?[a-z ]+['"]?`)
-	reg.Longest()
-	return reg.FindString(value) == value && value != ""
+	return GridTemplateAreas.MatchString(value)
 }
 
 func GridTemplateColumnsHandler(value string) bool {
@@ -1551,9 +1513,7 @@ func ObjectPositionHandler(value string) bool {
 }
 
 func OpacityHandler(value string) bool {
-	reg := regexp.MustCompile("(0[.]?[0-9]*)|(1.0)")
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Opacity.MatchString(value) {
 		return true
 	}
 	values := []string{"initial", "inherit"}
@@ -1562,9 +1522,7 @@ func OpacityHandler(value string) bool {
 }
 
 func OrderHandler(value string) bool {
-	reg := regexp.MustCompile("[0-9]+")
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Numeric.MatchString(value) {
 		return true
 	}
 	values := []string{"initial", "inherit"}
@@ -1629,9 +1587,7 @@ func OverflowWrapHandler(value string) bool {
 }
 
 func OrphansHandler(value string) bool {
-	reg := regexp.MustCompile(`[0-9]+`)
-	reg.Longest()
-	return reg.FindString(value) == value && value != ""
+	return Numeric.MatchString(value)
 }
 
 func PaddingHandler(value string) bool {
@@ -1716,9 +1672,7 @@ func QuotesHandler(value string) bool {
 	if in(splitVals, values) {
 		return true
 	}
-	reg := regexp.MustCompile(`([ ]*["'][\x{0022}\x{0027}\x{2039}\x{2039}\x{203A}\x{00AB}\x{00BB}\x{2018}\x{2019}\x{201C}-\x{201E}]["'] ["'][\x{0022}\x{0027}\x{2039}\x{2039}\x{203A}\x{00AB}\x{00BB}\x{2018}\x{2019}\x{201C}-\x{201E}]["'])+`)
-	reg.Longest()
-	return reg.FindString(value) == value && value != ""
+	return Quotes.MatchString(value)
 }
 
 func ResizeHandler(value string) bool {
@@ -1766,9 +1720,7 @@ func TextCombineUprightHandler(value string) bool {
 	if in(splitVals, values) {
 		return true
 	}
-	reg := regexp.MustCompile(`digits [2-4]`)
-	reg.Longest()
-	return reg.FindString(value) == value && value != ""
+	return Digits.MatchString(value)
 }
 
 func TextDecorationHandler(value string) bool {
@@ -1813,9 +1765,7 @@ func TextJustifyHandler(value string) bool {
 }
 
 func TextOverflowHandler(value string) bool {
-	reg := regexp.MustCompile("[\"'][a-z]+[\"']")
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if QuotedAlpha.MatchString(value) {
 		return true
 	}
 	values := []string{"clip", "ellipsis", "initial", "inherit"}
@@ -1868,18 +1818,13 @@ func TransformHandler(value string) bool {
 	if in([]string{value}, values) {
 		return true
 	}
-	reg := regexp.MustCompile(`matrix\(([ ]*[0-9]+[\.]?[0-9]*,){5}([ ]*[0-9]+[\.]?[0-9]*)\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Matrix.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`matrix3d\(([ ]*[0-9]+[\.]?[0-9]*,){15}([ ]*[0-9]+[\.]?[0-9]*)\)`)
-	if reg.FindString(value) == value && value != "" {
+	if Matrix3D.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`(translate|translate3d|translatex|translatey|translatez|scale|scale3d|scalex|scaley|scalez)\(`)
-	reg.Longest()
-	subValue := string(reg.ReplaceAll([]byte(value), []byte{}))
+	subValue := string(TranslateScale.ReplaceAll([]byte(value), []byte{}))
 	trimValue := strings.Split(strings.TrimSuffix(subValue, ")"), ",")
 	valid := true
 	for _, i := range trimValue {
@@ -1891,19 +1836,13 @@ func TransformHandler(value string) bool {
 	if valid && trimValue != nil {
 		return true
 	}
-	reg = regexp.MustCompile(`rotate(x|y|z)?\(([12]?|3[0-5][0-9]|360)\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Rotate.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`rotate3d\(([ ]?(1(\.0)?|0\.[0-9]+),){3}([12]?|3[0-5][0-9]|360)\)`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Rotate3D.MatchString(value) {
 		return true
 	}
-	reg = regexp.MustCompile(`skew(x|y)?\(`)
-	reg.Longest()
-	subValue = string(reg.ReplaceAll([]byte(value), []byte{}))
+	subValue = string(Skew.ReplaceAll([]byte(value), []byte{}))
 	subValue = strings.TrimSuffix(subValue, ")")
 	trimValue = strings.Split(subValue, ",")
 	valid = true
@@ -1916,9 +1855,7 @@ func TransformHandler(value string) bool {
 	if valid {
 		return true
 	}
-	reg = regexp.MustCompile(`perspective\(`)
-	reg.Longest()
-	subValue = string(reg.ReplaceAll([]byte(value), []byte{}))
+	subValue = string(Perspective.ReplaceAll([]byte(value), []byte{}))
 	subValue = strings.TrimSuffix(subValue, ")")
 	return LengthHandler(subValue)
 }
@@ -1973,9 +1910,7 @@ func TransitionHandler(value string) bool {
 }
 
 func TransitionDelayHandler(value string) bool {
-	reg := regexp.MustCompile("[0-9]+[.]?[0-9]*(s|ms)?")
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Time.MatchString(value) {
 		return true
 	}
 	values := []string{"initial", "inherit"}
@@ -1984,9 +1919,7 @@ func TransitionDelayHandler(value string) bool {
 }
 
 func TransitionDurationHandler(value string) bool {
-	reg := regexp.MustCompile("[0-9]+[.]?[0-9]*(s|ms)?")
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if Time.MatchString(value) {
 		return true
 	}
 	values := []string{"initial", "inherit"}
@@ -1995,9 +1928,7 @@ func TransitionDurationHandler(value string) bool {
 }
 
 func TransitionPropertyHandler(value string) bool {
-	reg := regexp.MustCompile("([a-zA-Z]+,[ ]?)*[a-zA-Z]+")
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if TransitionProp.MatchString(value) {
 		return true
 	}
 	values := []string{"none", "all", "initial", "inherit"}
@@ -2075,9 +2006,7 @@ func WritingModeHandler(value string) bool {
 }
 
 func ZIndexHandler(value string) bool {
-	reg := regexp.MustCompile(`[\-]?[0-9]+`)
-	reg.Longest()
-	if reg.FindString(value) == value && value != "" {
+	if ZIndex.MatchString(value) {
 		return true
 	}
 	values := []string{"auto", "initial", "inherit"}
