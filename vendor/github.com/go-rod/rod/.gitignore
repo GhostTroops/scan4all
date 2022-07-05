@@ -1,0 +1,9 @@
+vendor/
+node_modules/
+tmp/
+
+.git
+.dockerignore
+*.out
+*.test
+*.json
