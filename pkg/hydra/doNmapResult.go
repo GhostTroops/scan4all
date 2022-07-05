@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // 弱口令检测
@@ -69,7 +70,8 @@ func DoParseXml(s string) {
 	}
 }
 
-func DoNmapRst() {
+func DoNmapRst(wg sync.WaitGroup) {
+	defer wg.Done()
 	if x1, ok := pkg.TmpFile[pkg.Naabu]; ok {
 		for _, x := range x1 {
 			defer func(r *os.File) {
