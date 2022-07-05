@@ -3203,7 +3203,7 @@
 	    "cms": "蓝凌EIS智慧协同平台",
 	    "method": "keyword",
 	    "location": "body",
-	    "keyword": ["/scripts/jquery.landray.common.js","蓝凌软件"]
+	    "keyword": ["/scripts/jqueryjquery.landray.common.js","蓝凌软件"]
 	 }, {
 	    "cms": "phpinfo",
 	    "method": "keyword",
