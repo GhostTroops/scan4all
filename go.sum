@@ -478,7 +478,6 @@ github.com/mholt/acmez v1.0.2 h1:C8wsEBIUVi6e0DYoxqCcFuXtwc4AWXL/jgcDjF7mjVo=
 github.com/mholt/acmez v1.0.2/go.mod h1:8qnn8QA/Ewx8E3ZSsmscqsIjhhpxuy9vqdgbX2ceceM=
 github.com/mholt/archiver v3.1.1+incompatible h1:1dCVxuqs0dJseYEhi5pl7MYPH9zDa1wBi7mF09cbNkU=
 github.com/mholt/archiver v3.1.1+incompatible/go.mod h1:Dh2dOXnSdiLxRiPoVfIr/fI1TwETms9B8CTWfeh7ROU=
-github.com/microcosm-cc/bluemonday v1.0.18 h1:6HcxvXDAi3ARt3slx6nTesbvorIc3QeTzBNRvWktHBo=
 github.com/microcosm-cc/bluemonday v1.0.18/go.mod h1:Z0r70sCuXHig8YpBzCc5eGHAap2K7e/u082ZUpDRRqM=
 github.com/microcosm-cc/bluemonday v1.0.19 h1:OI7hoF5FY4pFz2VA//RN8TfM0YJ2dJcl4P4APrCWy6c=
 github.com/microcosm-cc/bluemonday v1.0.19/go.mod h1:QNzV2UbLK2/53oIIwTOyLUSABMkjZ4tqiyC1g/DyqxE=
@@ -662,8 +661,6 @@ github.com/projectdiscovery/urlutil v0.0.0-20210525140139-b874f06ad921/go.mod h1
 github.com/projectdiscovery/urlutil v0.0.0-20210805190935-3d83726391c1 h1:9dYmONRtwy+xP8UAGHxEQ0cxO3umc9qiFmnYsoDUps4=
 github.com/projectdiscovery/urlutil v0.0.0-20210805190935-3d83726391c1/go.mod h1:oXLErqOpqEAp/ueQlknysFxHO3CUNoSiDNnkiHG+Jpo=
 github.com/projectdiscovery/wappalyzergo v0.0.45/go.mod h1:vS+npIOANv7eKsEtODsyRQt2n1v8VofCwj2gjmq72EM=
-github.com/projectdiscovery/wappalyzergo v0.0.48 h1:+5w6LzAdqYq3gJs4c5BkPYzOOqC7zYvA40ZoNLg/b+g=
-github.com/projectdiscovery/wappalyzergo v0.0.48/go.mod h1:1LQBGQVW47tMHxGTxmBK+pAwfsWKSLQMXt/egxGlljo=
 github.com/projectdiscovery/wappalyzergo v0.0.49 h1:h0ZQpAk+ypyKbVY/Mxy5B3OeQVS8+M0/Z/e4IJsqQwY=
 github.com/projectdiscovery/wappalyzergo v0.0.49/go.mod h1:1LQBGQVW47tMHxGTxmBK+pAwfsWKSLQMXt/egxGlljo=
 github.com/projectdiscovery/yamldoc-go v1.0.2/go.mod h1:7uSxfMXaBmzvw8m5EhOEjB6nhz0rK/H9sUjq1ciZu24=
