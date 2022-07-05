@@ -44,6 +44,7 @@ func main() {
 	gologger.Info().Msg("Port scan over,web scan starting")
 	// 弱密码检测
 	var wg sync.WaitGroup
+	wg.Add(1)
 	go hydra.DoNmapRst(wg)
 	err = naabuRunner.Httpxrun()
 	if err != nil {
