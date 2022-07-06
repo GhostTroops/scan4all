@@ -1,15 +1,18 @@
-id: achecker-detect
+id: audiocodes-detect
 
 info:
-  name: AChecker Detect
+  name: AudioCodes Login Panel
   author: princechaddha
   severity: info
-  tags: tech,achecker
+  metadata:
+    verified: true
+    shodan-query: http.html:"Audiocodes"
+  tags: panel,audiocodes
 
 requests:
   - method: GET
     path:
-      - "{{BaseURL}}/checker/login.php"
+      - "{{BaseURL}}"
 
     matchers-condition: and
     matchers:
@@ -17,10 +20,10 @@ requests:
       - type: word
         part: body
         words:
-          - ": Web Accessibility Checker</title>"
-          - "AChecker - Copyright"
+          - "AudioCodes"
+          - "login"
         condition: and
 
       - type: status
         status:
-          - 200
+          - 203
