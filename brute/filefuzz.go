@@ -34,6 +34,19 @@ var bakSuffix string
 //go:embed dicts/fuzzContentType1.txt
 var fuzzct string
 
+var ret = []string{}
+
+func InitGeneral() int {
+	prefix := []string{"index", "site", "db", "archive", "auth", "website", "backup", "test", "sql", "2016", "com", "dump", "master", "sales", "1", "2013", "members", "wwwroot", "clients", "back", "php", "localhost", "local", "127.0.0.1", "2019", "joomla", "wp", "html", "home", "tar", "vb", "database", "2012", "2020", "engine", "error_log", "mysql", "2018", "my", "new", "wordpress", "user", "2015", "customers", "dat", "media", "2014", "users", "2011", "2021", "old", "code", "jsp", "js", "store", "www", "2017", "web", "orders", "admin", "forum", "aspx", "data", "2010", "backups", "files", "bin"}
+	suffix := []string{".zip", ".rar", ".tar.gz", ".tgz", ".tar.bz2", ".tar", ".jar", ".war", ".7z", ".bak", ".sql"}
+
+	for i := 0; i < len(prefix); i++ {
+		for j := 0; j < len(suffix); j++ {
+			ret = append(ret, "/"+prefix[i]+suffix[j])
+		}
+	}
+	return len(ret)
+}
 func reqPage(u string) (*page, *pkg.Response, error) {
 	page := &page{}
 	var backUpSuffixList = strings.Split(strings.TrimSpace(bakSuffix), "\n")
@@ -54,6 +67,8 @@ func reqPage(u string) (*page, *pkg.Response, error) {
 		page.title = gettitle(req.Body)
 		page.locationUrl = req.Location
 		regs := strings.Split(strings.TrimSpace(fuzzct), "\n")
+		InitGeneral()
+		regs = append(regs, ret...)
 		for _, reg := range regs {
 			matched, _ := regexp.Match(reg, []byte(req.Header.Get("Content-Type")))
 			if matched {
@@ -137,8 +152,8 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		go func(payload string) {
 			if url, req, err := reqPage(u + payload); err == nil {
 				// 403 by pass
-				if url.is403{
-					a11:=ByPass403(&u,&payload)
+				if url.is403 {
+					a11 := ByPass403(&u, &payload)
 					path = append(path, a11...)
 				}
 				if url.is403 && (pkg.SliceInString(url.title, page403title) || pkg.SliceInString(req.Body, page403Content)) && !skip403 {
