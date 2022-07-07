@@ -515,7 +515,7 @@ github.com/projectdiscovery/fdmax/autofdmax
 # github.com/projectdiscovery/filekv v0.0.0-20210915124239-3467ef45dd08
 ## explicit; go 1.14
 github.com/projectdiscovery/filekv
-# github.com/projectdiscovery/fileutil v0.0.0-20220625080234-94e882ca56cb
+# github.com/projectdiscovery/fileutil v0.0.0-20220705195237-01becc2a8963
 ## explicit; go 1.14
 github.com/projectdiscovery/fileutil
 # github.com/projectdiscovery/folderutil v0.0.0-20220215113126-add60a1e8e08
@@ -986,7 +986,7 @@ golang.org/x/crypto/ssh/terminal
 # golang.org/x/mod v0.4.2
 ## explicit; go 1.12
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20220630215102-69896b714898
+# golang.org/x/net v0.0.0-20220706163947-c90051bbdb60
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context
