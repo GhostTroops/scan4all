@@ -70,7 +70,7 @@ func DoParseXml(s string) {
 	}
 }
 
-func DoNmapRst(wg sync.WaitGroup) {
+func DoNmapRst(wg *sync.WaitGroup) {
 	defer wg.Done()
 	if x1, ok := pkg.TmpFile[pkg.Naabu]; ok {
 		for _, x := range x1 {
