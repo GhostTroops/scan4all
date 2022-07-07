@@ -46,7 +46,7 @@ func main() {
 	// 弱密码检测
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go hydra.DoNmapRst(wg)
+	go hydra.DoNmapRst(&wg)
 	err = naabuRunner.Httpxrun()
 	if err != nil {
 		gologger.Fatal().Msgf("naabuRunner.Httpxrun Could not run httpRunner: %s\n", err)

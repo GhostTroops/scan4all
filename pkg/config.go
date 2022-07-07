@@ -1,12 +1,16 @@
 package pkg
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
+	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -147,3 +151,35 @@ func init() {
 }
 
 var G_Options interface{}
+
+func GetNmap() string {
+	nmap := "nmap"
+	if runtime.GOOS == "windows" {
+		nmap = "nmap.exe"
+	}
+	return nmap
+}
+
+func CheckHvNmap() bool {
+	r, _ := regexp.Compile(`.*Starting Nmap \d\.\d+.*`)
+	s, err := DoCmd(GetNmap(), "-v")
+	if nil == err && r.Match([]byte(s)) {
+		return true
+	}
+	return false
+}
+
+// 最佳的方法是将命令写到临时文件，并通过bash进行执行
+func DoCmd(args ...string) (string, error) {
+	cmd := exec.Command(args[0], args[1:]...)
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout // 标准输出
+	cmd.Stderr = &stderr // 标准错误
+	err := cmd.Run()
+	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
+	// out, err := cmd.CombinedOutput()
+	if nil != err {
+		return "", err
+	}
+	return string(outStr + "\n" + errStr), err
+}

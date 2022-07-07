@@ -213,6 +213,7 @@ func (r *Runner) RunEnumeration() error {
 			if err := r.scanner.IPRanger.Add(cidr.String()); err != nil {
 				gologger.Warning().Msgf("Couldn't track %s in scan results: %s\n", cidr, err)
 			}
+			// 可以优化基于nmap
 			ipStream, _ := mapcidr.IPAddressesAsStream(cidr.String())
 			for ip := range ipStream {
 				for _, port := range r.scanner.Ports {
@@ -335,7 +336,7 @@ func (r *Runner) RunEnumeration() error {
 			r.options.ResumeCfg.Retry = currentRetry
 			r.options.ResumeCfg.Seed = currentSeed
 			r.options.ResumeCfg.Unlock()
-
+			// 可以优化基于nmap
 			b := blackrock.New(int64(Range), currentSeed)
 			for index := int64(0); index < int64(Range); index++ {
 				xxx := b.Shuffle(index)
