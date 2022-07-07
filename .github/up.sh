@@ -2,5 +2,7 @@ cat ./go.mod|grep projectdiscovery|grep -E "subfinder|nuclei|wappalyzergo"|awk '
 
 ls ../nuclei-templates|xargs -I % cp -rf ../nuclei-templates/% config/nuclei-templates/
 go mod vendor
+# 工具静态分析代码实现
+go vet
 
 
