@@ -1,5 +1,6 @@
 root	calvin
 root	root
+root	+_)=-0=-0
 root	toor
 administrator	password
 NetLinx	password

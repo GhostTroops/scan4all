@@ -37,6 +37,7 @@ func main() {
 	if err != nil {
 		gologger.Fatal().Msgf("naaburunner.NewRunner Could not create runner: %s\n", err)
 	}
+	gologger.Info().Msg("Port scan starting....")
 	err = naabuRunner.RunEnumeration()
 	if err != nil {
 		gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
