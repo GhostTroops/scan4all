@@ -123,7 +123,11 @@ func (r *Runner) DoTargets() (bool, error) {
 							aR = append(aR, r.DoDns2Ips(j)...)
 						}
 						aR = append(aR, a1...)
+						continue
 					}
+				} else {
+					aR = append(aR, x1.Hostname())
+					continue
 				}
 			}
 		} else if govalidator.IsDNSName(x) {
