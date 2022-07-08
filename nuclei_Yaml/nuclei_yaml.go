@@ -47,6 +47,7 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 			options.JSON = x01.JSON
 			options.Stream = x01.Stream
 			options.Verbose = x01.Verbose
+			options.Silent = x01.Silent
 			options.Debug = x01.Debug
 		}
 	}
@@ -95,7 +96,7 @@ func readConfig() {
 	options.Output = ""
 	options.StoreResponse = false
 	options.StoreResponseDir = runner.DefaultDumpTrafficOutputFolder
-	options.Silent = true
+	options.Silent = false
 	options.NoColor = false
 	options.JSON = false
 	options.JSONRequests = false
@@ -234,7 +235,7 @@ func readConfig() {
 	options.Retries = 1
 	options.LeaveDefaultPorts = false
 	options.MaxHostError = 30
-	options.Project = false // 去重复，导致file missing
+	options.Project = true // 去重复，导致file missing
 	options.ProjectPath = os.TempDir()
 	options.StopAtFirstMatch = false
 	options.Stream = false
