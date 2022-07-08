@@ -294,7 +294,7 @@ func readConfig() {
 
 	options.UpdateNuclei = false
 	options.UpdateTemplates = false
-	options.TemplatesDirectory = ""
+	options.TemplatesDirectory = pwd + "/config/nuclei-templates"
 	// 嵌入式集成私人版本nuclei-templates 共3744个YAML POC
 	if "true" == pkg.GetVal("enablEmbedYaml") {
 		options.Templates = []string{pwd + "/config/nuclei-templates"}

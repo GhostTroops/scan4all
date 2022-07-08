@@ -342,7 +342,7 @@ func (r *Runner) prepareInput() {
 
 		err := r.stats.Start(makePrintCallback(), time.Duration(r.options.StatsInterval)*time.Second)
 		if err != nil {
-			gologger.Warning().Msgf("Could not create statistics: %s\n", err)
+			gologger.Warning().Msgf("Could not create statistics: %s \n", err)
 		}
 	}
 }
@@ -487,7 +487,7 @@ func makePrintCallback() func(stats clistats.StatisticsClient) {
 		builder.WriteRune('%')
 		builder.WriteRune(')')
 
-		builder.WriteRune('\n')
+		builder.WriteRune('\r')
 
 		fmt.Fprintf(os.Stderr, "%s", builder.String())
 		builder.Reset()

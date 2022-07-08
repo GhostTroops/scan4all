@@ -412,6 +412,10 @@ func (r *Runner) ShowScanResultOnExit() {
 func (r *Runner) Close() {
 	os.RemoveAll(r.targetsFile)
 	r.scanner.IPRanger.Hosts.Close()
+	r.scanner.State = scan.Done
+	//r.scanner.CleanupHandlers()
+	//r.scanner.Close()
+	//r.wgscan
 }
 
 // PickIP randomly
