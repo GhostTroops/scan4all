@@ -115,7 +115,7 @@ func readConfig() {
 	options.ReportingConfig = ""
 	// 启动es记录
 	if "true" == pkg.GetVal("enableEsSv") {
-		options.ReportingConfig = "config/nuclei_esConfig.yaml"
+		options.ReportingConfig = "./config/nuclei_esConfig.yaml"
 	}
 	options.CustomHeaders = []string{}
 	options.Vars = goflags.RuntimeMap{}
@@ -295,8 +295,9 @@ func readConfig() {
 	options.UpdateTemplates = false
 	// 嵌入式集成私人版本nuclei-templates 共3744个YAML POC
 	if "true" == pkg.GetVal("enablEmbedYaml") {
-		options.TemplatesDirectory = "config/nuclei-templates"
+		options.TemplatesDirectory = "./config/nuclei-templates"
 		options.NoUpdateTemplates = true
+
 	} else {
 		options.TemplatesDirectory = ""
 		options.NoUpdateTemplates = false

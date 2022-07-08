@@ -4,7 +4,6 @@ import (
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
-	"log"
 	"net"
 	"os"
 	"runtime"
@@ -127,7 +126,7 @@ func ParseOptions() *Options {
 			}
 			//defer tempInput.Close()
 		}
-		log.Println("nmap配置: ", szNmap)
+		//log.Println("nmap配置: ", szNmap)
 	}
 
 	flagSet.CreateGroup("config", "Configuration",
