@@ -40,7 +40,7 @@ func Start(IPAddr string, Port int, Protocol string, wg *sync.WaitGroup) {
 		if nil != &out && "" != out.Protocol && out.IPAddr != "" && "" != out.Auth.Username {
 			pkg.SendAData[AuthInfo](fmt.Sprintf("%s:%d", out.IPAddr, out.Port), []AuthInfo{out}, "hydra")
 			data, _ := json.Marshal(out)
-			log.Println("成功密码破解：", aurora.BrightRed(string(data)))
+			fmt.Println("成功密码破解：", aurora.BrightRed(string(data)))
 			log.Printf("\n[hydra]-> %v:%v[%v]暴力破解 Finish\n", IPAddr, Port, Protocol)
 		}
 	}

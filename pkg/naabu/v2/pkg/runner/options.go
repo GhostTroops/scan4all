@@ -103,8 +103,8 @@ func ParseOptions() *Options {
 	)
 
 	flagSet.CreateGroup("rate-limit", "Rate-limit",
-		flagSet.IntVar(&options.Threads, "c", 256, "general internal worker threads"),
-		flagSet.IntVar(&options.Rate, "rate", DefaultRateSynScan, "packets to send per second"),
+		flagSet.IntVar(&options.Threads, "c", 256*2, "general internal worker threads"),
+		flagSet.IntVar(&options.Rate, "rate", DefaultRateSynScan*2, "packets to send per second"),
 	)
 
 	flagSet.CreateGroup("output", "Output",
@@ -150,7 +150,7 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("optimization", "Optimization",
 		flagSet.IntVar(&options.Retries, "retries", DefaultRetriesSynScan, "number of retries for the port scan"),
-		flagSet.IntVar(&options.Timeout, "timeout", DefaultPortTimeoutSynScan, "millisecond to wait before timing out"),
+		flagSet.IntVar(&options.Timeout, "timeout", DefaultPortTimeoutSynScan/2, "millisecond to wait before timing out"),
 		flagSet.IntVar(&options.WarmUpTime, "warm-up-time", 2, "time in seconds between scan phases"),
 		flagSet.BoolVar(&options.Ping, "ping", false, "ping probes for verification of host"),
 		flagSet.BoolVar(&options.Verify, "verify", false, "validate the ports again with TCP verification"),
@@ -162,7 +162,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVarP(&options.NoColor, "nc", "no-color", false, "disable colors in CLI output"),
 		flagSet.BoolVar(&options.Silent, "silent", false, "display only results in output"),
 		flagSet.BoolVar(&options.Version, "version", false, "display version of naabu"),
-		flagSet.BoolVar(&options.EnableProgressBar, "stats", false, "display stats of the running scan"),
+		flagSet.BoolVar(&options.EnableProgressBar, "stats", true, "display stats of the running scan"),
 		flagSet.IntVarP(&options.StatsInterval, "stats-interval", "si", DefautStatsInterval, "number of seconds to wait between showing a statistics update"),
 	)
 

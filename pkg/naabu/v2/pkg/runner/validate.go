@@ -6,9 +6,9 @@ import (
 	"net"
 	"strings"
 
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/fileutil"
-	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
 
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/gologger/formatter"
@@ -48,7 +48,7 @@ func (options *Options) validateOptions() error {
 	if options.Rate == 0 {
 		return errors.Wrap(errZeroValue, "rate")
 	} else if !privileges.IsPrivileged && options.Rate == DefaultRateSynScan {
-		options.Rate = DefaultRateConnectScan
+		options.Rate = DefaultRateConnectScan * 2
 	}
 
 	if !privileges.IsPrivileged && options.Retries == DefaultRetriesSynScan {

@@ -70,6 +70,7 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 	nucleiRunner.Close()
 }
 func readConfig() {
+	pwd, _ := os.Getwd()
 	options.Targets = []string{}
 	options.TargetsFilePath = ""
 	options.Resume = ""
@@ -115,7 +116,7 @@ func readConfig() {
 	options.ReportingConfig = ""
 	// 启动es记录
 	if "true" == pkg.GetVal("enableEsSv") {
-		options.ReportingConfig = "./config/nuclei_esConfig.yaml"
+		options.ReportingConfig = pwd + "/config/nuclei_esConfig.yaml"
 	}
 	options.CustomHeaders = []string{}
 	options.Vars = goflags.RuntimeMap{}
@@ -235,7 +236,7 @@ func readConfig() {
 	options.Retries = 1
 	options.LeaveDefaultPorts = false
 	options.MaxHostError = 30
-	options.Project = true // 去重复，导致file missing
+	options.Project = false // 去重复，导致file missing
 	options.ProjectPath = os.TempDir()
 	options.StopAtFirstMatch = false
 	options.Stream = false
@@ -296,9 +297,8 @@ func readConfig() {
 	options.TemplatesDirectory = ""
 	// 嵌入式集成私人版本nuclei-templates 共3744个YAML POC
 	if "true" == pkg.GetVal("enablEmbedYaml") {
-		options.Templates = []string{"./config/nuclei-templates"}
+		options.Templates = []string{pwd + "/config/nuclei-templates"}
 		options.NoUpdateTemplates = true
-
 	} else {
 
 		options.NoUpdateTemplates = false
