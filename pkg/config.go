@@ -200,10 +200,9 @@ func doFile(config *embed.FS, s fs.DirEntry, szPath string) {
 	}
 	if data, err := config.ReadFile(szPath); nil == err {
 		if err := ioutil.WriteFile(szPath, data, os.ModePerm); nil == err {
-			log.Println("write ok: ", szPath)
+			//log.Println("write ok: ", szPath)
 		}
 	}
-
 }
 func doDir(config *embed.FS, s fs.DirEntry, szPath string) {
 	szPath = szPath + "/" + s.Name()
