@@ -4,6 +4,7 @@ import (
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
+	"log"
 	"net"
 	"os"
 	"runtime"
@@ -112,18 +113,23 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.JSON, "json", false, "write output in JSON lines format"),
 		flagSet.BoolVar(&options.CSV, "csv", false, "write output in csv format"),
 	)
-	// 读取结果
-	szNmap := pkg.GetVal("nmap")
-	if "" != szNmap {
-		if runtime.GOOS == "windows" {
-			szNmap = strings.Replace(szNmap, "nmap", "nmap.exe", -1)
+	var szNmap = ""
+	if pkg.CheckHvNmap() {
+		// 读取结果
+		szNmap = pkg.GetVal("nmap")
+		if "" != szNmap {
+			if runtime.GOOS == "windows" {
+				szNmap = strings.Replace(szNmap, "nmap", "nmap.exe", -1)
+			}
+			tempInput := pkg.GetTempFile(pkg.Naabu)
+			if tempInput != nil {
+				szNmap = strings.ReplaceAll(szNmap, "{filename}", tempInput.Name())
+			}
+			//defer tempInput.Close()
 		}
-		tempInput := pkg.GetTempFile(pkg.Naabu)
-		if tempInput != nil {
-			szNmap = strings.ReplaceAll(szNmap, "{filename}", tempInput.Name())
-		}
-		//defer tempInput.Close()
+		log.Println("nmap配置: ", szNmap)
 	}
+
 	flagSet.CreateGroup("config", "Configuration",
 		flagSet.StringVar(&options.CeyeApi, "ceyeapi", "", "ceye.io api key"),
 		flagSet.StringVar(&options.CeyeDomain, "ceyedomain", "", "ceye.io subdomain"),

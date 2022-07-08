@@ -2,9 +2,11 @@ package pkg
 
 import (
 	"bytes"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/viper"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -160,11 +162,17 @@ func GetNmap() string {
 	return nmap
 }
 
+var hvNmap = false
+
 func CheckHvNmap() bool {
+	if hvNmap {
+		return hvNmap
+	}
 	r, _ := regexp.Compile(`.*Starting Nmap \d\.\d+.*`)
 	s, err := DoCmd(GetNmap(), "-v")
 	if nil == err && r.Match([]byte(s)) {
-		return true
+		hvNmap = true
+		return hvNmap
 	}
 	return false
 }
@@ -182,4 +190,48 @@ func DoCmd(args ...string) (string, error) {
 		return "", err
 	}
 	return string(outStr + "\n" + errStr), err
+}
+
+func doFile(config *embed.FS, s fs.DirEntry, szPath string) {
+	os.MkdirAll(szPath, os.ModePerm)
+	szPath = szPath + "/" + s.Name()
+	if FileExists(szPath) {
+		return
+	}
+	if data, err := config.ReadFile(szPath); nil == err {
+		if err := ioutil.WriteFile(szPath, data, os.ModePerm); nil == err {
+			log.Println("write ok: ", szPath)
+		}
+	}
+
+}
+func doDir(config *embed.FS, s fs.DirEntry, szPath string) {
+	szPath = szPath + "/" + s.Name()
+	if x1, err := config.ReadDir(szPath); nil == err {
+		for _, x2 := range x1 {
+			if x2.IsDir() {
+				doDir(config, x2, szPath)
+			} else {
+				doFile(config, x2, szPath)
+			}
+		}
+	} else {
+		log.Println("doDir:", err)
+	}
+}
+func Init(config *embed.FS) {
+	szPath := "config"
+	log.Println("wait for init config files ... ")
+	if x1, err := config.ReadDir(szPath); nil == err {
+		for _, x2 := range x1 {
+			if x2.IsDir() {
+				doDir(config, x2, szPath)
+			} else {
+				doFile(config, x2, szPath)
+			}
+		}
+	} else {
+		log.Println("Init:", err)
+	}
+	log.Println("init config files is over .")
 }
