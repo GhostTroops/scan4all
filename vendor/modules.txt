@@ -124,8 +124,6 @@ github.com/c4milo/unpackit
 # github.com/caddyserver/certmagic v0.16.1
 ## explicit; go 1.17
 github.com/caddyserver/certmagic
-# github.com/cespare/xxhash v1.1.0
-## explicit
 # github.com/cespare/xxhash/v2 v2.1.2
 ## explicit; go 1.11
 github.com/cespare/xxhash/v2
