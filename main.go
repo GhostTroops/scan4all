@@ -7,10 +7,7 @@ import (
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/gologger"
 	"io"
-	"io/fs"
-	"io/ioutil"
 	"log"
-	"os"
 	"runtime"
 	"sync"
 )
@@ -18,51 +15,8 @@ import (
 //go:embed config/*
 var config embed.FS
 
-func doFile(config *embed.FS, s fs.DirEntry, szPath string) {
-	os.MkdirAll(szPath, os.ModePerm)
-	szPath = szPath + "/" + s.Name()
-	if pkg.FileExists(szPath) {
-		return
-	}
-	if data, err := config.ReadFile(szPath); nil == err {
-		if err := ioutil.WriteFile(szPath, data, os.ModePerm); nil == err {
-			//log.Println("write ok: ", szPath)
-		}
-	}
-}
-func doDir(config *embed.FS, s fs.DirEntry, szPath string) {
-	szPath = szPath + "/" + s.Name()
-	if x1, err := config.ReadDir(szPath); nil == err {
-		for _, x2 := range x1 {
-			if x2.IsDir() {
-				doDir(config, x2, szPath)
-			} else {
-				doFile(config, x2, szPath)
-			}
-		}
-	} else {
-		log.Println("doDir:", err)
-	}
-}
-func Init(config *embed.FS) {
-	szPath := "config"
-	log.Println("wait for init config files ... ")
-	if x1, err := config.ReadDir(szPath); nil == err {
-		for _, x2 := range x1 {
-			if x2.IsDir() {
-				doDir(config, x2, szPath)
-			} else {
-				doFile(config, x2, szPath)
-			}
-		}
-	} else {
-		log.Println("Init:", err)
-	}
-	pkg.Init()
-	log.Println("init config files is over .")
-}
 func init() {
-	Init(&config)
+	pkg.Init2(&config)
 }
 func main() {
 
