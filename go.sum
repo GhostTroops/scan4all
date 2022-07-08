@@ -58,7 +58,6 @@ github.com/Mzack9999/go-http-digest-auth-client v0.6.1-0.20220414142836-eb888350
 github.com/Mzack9999/ldapserver v1.0.2-0.20211229000134-b44a0d6ad0dd h1:RTWs+wEY9efxTKK5aFic5C5KybqQelGcX+JdM69KoTo=
 github.com/Mzack9999/ldapserver v1.0.2-0.20211229000134-b44a0d6ad0dd/go.mod h1:AqtPw7WNT0O69k+AbPKWVGYeW94TqgMW/g+Ppc8AZr4=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
-github.com/OneOfOne/xxhash v1.2.8 h1:31czK/TI9sNkxIKfaUfGlU47BAxQ0ztGgd9vPyqimf8=
 github.com/OneOfOne/xxhash v1.2.8/go.mod h1:eZbhyaAYD41SGSSsnmcpxVoRiQ/MPUTjUdIIOT9Um7Q=
 github.com/PuerkitoBio/goquery v1.6.0/go.mod h1:GsLWisAFVj4WgDibEWF4pvYnkVQBpKBKeU+7zCJoLcc=
 github.com/PuerkitoBio/goquery v1.8.0 h1:PJTF7AmFCFKk1N6V6jmKfrNH9tV5pNE6lZMkG0gta/U=
@@ -136,7 +135,6 @@ github.com/c4milo/unpackit v0.1.0/go.mod h1:pvXCMYlSV8zwGFWMaT+PWYkAB/cvDjN2mv9r
 github.com/caddyserver/certmagic v0.16.1 h1:rdSnjcUVJojmL4M0efJ+yHXErrrijS4YYg3FuwRdJkI=
 github.com/caddyserver/certmagic v0.16.1/go.mod h1:jKQ5n+ViHAr6DbPwEGLTSM2vDwTO6EvCKBblBRUvvuQ=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
-github.com/cespare/xxhash v1.1.0 h1:a6HrQnmkObjyL+Gs60czilIUGqrzKutQD6XZog3p+ko=
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=
@@ -178,7 +176,6 @@ github.com/denisenkom/go-mssqldb v0.12.2/go.mod h1:lnIw1mZukFRZDJYQ0Pb833QS2IaC3
 github.com/dgraph-io/badger v1.6.2 h1:mNw0qs90GVgGGWylh0umH5iag1j6n/PeJtNvL6KY/x8=
 github.com/dgraph-io/badger v1.6.2/go.mod h1:JW2yswe3V058sS0kZ2h/AXeDSqFjxnZcRrVH//y2UQE=
 github.com/dgraph-io/ristretto v0.0.2/go.mod h1:KPxhHT9ZxKefz+PCeOGsrHpl1qZ7i70dGTu2u+Ahh6E=
-github.com/dgraph-io/ristretto v0.0.3 h1:jh22xisGBjrEVnRZ1DVTpBVQm0Xndu8sMl0CWDzSIBI=
 github.com/dgraph-io/ristretto v0.0.3/go.mod h1:KPxhHT9ZxKefz+PCeOGsrHpl1qZ7i70dGTu2u+Ahh6E=
 github.com/dgraph-io/ristretto v0.1.0 h1:Jv3CGQHp9OjuMBSne1485aDpUkTKEcUqF+jm/LuerPI=
 github.com/dgraph-io/ristretto v0.1.0/go.mod h1:fux0lOrBhrVCJd3lcTHsIJhq1T2rokOu6v9Vcb3Q9ug=
@@ -587,8 +584,6 @@ github.com/projectdiscovery/fileutil v0.0.0-20210926202739-6050d0acf73c/go.mod h
 github.com/projectdiscovery/fileutil v0.0.0-20210928100737-cab279c5d4b5/go.mod h1:U+QCpQnX8o2N2w0VUGyAzjM3yBAe4BKedVElxiImsx0=
 github.com/projectdiscovery/fileutil v0.0.0-20220215113056-ba188a0c8abc/go.mod h1:Pm0f+MWgDFMSSI9NBedNh48LyYPs8gD3Jd8DXGmp4aQ=
 github.com/projectdiscovery/fileutil v0.0.0-20220427234316-40b2541a84b8/go.mod h1:wjS/oBWbzlayJ/aTK0KW0oOHGO03G8oEYzuN6stI8Ho=
-github.com/projectdiscovery/fileutil v0.0.0-20220625080234-94e882ca56cb h1:cMuzINUtV+ktzVF9BeyKUlM03ZZWJQYLTYNly96mVn4=
-github.com/projectdiscovery/fileutil v0.0.0-20220625080234-94e882ca56cb/go.mod h1:DaY7wmLPMleyHDCD/14YApPCDtrARY4J8Eny2ZGsG/g=
 github.com/projectdiscovery/fileutil v0.0.0-20220705195237-01becc2a8963 h1:4o97N9ftX1J3iKlIRVMPVOVZs4qbCczJvoFF2WA40t4=
 github.com/projectdiscovery/fileutil v0.0.0-20220705195237-01becc2a8963/go.mod h1:DaY7wmLPMleyHDCD/14YApPCDtrARY4J8Eny2ZGsG/g=
 github.com/projectdiscovery/folderutil v0.0.0-20220215113126-add60a1e8e08 h1:m1pgJisawU7zP9lKGktOEk6KNrNAR7e4Q07Kt3ox0NM=
@@ -993,8 +988,6 @@ golang.org/x/net v0.0.0-20211216030914-fe4d6282115f/go.mod h1:9nx3DQGgdP8bBQD5qx
 golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd/go.mod h1:CfG3xpIq0wQ8r1q4Su4UZFWDARRcnwPjda9FqA0JpMk=
 golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4/go.mod h1:CfG3xpIq0wQ8r1q4Su4UZFWDARRcnwPjda9FqA0JpMk=
 golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2/go.mod h1:CfG3xpIq0wQ8r1q4Su4UZFWDARRcnwPjda9FqA0JpMk=
-golang.org/x/net v0.0.0-20220630215102-69896b714898 h1:K7wO6V1IrczY9QOQ2WkVpw4JQSwCd52UsxVEirZUfiw=
-golang.org/x/net v0.0.0-20220630215102-69896b714898/go.mod h1:XRhObCWvk6IyKnWLug+ECip1KBveYUHfp+8e9klMJ9c=
 golang.org/x/net v0.0.0-20220706163947-c90051bbdb60 h1:8NSylCMxLW4JvserAndSgFL7aPli6A68yf0bYFTcWCM=
 golang.org/x/net v0.0.0-20220706163947-c90051bbdb60/go.mod h1:XRhObCWvk6IyKnWLug+ECip1KBveYUHfp+8e9klMJ9c=
 golang.org/x/oauth2 v0.0.0-20180821212333-d2e6202438be/go.mod h1:N/0e6XlmueqKjAGxoOufVs8QHGRruUQn6yWY3a++T0U=
@@ -1090,7 +1083,6 @@ golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220412211240-33da011f77ad/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a h1:dGzPydgVsqGcTRVwiLJ1jVbufYwmzD3LfVPLKsKg+0k=
 golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220704084225-05e143d24a9e h1:CsOuNlbOuf0mzxJIefr6Q4uAUetRUwZE4qt7VfzP+xo=
 golang.org/x/sys v0.0.0-20220704084225-05e143d24a9e/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=

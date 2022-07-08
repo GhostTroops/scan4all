@@ -137,7 +137,6 @@ require (
 	github.com/bits-and-blooms/bloom/v3 v3.0.1 // indirect
 	github.com/c4milo/unpackit v0.1.0 // indirect
 	github.com/caddyserver/certmagic v0.16.1 // indirect
-	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
