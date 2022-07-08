@@ -52,7 +52,8 @@ func DoParseXml(s string, wg *sync.WaitGroup, bf *bytes.Buffer) {
 				szPort := GetAttr(x.Attr, "portid")
 				port, _ := strconv.Atoi(szPort)
 				service := GetAttr(x.SelectElement("service").Attr, "name")
-				bf.Write([]byte(fmt.Sprintf("%s:%s\n", ip, szPort)))
+				//bf.Write([]byte(fmt.Sprintf("%s:%s\n", ip, szPort)))
+				bf.Write([]byte(fmt.Sprintf("http://%s:%s\n", ip, szPort)))
 				wg.Add(1)
 				go CheckWeakPassword(ip, service, port, wg)
 				// 存储结果到其他地方
