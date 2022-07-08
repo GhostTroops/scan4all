@@ -12,12 +12,14 @@ import (
 )
 
 // 弱口令检测
-func CheckWeakPassword(ip, service string, port int) {
+func CheckWeakPassword(ip, service string, port int, wg *sync.WaitGroup) {
+	defer wg.Done()
 	// 在弱口令检测范围就开始检测，结果....
 	service = strings.ToLower(service)
 	if pkg.Contains(ProtocolList, service) {
 		//log.Println("start CheckWeakPassword ", ip, ":", port, "(", service, ")")
-		Start(ip, port, service)
+		wg.Add(1)
+		Start(ip, port, service, wg)
 	}
 }
 
@@ -30,7 +32,8 @@ func GetAttr(att []xmlquery.Attr, name string) string {
 	return ""
 }
 
-func DoParseXml(s string) {
+func DoParseXml(s string, wg *sync.WaitGroup) {
+	defer wg.Done()
 	doc, err := xmlquery.Parse(strings.NewReader(s))
 	if err != nil {
 		log.Println(err)
@@ -47,7 +50,8 @@ func DoParseXml(s string) {
 				szPort := GetAttr(x.Attr, "portid")
 				port, _ := strconv.Atoi(szPort)
 				service := GetAttr(x.SelectElement("service").Attr, "name")
-				go CheckWeakPassword(ip, service, port)
+				wg.Add(1)
+				go CheckWeakPassword(ip, service, port, wg)
 				// 存储结果到其他地方
 				//x9 := AuthInfo{IPAddr: ip, Port: port, Protocol: service}
 				if "true" == enableEsSv {
@@ -81,7 +85,8 @@ func DoNmapRst(wg *sync.WaitGroup) {
 			b, err := ioutil.ReadFile(x.Name())
 			if nil == err && 0 < len(b) {
 				//log.Println("read config file ok: ", s)
-				DoParseXml(string(b))
+				wg.Add(1)
+				DoParseXml(string(b), wg)
 			}
 		}
 	} else {
