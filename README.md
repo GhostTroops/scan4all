@@ -115,7 +115,7 @@
 
 # 如何安装
 ```bash
-go install github.com/hktalent/scan4all@2.3.0
+go install github.com/hktalent/scan4all@2.4.7
 scan4all -h
 ```
 # 如何使用
