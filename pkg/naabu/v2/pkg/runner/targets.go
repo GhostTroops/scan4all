@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/asaskevich/govalidator"
 	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/pkg/hydra"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
 	"github.com/projectdiscovery/gologger"
@@ -19,6 +20,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 func (r *Runner) Load() error {
@@ -89,7 +91,105 @@ func (r *Runner) mergeToFile() (string, error) {
 	return filename, nil
 }
 
+func (r *Runner) DoSsl(target string) []string {
+	// 处理ssl 数字证书中包含的域名信息，深度挖掘漏洞
+	if "true" == pkg.GetVal("ParseSSl") {
+		aH, err := pkg.DoDns(target)
+		if nil == err {
+			return aH
+		}
+	}
+	return []string{}
+}
+
+var Wg *sync.WaitGroup
+
+// target域名转多个ip处理
+func (r *Runner) DoTargets() (bool, error) {
+	data, err := ioutil.ReadFile(r.targetsFile)
+	if err != nil {
+		return false, err
+	}
+	aR := []string{}
+	a := strings.Split(string(data), "\n")
+	for _, x := range a {
+		if govalidator.IsURL(x) {
+			if x1, err := url.Parse(x); nil == err {
+				if govalidator.IsDNSName(x) {
+					aR = append(aR, r.DoDns2Ips(x1.Hostname())...)
+					a1 := r.DoSsl(x)
+					if 0 < len(a1) {
+						for _, j := range a1 {
+							aR = append(aR, r.DoDns2Ips(j)...)
+						}
+						aR = append(aR, a1...)
+					}
+				}
+			}
+		} else if govalidator.IsDNSName(x) {
+			aR = append(aR, r.DoDns2Ips(x)...)
+			a1 := r.DoSsl(x)
+			if 0 < len(a1) {
+				for _, j := range a1 {
+					aR = append(aR, r.DoDns2Ips(j)...)
+				}
+				aR = append(aR, a1...)
+			}
+		}
+		aR = append(aR, x)
+	}
+	a = nil
+	aR = pkg.RemoveDuplication_map(aR)
+	ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
+	//ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
+	// 有nmap那么就直接调用nmap了
+	if pkg.CheckHvNmap() {
+		tempInput1, err := ioutil.TempFile("", "stdin-out-*")
+		if err == nil {
+			defer tempInput1.Close()
+			x := "config/doNmapScan.sh " + r.targetsFile + " " + tempInput1.Name()
+			log.Println(x)
+			ss, err := pkg.DoCmd(strings.Split(x, " ")...)
+			s0 := tempInput1.Name()
+			if nil == err {
+				if "" != ss {
+					log.Println(ss, "\n")
+				}
+				if pkg.FileExists(s0) {
+					//data, err := tempInput1.Stat()
+					//log.Println(tempInput1.Name(), " file size: ", data.Size())
+					//if nil == err && 100 < data.Size() {
+					if x99, ok := pkg.TmpFile[pkg.Naabu]; ok && 0 < len(x99) {
+						defer func(f09 *os.File) {
+							f09.Close()
+							os.RemoveAll(f09.Name())
+						}(x99[0])
+					}
+					pkg.TmpFile[pkg.Naabu] = []*os.File{tempInput1}
+					Wg.Add(1)
+					hydra.DoNmapRst(Wg, &Naabubuffer)
+					defer r.Close()
+					ioutil.WriteFile(r.targetsFile, []byte(""), os.ModePerm)
+					return true, nil
+					//} else {
+					//	log.Println("tempInput1.Stat: ", err)
+					//}
+				} else {
+					log.Println("nmap 结果文件不存在")
+				}
+			} else {
+				log.Println("DoCmd: ", err)
+			}
+		}
+	}
+	ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
+	return false, nil
+}
+
 func (r *Runner) PreProcessTargets() error {
+	if b11, _ := r.DoTargets(); b11 {
+		return nil
+	}
 	if r.options.Stream {
 		defer close(r.streamChannel)
 	}
@@ -104,20 +204,6 @@ func (r *Runner) PreProcessTargets() error {
 		wg.Add()
 		func(target string) {
 			defer wg.Done()
-			// 处理ssl 数字证书中包含的域名信息，深度挖掘漏洞
-			if "true" == pkg.GetVal("ParseSSl") {
-				aH, err := pkg.DoDns(target)
-				if nil == err && 0 < len(aH) {
-					for _, x := range aH {
-						gologger.Debug().Msg("add " + x)
-						if err := r.AddTarget(x); err != nil {
-							gologger.Warning().Msgf("%s\n", err)
-						}
-						r.DoDns(x)
-					}
-					return
-				}
-			}
 			if err := r.AddTarget(target); err != nil {
 				gologger.Warning().Msgf("%s\n", err)
 			}
@@ -129,10 +215,10 @@ func (r *Runner) PreProcessTargets() error {
 }
 
 func Add2Naabubuffer(target string) {
-	//log.Println("Add2Naabubuffer：", target)
+	fmt.Println("Add2Naabubuffer：", target)
 	k1 := target + "_Add2Naabubuffer"
 	if b1, err := pkg.Cache1.Get(k1); nil == err && string(b1) == target {
-		log.Println("重复：", target)
+		fmt.Println("重复：", target)
 		return
 	}
 	pkg.PutAny[string](k1, target)
@@ -191,17 +277,25 @@ func (r *Runner) AddTarget(target string) error {
 	return nil
 }
 
+func (r *Runner) DoDns2Ips(target string) []string {
+	if govalidator.IsIP(target) {
+		return []string{target}
+	}
+	ips, err := r.resolveFQDN(target)
+	if err != nil {
+		return []string{target}
+	}
+	return ips
+}
+
 func (r *Runner) DoDns(target string) {
 	if govalidator.IsIP(target) {
 		return
 	}
-	ips, err := r.resolveFQDN(target)
-	if err != nil {
-		return
-	}
+	ips := r.DoDns2Ips(target)
 	for _, ip := range ips {
 		if r.options.Stream {
-			log.Println("Stream add ", ip)
+			//log.Println("Stream add ", ip)
 			r.streamChannel <- iputil.ToCidr(ip)
 		} else if err := r.scanner.IPRanger.AddHostWithMetadata(ip, target); err != nil {
 			gologger.Warning().Msgf("%s\n", err)

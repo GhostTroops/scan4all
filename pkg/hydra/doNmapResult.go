@@ -1,6 +1,8 @@
 package hydra
 
 import (
+	"bytes"
+	"fmt"
 	"github.com/antchfx/xmlquery"
 	"github.com/hktalent/scan4all/pkg"
 	"io/ioutil"
@@ -32,11 +34,11 @@ func GetAttr(att []xmlquery.Attr, name string) string {
 	return ""
 }
 
-func DoParseXml(s string, wg *sync.WaitGroup) {
+func DoParseXml(s string, wg *sync.WaitGroup, bf *bytes.Buffer) {
 	defer wg.Done()
 	doc, err := xmlquery.Parse(strings.NewReader(s))
 	if err != nil {
-		log.Println(err)
+		log.Println("DoParseXml： ", err)
 		return
 	}
 	var enableEsSv = pkg.GetVal("enableEsSv")
@@ -50,6 +52,7 @@ func DoParseXml(s string, wg *sync.WaitGroup) {
 				szPort := GetAttr(x.Attr, "portid")
 				port, _ := strconv.Atoi(szPort)
 				service := GetAttr(x.SelectElement("service").Attr, "name")
+				bf.Write([]byte(fmt.Sprintf("%s:%s\n", ip, szPort)))
 				wg.Add(1)
 				go CheckWeakPassword(ip, service, port, wg)
 				// 存储结果到其他地方
@@ -61,7 +64,7 @@ func DoParseXml(s string, wg *sync.WaitGroup) {
 					}
 					m1[ip] = append(xx09, []string{szPort, service})
 				}
-				//fmt.Printf("%s\t%d\t%s\n", ip, port, service)
+				fmt.Printf("%s\t%d\t%s\n", ip, port, service)
 			}
 		}
 	}
@@ -74,7 +77,7 @@ func DoParseXml(s string, wg *sync.WaitGroup) {
 	}
 }
 
-func DoNmapRst(wg *sync.WaitGroup) {
+func DoNmapRst(wg *sync.WaitGroup, bf *bytes.Buffer) {
 	defer wg.Done()
 	if x1, ok := pkg.TmpFile[pkg.Naabu]; ok {
 		for _, x := range x1 {
@@ -84,9 +87,11 @@ func DoNmapRst(wg *sync.WaitGroup) {
 			}(x)
 			b, err := ioutil.ReadFile(x.Name())
 			if nil == err && 0 < len(b) {
-				//log.Println("read config file ok: ", s)
+				//fmt.Println("read nmap xml file ok: ", len(b))
 				wg.Add(1)
-				DoParseXml(string(b), wg)
+				DoParseXml(string(b), wg, bf)
+			} else {
+				log.Println("ioutil.ReadFile(x.Name()): ", err)
 			}
 		}
 	} else {

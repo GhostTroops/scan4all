@@ -66,7 +66,7 @@ func (r *Runner) Httpxrun() error {
 	httpxoptions.NoColor = r.options.NoColor
 	httpxoptions.Silent = r.options.Silent
 	httpxoptions.Version = r.options.Version
-	httpxoptions.RateLimit = r.options.Rate / 10
+	httpxoptions.RateLimit = r.options.Rate
 
 	httpxoptions.NoPOC = r.options.NoPOC
 	httpxoptions.CeyeApi = r.options.CeyeApi
@@ -312,7 +312,7 @@ func (r *Runner) RunEnumeration() error {
 			r.stats.AddCounter("errors", uint64(0))
 			r.stats.AddCounter("total", Range*uint64(r.options.Retries))
 			if err := r.stats.Start(makePrintCallback(), time.Duration(r.options.StatsInterval)*time.Second); err != nil {
-				gologger.Warning().Msgf("Couldn't start statistics: %s\n", err)
+				gologger.Warning().Msgf("Couldn't start statistics: %s", err)
 			}
 		}
 
@@ -693,7 +693,7 @@ func makePrintCallback() func(stats clistats.StatisticsClient) {
 		builder.WriteString(clistats.String(uint64(float64(packets) / float64(total) * 100.0)))
 		builder.WriteRune('%')
 		builder.WriteRune(')')
-		builder.WriteRune('\n')
+		builder.WriteString("         \r")
 
 		fmt.Fprintf(os.Stderr, "%s", builder.String())
 		builder.Reset()

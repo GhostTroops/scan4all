@@ -149,6 +149,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 			return path, technologies
 		}
 		ch <- struct{}{}
+		//log.Println(u, " ", payload)
 		go func(payload string) {
 			if url, req, err := reqPage(u + payload); err == nil {
 				// 403 by pass

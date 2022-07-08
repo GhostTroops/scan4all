@@ -22,6 +22,7 @@ var (
 	ProtocolList   = []string{
 		"ssh", "rdp", "ftp", "smb", "telnet",
 		"mysql", "mssql", "oracle", "postgresql", "mongodb", "redis",
+		"rsh-spx",
 		//110:   "pop3",
 		//995:   "pop3",
 		//25:    "smtp",
@@ -90,6 +91,7 @@ func (c *Cracker) Run() {
 		c.Pool.Function = postgresqlCracker
 	case "ldap":
 
+	case "rsh-spx":
 	case "ssh":
 		c.Pool.Function = sshCracker
 	case "telnet":

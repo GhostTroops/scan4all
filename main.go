@@ -3,7 +3,6 @@ package main
 import (
 	"embed"
 	"github.com/hktalent/scan4all/pkg"
-	"github.com/hktalent/scan4all/pkg/hydra"
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/gologger"
 	"io"
@@ -18,8 +17,11 @@ var config embed.FS
 func init() {
 	pkg.Init2(&config)
 }
-func main() {
 
+var Wg sync.WaitGroup
+
+func main() {
+	naaburunner.Wg = &Wg
 	defer func() {
 		pkg.Cache1.Close()
 		//if "true" == pkg.GetVal("autoRmCache") {
@@ -46,18 +48,9 @@ func main() {
 		gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
 	}
 	gologger.Info().Msg("Port scan over,web scan starting")
-	hvNmap := pkg.CheckHvNmap()
-	var wg sync.WaitGroup
-	if hvNmap {
-		// 弱密码检测
-		wg.Add(1)
-		go hydra.DoNmapRst(&wg)
-	}
 	err = naabuRunner.Httpxrun()
 	if err != nil {
 		gologger.Fatal().Msgf("naabuRunner.Httpxrun Could not run httpRunner: %s\n", err)
 	}
-	if hvNmap {
-		wg.Wait()
-	}
+	Wg.Wait()
 }
