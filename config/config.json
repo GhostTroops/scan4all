@@ -56,7 +56,7 @@
   "naabu_dns": {},
   "naabu": {"TopPorts": "full","ScanAllIPS": true},
   "nuclei": {},
-  "enablEmbedYaml": true,
+  "enablEmbedYaml": false,
   "httpx": {},
   "enableEsSv": false,
   "esthread": 8,
