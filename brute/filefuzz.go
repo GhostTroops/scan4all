@@ -70,9 +70,11 @@ func reqPage(u string) (*page, *pkg.Response, error) {
 		InitGeneral()
 		regs = append(regs, ret...)
 		for _, reg := range regs {
-			matched, _ := regexp.Match(reg, []byte(req.Header.Get("Content-Type")))
-			if matched {
-				page.isBackUpPage = true
+			if x0, ok := req.Header["Content-Type"]; ok && 0 < len(x0) {
+				matched, _ := regexp.Match(reg, []byte(x0[0]))
+				if matched {
+					page.isBackUpPage = true
+				}
 			}
 		}
 		if req.StatusCode == 403 && strings.HasSuffix(u, "/") {

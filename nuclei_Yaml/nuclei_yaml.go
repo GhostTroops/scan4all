@@ -2,8 +2,8 @@ package nuclei_Yaml
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/hktalent/scan4all/pkg"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -22,7 +22,7 @@ var (
 	options = &types.Options{}
 )
 
-func RunNuclei(buf bytes.Buffer, xx chan bool) {
+func RunNuclei(buf *bytes.Buffer, xx chan bool) {
 	defer func() {
 		xx <- true
 		close(xx)
@@ -34,7 +34,8 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 	}
 
 	readConfig()
-	options.Targets = strings.Split(buf.String(), "\n")
+	options.Targets = strings.Split(strings.TrimSpace(buf.String()), "\n")
+	log.Printf("options.Targets = %+v", options.Targets)
 	runner.ParseOptions(options)
 	/////////////////////////////////////
 	options.Verbose = false
@@ -54,7 +55,7 @@ func RunNuclei(buf bytes.Buffer, xx chan bool) {
 	////////////////////////////////////*/
 	nucleiRunner, err := runner.New(options)
 	if err != nil {
-		fmt.Println(options)
+		//fmt.Println(options)
 		gologger.Fatal().Msgf("nucleiRunner Could not create runner: %s\n", err)
 	}
 	if nucleiRunner == nil {
