@@ -56,7 +56,7 @@ func (r *Runner) Httpxrun() error {
 	//log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
 	//Naabubuffer1 := bytes.Buffer{}
 	//Naabubuffer1.Write(httpxrunner.Naabubuffer.Bytes())
-	go nuclei_Yaml.RunNuclei(httpxrunner.Naabubuffer, nucleiDone)
+	go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone)
 	httpxoptions := httpxrunner.ParseOptions()
 	httpxoptions.Output = r.options.Output
 	httpxoptions.CSVOutput = r.options.CSV
@@ -571,7 +571,7 @@ func (r *Runner) handleOutput() {
 			if host == "ip" {
 				host = hostIP
 			}
-			log.Println("%s found ports: %i", hostIP, len(ports))
+			log.Printf("%s found ports: %d", hostIP, len(ports))
 			for port := range ports {
 				Add2Naabubuffer(fmt.Sprintf("%s:%d\n", host, port))
 			}
