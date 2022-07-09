@@ -5,6 +5,7 @@ import (
 	"github.com/hktalent/scan4all/pkg/kscan/lib/gotelnet"
 	"github.com/hktalent/scan4all/pkg/kscan/lib/misc"
 	"github.com/hktalent/scan4all/pkg/kscan/lib/pool"
+	"strings"
 	"time"
 )
 
@@ -19,20 +20,7 @@ type Cracker struct {
 var (
 	DefaultAuthMap map[string]*AuthList
 	CustomAuthMap  *AuthList
-	ProtocolList   = []string{
-		"ssh", "rdp", "ftp", "smb", "telnet",
-		"mysql", "mssql", "oracle", "postgresql", "mongodb", "redis",
-		"rsh-spx",
-		//110:   "pop3",
-		//995:   "pop3",
-		//25:    "smtp",
-		//994:   "smtp",
-		//143:   "imap",
-		//993:   "imap",
-		//389:   "ldap",
-		//23:   "telnet",
-		//50000: "db2",
-	}
+	ProtocolList   = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,smb,telnet", ",")
 )
 
 func NewCracker(info *AuthInfo, isAuthUpdate bool, threads int) *Cracker {
@@ -92,6 +80,7 @@ func (c *Cracker) Run() {
 	case "ldap":
 
 	case "rsh-spx":
+		c.Pool.Function = sshCracker
 	case "ssh":
 		c.Pool.Function = sshCracker
 	case "telnet":
@@ -141,32 +130,22 @@ func (c *Cracker) Run() {
 
 func InitDefaultAuthMap() {
 	m := make(map[string]*AuthList)
-	m = map[string]*AuthList{
-		"rdp":        NewAuthList(),
-		"ssh":        NewAuthList(),
-		"mysql":      NewAuthList(),
-		"mssql":      NewAuthList(),
-		"oracle":     NewAuthList(),
-		"postgresql": NewAuthList(),
-		"redis":      NewAuthList(),
-		"telnet":     NewAuthList(),
-		"mongodb":    NewAuthList(),
-		"smb":        NewAuthList(),
-		"ldap":       NewAuthList(),
-		//"db2":        NewAuthList(),
-
+	m = map[string]*AuthList{}
+	for _, x := range ProtocolList {
+		m[x] = GetDefaultFtpList(x)
 	}
-	m["rdp"] = GetDefaultFtpList("rdp")
-	m["ssh"] = GetDefaultFtpList("ssh")
-	m["mysql"] = GetDefaultFtpList("mysql")
-	m["mssql"] = GetDefaultFtpList("mssql")
-	m["oracle"] = GetDefaultFtpList("oracle")
-	m["postgresql"] = GetDefaultFtpList("postgresql")
-	m["redis"] = GetDefaultFtpList("redis")
-	m["ftp"] = GetDefaultFtpList("ftp")
-	m["mongodb"] = GetDefaultFtpList("mongodb")
-	m["smb"] = GetDefaultFtpList("smb")
-	m["telnet"] = GetDefaultFtpList("telnet")
+	//m["rdp"] = GetDefaultFtpList("rdp")
+	//m["ssh"] = GetDefaultFtpList("ssh")
+	//m["rsh-spx"] = GetDefaultFtpList("ssh")
+	//m["mysql"] = GetDefaultFtpList("mysql")
+	//m["mssql"] = GetDefaultFtpList("mssql")
+	//m["oracle"] = GetDefaultFtpList("oracle")
+	//m["postgresql"] = GetDefaultFtpList("postgresql")
+	//m["redis"] = GetDefaultFtpList("redis")
+	//m["ftp"] = GetDefaultFtpList("ftp")
+	//m["mongodb"] = GetDefaultFtpList("mongodb")
+	//m["smb"] = GetDefaultFtpList("smb")
+	//m["telnet"] = GetDefaultFtpList("telnet")
 	DefaultAuthMap = m
 }
 
