@@ -38,7 +38,7 @@ var (
 func GetVal(key string) string {
 	key1 := os.Getenv(key)
 	if "" != key1 {
-		return key1
+		return fmt.Sprintf("%v", key1)
 	}
 	key1 = strings.ToLower(key)
 	if s, ok := mData[key1]; ok {
