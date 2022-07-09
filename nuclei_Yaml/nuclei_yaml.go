@@ -76,7 +76,7 @@ func readConfig() {
 	options.Resume = ""
 
 	options.NewTemplates = false
-	options.AutomaticScan = false
+	options.AutomaticScan = true
 	options.Templates = []string{}
 	options.TemplateURLs = []string{}
 	options.Workflows = []string{}
