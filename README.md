@@ -94,7 +94,7 @@
   "httpx": {}   // httpx 配置,
   "enableEsSv": true,        // 开启结果send 到es
   "esthread": 8 // 结果写入Elasticsearch的线程数,
-  "esUrl": "http://127.0.0.1:9200/" // Elasticsearch url
+  "esUrl": "http://127.0.0.1:9200/%s_index/_doc/%s" // Elasticsearch url
 }
 ```
 
