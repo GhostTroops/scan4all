@@ -126,9 +126,15 @@ func (r *Runner) DoTargets() (bool, error) {
 						continue
 					}
 				} else {
-					aR = append(aR, x1.Hostname())
+					if "" == x1.Hostname() {
+						aR = append(aR, x)
+					} else {
+						aR = append(aR, x1.Hostname())
+					}
 					continue
 				}
+			} else {
+				aR = append(aR, x)
 			}
 		} else if govalidator.IsDNSName(x) {
 			aR = append(aR, r.DoDns2Ips(x)...)
@@ -144,10 +150,12 @@ func (r *Runner) DoTargets() (bool, error) {
 	}
 	a = nil
 	aR = pkg.RemoveDuplication_map(aR)
+	//log.Printf("%+v", aR)
 	ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
-	//ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
 	// 有nmap那么就直接调用nmap了
+	bRw := false
 	if pkg.CheckHvNmap() {
+		bRw = true
 		tempInput1, err := ioutil.TempFile("", "stdin-out-*")
 		if err == nil {
 			defer tempInput1.Close()
@@ -174,6 +182,7 @@ func (r *Runner) DoTargets() (bool, error) {
 					hydra.DoNmapRst(Wg, &Naabubuffer)
 					defer r.Close()
 					ioutil.WriteFile(r.targetsFile, []byte(""), os.ModePerm)
+					log.Println("do namp over naabu ")
 					return true, nil
 					//} else {
 					//	log.Println("tempInput1.Stat: ", err)
@@ -186,7 +195,9 @@ func (r *Runner) DoTargets() (bool, error) {
 			}
 		}
 	}
-	ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
+	if bRw {
+		ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
+	}
 	return false, nil
 }
 
@@ -219,7 +230,11 @@ func (r *Runner) PreProcessTargets() error {
 }
 
 func Add2Naabubuffer(target string) {
-	fmt.Println("Add2Naabubuffer：", target)
+	// fix no http://
+	if -1 == strings.Index(target, "://") {
+		target = "http://" + target
+	}
+	//fmt.Println("Add2Naabubuffer：", target)
 	k1 := target + "_Add2Naabubuffer"
 	if b1, err := pkg.Cache1.Get(k1); nil == err && string(b1) == target {
 		fmt.Println("重复：", target)
@@ -230,6 +245,18 @@ func Add2Naabubuffer(target string) {
 }
 
 func (r *Runner) AddTarget(target string) error {
+	target = strings.TrimSpace(target)
+	if "" == target {
+		return nil
+	}
+	// fix to no http[s]:// no port
+	if -1 < strings.Index(target, "://") {
+		target = strings.Split(target, "://")[1]
+	}
+	if -1 < strings.Index(target, ":") {
+		target = strings.Split(target, ":")[0]
+	}
+	//log.Println("target: ", target)
 	k1 := target + "_AddTarget"
 	if b1, err := pkg.Cache1.Get(k1); nil == err && string(b1) == target {
 		log.Println("重复：", target)

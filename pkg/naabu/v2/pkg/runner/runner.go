@@ -8,6 +8,7 @@ import (
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/retryablehttp-go"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -570,6 +571,7 @@ func (r *Runner) handleOutput() {
 			if host == "ip" {
 				host = hostIP
 			}
+			log.Println("%s found ports: %i", hostIP, len(ports))
 			for port := range ports {
 				Add2Naabubuffer(fmt.Sprintf("%s:%d\n", host, port))
 			}

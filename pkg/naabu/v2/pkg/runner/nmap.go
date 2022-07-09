@@ -13,6 +13,7 @@ import (
 )
 
 func (r *Runner) handleNmap() error {
+	//fmt.Println("naabu found ports: %d", len(r.scanner.ScanResults.IPPorts))
 	// command from CLI
 	command := r.options.NmapCLI
 	hasCLI := r.options.NmapCLI != ""
