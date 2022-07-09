@@ -36,11 +36,15 @@ var (
 
 // 优先使用配置文件中的配置，否则从环境变量中读取
 func GetVal(key string) string {
-	key = strings.ToLower(key)
-	if s, ok := mData[key]; ok {
+	key1 := os.Getenv(key)
+	if "" != key1 {
+		return key1
+	}
+	key1 = strings.ToLower(key)
+	if s, ok := mData[key1]; ok {
 		return fmt.Sprintf("%v", s)
 	}
-	return os.Getenv(key)
+	return key1
 }
 func GetValByDefault(key, dftvl string) string {
 	s := GetVal(key)
