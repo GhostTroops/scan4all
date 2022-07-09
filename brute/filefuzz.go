@@ -60,7 +60,7 @@ func reqPage(u string) (*page, *pkg.Response, error) {
 	}
 	header := make(map[string]string)
 	header["Accept"] = "text/html,*/*;"
-	if req, err := pkg.HttpRequset(u, method, "", false, header); err == nil {
+	if req, err := pkg.HttpRequset(u, method, "", false, header); err == nil && nil != req && nil != req.Header {
 		if pkg.IntInSlice(req.StatusCode, []int{301, 302, 307, 308}) {
 			page.is302 = true
 		}
