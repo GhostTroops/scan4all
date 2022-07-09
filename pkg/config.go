@@ -165,6 +165,9 @@ func GetNmap() string {
 var hvNmap = false
 
 func CheckHvNmap() bool {
+	if "true" != GetVal("priorityNmap") {
+		return false
+	}
 	if hvNmap {
 		return hvNmap
 	}
