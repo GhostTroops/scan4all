@@ -120,9 +120,9 @@ func init() {
 		DefaultUp: pkg.GetVal4Filedefault("ftp_default", ftp_default),
 	}
 	md["ssh"] = PPDict{
-		Username:  pkg.GetVal4File("ssh_username", ftpusername),
-		Paswd:     pkg.GetVal4File("ssh_pswd", ftp_pswd),
-		DefaultUp: pkg.GetVal4Filedefault("ssh_default", ftp_default),
+		Username:  pkg.GetVal4File("ssh_username", username),
+		Paswd:     pkg.GetVal4File("ssh_pswd", pswd),
+		DefaultUp: pkg.GetVal4Filedefault("ssh_default", ssh_default),
 	}
 	md["rsh-spx"] = md["ssh"]
 	md["mongodb"] = PPDict{
