@@ -107,6 +107,11 @@ func main() {
 	url := os.Args[1]
 	s1 := favicohashMd5(url)
 	fmt.Println(s1)
+
+	//var xN uint16 = 534
+	//data, err := json.Marshal(&xN)
+	//fmt.Printf("%+v", (*[2]byte)(unsafe.Pointer(&xN)))
+
 	//url := os.Args[1]
 	//resp, err := http.Get(url)
 	//if err != nil {
