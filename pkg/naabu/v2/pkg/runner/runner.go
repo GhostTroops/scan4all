@@ -62,7 +62,7 @@ func (r *Runner) Httpxrun() error {
 	httpxoptions.CSVOutput = r.options.CSV
 	httpxoptions.JSONOutput = r.options.JSON
 	httpxoptions.HTTPProxy = r.options.Proxy
-	httpxoptions.Threads = r.options.Threads * 2
+	httpxoptions.Threads = r.options.Threads
 	httpxoptions.Verbose = r.options.Verbose
 	httpxoptions.NoColor = r.options.NoColor
 	httpxoptions.Silent = r.options.Silent
