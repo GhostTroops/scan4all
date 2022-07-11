@@ -12,3 +12,42 @@
 由于安全原因JSP功能默认关闭
 <title>网站改版中</title>
 Our website is under construction
+Access Failed
+an error
+Bad Request
+Client Authentication Remote Service
+could not find
+error has occurred
+Error 404
+Error Occurred While Processing Request
+Error processing SSI file
+ExtendNet DX Configuration
+FireWall-1 message
+forcelogon.htm
+IMail Server Web Messaging
+Management Console
+name=qt id="search" size=40 value=" "
+No web site is configured at this address
+not found
+parameter is incorrect
+Please identify yourself:
+Reload acp_userinfo database
+RSA SecurID User Name Request
+The userid or password that was specified is not valid.
+TYPE=password
+Unable to complete your request
+unable to open
+Web access denied
+Hack Attempts
+does not exist
+<b>Wrong URL.
+page may no longer exist
+page no longer exist
+Your session has expired
+no longer available
+Request Rejected
+More about this error
+No target SAP system for request
+no valid destination server available for
+unauthorized public IP address
+<TITLE>Invalid URL</TITLE>
