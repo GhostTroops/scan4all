@@ -113,6 +113,10 @@ func (r *Runner) DoTargets() (bool, error) {
 	aR := []string{}
 	a := strings.Split(string(data), "\n")
 	for _, x := range a {
+		// fix 无效的空行
+		if 3 > len(x) {
+			continue
+		}
 		if govalidator.IsURL(x) {
 			if x1, err := url.Parse(x); nil == err {
 				if govalidator.IsDNSName(x) {

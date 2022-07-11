@@ -184,6 +184,19 @@ func CheckHvNmap() bool {
 	return false
 }
 
+func doReadBuff(buf *bytes.Buffer) string {
+	var a = []string{}
+	var data []byte = make([]byte, 1024)
+	n, err := buf.Read(data)
+	for nil == err && 0 < n {
+		s1 := string(data[:n])
+		fmt.Println(s1)
+		a = append(a, s1)
+		n, err = buf.Read(data)
+	}
+	return strings.Join(a, "")
+}
+
 // 最佳的方法是将命令写到临时文件，并通过bash进行执行
 func DoCmd(args ...string) (string, error) {
 	cmd := exec.Command(args[0], args[1:]...)
@@ -191,7 +204,7 @@ func DoCmd(args ...string) (string, error) {
 	cmd.Stdout = &stdout // 标准输出
 	cmd.Stderr = &stderr // 标准错误
 	err := cmd.Run()
-	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
+	outStr, errStr := doReadBuff(&stdout), doReadBuff(&stderr)
 	// out, err := cmd.CombinedOutput()
 	if nil != err {
 		return "", err
