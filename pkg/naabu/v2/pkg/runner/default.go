@@ -2,10 +2,10 @@ package runner
 
 const (
 	DefaultPortTimeoutSynScan     = 1000
-	DefaultPortTimeoutConnectScan = 5000
+	DefaultPortTimeoutConnectScan = 3000
 
 	DefaultRateSynScan     = 1000
-	DefaultRateConnectScan = 1500
+	DefaultRateConnectScan = 2000
 
 	DefaultRetriesSynScan     = 3
 	DefaultRetriesConnectScan = 3

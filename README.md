@@ -15,6 +15,7 @@
 <img width="928" alt="image" src="https://user-images.githubusercontent.com/18223385/175768227-098c779b-6c5f-48ee-91b1-c56e3daa9c87.png">
 </h1>
 
+- 默认检测系统有nmap时优先使用nmap进行快速扫描，弊端：因为设置网络包过大会导致结果不全，另外需要将root密码设置到环境变量PPSSWWDD，更多参考config/doNmapScan.sh
 - 快速端口扫描，指纹检测功能
 - 快速登录密码爆破功能
 - 快速POC检测功能

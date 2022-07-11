@@ -96,15 +96,15 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("port", "Port",
 		flagSet.StringVarP(&options.Ports, "p", "port", "", "ports to scan (80,443, 100-200"),
-		flagSet.StringVarP(&options.TopPorts, "tp", "top-ports", "full", "top ports to scan (default 100)"),
+		flagSet.StringVarP(&options.TopPorts, "tp", "top-ports", "1000", "top ports to scan (default 100)"),
 		flagSet.StringVarP(&options.ExcludePorts, "ep", "exclude-ports", "", "ports to exclude from scan (comma-separated)"),
 		flagSet.StringVarP(&options.PortsFile, "pf", "ports-file", "", "list of ports to exclude from scan (file)"),
 		flagSet.BoolVarP(&options.ExcludeCDN, "ec", "exclude-cdn", false, "skip full port scans for CDN's (only checks for 80,443)"),
 	)
 
 	flagSet.CreateGroup("rate-limit", "Rate-limit",
-		flagSet.IntVar(&options.Threads, "c", 256*2, "general internal worker threads"),
-		flagSet.IntVar(&options.Rate, "rate", DefaultRateSynScan*2, "packets to send per second"),
+		flagSet.IntVar(&options.Threads, "c", 64, "general internal worker threads"),
+		flagSet.IntVar(&options.Rate, "rate", DefaultRateSynScan, "packets to send per second"),
 	)
 
 	flagSet.CreateGroup("output", "Output",
