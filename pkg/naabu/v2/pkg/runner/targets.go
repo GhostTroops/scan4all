@@ -20,7 +20,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 )
 
 func (r *Runner) Load() error {
@@ -102,8 +101,6 @@ func (r *Runner) DoSsl(target string) []string {
 	return []string{}
 }
 
-var Wg *sync.WaitGroup
-
 // target域名转多个ip处理
 func (r *Runner) DoTargets() (bool, error) {
 	data, err := ioutil.ReadFile(r.targetsFile)
@@ -182,8 +179,7 @@ func (r *Runner) DoTargets() (bool, error) {
 						}(x99[0])
 					}
 					pkg.TmpFile[pkg.Naabu] = []*os.File{tempInput1}
-					Wg.Add(1)
-					hydra.DoNmapRst(Wg, &Naabubuffer)
+					hydra.DoNmapRst(&Naabubuffer)
 					defer r.Close()
 					ioutil.WriteFile(r.targetsFile, []byte(""), os.ModePerm)
 					log.Println("do namp over naabu ")
