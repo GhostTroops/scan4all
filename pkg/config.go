@@ -44,7 +44,7 @@ func GetVal(key string) string {
 	if s, ok := mData[key1]; ok {
 		return fmt.Sprintf("%v", s)
 	}
-	return key1
+	return ""
 }
 func GetValByDefault(key, dftvl string) string {
 	s := GetVal(key)
