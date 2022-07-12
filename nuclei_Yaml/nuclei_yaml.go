@@ -2,19 +2,19 @@ package nuclei_Yaml
 
 import (
 	"bytes"
-	"github.com/hktalent/scan4all/pkg"
-	"log"
-	"os"
-	"strings"
-	"time"
-
 	"github.com/hktalent/scan4all/nuclei_Yaml/internal/runner"
+	"github.com/hktalent/scan4all/pkg"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog/config"
 	"github.com/projectdiscovery/nuclei/v2/pkg/protocols/http"
+	templateTypes "github.com/projectdiscovery/nuclei/v2/pkg/templates/types"
 	"github.com/projectdiscovery/nuclei/v2/pkg/types"
+	"log"
+	"os"
+	"strings"
+	"time"
 )
 
 var (
@@ -77,7 +77,8 @@ func readConfig() {
 	options.Resume = ""
 
 	options.NewTemplates = false
-	options.AutomaticScan = true
+	// 关闭 AutomaticScan，否则不对模版进行扫描
+	options.AutomaticScan = false
 	options.Templates = []string{}
 	options.TemplateURLs = []string{}
 	options.Workflows = []string{}
@@ -171,7 +172,9 @@ func readConfig() {
 	//flagSet.VarP(&options.Protocols, "type", "pt", fmt.Sprintf("templates to run based on protocol type. Possible values: %s", templateTypes.GetSupportedProtocolTypes())),
 	//flagSet.VarP(&options.ExcludeProtocols, "exclude-type", "ept", fmt.Sprintf("templates to exclude based on protocol type. Possible values: %s", templateTypes.GetSupportedProtocolTypes())),
 	//)
-	//
+	options.Protocols = templateTypes.GetSupportedProtocolTypes()
+	//options.ExcludeProtocols = templateTypes.GetSupportedProtocolTypes()
+
 	//createGroup(flagSet, "output", "Output",
 	//	flagSet.StringVarP(&options.Output, "output", "o", "", "output file to write found issues/vulnerabilities"),
 	//	flagSet.BoolVarP(&options.StoreResponse, "store-resp", "sresp", false, "store all request/response passed through nuclei to output directory"),
