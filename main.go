@@ -2,13 +2,15 @@ package main
 
 import (
 	"embed"
+	"fmt"
 	"github.com/hktalent/scan4all/pkg"
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/gologger"
 	"io"
 	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"runtime"
-	"sync"
 )
 
 //go:embed config/*
@@ -18,17 +20,23 @@ func init() {
 	pkg.Init2(&config)
 }
 
-var Wg sync.WaitGroup
-
 func main() {
-	naaburunner.Wg = &Wg
 	defer func() {
+		log.Println("start close cache, StopCPUProfile... ")
 		pkg.Cache1.Close()
 		//if "true" == pkg.GetVal("autoRmCache") {
 		//	os.RemoveAll(pkg.GetVal(pkg.CacheName))
 		//}
 	}()
 	options := naaburunner.ParseOptions()
+	if options.Debug {
+		// debug 优化时启用///////////////////////
+		go func() {
+			fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/\n")
+			http.ListenAndServe(":6060", nil)
+		}()
+		//////////////////////////////////////////*/
+	}
 	if false == options.Debug && false == options.Verbose {
 		// disable standard logger (ref: https://github.com/golang/go/issues/19895)
 		log.SetFlags(0)
@@ -52,5 +60,4 @@ func main() {
 	if err != nil {
 		gologger.Fatal().Msgf("naabuRunner.Httpxrun Could not run httpRunner: %s\n", err)
 	}
-	Wg.Wait()
 }
