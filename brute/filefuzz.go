@@ -159,9 +159,14 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		}
 		ch <- struct{}{}
 		//log.Println(u, " ", payload)
+		endP := u[len(u)-1:] == "/"
 		go func(payload string) {
-			log.Println("fuzz: ", u+payload)
-			if url, req, err := reqPage(u + payload); err == nil {
+			szUrl := u + payload
+			if strings.HasPrefix(payload, "/") && endP {
+				szUrl = u + payload[1:]
+			}
+			log.Println("fuzz: ", szUrl)
+			if url, req, err := reqPage(szUrl); err == nil {
 				// 403 by pass
 				if url.is403 {
 					a11 := ByPass403(&u, &payload)
