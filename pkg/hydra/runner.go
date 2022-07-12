@@ -7,7 +7,6 @@ import (
 	"github.com/logrusorgru/aurora"
 	"log"
 	"strings"
-	"sync"
 )
 
 func init() {
@@ -27,10 +26,9 @@ func init() {
 }
 
 // 密码破解
-func Start(IPAddr string, Port int, Protocol string, wg *sync.WaitGroup) {
-	defer wg.Done()
+func Start(IPAddr string, Port int, Protocol string) {
 	authInfo := NewAuthInfo(IPAddr, Port, Protocol)
-	crack := NewCracker(authInfo, true, 128)
+	crack := NewCracker(authInfo, true, 8)
 	fmt.Printf("\n[hydra]->开始对%v:%v[%v]进行暴力破解，字典长度为：%d\n", IPAddr, Port, Protocol, crack.Length())
 	go crack.Run()
 	//爆破结果获取

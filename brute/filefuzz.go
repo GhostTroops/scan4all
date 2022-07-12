@@ -4,6 +4,8 @@ import (
 	_ "embed"
 	"github.com/antlabs/strsim"
 	"github.com/hktalent/scan4all/pkg"
+	"log"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -66,13 +68,10 @@ func reqPage(u string) (*page, *pkg.Response, error) {
 		}
 		page.title = gettitle(req.Body)
 		page.locationUrl = req.Location
-		regs := strings.Split(strings.TrimSpace(fuzzct), "\n")
-		InitGeneral()
-		regs = append(regs, ret...)
-		for _, reg := range regs {
-			if x0, ok := req.Header["Content-Type"]; ok && 0 < len(x0) {
-				matched, _ := regexp.Match(reg, []byte(x0[0]))
-				if matched {
+		if x0, ok := req.Header["Content-Type"]; ok && 0 < len(x0) {
+			x0B := []byte(x0[0])
+			for _, reg := range regs {
+				if matched, _ := regexp.Match(reg, x0B); matched {
 					page.isBackUpPage = true
 				}
 			}
@@ -91,16 +90,24 @@ var fuzz404 string
 
 //go:embed dicts/page404Content.txt
 var page404Content1 string
+var regs []string
 
 func init() {
 	bakSuffix = pkg.GetVal4File("bakSuffix", bakSuffix)
 	fuzzct = pkg.GetVal4File("fuzzct", fuzzct)
 	fuzz404 = pkg.GetVal4File("fuzz404", fuzz404)
 	page404Content1 = pkg.GetVal4File("page404Content1", page404Content1)
+	InitGeneral()
+	regs = strings.Split(strings.TrimSpace(fuzzct), "\n")
+	regs = append(regs, ret...)
 }
 
 // 文件fuzz
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
+	u01, err := url.Parse(u)
+	if nil == err {
+		u = u01.Scheme + "://" + u01.Host + "/"
+	}
 	var (
 		path404            = "/file_not_support"
 		page200CodeList    = []int{200, 301, 302}
@@ -153,6 +160,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		ch <- struct{}{}
 		//log.Println(u, " ", payload)
 		go func(payload string) {
+			log.Println("fuzz: ", u+payload)
 			if url, req, err := reqPage(u + payload); err == nil {
 				// 403 by pass
 				if url.is403 {
