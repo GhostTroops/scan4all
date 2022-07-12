@@ -32,7 +32,7 @@ func main() {
 	if options.Debug {
 		// debug 优化时启用///////////////////////
 		go func() {
-			fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/\n")
+			fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/")
 			http.ListenAndServe(":6060", nil)
 		}()
 		//////////////////////////////////////////*/
