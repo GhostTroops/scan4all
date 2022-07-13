@@ -43,7 +43,7 @@ func addfingerprintsnormal(payload string, technologies []string, req *pkg.Respo
 		if req.StatusCode == 200 && pkg.StrContains(req.Body, "Oracle") {
 			technologies = append(technologies, "Weblogic")
 		}
-	case "/wls-wsat", "/wls-wsat/CoordinatorPortType", "/wls-wsat/CoordinatorPortType11", "/_async/AsyncResponseService", "/_async/AsyncResponseServiceSoap12", "/uddiexplorer/SearchPublicRegistries.jsp", "/ws_utc/config.do":
+	case "/wls-wsat", "/wls-wsat/CoordinatorPortType", "/wls-wsat/CoordinatorPortType11", "/_async/AsyncResponseService", "/_async/AsyncResponseServiceSoap12", "/uddiexplorer/SearchPublicRegistries.jsp", "/ws_utc/config.do", "/bea_wls_internal/classes/mejb@/org/omg/stub/javax/management/j2ee/_ManagementHome_Stub.class":
 		if req.StatusCode == 200 && (pkg.StrContains(req.Body, "weblogic") || strings.Contains(req.Body, "www.bea.com")) {
 			technologies = append(technologies, "Weblogic")
 		}

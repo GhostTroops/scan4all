@@ -8,7 +8,6 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
-	"time"
 )
 
 type page struct {
@@ -71,8 +70,10 @@ func reqPage(u string) (*page, *pkg.Response, error) {
 		if x0, ok := req.Header["Content-Type"]; ok && 0 < len(x0) {
 			x0B := []byte(x0[0])
 			for _, reg := range regs {
-				if matched, _ := regexp.Match(reg, x0B); matched {
-					page.isBackUpPage = true
+				if r1, ok := regsMap[reg]; ok {
+					if r1.Match(x0B) {
+						page.isBackUpPage = true
+					}
 				}
 			}
 		}
@@ -91,6 +92,7 @@ var fuzz404 string
 //go:embed dicts/page404Content.txt
 var page404Content1 string
 var regs []string
+var regsMap = make(map[string]*regexp.Regexp)
 
 func init() {
 	bakSuffix = pkg.GetVal4File("bakSuffix", bakSuffix)
@@ -99,7 +101,14 @@ func init() {
 	page404Content1 = pkg.GetVal4File("page404Content1", page404Content1)
 	InitGeneral()
 	regs = strings.Split(strings.TrimSpace(fuzzct), "\n")
-	regs = append(regs, ret...)
+	var err error
+	for _, reg := range regs {
+		regsMap[reg], err = regexp.Compile(reg)
+		if nil != err {
+			log.Println(reg, " regexp.Compile error: ", err)
+		}
+	}
+	//regs = append(regs, ret...)
 }
 
 // 文件fuzz
@@ -161,6 +170,9 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		//log.Println(u, " ", payload)
 		endP := u[len(u)-1:] == "/"
 		go func(payload string) {
+			defer func() {
+				<-ch
+			}()
 			szUrl := u + payload
 			if strings.HasPrefix(payload, "/") && endP {
 				szUrl = u + payload[1:]
@@ -242,8 +254,8 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 			} else {
 				errorTimes += 1
 			}
-			<-time.After(time.Duration(500) * time.Millisecond)
-			<-ch
+			//<-time.After(time.Duration(500) * time.Millisecond)
+
 		}(payload)
 	}
 	close(ch)

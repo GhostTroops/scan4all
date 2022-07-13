@@ -54,12 +54,14 @@
   "EnableKsubdomain": true,
   "KsubdomainRegxp": "([0-9a-zA-Z\\-]+\\.[0-9a-zA-Z\\-]+)$",
   "naabu_dns": {},
-  "naabu": {"TopPorts": "1000","ScanAllIPS": true,"Threads": 64},
+  "naabu": {"TopPorts": "1000","ScanAllIPS": true,"Threads": 25},
   "priorityNmap": true,
   "nuclei": {},
   "enablEmbedYaml": true,
   "httpx": {},
   "enableEsSv": false,
   "esthread": 8,
+  "hydrathread": 8,
+  "Fuzzthreads": 32,
   "esUrl": "http://127.0.0.1:9200/%s_index/_doc/%s"
 }

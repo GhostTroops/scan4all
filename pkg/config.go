@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -137,13 +138,18 @@ func Init() {
 	config.AddConfigPath("./config/")
 	config.AddConfigPath("$HOME")
 	config.AddConfigPath("/etc/")
+	nT, err := strconv.Atoi(GetVal4File("Fuzzthreads", "32"))
+	if nil != err {
+		nT = 32
+	}
+	Fuzzthreads = nT
 	// 显示调用
 	config.SetConfigType("json")
 	if "" != ConfigName {
 		config.SetConfigFile(ConfigName)
 	}
-	err := config.ReadInConfig() // 查找并读取配置文件
-	if err != nil {              // 处理读取配置文件的错误
+	err = config.ReadInConfig() // 查找并读取配置文件
+	if err != nil {             // 处理读取配置文件的错误
 		log.Println("config.ReadInConfig ", err)
 		return
 	}
