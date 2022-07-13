@@ -244,6 +244,8 @@ func Add2Naabubuffer(target string) {
 	Naabubuffer.Write([]byte(target))
 }
 
+var r1, _ = regexp.Compile(`[^\/]`)
+
 func (r *Runner) AddTarget(target string) error {
 	target = strings.TrimSpace(target)
 	if "" == target {
@@ -287,17 +289,15 @@ func (r *Runner) AddTarget(target string) error {
 				////UrlPrecise     bool // 精准url扫描，不去除url清单上下文 2022-06-08
 				UrlPrecise := pkg.GetVal(pkg.UrlPrecise)
 				if "true" == UrlPrecise && len(target) > len(s1) {
-					r1, err := regexp.Compile(`[^\/]`)
-					if nil == err {
-						s2 := r1.ReplaceAllString(target[len(s1):], "")
-						// 包含1个以上/表示有上下文
-						if 1 < len(s2) {
-							if r.options.Verbose {
-								log.Println("Precise scan: ", target)
-							}
-							Add2Naabubuffer(fmt.Sprintf("%s\n", target))
+					s2 := r1.ReplaceAllString(target[len(s1):], "")
+					// 包含1个以上/表示有上下文
+					if 1 < len(s2) {
+						if r.options.Verbose {
+							log.Println("Precise scan: ", target)
 						}
+						Add2Naabubuffer(fmt.Sprintf("%s\n", target))
 					}
+
 				}
 				return nil
 			}
