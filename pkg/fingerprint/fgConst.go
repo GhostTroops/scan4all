@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -55,6 +56,7 @@ var FgUrls = []string{}
 func MergeReqUrl() {
 	LoadWebfingerprintEhole()
 	x1 := GetWebfingerprintEhole()
+	//x1.Fingerprint = []*Fingerprint{}
 	// 不重复的URL
 	var urls = []string{}
 	// 去重使用
@@ -65,6 +67,7 @@ func MergeReqUrl() {
 		var j = x["probeList"].([]interface{})
 		szName := Get4K(&x, "name")
 		sid := Get4K(&x, "_id")
+
 		id, err2 := strconv.Atoi(sid)
 		if nil != err2 {
 			log.Println("id, err2 := strconv.Atoi(sid) ", err2)
@@ -91,34 +94,48 @@ func MergeReqUrl() {
 				log.Println("idMethod = ", idMethod, " idPart = ", idPart, " id = ", id)
 				continue
 			}
-			var x2 Fingerprint
+			var x2 *Fingerprint
 			szKey := szUrl + szName + sidMethod + sidPart
 			if x6, ok := oFingerprint[szKey]; ok {
-				x2 = *x6
+				x2 = x6
 			} else {
-				x2 = Fingerprint{Cms: szName, Keyword: []string{}}
-				x2.Method = FgType[idMethod]
-				x2.Location = FgType[idPart]
-				x2.Id = id
+				x2 = &Fingerprint{Cms: szName, Keyword: []string{}, Id: id, Method: FgType[idMethod], Location: FgType[idPart]}
+				//x1.Fingerprint = append([]Fingerprint{x2}, x1.Fingerprint...)
 				x1.Fingerprint = append(x1.Fingerprint, x2)
+				//log.Println(szKey)
 			}
 			// 这里处理x2的数据项
 			x2.Keyword = append(x2.Keyword, Get4K(&y, "pattern"))
-			oFingerprint[szKey] = &x2
+			oFingerprint[szKey] = x2
 		}
+	}
+	// 放回去，很重要
+	data, err := json.Marshal(x1)
+	if nil == err {
+		eHoleFinger = string(data)
 	}
 	FgUrls = urls
 }
 
 var FgDictFile string
+var tempInput1 *os.File
 
+func DelTmpFgFile() {
+	tempInput1.Close()
+	defer os.Remove(tempInput1.Name())
+}
+
+// 这里可以动态加载远程的url指纹数据到 FgData
 func init() {
 	json.Unmarshal([]byte(FgData), &FGDataMap)
 	MergeReqUrl()
-	tempInput1, err := ioutil.TempFile("", "dict-in-*")
+	var err error
+	tempInput1, err = ioutil.TempFile("", "dict-in-*")
 	if nil == err {
 		ioutil.WriteFile(tempInput1.Name(), []byte(strings.Join(FgUrls, "\n")), 0644)
 		FgDictFile = tempInput1.Name()
+	} else {
+
 	}
 }
 
