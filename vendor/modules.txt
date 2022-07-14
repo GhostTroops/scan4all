@@ -667,7 +667,7 @@ github.com/projectdiscovery/retryablehttp-go
 # github.com/projectdiscovery/sliceutil v0.0.0-20220511171050-c7d9bc5cadd9
 ## explicit; go 1.16
 github.com/projectdiscovery/sliceutil
-# github.com/projectdiscovery/stringsutil v0.0.0-20220612082425-0037ce9f89f3
+# github.com/projectdiscovery/stringsutil v0.0.0-20220712170325-48c50c332cb4
 ## explicit; go 1.16
 github.com/projectdiscovery/stringsutil
 # github.com/projectdiscovery/subfinder/v2 v2.5.2
@@ -798,7 +798,7 @@ github.com/stacktitan/smb/smb/encoder
 # github.com/stoewer/go-strcase v1.2.0
 ## explicit; go 1.11
 github.com/stoewer/go-strcase
-# github.com/stretchr/testify v1.7.5
+# github.com/stretchr/testify v1.8.0
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 # github.com/subosito/gotenv v1.3.0
