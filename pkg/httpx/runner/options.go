@@ -308,8 +308,8 @@ func ParseOptions() *Options {
 	options.HTTPProxy = ""
 	options.Unsafe = false
 	options.Resume = false
-	options.FollowRedirects = true
-	options.MaxRedirects = 10
+	options.FollowRedirects = false
+	options.MaxRedirects = 3
 	options.FollowHostRedirects = false
 	options.VHostInput = false
 	options.Methods = ""

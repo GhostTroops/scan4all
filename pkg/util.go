@@ -34,6 +34,7 @@ var (
 
 func HttpRequsetBasic(username string, password string, urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
 	var tr *http.Transport
+	var err error
 	if HttpProxy != "" {
 		uri, _ := url.Parse(HttpProxy)
 		tr = &http.Transport{
@@ -41,12 +42,14 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
 			DisableKeepAlives:   true,
 			Proxy:               http.ProxyURL(uri),
+			IdleConnTimeout:     15 * time.Second,
 		}
 	} else {
 		tr = &http.Transport{
 			MaxIdleConnsPerHost: -1,
 			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
 			DisableKeepAlives:   true,
+			IdleConnTimeout:     15 * time.Second,
 		}
 	}
 
@@ -74,7 +77,10 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 	for v, k := range headers {
 		req.Header[v] = []string{k}
 	}
-	resp, err := client.Do(req)
+	var resp *http.Response
+
+	// resp, err = tr.RoundTrip(req)
+	resp, err = client.Do(req)
 	if err != nil {
 		//防止空指针
 		return &Response{"999", 999, "", nil, 0, "", ""}, err

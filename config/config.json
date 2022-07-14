@@ -56,17 +56,26 @@
   "naabu_dns": {},
   "naabu": {"TopPorts": "1000","ScanAllIPS": true,"Threads": 25},
   "priorityNmap": true,
-  "nuclei": {},
+  "nuclei": {
+    "RateLimit": 150,
+    "BulkSize":64,
+    "TemplateThreads": 64,
+    "HeadlessBulkSize": 10,
+    "DisableRedirects": true,
+    "HeadlessTemplateThreads": 10
+  },
   "enablEmbedYaml": true,
   "enablFileFuzz": true,
   "enablNmapStdIO": false,
   "httpx": {
-    "Pipeline": true,
-    "HTTP2Probe": true,
-    "VHost": true,
+    "Pipeline": false,
+    "HTTP2Probe": false,
+    "VHost": false,
     "CSPProbe": true,
     "TLSProbe": true,
-    "TechDetect": true
+    "TechDetect": true,
+    "FollowRedirects": false,
+    "MaxRedirects": 3
   },
   "enableEsSv": false,
   "esthread": 8,
