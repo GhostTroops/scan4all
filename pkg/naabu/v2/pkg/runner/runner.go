@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/retryablehttp-go"
 	"log"
@@ -58,6 +59,12 @@ func (r *Runner) Httpxrun() error {
 	//Naabubuffer1.Write(httpxrunner.Naabubuffer.Bytes())
 	go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone)
 	httpxoptions := httpxrunner.ParseOptions()
+	// 指纹去重复 请求路径
+	if "" != fingerprint.FgDictFile {
+		httpxoptions.RequestURIs = fingerprint.FgDictFile
+		//fmt.Println("httpxoptions.RequestURIs: ", httpxoptions.RequestURIs)
+	}
+
 	httpxoptions.Output = r.options.Output
 	httpxoptions.CSVOutput = r.options.CSV
 	httpxoptions.JSONOutput = r.options.JSON

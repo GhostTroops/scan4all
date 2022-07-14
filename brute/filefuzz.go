@@ -2,6 +2,7 @@ package brute
 
 import (
 	_ "embed"
+	"fmt"
 	"github.com/antlabs/strsim"
 	"github.com/hktalent/scan4all/pkg"
 	"log"
@@ -111,8 +112,13 @@ func init() {
 	//regs = append(regs, ret...)
 }
 
+var eableFileFuzz = "true" != pkg.GetValByDefault("enablFileFuzz", "false")
+
 // 文件fuzz
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
+	if eableFileFuzz {
+		return []string{}, []string{}
+	}
 	u01, err := url.Parse(u)
 	if nil == err {
 		u = u01.Scheme + "://" + u01.Host + "/"
@@ -177,7 +183,10 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 			if strings.HasPrefix(payload, "/") && endP {
 				szUrl = u + payload[1:]
 			}
-			log.Println("fuzz: ", szUrl)
+			if 0 < log.Flags() {
+				fmt.Printf("fuzz: %s\r", szUrl)
+				//log.Println("fuzz: ", szUrl)
+			}
 			if url, req, err := reqPage(szUrl); err == nil {
 				// 403 by pass
 				if url.is403 {

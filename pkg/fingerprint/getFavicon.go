@@ -1,6 +1,7 @@
 package fingerprint
 
 import (
+	"crypto/md5"
 	"crypto/tls"
 	"fmt"
 	"github.com/hktalent/scan4all/pkg"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -23,7 +25,7 @@ func xegexpjs(reg string, resp string) (reslut1 [][]string) {
 	return result1
 }
 
-func getfavicon(httpbody string, turl string) string {
+func getfavicon(httpbody string, turl string) (hash string, md5 string) {
 	faviconpaths := xegexpjs(`href="(.*?favicon....)"`, httpbody)
 	var faviconpath string
 	u, err := url.Parse(turl)
@@ -49,46 +51,53 @@ func getfavicon(httpbody string, turl string) string {
 	return favicohash(faviconpath)
 }
 
-func favicohash(host string) string {
-	timeout := time.Duration(8 * time.Second)
-	var tr *http.Transport
-	if pkg.HttpProxy != "" {
-		uri, _ := url.Parse(pkg.HttpProxy)
-		tr = &http.Transport{
-			MaxIdleConnsPerHost: -1,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
-			DisableKeepAlives:   true,
-			Proxy:               http.ProxyURL(uri),
+// 基于缓存，提高效率
+func favicohash(host string) (hash string, md5R string) {
+	k1 := host + "favicohash"
+	body, err := pkg.Cache1.Get(k1)
+	if nil != err && 0 == len(body) {
+		timeout := time.Duration(8 * time.Second)
+		var tr *http.Transport
+		if pkg.HttpProxy != "" {
+			uri, _ := url.Parse(pkg.HttpProxy)
+			tr = &http.Transport{
+				MaxIdleConnsPerHost: -1,
+				TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+				DisableKeepAlives:   true,
+				Proxy:               http.ProxyURL(uri),
+			}
+		} else {
+			tr = &http.Transport{
+				MaxIdleConnsPerHost: -1,
+				TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
+				DisableKeepAlives:   true,
+			}
 		}
-	} else {
-		tr = &http.Transport{
-			MaxIdleConnsPerHost: -1,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
-			DisableKeepAlives:   true,
+		client := http.Client{
+			Timeout:   timeout,
+			Transport: tr,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse /* 不进入重定向 */
+			},
+		}
+		resp, err := client.Get(host)
+		if err == nil {
+			defer resp.Body.Close()
+			if resp.StatusCode == 200 {
+				body, err = ioutil.ReadAll(resp.Body)
+				pkg.Cache1.Put(k1, body)
+				if err != nil {
+					//log.Println("favicon file read error: ", err)
+					return "0", ""
+				}
+			}
 		}
 	}
-	client := http.Client{
-		Timeout:   timeout,
-		Transport: tr,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse /* 不进入重定向 */
-		},
+	if 0 == len(body) {
+		return "0", ""
 	}
-	resp, err := client.Get(host)
-	if err != nil {
-		//log.Println("favicon client error:", err)
-		return "0"
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode == 200 {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			//log.Println("favicon file read error: ", err)
-			return "0"
-		}
-		faviconMMH3 := fmt.Sprintf("%d", stringz.FaviconHash(body))
-		return faviconMMH3
-	} else {
-		return "0"
-	}
+	faviconMMH3 := fmt.Sprintf("%d", stringz.FaviconHash(body))
+	srcCode := md5.Sum(body)
+	faviconmd5 := strings.ToLower(fmt.Sprintf("%x", srcCode))
+	return faviconMMH3, faviconmd5
 }
