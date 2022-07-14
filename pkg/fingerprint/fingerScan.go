@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"github.com/hktalent/scan4all/pkg"
+	"log"
+	"net/url"
 	"sync"
 )
 
@@ -44,20 +46,43 @@ var Max_Count = 2
 // 识别期间命中率控制、提高效率
 var MUrl *sync.Map = new(sync.Map)
 
+// 图标每个目标只识别一次
+var Mfavhash *sync.Map = new(sync.Map)
+
+//  一个url到底和多少组件id关联
+var MFid *sync.Map = new(sync.Map)
+
 // 清除数据
 func ClearData() {
-	MUrl.Range(func(key interface{}, value interface{}) bool {
-		MUrl.Delete(key)
-		return true
-	})
+	Mfavhash = nil
 	MUrl = nil
 	EholeFinpx = nil
 	LocalFinpx = nil
+	DelTmpFgFile()
 }
 
-func CaseMethod(szUrl string, method, bodyString, favhash, md5Body, hexBody string, finp Fingerprint) []string {
+func SvUrl2Id(szUrl string, finp *Fingerprint) {
+	if 0 < finp.Id {
+		if v, ok := MFid.Load(szUrl); ok {
+			var d = v.(map[int]struct{})
+			d[finp.Id] = struct{}{}
+		} else {
+			MFid.Store(szUrl, map[int]struct{}{finp.Id: struct{}{}})
+		}
+	}
+}
+
+func CaseMethod(szUrl, method, bodyString, favhash, md5Body, hexBody string, finp *Fingerprint) []string {
 	cms := []string{}
-	szKey := szUrl + finp.Cms
+	if 0 == len(finp.Keyword) {
+		log.Printf("%+v", finp)
+		return cms
+	}
+	u01, _ := url.Parse(szUrl)
+	if _, ok := Mfavhash.Load(u01.Host + favhash); ok {
+		return cms
+	}
+	szKey := szUrl + finp.Cms + favhash
 	if v, ok := MUrl.Load(szKey); ok {
 		n1 := v.(int)
 		if Max_Count <= v.(int) {
@@ -72,27 +97,40 @@ func CaseMethod(szUrl string, method, bodyString, favhash, md5Body, hexBody stri
 	case "keyword":
 		if iskeyword(bodyString, finp.Keyword) {
 			cms = append(cms, finp.Cms)
+			SvUrl2Id(szUrl, finp)
 		}
-	case "faviconhash":
+		break
+	case "faviconhash": // 相同目标只执行一次
 		if iskeyword(favhash, finp.Keyword) {
+			Mfavhash.Store(u01.Host+favhash, 1)
 			cms = append(cms, finp.Cms)
+			SvUrl2Id(szUrl, finp)
 		}
+		break
 	case "regular":
 		if isregular(bodyString, finp.Keyword) {
 			cms = append(cms, finp.Cms)
+			SvUrl2Id(szUrl, finp)
 		}
+		break
 	case "md5": // 支持md5
 		if iskeyword(md5Body, finp.Keyword) {
 			cms = append(cms, finp.Cms)
+			SvUrl2Id(szUrl, finp)
 		}
+		break
 	case "base64": // 支持base64
 		if iskeyword(bodyString, finp.Keyword) {
 			cms = append(cms, finp.Cms)
+			SvUrl2Id(szUrl, finp)
 		}
+		break
 	case "hex":
 		if iskeyword(hexBody, finp.Keyword) {
 			cms = append(cms, finp.Cms)
+			SvUrl2Id(szUrl, finp)
 		}
+		break
 	}
 	//if 0 < len(cms) {
 	//	log.Println(szUrl, " ", finp.Cms, " method: ", method, " can detect ")
@@ -105,6 +143,7 @@ var enableFingerTitleHeaderMd5Hex = pkg.GetValByDefault("enableFingerTitleHeader
 
 // 相同的url、组件（产品），>=2 个指纹命中，那么该组件的其他指纹匹配将跳过
 func FingerScan(headers map[string][]string, body []byte, title string, url string, status_code string) []string {
+	//log.Println("FgDictFile = ", FgDictFile)
 	bodyString := string(body)
 	headersjson := mapToJson(headers)
 	favhash, _ := getfavicon(bodyString, url)
@@ -134,6 +173,7 @@ func FingerScan(headers map[string][]string, body []byte, title string, url stri
 			} else if finp.Location == "status_code" { // 识别区域：status_code
 				if iskeyword(status_code, finp.Keyword) {
 					cms = append(cms, finp.Cms)
+					SvUrl2Id(url, finp)
 				}
 			}
 		}
