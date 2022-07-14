@@ -95,6 +95,7 @@ require (
 	github.com/huin/asn1ber v0.0.0-20120622192748-af09f62e6358
 	github.com/icodeface/tls v0.0.0-20190904083142-17aec93c60e5
 	github.com/jlaffaye/ftp v0.0.0-20190624084859-c1312a7102bf
+	github.com/lair-framework/go-nmap v0.0.0-20191202052157-3507e0b03523
 	github.com/lcvvvv/gonmap v1.1.8
 	github.com/lib/pq v1.10.0
 	github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40

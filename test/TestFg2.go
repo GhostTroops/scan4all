@@ -45,7 +45,7 @@ func doUrl(host string) (headers map[string][]string, body []byte, title string,
 		return nil, nil, "", host, ""
 	}
 }
-func main9() {
+func main() {
 	a := strings.Split(`http://101.132.254.177:8161
 http://101.132.155.38:8161/
 http://101.132.34.146:8161`, "\n")

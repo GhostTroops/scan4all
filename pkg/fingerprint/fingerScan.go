@@ -74,7 +74,7 @@ func CaseMethod(szUrl string, method, bodyString, favhash, md5Body, hexBody stri
 
 var enableFingerTitleHeaderMd5Hex = pkg.GetValByDefault("enableFingerTitleHeaderMd5Hex", "false")
 
-// 相同到组件、产品，两个指纹命中，那么相同产品、组件到其他指纹将跳过
+// 相同的url、组件（产品），>=2 个指纹命中，那么该组件的其他指纹匹配将跳过
 //
 func FingerScan(headers map[string][]string, body []byte, title string, url string, status_code string) []string {
 	bodyString := string(body)
