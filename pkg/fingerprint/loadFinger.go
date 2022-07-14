@@ -13,6 +13,7 @@ type Fingerprint struct {
 	Method   string
 	Location string
 	Keyword  []string
+	Id       int // 扩展id属性，通过id关联到组件
 }
 
 var (

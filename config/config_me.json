@@ -58,7 +58,15 @@
   "nuclei": {},
   "priorityNmap": true,
   "enablEmbedYaml": true,
-  "httpx": {},
+  "enablFileFuzz": true,
+  "httpx": {
+    "Pipeline": true,
+    "HTTP2Probe": true,
+    "VHost": true,
+    "CSPProbe": true,
+    "TLSProbe": true,
+    "TechDetect": true
+  },
   "enableEsSv": true,
   "esthread": 8,
   "esUrl": "http://127.0.0.1:9200/%s_index/_doc/%s"

@@ -5,4 +5,7 @@ go mod vendor
 # 工具静态分析代码实现
 go vet
 
+cat ./pkg/fingerprint/dicts/eHoleFinger.json|jq ".fingerprint[].cms"|wc -l
+cat ./pkg/fingerprint/dicts/localFinger.json|jq ".fingerprint[].cms"|wc -l
+cat ./pkg/fingerprint/dicts/fg.json|jq ".[].kind"|wc -l
 
