@@ -207,8 +207,10 @@ func doReadBuff(buf *bytes.Buffer) string {
 func DoCmd(args ...string) (string, error) {
 	cmd := exec.Command(args[0], args[1:]...)
 	var stdout, stderr bytes.Buffer
-	cmd.Stdout = &stdout // 标准输出
-	cmd.Stderr = &stderr // 标准错误
+	if "true" == GetValByDefault("enablNmapStdIO", "false") {
+		cmd.Stdout = &stdout // 标准输出
+		cmd.Stderr = &stderr // 标准错误
+	}
 	err := cmd.Run()
 	outStr, errStr := doReadBuff(&stdout), doReadBuff(&stderr)
 	// out, err := cmd.CombinedOutput()

@@ -557,13 +557,13 @@
             {
                 "idMethod": 11515,
                 "idPart": 11521,
-                "pattern": "(?-mix:<title>[^:]+:: Powered by OvBB<\\\\/title>",
+                "pattern": "(<title>[^:]+::\\s*Powered by OvBB<[^>]+>)",
                 "url": "/"
             },
             {
                 "idMethod": 11515,
                 "idPart": 11521,
-                "pattern": "(?-mix:<img src=\\\"images\\\\/ovbb.png\\\" align=\\\"middle\\\" border=\\\"0\\\" alt=\\\"[^:]+:: Powered by OvBB\\\" \\\\/><\\\\/a>)",
+                "pattern": "(<img src=\\\"images\\/ovbb.png\\\" align=\\\"middle\\\" border=\\\"0\\\" alt=\\\"[^:]+:: Powered by OvBB\\\" \\/><\\/a>)",
                 "url": "/"
             }
         ],

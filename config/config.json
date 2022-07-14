@@ -59,6 +59,7 @@
   "nuclei": {},
   "enablEmbedYaml": true,
   "enablFileFuzz": true,
+  "enablNmapStdIO": false,
   "httpx": {
     "Pipeline": true,
     "HTTP2Probe": true,

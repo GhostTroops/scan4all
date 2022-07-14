@@ -5,7 +5,7 @@ import (
 )
 
 type Packjson struct {
-	Fingerprint []Fingerprint
+	Fingerprint []*Fingerprint
 }
 
 type Fingerprint struct {
