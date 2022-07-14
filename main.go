@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/pkg/fingerprint"
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/gologger"
 	"io"
@@ -27,6 +28,8 @@ func main() {
 		//if "true" == pkg.GetVal("autoRmCache") {
 		//	os.RemoveAll(pkg.GetVal(pkg.CacheName))
 		//}
+		// clear
+		fingerprint.ClearData()
 	}()
 	options := naaburunner.ParseOptions()
 	if options.Debug {

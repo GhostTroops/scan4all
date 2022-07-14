@@ -113,7 +113,7 @@ func readConfig() {
 	cfgFile = ""
 	options.FollowRedirects = false
 	options.MaxRedirects = 10
-	options.DisableRedirects = false
+	options.DisableRedirects = true
 
 	options.ReportingConfig = ""
 	// 启动es记录
