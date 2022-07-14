@@ -1,0 +1,49 @@
+id: check_go_debug_ui
+info:
+  name: check_go_debug_ui
+  author: 51pwn
+  severity: critical
+  reference:
+    - https://github.com/hktalent/nuclei-templates
+    - https://51pwn.com
+  tags: web,go,debug
+
+# nuclei -duc -u http://localhost:9999 -t ./51pwn/checkGoDebug.yaml
+
+requests:
+  - raw:
+      - |+
+        GET /ui/{{mypaths}} HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+        Accept:*/*
+        Pragma:no-cache
+        Accept-Encoding:gzip, deflate
+        Connection: close
+        Content-Length: 0
+        
+      # end payload
+    payloads:
+      mypaths:
+        - "top"
+        - "source"
+        - "flamegraph"
+
+    attack: pitchfork 
+    unsafe: true
+
+    req-condition: true
+    stop-at-first-match: true
+    matchers-condition: and
+    matchers:
+      - type: regex
+        part: body
+        regex:
+          - '<a[^>]+>(pprof|Top|Peek|Source|Disassemble)<\/a>'
+      - type: word
+        part: body
+        words:
+          - 'Output annotated source for functions matching regexp'
+          - 'Output assembly listings annotated with samples'
+          - 'Display profile as a directed graph'
+        condition: and
