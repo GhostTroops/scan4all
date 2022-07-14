@@ -19,20 +19,18 @@ import (
 	"github.com/hktalent/scan4all/pocs_go/tomcat"
 	"github.com/hktalent/scan4all/pocs_go/weblogic"
 	"github.com/hktalent/scan4all/pocs_go/zabbix"
+	"log"
 	"net/url"
 )
 
-var noRpt = map[string]string{}
-
 func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool) []string {
-	//if _, ok := noRpt[URL]; ok {
-	//	return []string{}
-	//}
-	noRpt[URL] = "1"
 	var HOST string
 	var technologies []string
 	if host, err := url.Parse(URL); err == nil {
 		HOST = host.Host
+	} else {
+		log.Println(URL, " parse error ", err)
+		return []string{}
 	}
 	for tech := range wappalyzertechnologies {
 		switch wappalyzertechnologies[tech] {
