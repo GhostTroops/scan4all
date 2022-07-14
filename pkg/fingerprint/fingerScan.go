@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"github.com/hktalent/scan4all/pkg"
+	"sync"
 )
 
 var EholeFinpx *Packjson
@@ -37,8 +38,36 @@ func PreprocessingFingerScan(url string) []string {
 	return []string{}
 }
 
+// 相同url、cms命中两次就不再匹配
+var Max_Count = 2
+
+// 识别期间命中率控制、提高效率
+var MUrl *sync.Map = new(sync.Map)
+
+// 清除数据
+func ClearData() {
+	MUrl.Range(func(key interface{}, value interface{}) bool {
+		MUrl.Delete(key)
+		return true
+	})
+	MUrl = nil
+	EholeFinpx = nil
+	LocalFinpx = nil
+}
+
 func CaseMethod(szUrl string, method, bodyString, favhash, md5Body, hexBody string, finp Fingerprint) []string {
 	cms := []string{}
+	szKey := szUrl + finp.Cms
+	if v, ok := MUrl.Load(szKey); ok {
+		n1 := v.(int)
+		if Max_Count <= v.(int) {
+			return cms
+		}
+		MUrl.Store(szKey, n1+1)
+	} else {
+		MUrl.Store(szKey, 1)
+	}
+
 	switch method {
 	case "keyword":
 		if iskeyword(bodyString, finp.Keyword) {
@@ -75,7 +104,6 @@ func CaseMethod(szUrl string, method, bodyString, favhash, md5Body, hexBody stri
 var enableFingerTitleHeaderMd5Hex = pkg.GetValByDefault("enableFingerTitleHeaderMd5Hex", "false")
 
 // 相同的url、组件（产品），>=2 个指纹命中，那么该组件的其他指纹匹配将跳过
-//
 func FingerScan(headers map[string][]string, body []byte, title string, url string, status_code string) []string {
 	bodyString := string(body)
 	headersjson := mapToJson(headers)

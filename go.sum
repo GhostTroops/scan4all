@@ -658,6 +658,8 @@ github.com/projectdiscovery/stringsutil v0.0.0-20220208075244-7c05502ca8e9/go.mo
 github.com/projectdiscovery/stringsutil v0.0.0-20220422150559-b54fb5dc6833/go.mod h1:oTRc18WBv9t6BpaN9XBY+QmG28PUpsyDzRht56Qf49I=
 github.com/projectdiscovery/stringsutil v0.0.0-20220612082425-0037ce9f89f3 h1:EbP+rVR7NPsFKfwhzshmXP2GMjqBpaMZurJzQ5PYvbY=
 github.com/projectdiscovery/stringsutil v0.0.0-20220612082425-0037ce9f89f3/go.mod h1:mF5sh4jTghoGWwgUb9qWi5waTFklClDbtrqtJU93awc=
+github.com/projectdiscovery/stringsutil v0.0.0-20220712170325-48c50c332cb4 h1:vm7ckAKkqFkJfh2+yYYW/Xr+GS2prGpQ4JlbwKkf4lU=
+github.com/projectdiscovery/stringsutil v0.0.0-20220712170325-48c50c332cb4/go.mod h1:32NYmKyHkKsmisAOAaWrR15lz2ysz2M8x3KMeeoRHoU=
 github.com/projectdiscovery/subfinder/v2 v2.5.2 h1:LER32P30jaYgaKN1N0b++bympCGBvKXmhw2SWZUg0w4=
 github.com/projectdiscovery/subfinder/v2 v2.5.2/go.mod h1:W6FHvG0NFhj45HzYB9SGWwg4XMTBupahzDTShJvcw+Q=
 github.com/projectdiscovery/uncover v0.0.5 h1:x6+96/5WwHhZxkWubTnUdNmoGdg/UIO2rwkL9VOxwmk=
@@ -752,6 +754,8 @@ github.com/stretchr/testify v1.7.2/go.mod h1:R6va5+xMeoiuVRoj+gSkQ7d3FALtqAAGI1F
 github.com/stretchr/testify v1.7.3/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/stretchr/testify v1.7.5 h1:s5PTfem8p8EbKQOctVV53k6jCJt3UX4IEJzwh+C324Q=
 github.com/stretchr/testify v1.7.5/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
+github.com/stretchr/testify v1.8.0 h1:pSgiaMZlXftHpm5L7V1+rVB+AZJydKsMxsQBIJw4PKk=
+github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/subosito/gotenv v1.3.0 h1:mjC+YW8QpAdXibNi+vNWgzmgBH4+5l5dCXv8cNysBLI=
 github.com/subosito/gotenv v1.3.0/go.mod h1:YzJjq/33h7nrwdY+iHMhEOEEbW0ovIz0tB6t6PwAXzs=
 github.com/syndtr/goleveldb v1.0.0 h1:fBdIW9lB4Iz0n9khmH8w27SJ3QEJ7+IgjPEwGSZiFdE=
