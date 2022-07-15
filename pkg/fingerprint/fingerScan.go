@@ -102,38 +102,38 @@ func CaseMethod(szUrl, method, bodyString, favhash, md5Body, hexBody string, fin
 
 	switch method {
 	case "keyword":
-		if ok, rMz := iskeyword(bodyString, finp.Keyword); ok {
+		if ok, rMz := iskeyword(bodyString, finp.Keyword, finp.KeywordMathOr); ok {
 			cms = append(cms, finp.Cms)
 			SvUrl2Id(szUrl, finp, rMz)
 		}
 		break
 	case "faviconhash": // 相同目标只执行一次
-		if ok, rMz := iskeyword(favhash, finp.Keyword); ok {
+		if ok, rMz := iskeyword(favhash, finp.Keyword, finp.KeywordMathOr); ok {
 			Mfavhash.Store(u01.Host+favhash, 1)
 			cms = append(cms, finp.Cms)
 			SvUrl2Id(szUrl, finp, rMz)
 		}
 		break
 	case "regular":
-		if ok, rMz := isregular(bodyString, finp.Keyword); ok {
+		if ok, rMz := isregular(bodyString, finp.Keyword, finp.KeywordMathOr); ok {
 			cms = append(cms, finp.Cms)
 			SvUrl2Id(szUrl, finp, rMz)
 		}
 		break
 	case "md5": // 支持md5
-		if ok, rMz := iskeyword(md5Body, finp.Keyword); ok {
+		if ok, rMz := iskeyword(md5Body, finp.Keyword, finp.KeywordMathOr); ok {
 			cms = append(cms, finp.Cms)
 			SvUrl2Id(szUrl, finp, rMz)
 		}
 		break
 	case "base64": // 支持base64
-		if ok, rMz := iskeyword(bodyString, finp.Keyword); ok {
+		if ok, rMz := iskeyword(bodyString, finp.Keyword, finp.KeywordMathOr); ok {
 			cms = append(cms, finp.Cms)
 			SvUrl2Id(szUrl, finp, rMz)
 		}
 		break
 	case "hex":
-		if ok, rMz := iskeyword(hexBody, finp.Keyword); ok {
+		if ok, rMz := iskeyword(hexBody, finp.Keyword, finp.KeywordMathOr); ok {
 			cms = append(cms, finp.Cms)
 			SvUrl2Id(szUrl, finp, rMz)
 		}
@@ -187,7 +187,7 @@ func FingerScan(headers map[string][]string, body []byte, title string, url stri
 				} else if finp.Location == "title" { // 识别区域： title
 					cms = append(cms, CaseMethod(url, finp.Method, title, favhash, md5Title, hexTitle, finp)...)
 				} else if finp.Location == "status_code" { // 识别区域：status_code
-					if ok, rMz := iskeyword(status_code, finp.Keyword); ok {
+					if ok, rMz := iskeyword(status_code, finp.Keyword, finp.KeywordMathOr); ok {
 						cms = append(cms, finp.Cms)
 						SvUrl2Id(url, finp, rMz)
 					}

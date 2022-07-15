@@ -4,14 +4,15 @@ import (
 	"embed"
 	"fmt"
 	"github.com/hktalent/scan4all/pkg"
-	"github.com/hktalent/scan4all/pkg/fingerprint"
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
+	"github.com/hktalent/scan4all/pocs_go"
 	"github.com/projectdiscovery/gologger"
 	"io"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"runtime"
+	"sync"
 )
 
 //go:embed config/*
@@ -22,6 +23,9 @@ func init() {
 }
 
 func main() {
+	var Close = make(chan bool)
+	var wg sync.WaitGroup
+	go pocs_go.DoNmapScan(Close, &wg)
 	defer func() {
 		log.Println("start close cache, StopCPUProfile... ")
 		pkg.Cache1.Close()
@@ -29,7 +33,8 @@ func main() {
 		//	os.RemoveAll(pkg.GetVal(pkg.CacheName))
 		//}
 		// clear
-		fingerprint.ClearData()
+		// 程序都结束了，没有必要清理内存了
+		// fingerprint.ClearData()
 	}()
 	options := naaburunner.ParseOptions()
 	if options.Debug {
@@ -63,4 +68,6 @@ func main() {
 	if err != nil {
 		gologger.Fatal().Msgf("naabuRunner.Httpxrun Could not run httpRunner: %s\n", err)
 	}
+	wg.Wait()
+	close(Close)
 }

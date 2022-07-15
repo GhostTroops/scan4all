@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/antchfx/xmlquery"
 	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/pocs_go"
 	"io/ioutil"
 	"log"
 	"os"
@@ -49,7 +50,8 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 				port, _ := strconv.Atoi(szPort)
 				service := GetAttr(x.SelectElement("service").Attr, "name")
 				//bf.Write([]byte(fmt.Sprintf("%s:%s\n", ip, szPort)))
-				bf.Write([]byte(fmt.Sprintf("http://%s:%s\n", ip, szPort)))
+				szUlr := fmt.Sprintf("http://%s:%s\n", ip, szPort)
+				bf.Write([]byte(szUlr))
 				go CheckWeakPassword(ip, service, port)
 				// 存储结果到其他地方
 				//x9 := AuthInfo{IPAddr: ip, Port: port, Protocol: service}
@@ -59,6 +61,12 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 						xx09 = a1
 					}
 					m1[ip] = append(xx09, []string{szPort, service})
+					if "445" == szPort && service == "microsoft-ds" {
+						pocs_go.Apc <- &pocs_go.AsyncPocCheck{
+							Wappalyzertechnologies: []string{service},
+							URL:                    szUlr,
+						}
+					}
 				}
 				fmt.Printf("%s\t%d\t%s\n", ip, port, service)
 			}

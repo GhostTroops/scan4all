@@ -6,20 +6,24 @@ import (
 	"strings"
 )
 
-func iskeyword(str string, keyword []string) (x bool, rstr string) {
+func iskeyword(str string, keyword []string, KeywordMathOr bool) (x bool, rstr string) {
+	x = true
 	for _, k := range keyword {
 		if strings.Contains(strings.ToLower(str), strings.ToLower(k)) {
-			x = true
+			x = x && true
 			rstr = k
-			break
+			if KeywordMathOr {
+				break
+			}
 		} else {
-			x = false
+			x = x && false
 		}
 	}
 	return x, rstr
 }
 
-func isregular(str string, keyword []string) (x bool, rstr string) {
+func isregular(str string, keyword []string, KeywordMathOr bool) (x bool, rstr string) {
+	x = true
 	for _, k := range keyword {
 		re, err := regexp.Compile(k)
 		if nil != err {
@@ -29,11 +33,13 @@ func isregular(str string, keyword []string) (x bool, rstr string) {
 		//re := pcre.MustCompile(k, pcre.DOTALL)
 		if re.Match([]byte(str)) {
 			//if re.MatcherString(str, pcre.DOTALL).Matches() {
-			x = true
+			x = x && true
 			rstr = k
-			break
+			if KeywordMathOr {
+				break
+			}
 		} else {
-			x = false
+			x = x && false
 		}
 	}
 	return x, rstr
