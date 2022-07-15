@@ -6,35 +6,35 @@ import (
 	"strings"
 )
 
-func iskeyword(str string, keyword []string) bool {
-	var x bool
-	x = true
+func iskeyword(str string, keyword []string) (x bool, rstr string) {
 	for _, k := range keyword {
 		if strings.Contains(strings.ToLower(str), strings.ToLower(k)) {
-			x = x && true
+			x = true
+			rstr = k
+			break
 		} else {
-			x = x && false
+			x = false
 		}
 	}
-	return x
+	return x, rstr
 }
 
-func isregular(str string, keyword []string) bool {
-	var x bool
-	x = true
+func isregular(str string, keyword []string) (x bool, rstr string) {
 	for _, k := range keyword {
 		re, err := regexp.Compile(k)
 		if nil != err {
 			log.Println(k, " is error: ", err)
-			return false
+			return false, ""
 		}
 		//re := pcre.MustCompile(k, pcre.DOTALL)
 		if re.Match([]byte(str)) {
 			//if re.MatcherString(str, pcre.DOTALL).Matches() {
-			x = x && true
+			x = true
+			rstr = k
+			break
 		} else {
-			x = x && false
+			x = false
 		}
 	}
-	return x
+	return x, rstr
 }
