@@ -5,6 +5,7 @@ import (
 	"github.com/hktalent/scan4all/brute"
 	"github.com/hktalent/scan4all/pocs_go/Springboot"
 	"github.com/hktalent/scan4all/pocs_go/ThinkPHP"
+	"github.com/hktalent/scan4all/pocs_go/apache"
 	"github.com/hktalent/scan4all/pocs_go/confluence"
 	"github.com/hktalent/scan4all/pocs_go/f5"
 	"github.com/hktalent/scan4all/pocs_go/fastjson"
@@ -40,15 +41,18 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 				technologies = append(technologies, fmt.Sprintf("exp-Shiro|key:%s", key))
 			}
 		case "Apache Tomcat":
+			if ok, _ := apache.CVE_2020_13935(URL); ok {
+				technologies = append(technologies, "exp-Tomcat|CVE-2020-13935")
+			}
 			username, password := brute.Tomcat_brute(URL)
 			if username != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-Tomcat|%s:%s", username, password))
 			}
 			if tomcat.CVE_2020_1938(HOST) {
-				technologies = append(technologies, "exp-Tomcat|CVE_2020_1938")
+				technologies = append(technologies, "exp-Tomcat|CVE-2020-1938")
 			}
 			if tomcat.CVE_2017_12615(URL) {
-				technologies = append(technologies, "exp-Tomcat|CVE_2017_12615")
+				technologies = append(technologies, "exp-Tomcat|CVE-2017-12615")
 			}
 		case "Basic":
 			username, password := brute.Basic_brute(URL)

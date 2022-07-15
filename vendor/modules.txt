@@ -292,6 +292,9 @@ github.com/google/uuid
 # github.com/gorilla/css v1.0.0
 ## explicit
 github.com/gorilla/css/scanner
+# github.com/gorilla/websocket v1.5.0
+## explicit; go 1.12
+github.com/gorilla/websocket
 # github.com/gosuri/uilive v0.0.4
 ## explicit; go 1.10
 github.com/gosuri/uilive
