@@ -17,7 +17,7 @@ const (
 	Reg_idMethod       int = 11515 // 识别方式：正则表达式 == regular
 	Text_idMethod      int = 11516 // 识别方式：文本 == keyword
 	Bin_idMethod       int = 11517 // 识别方式：hex，二进制
-	Base64_idMethod    int = 11518 // 识别方式：base64
+	Base64_idMethod    int = 11518 // 识别方式：hash-base64 // Base64_idMethod    int = 11518 // 识别方式：base64
 	Md5_idMethod       int = 11519 // 识别方式：md5
 	Header_idPart      int = 11520 // 识别区域：header
 	Body_idPart        int = 11521 // 识别区域：body
@@ -57,7 +57,12 @@ func MergeReqUrl() {
 	LoadWebfingerprintEhole()
 	x1 := GetWebfingerprintEhole()
 	// 测试的时候下面代码才打开
-	//x1.Fingerprint = []*Fingerprint{}
+	//if "true" == pkg.GetValByDefault("MyDebug", "false") {
+	//	x1.Fingerprint = []*Fingerprint{}
+	//	localFinger = "{}"
+	//	log.Println("MyDebug")
+	//}
+
 	// 不重复的URL
 	var urls = []string{}
 	// 去重使用
