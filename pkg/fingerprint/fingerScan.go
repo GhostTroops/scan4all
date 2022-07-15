@@ -65,8 +65,10 @@ func ClearData() {
 func SvUrl2Id(szUrl string, finp *Fingerprint) {
 	if 0 < finp.Id {
 		if v, ok := MFid.Load(szUrl); ok {
-			var d = v.(map[int]struct{})
-			d[finp.Id] = struct{}{}
+			if d, ok := v.(map[int]struct{}); ok {
+				d[finp.Id] = struct{}{}
+				MFid.Store(szUrl, d)
+			}
 		} else {
 			MFid.Store(szUrl, map[int]struct{}{finp.Id: struct{}{}})
 		}
@@ -171,7 +173,7 @@ func FingerScan(headers map[string][]string, body []byte, title string, url stri
 	for _, x1 := range []*Packjson{EholeFinpx, LocalFinpx} {
 		for _, finp := range x1.Fingerprint {
 			if finp.UrlPath == "" || strings.HasSuffix(url, finp.UrlPath) {
-				//if -1 < strings.Index(url, "favicon.ico") && finp.Cms == "泛微OA" {
+				//if -1 < strings.Index(url, "/favicon.ico") && finp.Cms == "SpringBoot" {
 				//	log.Println(url)
 				//}
 				if finp.Location == "body" { // 识别区域；body
