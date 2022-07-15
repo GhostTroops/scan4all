@@ -105,7 +105,7 @@ func MergeReqUrl() {
 			if x6, ok := oFingerprint[szKey]; ok {
 				x2 = x6
 			} else {
-				x2 = &Fingerprint{Cms: szName, UrlPath: Get4K(&y, "url"), Keyword: []string{}, Id: id, Method: FgType[idMethod], Location: FgType[idPart]}
+				x2 = &Fingerprint{Cms: szName, KeywordMathOr: true, UrlPath: Get4K(&y, "url"), Keyword: []string{}, Id: id, Method: FgType[idMethod], Location: FgType[idPart]}
 				//x1.Fingerprint = append([]Fingerprint{x2}, x1.Fingerprint...)
 				x1.Fingerprint = append(x1.Fingerprint, x2)
 				//log.Println(szKey)
