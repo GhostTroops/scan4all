@@ -62,15 +62,19 @@ func ClearData() {
 	DelTmpFgFile()
 }
 
-func SvUrl2Id(szUrl string, finp *Fingerprint) {
+func SvUrl2Id(szUrl string, finp *Fingerprint, rMz string) {
 	if 0 < finp.Id {
 		if v, ok := MFid.Load(szUrl); ok {
-			if d, ok := v.(map[int]struct{}); ok {
-				d[finp.Id] = struct{}{}
+			if d, ok := v.(map[int]map[string]int); ok {
+				if n, ok := d[finp.Id][rMz]; ok {
+					d[finp.Id][rMz] = n + 1
+				} else {
+					d[finp.Id] = map[string]int{rMz: 1}
+				}
 				MFid.Store(szUrl, d)
 			}
 		} else {
-			MFid.Store(szUrl, map[int]struct{}{finp.Id: struct{}{}})
+			MFid.Store(szUrl, map[int]map[string]int{finp.Id: map[string]int{rMz: 1}})
 		}
 	}
 }
@@ -98,40 +102,40 @@ func CaseMethod(szUrl, method, bodyString, favhash, md5Body, hexBody string, fin
 
 	switch method {
 	case "keyword":
-		if iskeyword(bodyString, finp.Keyword) {
+		if ok, rMz := iskeyword(bodyString, finp.Keyword); ok {
 			cms = append(cms, finp.Cms)
-			SvUrl2Id(szUrl, finp)
+			SvUrl2Id(szUrl, finp, rMz)
 		}
 		break
 	case "faviconhash": // 相同目标只执行一次
-		if iskeyword(favhash, finp.Keyword) {
+		if ok, rMz := iskeyword(favhash, finp.Keyword); ok {
 			Mfavhash.Store(u01.Host+favhash, 1)
 			cms = append(cms, finp.Cms)
-			SvUrl2Id(szUrl, finp)
+			SvUrl2Id(szUrl, finp, rMz)
 		}
 		break
 	case "regular":
-		if isregular(bodyString, finp.Keyword) {
+		if ok, rMz := isregular(bodyString, finp.Keyword); ok {
 			cms = append(cms, finp.Cms)
-			SvUrl2Id(szUrl, finp)
+			SvUrl2Id(szUrl, finp, rMz)
 		}
 		break
 	case "md5": // 支持md5
-		if iskeyword(md5Body, finp.Keyword) {
+		if ok, rMz := iskeyword(md5Body, finp.Keyword); ok {
 			cms = append(cms, finp.Cms)
-			SvUrl2Id(szUrl, finp)
+			SvUrl2Id(szUrl, finp, rMz)
 		}
 		break
 	case "base64": // 支持base64
-		if iskeyword(bodyString, finp.Keyword) {
+		if ok, rMz := iskeyword(bodyString, finp.Keyword); ok {
 			cms = append(cms, finp.Cms)
-			SvUrl2Id(szUrl, finp)
+			SvUrl2Id(szUrl, finp, rMz)
 		}
 		break
 	case "hex":
-		if iskeyword(hexBody, finp.Keyword) {
+		if ok, rMz := iskeyword(hexBody, finp.Keyword); ok {
 			cms = append(cms, finp.Cms)
-			SvUrl2Id(szUrl, finp)
+			SvUrl2Id(szUrl, finp, rMz)
 		}
 		break
 	}
@@ -183,9 +187,9 @@ func FingerScan(headers map[string][]string, body []byte, title string, url stri
 				} else if finp.Location == "title" { // 识别区域： title
 					cms = append(cms, CaseMethod(url, finp.Method, title, favhash, md5Title, hexTitle, finp)...)
 				} else if finp.Location == "status_code" { // 识别区域：status_code
-					if iskeyword(status_code, finp.Keyword) {
+					if ok, rMz := iskeyword(status_code, finp.Keyword); ok {
 						cms = append(cms, finp.Cms)
-						SvUrl2Id(url, finp)
+						SvUrl2Id(url, finp, rMz)
 					}
 				}
 			}
