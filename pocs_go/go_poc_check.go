@@ -13,6 +13,7 @@ import (
 	"github.com/hktalent/scan4all/pocs_go/jboss"
 	"github.com/hktalent/scan4all/pocs_go/jenkins"
 	"github.com/hktalent/scan4all/pocs_go/log4j"
+	"github.com/hktalent/scan4all/pocs_go/ms"
 	"github.com/hktalent/scan4all/pocs_go/phpunit"
 	"github.com/hktalent/scan4all/pocs_go/seeyon"
 	"github.com/hktalent/scan4all/pocs_go/shiro"
@@ -22,19 +23,53 @@ import (
 	"github.com/hktalent/scan4all/pocs_go/zabbix"
 	"log"
 	"net/url"
+	"sync"
 )
 
-func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool) []string {
-	var HOST string
+type AsyncPocCheck struct {
+	Wappalyzertechnologies []string
+	URL                    string
+	FinalURL               string
+	Checklog4j             bool
+}
+
+var Apc = make(chan *AsyncPocCheck, 300)
+
+func DoNmapScan(close chan bool, wg *sync.WaitGroup) {
+	for {
+		select {
+		case <-close:
+			return
+		case x1 := <-Apc:
+			if nil != x1 {
+				wg.Add(1)
+				go POCcheck(x1.Wappalyzertechnologies, x1.URL, x1.FinalURL, x1.Checklog4j, wg)
+			}
+		}
+	}
+}
+
+// 需优化：相同都目标，相同都检测只做一次
+func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool, wg *sync.WaitGroup) []string {
+	if nil != wg {
+		defer wg.Done()
+	}
+	var HOST, hostname string
 	var technologies []string
 	if host, err := url.Parse(URL); err == nil {
 		HOST = host.Host
+		hostname = host.Hostname()
 	} else {
 		log.Println(URL, " parse error ", err)
 		return []string{}
 	}
 	for tech := range wappalyzertechnologies {
 		switch wappalyzertechnologies[tech] {
+		case "microsoft-ds":
+			key, err := ms.SmbGhostScan(hostname)
+			if nil == err && key {
+				technologies = append(technologies, fmt.Sprintf("exp-microsoft-ds CVE-2020-0796 :%s", hostname))
+			}
 		case "Shiro":
 			key := shiro.CVE_2016_4437(finalURL)
 			if key != "" {
