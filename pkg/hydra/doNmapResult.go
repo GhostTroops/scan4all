@@ -68,7 +68,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 						}
 					}
 				}
-				fmt.Printf("%s\t%d\t%s\n", ip, port, service)
+				log.Printf("%s\t%d\t%s\n", ip, port, service)
 			}
 		}
 	}

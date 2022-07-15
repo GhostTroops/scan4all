@@ -92,6 +92,8 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/cel-go v0.11.4
 	github.com/google/go-github v17.0.0+incompatible
+	github.com/gorilla/websocket v1.5.0
+	github.com/gosnmp/gosnmp v1.35.0
 	github.com/huin/asn1ber v0.0.0-20120622192748-af09f62e6358
 	github.com/icodeface/tls v0.0.0-20190904083142-17aec93c60e5
 	github.com/jlaffaye/ftp v0.0.0-20190624084859-c1312a7102bf
@@ -165,7 +167,6 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/gosuri/uiprogress v0.0.1 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect

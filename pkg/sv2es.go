@@ -18,12 +18,12 @@ var nThreads chan struct{}
 var esUrl string
 var enableEsSv string
 
-func init() {
-	enableEsSv = GetVal("enableEsSv")
+func initEs() {
+	enableEsSv = GetValByDefault("enableEsSv", "true")
 	if "true" == enableEsSv {
-		esUrl = GetVal("esUrl")
+		esUrl = GetValByDefault("esUrl", "http://127.0.0.1:9200/%s_index/_doc/%s")
 		n1, _ = strconv.Atoi(GetValByDefault("esthread", "4"))
-		//log.Println("es 初始化线程数 = ", n1)
+		log.Printf("es 初始化线程数 = %d, esUrl = %s", n1, esUrl)
 		nThreads = make(chan struct{}, n1)
 	}
 }
@@ -61,7 +61,9 @@ func SendReq(data1 interface{}, id, szType string) {
 	defer func() {
 		<-nThreads
 	}()
+	//log.Println("esUrl = ", esUrl)
 	url := fmt.Sprintf(esUrl, szType, url.QueryEscape(id))
+	//log.Println("url = ", url)
 	req, err := http.NewRequest("POST", url, bytes.NewReader(data))
 	if err != nil {
 		Log(fmt.Sprintf("%s error %v", id, err))
@@ -92,8 +94,8 @@ func SendReq(data1 interface{}, id, szType string) {
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
-	if nil == err {
-		Log(body)
+	if nil == err && 0 < len(body) {
+		//Log("Es save result ", string(body))
 	} else {
 		Log(err)
 	}

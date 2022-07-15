@@ -131,7 +131,11 @@ func GetVal4Filedefault(key, szDefault string) string {
 	return s
 }
 
+var SzPwd string
+
 func Init() {
+	pwd, _ := os.Getwd()
+	SzPwd = pwd
 	var ConfigName = "config/config.json"
 	config := viper.New()
 	config.AddConfigPath("./")
@@ -160,6 +164,7 @@ func Init() {
 	}
 	config.Unmarshal(&mData)
 	viper.Set("Verbose", false)
+	initEs()
 }
 
 var G_Options interface{}
@@ -175,7 +180,7 @@ func GetNmap() string {
 var hvNmap = false
 
 func CheckHvNmap() bool {
-	if runtime.GOOS == "windows" || "true" != GetVal("priorityNmap") {
+	if runtime.GOOS == "windows" || "true" != GetValByDefault("priorityNmap", "true") {
 		return false
 	}
 	if hvNmap {
@@ -207,10 +212,8 @@ func doReadBuff(buf *bytes.Buffer) string {
 func DoCmd(args ...string) (string, error) {
 	cmd := exec.Command(args[0], args[1:]...)
 	var stdout, stderr bytes.Buffer
-	if "true" == GetValByDefault("enablNmapStdIO", "false") {
-		cmd.Stdout = &stdout // 标准输出
-		cmd.Stderr = &stderr // 标准错误
-	}
+	cmd.Stdout = &stdout // 标准输出
+	cmd.Stderr = &stderr // 标准错误
 	err := cmd.Run()
 	outStr, errStr := doReadBuff(&stdout), doReadBuff(&stderr)
 	// out, err := cmd.CombinedOutput()

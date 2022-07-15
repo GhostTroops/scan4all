@@ -40,7 +40,7 @@ func main() {
 	if options.Debug {
 		// debug 优化时启用///////////////////////
 		go func() {
-			fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/")
+			fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/\n\ngo tool pprof -seconds=10 -http=:9999 http://localhost:6060/debug/pprof/heap")
 			http.ListenAndServe(":6060", nil)
 		}()
 		//////////////////////////////////////////*/

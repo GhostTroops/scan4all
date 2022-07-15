@@ -295,6 +295,9 @@ github.com/gorilla/css/scanner
 # github.com/gorilla/websocket v1.5.0
 ## explicit; go 1.12
 github.com/gorilla/websocket
+# github.com/gosnmp/gosnmp v1.35.0
+## explicit; go 1.17
+github.com/gosnmp/gosnmp
 # github.com/gosuri/uilive v0.0.4
 ## explicit; go 1.10
 github.com/gosuri/uilive

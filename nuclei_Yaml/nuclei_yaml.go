@@ -64,6 +64,8 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool) {
 	if nucleiRunner == nil {
 		return
 	}
+	//data, _ := json.Marshal(options)
+	//log.Printf("%+v", string(data))
 	if err := nucleiRunner.RunEnumeration(); err != nil {
 		if options.Validate {
 			gologger.Fatal().Msgf("Could not validate templates: %s\n", err)
