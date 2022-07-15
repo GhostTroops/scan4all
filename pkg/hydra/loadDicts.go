@@ -125,6 +125,7 @@ func init() {
 		DefaultUp: pkg.GetVal4Filedefault("ssh_default", ssh_default),
 	}
 	md["rsh-spx"] = md["ssh"]
+	md["snmp"] = md["ssh"]
 	md["mongodb"] = PPDict{
 		Username:  pkg.GetVal4File("mongodb_username", mongodbusername),
 		Paswd:     pkg.GetVal4File("mongodb_pswd", mongodb_pswd),

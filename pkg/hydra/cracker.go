@@ -11,6 +11,7 @@ import (
 	"github.com/hktalent/scan4all/pkg/hydra/rdp"
 	"github.com/hktalent/scan4all/pkg/hydra/redis"
 	"github.com/hktalent/scan4all/pkg/hydra/smb"
+	"github.com/hktalent/scan4all/pkg/hydra/snmp"
 	"github.com/hktalent/scan4all/pkg/hydra/ssh"
 	"github.com/hktalent/scan4all/pkg/hydra/telnet"
 	"github.com/hktalent/scan4all/pkg/kscan/core/slog"
@@ -135,6 +136,18 @@ func redisCracker(i interface{}) interface{} {
 	return nil
 }
 
+func snmpCracker(i interface{}) interface{} {
+	info := i.(AuthInfo)
+	info.Auth.MakePassword()
+	// info.IPAddr, info.Auth.Username, info.Auth.Password, info.Port
+
+	if err, ok := snmp.ScanSNMP(&snmp.Service{Ip: info.IPAddr, Port: info.Port, Username: info.Auth.Username, Password: info.Auth.Password}); nil != ok && ok.Result {
+		slog.Printf(slog.DEBUG, "snmp://%s:%s@%s:%d:%s", info.Auth.Username, info.Auth.Password, info.IPAddr, info.Port, err)
+		info.Status = true
+		return info
+	}
+	return nil
+}
 func ftpCracker(i interface{}) interface{} {
 	info := i.(AuthInfo)
 	info.Auth.MakePassword()
