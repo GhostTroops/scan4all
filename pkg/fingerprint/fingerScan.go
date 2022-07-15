@@ -6,6 +6,7 @@ import (
 	"github.com/hktalent/scan4all/pkg"
 	"log"
 	"net/url"
+	"strings"
 	"sync"
 )
 
@@ -143,6 +144,10 @@ var enableFingerTitleHeaderMd5Hex = pkg.GetValByDefault("enableFingerTitleHeader
 
 // 相同的url、组件（产品），>=2 个指纹命中，那么该组件的其他指纹匹配将跳过
 func FingerScan(headers map[string][]string, body []byte, title string, url string, status_code string) []string {
+	if nil == body || 0 == len(body) {
+		//log.Println(url, " 存在异常，body为nil")
+		return []string{}
+	}
 	//log.Println("FgDictFile = ", FgDictFile)
 	bodyString := string(body)
 	headersjson := mapToJson(headers)
@@ -161,19 +166,25 @@ func FingerScan(headers map[string][]string, body []byte, title string, url stri
 		hexHeader = hex.EncodeToString([]byte(headersjson))
 		md5Header = FavicohashMd5(0, nil, []byte(headersjson), nil)
 	}
+
 	var cms []string
 	for _, x1 := range []*Packjson{EholeFinpx, LocalFinpx} {
 		for _, finp := range x1.Fingerprint {
-			if finp.Location == "body" { // 识别区域；body
-				cms = append(cms, CaseMethod(url, finp.Method, bodyString, favhash, md5Body, hexBody, finp)...)
-			} else if finp.Location == "header" { // 识别区域：header
-				cms = append(cms, CaseMethod(url, finp.Method, headersjson, favhash, md5Header, hexHeader, finp)...)
-			} else if finp.Location == "title" { // 识别区域： title
-				cms = append(cms, CaseMethod(url, finp.Method, title, favhash, md5Title, hexTitle, finp)...)
-			} else if finp.Location == "status_code" { // 识别区域：status_code
-				if iskeyword(status_code, finp.Keyword) {
-					cms = append(cms, finp.Cms)
-					SvUrl2Id(url, finp)
+			if finp.UrlPath == "" || strings.HasSuffix(url, finp.UrlPath) {
+				//if -1 < strings.Index(url, "favicon.ico") && finp.Cms == "泛微OA" {
+				//	log.Println(url)
+				//}
+				if finp.Location == "body" { // 识别区域；body
+					cms = append(cms, CaseMethod(url, finp.Method, bodyString, favhash, md5Body, hexBody, finp)...)
+				} else if finp.Location == "header" { // 识别区域：header
+					cms = append(cms, CaseMethod(url, finp.Method, headersjson, favhash, md5Header, hexHeader, finp)...)
+				} else if finp.Location == "title" { // 识别区域： title
+					cms = append(cms, CaseMethod(url, finp.Method, title, favhash, md5Title, hexTitle, finp)...)
+				} else if finp.Location == "status_code" { // 识别区域：status_code
+					if iskeyword(status_code, finp.Keyword) {
+						cms = append(cms, finp.Cms)
+						SvUrl2Id(url, finp)
+					}
 				}
 			}
 		}
