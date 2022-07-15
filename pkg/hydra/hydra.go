@@ -20,7 +20,7 @@ type Cracker struct {
 var (
 	DefaultAuthMap map[string]*AuthList
 	CustomAuthMap  *AuthList
-	ProtocolList   = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,smb,telnet", ",")
+	ProtocolList   = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,smb,telnet,snmp", ",")
 )
 
 func NewCracker(info *AuthInfo, isAuthUpdate bool, threads int) *Cracker {
@@ -97,6 +97,8 @@ func (c *Cracker) Run() {
 		c.Pool.Function = telnetCracker(serverType)
 	case "ftp":
 		c.Pool.Function = ftpCracker
+	case "snmp":
+		c.Pool.Function = snmpCracker
 	case "mongodb":
 		c.Pool.Function = mongodbCracker
 	case "redis":

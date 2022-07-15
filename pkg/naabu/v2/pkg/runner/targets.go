@@ -151,8 +151,11 @@ func (r *Runner) DoTargets() (bool, error) {
 	}
 	a = nil
 	aR = pkg.RemoveDuplication_map(aR)
-	//log.Printf("%+v", aR)
-	ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
+	//log.Printf("DoTargets:: %+v", aR)
+	err = ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
+	if nil != err {
+		log.Println("ioutil.WriteFile(r.targetsFile err: ", err)
+	}
 	// 有nmap那么就直接调用nmap了
 	bRw := false
 	if pkg.CheckHvNmap() {
@@ -160,7 +163,7 @@ func (r *Runner) DoTargets() (bool, error) {
 		tempInput1, err := ioutil.TempFile("", "stdin-out-*")
 		if err == nil {
 			defer tempInput1.Close()
-			x := "config/doNmapScan.sh " + r.targetsFile + " " + tempInput1.Name()
+			x := pkg.SzPwd + "/config/doNmapScan.sh " + r.targetsFile + " " + tempInput1.Name()
 			log.Println(x)
 			ss, err := pkg.DoCmd(strings.Split(x, " ")...)
 			s0 := tempInput1.Name()
@@ -193,7 +196,11 @@ func (r *Runner) DoTargets() (bool, error) {
 			} else {
 				log.Println("DoCmd: ", err)
 			}
+		} else {
+			log.Println("ioutil.TempFile ", err)
 		}
+	} else {
+		log.Println(" pkg.CheckHvNmap() false")
 	}
 	if bRw {
 		ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
@@ -204,6 +211,8 @@ func (r *Runner) DoTargets() (bool, error) {
 func (r *Runner) PreProcessTargets() error {
 	if b11, _ := r.DoTargets(); b11 {
 		return nil
+	} else {
+		log.Println("r.DoTargets 不正常，走naabu")
 	}
 	if r.options.Stream {
 		defer close(r.streamChannel)
@@ -332,6 +341,9 @@ func (r *Runner) DoDns(target string) {
 			gologger.Warning().Msgf("%s\n", err)
 		} else {
 			log.Println(" r.scanner.IPRanger.AddHostWithMetadata add ", ip, " ", target)
+		}
+		if ip == target && len(ip) != len(target) {
+			log.Println("please reTry, Your current network is not good")
 		}
 	}
 }

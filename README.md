@@ -7,6 +7,7 @@
    <a href="/static/scenario.md">使用场景</a> •
    <a href="/static/pocs.md">POC列表</a> •
    <a href="/static/development.md">自定义扫描</a>
+   <a href="/static/NicePwn.md">最佳实践</a>
 </p>
 
 # 特性
