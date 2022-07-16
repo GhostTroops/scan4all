@@ -146,7 +146,7 @@ func CaseMethod(szUrl, method, bodyString, favhash, md5Body, hexBody string, fin
 	return cms
 }
 
-var enableFingerTitleHeaderMd5Hex = pkg.GetValByDefault("enableFingerTitleHeaderMd5Hex", "false")
+var enableFingerTitleHeaderMd5Hex = pkg.GetValAsBool("enableFingerTitleHeaderMd5Hex")
 
 // 相同的url、组件（产品），>=2 个指纹命中，那么该组件的其他指纹匹配将跳过
 func FingerScan(headers map[string][]string, body []byte, title string, url string, status_code string) []string {
@@ -166,7 +166,7 @@ func FingerScan(headers map[string][]string, body []byte, title string, url stri
 	md5Title := ""
 	hexHeader := ""
 	md5Header := ""
-	if "true" == enableFingerTitleHeaderMd5Hex {
+	if enableFingerTitleHeaderMd5Hex {
 		hexTitle = hex.EncodeToString([]byte(title))
 		md5Title = FavicohashMd5(0, nil, []byte(title), nil)
 		hexHeader = hex.EncodeToString([]byte(headersjson))

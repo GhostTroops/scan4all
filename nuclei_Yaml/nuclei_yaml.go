@@ -27,7 +27,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool) {
 		xx <- true
 		close(xx)
 	}()
-	if "true" != pkg.GetValByDefault("enableNuclei", "false") {
+	if pkg.GetValAsBool("enableNuclei") {
 		return
 	}
 	// json 控制参数

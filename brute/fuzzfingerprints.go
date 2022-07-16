@@ -1,13 +1,34 @@
 package brute
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hktalent/scan4all/pkg"
 	"strings"
 )
 
-func addfingerprints404(technologies []string, req *pkg.Response) []string {
-	// StatusCode 404
+// 这里后期优化：
+// 1、基于字典
+// 2、相同url，相同 body.len只做一次匹配
+// 3、支持多地方调用
+// 4、所有异常页面 > 400 > 500都做异常页面fuzz指纹
+func Addfingerprints404(technologies []string, req *pkg.Response, oPage *Page) []string {
+	var szKey string
+	if nil != oPage {
+		szKey = fmt.Sprintf("Addfingerprints404:%s_%d", oPage.Url, oPage.BodyLen)
+		data := pkg.Cache1.GetKeyForData(szKey)
+		var rst []string
+		if 0 < len(data) {
+			err := json.Unmarshal(data, &rst)
+			if nil == err {
+				return rst
+			}
+		}
+	}
+	if 0 < pkg.CheckShiroCookie(req) {
+		technologies = append(technologies, "Shiro")
+	}
+	// StatusCode 404，这里会有误报，当请求当路径中包含了ThinkPHP，有些site返回当结果会看包涵全路径信息
 	if pkg.StrContains(req.Body, "thinkphp") {
 		technologies = append(technologies, "ThinkPHP")
 	}
@@ -20,19 +41,18 @@ func addfingerprints404(technologies []string, req *pkg.Response) []string {
 	if pkg.StrContains(req.Body, "Whitelabel Error Page") {
 		technologies = append(technologies, "Spring")
 	}
-	return technologies
-}
-
-func addfingerprints403(payload string, technologies []string) []string {
-	// StatusCode 403
-	switch payload {
-	case "/Runtime/Logs/":
+	if -1 < strings.Index(*oPage.Url, "/Runtime/Logs/") {
 		technologies = append(technologies, "ThinkPHP")
 	}
+	if nil != oPage && 0 < len(szKey) && 0 < len(technologies) {
+		pkg.PutAny[[]string](szKey, technologies)
+	}
+
 	return technologies
 }
 
-func addfingerprintsnormal(payload string, technologies []string, req *pkg.Response) []string {
+// 正常页面指纹处理
+func Addfingerprintsnormal(payload string, technologies []string, req *pkg.Response, fuzzPage *Page) []string {
 	// StatusCode 200, 301, 302, 401, 500
 	switch payload {
 	case "/manager/html":
@@ -55,7 +75,7 @@ func addfingerprintsnormal(payload string, technologies []string, req *pkg.Respo
 		if pkg.StrContains(req.Body, "/seeyon/common/") {
 			technologies = append(technologies, "seeyon")
 		}
-	case "/admin", "/admin-console", "/admin.asp", "/admin.aspx", "/admin.do", "/admin.html", "/admin.jsp", "/admin.php", "/admin/", "/admin/admin", "/admin/adminLogin.do", "/admin/checkLogin.do", "/admin/index.do", "/Admin/Login", "/admin/Login.aspx", "/admin/login.do", "/admin/menu", "/Adminer", "/adminer.php", "/administrator", "/adminLogin.do", "/checkLogin.do", "/doc/page/login.asp", "/login", "/Login.aspx", "/login/login", "/login/Login.jsp", "/manage", "/manage/login.htm", "/management", "/manager", "/manager.aspx", "/manager.do", "/manager.jsp", "/manager.jspx", "/manager.php", "/memadmin/index.php", "/myadmin/login.php", "/Systems/", "/user-login.html", "/wp-login.php":
+	case "/admin", "/admin-console", "/admin.asp", "/admin.aspx", "/admin.do", "/admin.html", "/admin.jsp", "/admin.php", "/admin/", "/admin/admin", "/admin/adminLogin.do", "/admin/checkLogin.do", "/admin/index.do", "/Admin/Login", "/admin/Login.aspx", "/admin/login.do", "/admin/menu", "/Adminer", "/adminer.php", "/administrator", "/adminLogin.do", "/checkLogin.do", "/doc/Page/login.asp", "/login", "/Login.aspx", "/login/login", "/login/Login.jsp", "/manage", "/manage/login.htm", "/management", "/manager", "/manager.aspx", "/manager.do", "/manager.jsp", "/manager.jspx", "/manager.php", "/memadmin/index.php", "/myadmin/login.php", "/Systems/", "/user-login.html", "/wp-login.php":
 		if reqlogin, err := pkg.HttpRequset(req.RequestUrl, "GET", "", true, nil); err == nil {
 			if pkg.StrContains(reqlogin.Body, "<input") && (pkg.StrContains(reqlogin.Body, "pass") || strings.Contains(reqlogin.Body, "Pass") || strings.Contains(reqlogin.Body, "PASS")) {
 				technologies = append(technologies, "AdminLoginPage")
