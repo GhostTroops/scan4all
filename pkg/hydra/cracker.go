@@ -2,6 +2,7 @@ package hydra
 
 import (
 	"fmt"
+	"github.com/hktalent/scan4all/pkg/hydra/elastic"
 	"github.com/hktalent/scan4all/pkg/hydra/ftp"
 	"github.com/hktalent/scan4all/pkg/hydra/mongodb"
 	"github.com/hktalent/scan4all/pkg/hydra/mssql"
@@ -143,6 +144,19 @@ func snmpCracker(i interface{}) interface{} {
 
 	if err, ok := snmp.ScanSNMP(&snmp.Service{Ip: info.IPAddr, Port: info.Port, Username: info.Auth.Username, Password: info.Auth.Password}); nil != ok && ok.Result {
 		slog.Printf(slog.DEBUG, "snmp://%s:%s@%s:%d:%s", info.Auth.Username, info.Auth.Password, info.IPAddr, info.Port, err)
+		info.Status = true
+		return info
+	}
+	return nil
+}
+
+func elasticCracker(i interface{}) interface{} {
+	info := i.(AuthInfo)
+	info.Auth.MakePassword()
+	// info.IPAddr, info.Auth.Username, info.Auth.Password, info.Port
+
+	if err, ok := elastic.ScanElastic(&snmp.Service{Ip: info.IPAddr, Port: info.Port, Username: info.Auth.Username, Password: info.Auth.Password}); nil != ok && ok.Result {
+		slog.Printf(slog.DEBUG, "http://%s:%s@%s:%d:%s", info.Auth.Username, info.Auth.Password, info.IPAddr, info.Port, err)
 		info.Status = true
 		return info
 	}

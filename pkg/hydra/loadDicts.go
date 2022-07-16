@@ -33,6 +33,24 @@ var rdp_pswd string
 //go:embed dicts/rdp_default.txt
 var rdp_default string
 
+//go:embed dicts/es_user.txt
+var es_user string
+
+//go:embed dicts/es_pswd.txt
+var es_pswd string
+
+//go:embed dicts/es_default.txt
+var es_default string
+
+//go:embed dicts/snmp_user.txt
+var snmp_user string
+
+//go:embed dicts/snmp_pswd.txt
+var snmp_pswd string
+
+//go:embed dicts/snmp_default.txt
+var snmp_default string
+
 //go:embed dicts/mongodb_user.txt
 var mongodbusername string
 
@@ -125,7 +143,17 @@ func init() {
 		DefaultUp: pkg.GetVal4Filedefault("ssh_default", ssh_default),
 	}
 	md["rsh-spx"] = md["ssh"]
-	md["snmp"] = md["ssh"]
+	md["snmp"] = PPDict{
+		Username:  pkg.GetVal4File("snmp_user", snmp_user),
+		Paswd:     pkg.GetVal4File("snmp_pswd", snmp_pswd),
+		DefaultUp: pkg.GetVal4Filedefault("snmp_default", snmp_default),
+	}
+	// 再增加字典
+	md["wap-wsp"] = PPDict{
+		Username:  pkg.GetVal4File("es_user", es_user),
+		Paswd:     pkg.GetVal4File("es_pswd", es_pswd),
+		DefaultUp: pkg.GetVal4Filedefault("es_default", es_default),
+	}
 	md["mongodb"] = PPDict{
 		Username:  pkg.GetVal4File("mongodb_username", mongodbusername),
 		Paswd:     pkg.GetVal4File("mongodb_pswd", mongodb_pswd),
