@@ -20,12 +20,11 @@ type Cracker struct {
 var (
 	DefaultAuthMap map[string]*AuthList
 	CustomAuthMap  *AuthList
-	ProtocolList   = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,smb,telnet,snmp", ",")
+	ProtocolList   = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,smb,telnet,snmp,wap-wsp", ",")
 )
 
 func NewCracker(info *AuthInfo, isAuthUpdate bool, threads int) *Cracker {
 	c := &Cracker{}
-
 	if info.Protocol == "redis" {
 		c.onlyPassword = true
 	} else {
@@ -99,6 +98,8 @@ func (c *Cracker) Run() {
 		c.Pool.Function = ftpCracker
 	case "snmp":
 		c.Pool.Function = snmpCracker
+	case "wap-wsp":
+		c.Pool.Function = elasticCracker
 	case "mongodb":
 		c.Pool.Function = mongodbCracker
 	case "redis":
