@@ -12,12 +12,20 @@ type UserPass struct {
 }
 
 var (
-	tomcatuserpass   = []UserPass{}
-	jbossuserpass    = []UserPass{}
-	top100pass       = []string{}
-	weblogicuserpass = []UserPass{}
-	filedic          = []string{}
+	tomcatuserpass   = []UserPass{} // tomcat user pass 字典
+	jbossuserpass    = []UserPass{} // jboss user pass 字典
+	top100pass       = []string{}   // top 100 密码，用于 http爆破
+	weblogicuserpass = []UserPass{} // weblogic user pass 字典
+	filedic          = []string{}   // fuzz字典
 )
+
+// http 爆破user
+//go:embed dicts/httpuser.txt
+var httpuser string
+
+// http 爆破密码字典
+//go:embed dicts/httpass.txt
+var httpass string
 
 //go:embed dicts/tomcatuserpass.txt
 var szTomcatuserpass string
@@ -52,11 +60,16 @@ func CvtUps(s string) []UserPass {
 func CvtLines(s string) []string {
 	return strings.Split(s, "\n")
 }
+
+// http 密码爆破user
+var basicusers []string
+
 func init() {
 	tomcatuserpass = CvtUps(pkg.GetVal4File("tomcatuserpass", szTomcatuserpass))
 	jbossuserpass = CvtUps(pkg.GetVal4File("jbossuserpass", szJbossuserpass))
 	weblogicuserpass = CvtUps(pkg.GetVal4File("weblogicuserpass", szWeblogicuserpass))
 	filedic = append(filedic, CvtLines(pkg.GetVal4File("filedic", szFiledic))...)
 	top100pass = append(top100pass, CvtLines(pkg.GetVal4File("top100pass", szTop100pass))...)
-
+	basicusers = strings.Split(strings.TrimSpace(pkg.GetVal4File("httpuser", httpass)), "\n")
+	top100pass = append(top100pass, strings.Split(strings.TrimSpace(pkg.GetVal4File("httpass", httpass)), "\n")...)
 }

@@ -1,6 +1,7 @@
 404
 不存在
 错误
+Forbidden
 403
 禁止访问
 请求含有不合法的参数
@@ -10,7 +11,7 @@
 网站防火墙
 访问拦截
 由于安全原因JSP功能默认关闭
-<title>网站改版中</title>
+(?i)<title>网站改版中</title>
 Our website is under construction
 Access Failed
 an error
@@ -40,7 +41,7 @@ unable to open
 Web access denied
 Hack Attempts
 does not exist
-<b>Wrong URL.
+Wrong URL.
 page may no longer exist
 page no longer exist
 Your session has expired
@@ -50,4 +51,4 @@ More about this error
 No target SAP system for request
 no valid destination server available for
 unauthorized public IP address
-<TITLE>Invalid URL</TITLE>
+Invalid URL

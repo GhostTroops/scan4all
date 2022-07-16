@@ -1,4 +1,3 @@
-<script>document.getElementById("a-link").click();</script>
 404 Not Found
 您所提交的请求含有不合法的参数，已被网站管理员设置拦截
 404.safedog.cn

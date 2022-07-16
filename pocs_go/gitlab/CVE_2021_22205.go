@@ -16,8 +16,8 @@ func CVE_2021_22205(url string) bool {
 			var csrf string
 			if req.Header != nil {
 				var SetCookieAll string
-				for i := range req.Header["Set-Cookie"] {
-					SetCookieAll += req.Header["Set-Cookie"][i]
+				for i := range (*req.Header)["Set-Cookie"] {
+					SetCookieAll += (*req.Header)["Set-Cookie"][i]
 				}
 				cookie = regexp.MustCompile("_gitlab_session=(.*?);").FindString(SetCookieAll)
 				//if len(counts) > 1 {

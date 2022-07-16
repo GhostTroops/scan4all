@@ -10,19 +10,18 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"strconv"
 )
 
 var n1 int
 var nThreads chan struct{}
 var esUrl string
-var enableEsSv string
+var enableEsSv bool
 
 func initEs() {
-	enableEsSv = GetValByDefault("enableEsSv", "true")
-	if "true" == enableEsSv {
+	enableEsSv = GetValAsBool("enableEsSv")
+	if enableEsSv {
 		esUrl = GetValByDefault("esUrl", "http://127.0.0.1:9200/%s_index/_doc/%s")
-		n1, _ = strconv.Atoi(GetValByDefault("esthread", "4"))
+		n1 = GetValAsInt("esthread", 4)
 		log.Printf("es 初始化线程数 = %d, esUrl = %s", n1, esUrl)
 		nThreads = make(chan struct{}, n1)
 	}
@@ -52,7 +51,7 @@ func SendAData[T any](k string, data []T, szType string) {
 }
 
 func SendReq(data1 interface{}, id, szType string) {
-	if "true" != enableEsSv {
+	if !enableEsSv {
 		return
 	}
 	//log.Println("enableEsSv = ", enableEsSv, " id= ", id, " type = ", szType)

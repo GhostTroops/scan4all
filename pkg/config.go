@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"regexp"
@@ -53,6 +54,21 @@ func GetValByDefault(key, dftvl string) string {
 		return dftvl
 	}
 	return s
+}
+
+// 获取配置为bool
+func GetValAsBool(key string) bool {
+	return "true" == GetVal(key)
+}
+
+// 获取配置为int
+func GetValAsInt(key string, nDefault int) int {
+	s := GetValByDefault(key, fmt.Sprintf("%d", nDefault))
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		n = nDefault
+	}
+	return n
 }
 
 var (
@@ -133,6 +149,18 @@ func GetVal4Filedefault(key, szDefault string) string {
 
 var SzPwd string
 
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+var letterRunes = []rune(letterBytes)
+
+func RandStringRunes(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
+
 func Init() {
 	pwd, _ := os.Getwd()
 	SzPwd = pwd
@@ -180,7 +208,7 @@ func GetNmap() string {
 var hvNmap = false
 
 func CheckHvNmap() bool {
-	if runtime.GOOS == "windows" || "true" != GetValByDefault("priorityNmap", "true") {
+	if runtime.GOOS == "windows" || !GetValAsBool("priorityNmap") {
 		return false
 	}
 	if hvNmap {

@@ -95,20 +95,20 @@ func PenetrateEndpoint(wg *sync.WaitGroup, url string, rst chan Result403, heade
 	}
 }
 
-func ByPass403(domain, path *string) []string {
+// 403 bypass
+func ByPass403(domain, path *string, wg *sync.WaitGroup) []string {
 	validDomain := getValidDomain(*domain)
 	validPath := strings.TrimSpace(*path)
 	endpoints := constructEndpointPayloads(validDomain, validPath)
-	var wg sync.WaitGroup
 	var xL int = len(endpoints) + len(headerPayloads)
 	var x01 = make(chan Result403, xL)
 
 	wg.Add(xL)
 	for _, e := range endpoints {
-		go PenetrateEndpoint(&wg, e, x01)
+		go PenetrateEndpoint(wg, e, x01)
 	}
 	for _, h := range headerPayloads {
-		go PenetrateEndpoint(&wg, validDomain+"/"+validPath, x01, h)
+		go PenetrateEndpoint(wg, validDomain+"/"+validPath, x01, h)
 	}
 	wg.Wait()
 	aR := []string{}

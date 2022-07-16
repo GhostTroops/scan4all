@@ -9,10 +9,12 @@ import (
 	"github.com/projectdiscovery/gologger"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
 	"runtime"
 	"sync"
+	"time"
 )
 
 //go:embed config/*
@@ -20,6 +22,7 @@ var config embed.FS
 
 func init() {
 	pkg.Init2(&config)
+	rand.Seed(time.Now().UnixNano())
 }
 
 func main() {

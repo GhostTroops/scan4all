@@ -23,6 +23,7 @@ import (
 	"github.com/hktalent/scan4all/pocs_go/zabbix"
 	"log"
 	"net/url"
+	"strings"
 	"sync"
 )
 
@@ -64,18 +65,19 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 		return []string{}
 	}
 	for tech := range wappalyzertechnologies {
-		switch wappalyzertechnologies[tech] {
+		caseStr := strings.ToLower(wappalyzertechnologies[tech])
+		switch caseStr {
 		case "microsoft-ds":
 			key, err := ms.SmbGhostScan(hostname)
 			if nil == err && key {
 				technologies = append(technologies, fmt.Sprintf("exp-microsoft-ds CVE-2020-0796 :%s", hostname))
 			}
-		case "Shiro":
+		case "shiro":
 			key := shiro.CVE_2016_4437(finalURL)
 			if key != "" {
 				technologies = append(technologies, fmt.Sprintf("exp-Shiro|key:%s", key))
 			}
-		case "Apache Tomcat":
+		case "apache tomcat":
 			if ok, _ := apache.CVE_2020_13935(URL); ok {
 				technologies = append(technologies, "exp-Tomcat|CVE-2020-13935")
 			}
@@ -89,12 +91,12 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if tomcat.CVE_2017_12615(URL) {
 				technologies = append(technologies, "exp-Tomcat|CVE-2017-12615")
 			}
-		case "Basic":
+		case "basic":
 			username, password := brute.Basic_brute(URL)
 			if username != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-basic|%s:%s", username, password))
 			}
-		case "Weblogic", "WebLogic":
+		case "weblogic":
 			username, password := brute.Weblogic_brute(URL)
 			if username != "" {
 				if username == "login_page" {
@@ -133,7 +135,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if weblogic.CVE_2021_2109(URL) {
 				technologies = append(technologies, "exp-Weblogic|CVE_2021_2109")
 			}
-		case "JBoss", "JBoss Application Server 7", "jboss", "jboss-as", "jboss-eap", "JBoss Web", "JBoss Application Server":
+		case "jboss application server 7", "jboss", "jboss-as", "jboss-eap", "jboss web", "jboss application server":
 			if jboss.CVE_2017_12149(URL) {
 				technologies = append(technologies, "exp-jboss|CVE_2017_12149")
 			}
@@ -141,12 +143,12 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if username != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-jboss|%s:%s", username, password))
 			}
-		case "JSON":
+		case "json":
 			fastjsonRceType := fastjson.Check(URL, finalURL)
 			if fastjsonRceType != "" {
 				technologies = append(technologies, fmt.Sprintf("exp-FastJson|%s", fastjsonRceType))
 			}
-		case "Jenkins", "jenkins":
+		case "jenkins":
 			if jenkins.Unauthorized(URL) {
 				technologies = append(technologies, "exp-jenkins|Unauthorized script")
 			}
@@ -159,7 +161,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if jenkins.CVE_2019_10003000(URL) {
 				technologies = append(technologies, "exp-jenkins|CVE_2019_10003000")
 			}
-		case "ThinkPHP", "thinkphp":
+		case "thinkphp":
 			if ThinkPHP.RCE(URL) {
 				technologies = append(technologies, "exp-ThinkPHP")
 			}
@@ -201,32 +203,32 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if seeyon.BackdoorScan(URL) {
 				technologies = append(technologies, "exp-seeyon|Backdoor")
 			}
-		case "LoginPage":
+		case "loginpage":
 			username, password, loginurl := brute.Admin_brute(finalURL)
 			if loginurl != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
 			}
-		case "Sunlogin":
+		case "sunlogin":
 			if sunlogin.SunloginRCE(URL) {
 				technologies = append(technologies, "exp-Sunlogin|RCE")
 			}
-		case "ZabbixSAML":
+		case "zabbixsaml":
 			if zabbix.CVE_2022_23131(URL) {
 				technologies = append(technologies, "exp-ZabbixSAML|bypass-login")
 			}
-		case "Spring", "Spring env", "spring-boot", "spring-framework", "spring-boot-admin":
+		case "spring", "spring env", "spring-boot", "spring-framework", "spring-boot-admin":
 			if Springboot.CVE_2022_22965(finalURL) {
 				technologies = append(technologies, "exp-Spring4Shell|CVE_2022_22965")
 			}
-		case "SpringGateway":
+		case "springgateway":
 			if Springboot.CVE_2022_22947(URL) {
 				technologies = append(technologies, "exp-SpringGateway|CVE_2022_22947")
 			}
-		case "GitLab":
+		case "gitlab":
 			if gitlab.CVE_2021_22205(URL) {
 				technologies = append(technologies, "exp-gitlab|CVE_2021_22205")
 			}
-		case "Confluence":
+		case "confluence":
 			if confluence.CVE_2021_26084(URL) {
 				technologies = append(technologies, "exp-confluence|CVE_2021_26084")
 			}
@@ -236,7 +238,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if confluence.CVE_2022_26134(URL) {
 				technologies = append(technologies, "exp-confluence|CVE_2022_26134")
 			}
-		case "f5 Big IP":
+		case "f5 big ip":
 			if f5.CVE_2020_5902(URL) {
 				technologies = append(technologies, "exp-f5-Big-IP|CVE_2020_5902")
 			}
