@@ -64,6 +64,16 @@ func (r *KvDbOp) Close() {
 }
 
 // https://www.modb.pro/db/87317
+func (r *KvDbOp) GetKeyForData(key string) (szRst []byte) {
+	data, err := r.Get(key)
+	if nil != err {
+		log.Println("GetKeyForData ", key, " is err ", err)
+		return []byte{}
+	}
+	return data
+}
+
+// https://www.modb.pro/db/87317
 func (r *KvDbOp) Get(key string) (szRst []byte, err error) {
 	err = r.DbConn.View(func(txn *badger.Txn) error {
 		item, err := txn.Get([]byte(key))

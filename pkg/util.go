@@ -10,28 +10,31 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"reflect"
 	"sort"
 	"strings"
 	"time"
 )
 
+// fuzz 响应对象封装
 type Response struct {
 	Status        string
 	StatusCode    int
 	Body          string
-	Header        http.Header
+	Header        *http.Header // 不用负责对象，引用，节约内存开销
 	ContentLength int
 	RequestUrl    string
 	Location      string
 }
 
 var (
-	HttpProxy   string
-	CeyeApi     string
-	CeyeDomain  string
-	Fuzzthreads = 32 // 2,4,8,16,32,采用2的N次方的数字
+	HttpProxy   string // 代理
+	CeyeApi     string // Ceye api
+	CeyeDomain  string // Ceye domain
+	Fuzzthreads = 32   // 2,4,8,16,32,采用2的N次方的数字
 )
 
+// http密码爆破
 func HttpRequsetBasic(username string, password string, urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
 	var tr *http.Transport
 	var err error
@@ -94,9 +97,13 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 	if resplocation, err := resp.Location(); err == nil {
 		location = resplocation.String()
 	}
-	return &Response{resp.Status, resp.StatusCode, reqbody, resp.Header, len(reqbody), resp.Request.URL.String(), location}, nil
+	return &Response{resp.Status, resp.StatusCode, reqbody, &resp.Header, len(reqbody), resp.Request.URL.String(), location}, nil
 }
 
+// 需要考虑缓存
+//  1、缓解网络不好的情况
+//  2、缓存有效期为当天
+//  3、缓存命中需和请求的数据完全匹配
 func HttpRequset(urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
 	var tr *http.Transport
 	if HttpProxy != "" {
@@ -152,7 +159,7 @@ func HttpRequset(urlstring string, method string, postdata string, isredirect bo
 	if resplocation, err := resp.Location(); err == nil {
 		location = resplocation.String()
 	}
-	return &Response{resp.Status, resp.StatusCode, reqbody, resp.Header, len(reqbody), resp.Request.URL.String(), location}, nil
+	return &Response{resp.Status, resp.StatusCode, reqbody, &resp.Header, len(reqbody), resp.Request.URL.String(), location}, nil
 }
 
 func Dnslogchek(randomstr string) bool {
@@ -188,6 +195,17 @@ func RandomStr() string {
 	return string(randBytes)
 }
 
+// 判断 i 是否存在slice中
+func SliceInAny[T any](i T, slice []T) bool {
+	for _, j := range slice {
+		if reflect.DeepEqual(i, j) {
+			return true
+		}
+	}
+	return false
+}
+
+// 判断 i 是否存在slice中
 func IntInSlice(i int, slice []int) bool {
 	if slice == nil {
 		return false
@@ -200,6 +218,7 @@ func IntInSlice(i int, slice []int) bool {
 	return false
 }
 
+// 判断 str 是否存在slice中
 func StringInSlice(str string, slice []string) bool {
 	if slice == nil {
 		return false

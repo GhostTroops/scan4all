@@ -1,0 +1,6 @@
+/auth/login/
+error.html
+404.html
+500.html
+404.jsp
+500.jsp

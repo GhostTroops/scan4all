@@ -8,11 +8,10 @@ import (
 	_ "embed"
 	"encoding/base64"
 	"fmt"
-	uuid "github.com/satori/go.uuid"
 	"github.com/hktalent/scan4all/pkg"
+	uuid "github.com/satori/go.uuid"
 	"io"
 	"log"
-	"regexp"
 	"strings"
 )
 
@@ -63,16 +62,7 @@ func getkeylen(u string, indexlen int, rememberMe string) (int, error) {
 	var header = make(map[string]string, 1)
 	header["Cookie"] = "rememberMe=" + rememberMe
 	if req, err := pkg.HttpRequset(u, "GET", "", false, header); err == nil {
-		var SetCookieAll string
-		for i := range req.Header["Set-Cookie"] {
-			SetCookieAll += req.Header["Set-Cookie"][i]
-		}
-		if req.Header != nil {
-			counts := regexp.MustCompile("rememberMe=deleteMe").FindAllStringIndex(SetCookieAll, -1)
-			return len(counts), nil
-		}
-	} else {
-		return indexlen, err
+		return pkg.CheckShiroCookie(req), nil
 	}
 	return indexlen, nil
 }
