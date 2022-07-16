@@ -16,38 +16,29 @@
 <img width="928" alt="image" src="https://user-images.githubusercontent.com/18223385/175768227-098c779b-6c5f-48ee-91b1-c56e3daa9c87.png">
 </h1>
 
-- 支持14种密码爆破：rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,smb,telnet,snmp,wap-wsp（Elasticsearch）
+- 支持18种密码爆破，支持自定义字典
+  rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,smb,telnet,snmp,wap-wsp（Elasticsearch）、http、weblogic、tomcat、jboss
+- 默认开启http密码智能爆破，需要http密码时才会启动
 - 默认检测系统有nmap时优先使用nmap进行快速扫描，弊端：因为设置网络包过大会导致结果不全，另外需要将root密码设置到环境变量PPSSWWDD，更多参考config/doNmapScan.sh
-- 快速端口扫描，指纹检测功能
-- 快速登录密码爆破功能
-- 快速POC检测功能
-- 快速敏感文件检测
-- 轻量级、开源、跨平台使用
+- 快速15000+POC检测功能（nuclei POC + vscan POC + scan4all的POC）
+- 支持7000+web指纹扫描、识别（httpx指纹 + vscan指纹 + scan4all的指纹）
+- 支持146种协议90000+规则port扫描（依赖nmap支持的协议、指纹，号称超过146种协议的都是"Tree new bee(树新蜂)"）
+- 快速敏感文件检测，可以扩展字典
+- 快速登陆页面检测
+- 轻量级、开源、跨平台使用，支持Linux、windows、mac os等
 - 支持多种类型的输入 - STDIN/HOST/IP/CIDR/URL/TXT
 - 支持多种输出类型 - JSON/TXT/CSV/STDOUT
-- 可配置将结果统一存储到 Elasticsearch
-- 带有上下文路径的url列表，启用精确扫描 UrlPrecise=true ./main -l xx.txt
-- 开启智能子域遍历， export EnableSubfinder=true
+- 可配置将结果统一存储到 Elasticsearch【强烈推荐】
+- 支持开启智能SSL信息中*.xx.com子域遍历功能， export EnableSubfinder=true，或者在配置文件中调整
 - 自动识别域（DNS）关联多个IP的情况，并自动扫描关联的多个IP
 - 预处理，当列表中多个域名的ip相同时，合并端口扫描，提高效率
-- 深入分析，自动关联扫描：自动获取ssl中的域名信息，如*.xxx.com，并配置允许自动子域遍历，子域遍历自动完成，添加目标到扫描列表
+- 深入分析，自动关联SSL信息中域名的扫描，如*.xxx.com，并根据配置完成子域遍历，结果自动添加目标到扫描列表
 - 自动化供应链分析和扫描，需要授权才能使用
-- 允许通过config/config.json配置定义自己的字典，或者设置相关的开关，可以在这里定义nuclei、httx、naabu的几个Options
+- 允许通过config/config.json配置定义自己的字典，或者控制更多细节，包含不限于:nuclei、httpx、naabu等
 
 # 工作流程
 
 <img src="static/workflow.jpg">
-
-- 0.【智能子域名爆破】集成Subfinder,当通过 export EnableSubfinder=true 开启后，ssl证书中的域名信息包含"*."开头时自动启动子域名遍历
-- 1.【端口扫描】集成Nuclei官方产品naabu ( > 2.1k)
-- 2.【服务识别】naabu调用系统安装的nmap，请先自行安装nmap
-  * 2.1 nmap扫描后，自动启动集成当kscan进行弱密码检测，密码字典支持自定义字典，可以通过config.json进行配置
-- 3.【网页扫描】集成httpx（ > 3.2k），Nuclei官方出品
-  * 3.1 【指纹识别】集成优化的EHole（ > 1.4k）
-- 4.【漏洞扫描】
-  * 集成核（ > 8.6k）+核模板（4.5k优化版，https://github.com/hktalent/nuclei-templates）
-  * 集成 xray 2.0 (6.9k)，共 354 个 POC
-  * 集成 vscan 实现了8个fuzz组件，同时实现了集成14类常用组件的漏洞检测
 
 # 如何安装
 ```bash
