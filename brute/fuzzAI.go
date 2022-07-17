@@ -15,13 +15,13 @@ import (
 // 异常页面数据库
 type ErrPage struct {
 	gorm.Model
-	FingerprintsTag []string `json:"fingerprintsTag"` // 指纹标签,带标签是指纹数据，不是异常数据
-	Title           string   `json:"title"`           // 标题
-	Body            string   `json:"body"`            // body
-	BodyLen         int      `json:"bodyLen"`         // body len
-	BodyHash        string   `json:"bodyHash"`        // body hash， Favicohash4key
-	BodyMd5         string   `json:"bodyMd5"`         // body md5
-	HitCnt          uint32   `json:"hitCnt"`          // 命中统计
+	FingerprintsTag string `json:"fingerprintsTag"` // 指纹标签,带标签是指纹数据，不是异常数据
+	Title           string `json:"title"`           // 标题
+	Body            string `json:"body"`            // body
+	BodyLen         int    `json:"bodyLen"`         // body len
+	BodyHash        string `json:"bodyHash"`        // body hash， Favicohash4key
+	BodyMd5         string `json:"bodyMd5"`         // body md5
+	HitCnt          uint32 `json:"hitCnt"`          // 命中统计
 }
 
 var (
@@ -53,7 +53,7 @@ func init() {
 //  1、body 学习
 //  2、标题 学习
 //  3、url 去重记录
-func StudyErrPageAI(req *pkg.Response, page *Page, fingerprintsTag *[]string) {
+func StudyErrPageAI(req *pkg.Response, page *Page, fingerprintsTag string) {
 	if nil == req || nil == page || "" == req.Body {
 		return
 	}
@@ -68,11 +68,11 @@ func StudyErrPageAI(req *pkg.Response, page *Page, fingerprintsTag *[]string) {
 		if nil != r1 {
 			data = r1
 		} else {
-			data = &ErrPage{Title: *page.title, Body: req.Body, BodyLen: len(body), FingerprintsTag: []string{}}
+			data = &ErrPage{Title: *page.title, Body: req.Body, BodyLen: len(body), FingerprintsTag: ""}
 			data.BodyHash = szHs
 			data.BodyMd5 = szMd5
-			if nil != fingerprintsTag {
-				data.FingerprintsTag = *fingerprintsTag
+			if "" != fingerprintsTag {
+				data.FingerprintsTag = fingerprintsTag
 			}
 			// 学些匹配，不重复再记录
 			if bRst, _ := CheckRepeat(data); !bRst {

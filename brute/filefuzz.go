@@ -182,7 +182,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		//if url404req.StatusCode > 400 {
 		if url404req.StatusCode == 404 {
 			technologies = Addfingerprints404(technologies, url404req, url404) //基于404页面文件扫描指纹添加
-			go StudyErrPageAI(url404req, url404, nil)                          // 异常页面学习
+			go StudyErrPageAI(url404req, url404, "")                           // 异常页面学习
 		} else {
 			return []string{}, []string{}
 		}
@@ -270,7 +270,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 							// 03.02-与绝对404相似度低于0.8，添加body 404 body list
 							// 03.03-添加404titlelist
 							if 0.8 > fXsd {
-								go StudyErrPageAI(req, fuzzPage, nil) // 异常页面学习
+								go StudyErrPageAI(req, fuzzPage, "") // 异常页面学习
 							}
 							// 04-403： 403 by pass
 							if fuzzPage.is403 && !url404.is403 {
