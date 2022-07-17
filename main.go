@@ -3,9 +3,9 @@ package main
 import (
 	"embed"
 	"fmt"
+	myConst "github.com/hktalent/scan4all/lib"
 	"github.com/hktalent/scan4all/pkg"
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
-	"github.com/hktalent/scan4all/pocs_go"
 	"github.com/projectdiscovery/gologger"
 	"io"
 	"log"
@@ -25,10 +25,10 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+var Wg sync.WaitGroup
+
 func main() {
-	var Close = make(chan bool)
-	var wg sync.WaitGroup
-	go pocs_go.DoNmapScan(Close, &wg)
+	myConst.Wg = &Wg
 	defer func() {
 		log.Println("start close cache, StopCPUProfile... ")
 		pkg.Cache1.Close()
@@ -71,6 +71,6 @@ func main() {
 	if err != nil {
 		gologger.Fatal().Msgf("naabuRunner.Httpxrun Could not run httpRunner: %s\n", err)
 	}
-	wg.Wait()
-	close(Close)
+	Wg.Wait()
+	close(myConst.G_CloseAll)
 }

@@ -3,6 +3,8 @@ package pocs_go
 import (
 	"fmt"
 	"github.com/hktalent/scan4all/brute"
+	"github.com/hktalent/scan4all/lib"
+	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pocs_go/Springboot"
 	"github.com/hktalent/scan4all/pocs_go/ThinkPHP"
 	"github.com/hktalent/scan4all/pocs_go/apache"
@@ -26,29 +28,6 @@ import (
 	"strings"
 	"sync"
 )
-
-type AsyncPocCheck struct {
-	Wappalyzertechnologies []string
-	URL                    string
-	FinalURL               string
-	Checklog4j             bool
-}
-
-var Apc = make(chan *AsyncPocCheck, 300)
-
-func DoNmapScan(close chan bool, wg *sync.WaitGroup) {
-	for {
-		select {
-		case <-close:
-			return
-		case x1 := <-Apc:
-			if nil != x1 {
-				wg.Add(1)
-				go POCcheck(x1.Wappalyzertechnologies, x1.URL, x1.FinalURL, x1.Checklog4j, wg)
-			}
-		}
-	}
-}
 
 // 需优化：相同都目标，相同都检测只做一次
 func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool, wg *sync.WaitGroup) []string {
@@ -255,6 +234,23 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			}
 		}
 	}
-
+	// 发送结果
+	if 0 < len(technologies) {
+		go pkg.SendAnyData(map[string]interface{}{"Urls": []string{URL, finalURL}, "technologies": technologies}, "vscan")
+	}
 	return technologies
+}
+
+func init() {
+	// 异步启动一个线程处理检测，避免
+	go func() {
+		for {
+			select {
+			case <-lib.G_CloseAll:
+				return
+			case x1 := <-lib.PocCheck_pipe:
+				POCcheck(*x1.Wappalyzertechnologies, x1.URL, x1.FinalURL, x1.Checklog4j, x1.Wg)
+			}
+		}
+	}()
 }

@@ -3,6 +3,7 @@ package brute
 import (
 	"encoding/json"
 	"fmt"
+	myConst "github.com/hktalent/scan4all/lib"
 	"github.com/hktalent/scan4all/pkg"
 	"strings"
 )
@@ -25,13 +26,14 @@ func Addfingerprints404(technologies []string, req *pkg.Response, oPage *Page) [
 			}
 		}
 	}
-	if 0 < pkg.CheckShiroCookie(req) {
+	if 0 < myConst.CheckShiroCookie(req.Header) {
 		technologies = append(technologies, "Shiro")
 	}
 	// StatusCode 404，这里会有误报，当请求当路径中包含了ThinkPHP，有些site返回当结果会看包涵全路径信息
-	if pkg.StrContains(req.Body, "thinkphp") {
+	if pkg.StrContains(req.Body, "thinkphp") || -1 < strings.Index(strings.ToLower(*oPage.Url), strings.ToLower("/Runtime/Logs/")) {
 		technologies = append(technologies, "ThinkPHP")
 	}
+	// 这里需要斟酌
 	if pkg.StrContains(req.Body, "Hypertext Transfer Protocol") {
 		technologies = append(technologies, "Weblogic")
 	}
@@ -41,9 +43,7 @@ func Addfingerprints404(technologies []string, req *pkg.Response, oPage *Page) [
 	if pkg.StrContains(req.Body, "Whitelabel Error Page") {
 		technologies = append(technologies, "Spring")
 	}
-	if -1 < strings.Index(*oPage.Url, "/Runtime/Logs/") {
-		technologies = append(technologies, "ThinkPHP")
-	}
+
 	if nil != oPage && 0 < len(szKey) && 0 < len(technologies) {
 		pkg.PutAny[[]string](szKey, technologies)
 	}

@@ -1,0 +1,70 @@
+package lib
+
+import (
+	"net/http"
+	"regexp"
+	"sync"
+)
+
+// 全局线程控制
+var Wg *sync.WaitGroup
+
+// 全局关闭所有线程
+var G_CloseAll = make(chan struct{})
+
+// 多次使用，一次性编译效率更高
+var DeleteMe = regexp.MustCompile("rememberMe=deleteMe")
+
+// 检查 cookie
+// Shiro CVE_2016_4437 cookie
+// 其他POC cookie同一检查入口
+func CheckShiroCookie(header *http.Header) int {
+	var SetCookieAll string
+	if nil != header {
+		//if hd, ok := header["Set-Cookie"]; ok {
+		for i := range (*header)["Set-Cookie"] {
+			SetCookieAll += (*header)["Set-Cookie"][i]
+		}
+		return len(DeleteMe.FindAllStringIndex(SetCookieAll, -1))
+	}
+	return 0
+}
+
+// 匹配响应中 www-Authenticate 是否有认证要求都信息
+var BaseReg = regexp.MustCompile("(?i)Basic\\s*realm\\s*=\\s*")
+
+// 管道通讯使用
+type PocCheck struct {
+	Wappalyzertechnologies *[]string
+	URL                    string
+	FinalURL               string
+	Checklog4j             bool
+	Wg                     *sync.WaitGroup
+}
+
+// go POC 检测管道，避免循环引用
+var PocCheck_pipe = make(chan PocCheck, 16)
+
+// 头信息同一检查，并调用合适到go poc进一步爆破、检测
+//  1、需要认证
+//  2、shiro
+func CheckHeader(header *http.Header, szUrl string) {
+	Wg.Add(1)
+	go func() {
+		defer Wg.Done()
+		if nil != header {
+			a1 := []string{}
+			if v := (*header)["www-Authenticate"]; 0 < len(v) {
+				if 0 < len(BaseReg.FindAll([]byte(v[0]), -1)) {
+					a1 = append(a1, "basic")
+				}
+			}
+			if 0 < CheckShiroCookie(header) {
+				a1 = append(a1, "shiro")
+			}
+			if 0 < len(a1) {
+				PocCheck_pipe <- PocCheck{Wappalyzertechnologies: &a1, URL: szUrl, FinalURL: szUrl, Checklog4j: false, Wg: Wg}
+			}
+		}
+	}()
+}

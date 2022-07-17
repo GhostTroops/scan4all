@@ -3,6 +3,7 @@ package brute
 import (
 	_ "embed"
 	"github.com/antlabs/strsim"
+	"github.com/hktalent/scan4all/lib"
 	"github.com/hktalent/scan4all/pkg"
 	"log"
 	"net/http"
@@ -34,10 +35,6 @@ type Page struct {
 //go:embed dicts/bakSuffix.txt
 var bakSuffix string
 
-// 404url,智能学习
-//go:embed dicts/404url.txt
-var sz404Url string
-
 // 备份、敏感文件 http头类型 ContentType 检测
 //go:embed dicts/fuzzContentType1.txt
 var fuzzct string
@@ -49,7 +46,6 @@ var szPrefix string
 var (
 	ret            = []string{} // 敏感信息文件字典
 	prefix, suffix []string     // 敏感信息字典: 前缀、后缀
-	asz404Url      []string     // 404url,智能学习
 )
 
 // 生成敏感信息字典
@@ -123,32 +119,19 @@ func CheckBakPage(req *pkg.Response) bool {
 	return false
 }
 
-//go:embed dicts/fuzz404.txt
-var fuzz404 string
-
-//go:embed dicts/page404Content.txt
-var page404Content1 string
-
 // 备份、敏感文件 http头类型 ContentType 检测,正则
 var regs []string
 
 var (
-	regsMap                      = make(map[string]*regexp.Regexp) // fuzz 正则库
-	page404Title, page404Content []string                          // 404 标题库、正文库
-	eableFileFuzz                = false                           // 是否开启fuzz
+	regsMap       = make(map[string]*regexp.Regexp) // fuzz 正则库
+	eableFileFuzz = false                           // 是否开启fuzz
 )
 
 // 初始化字典、数组等
 func init() {
 	bakSuffix = pkg.GetVal4File("bakSuffix", bakSuffix)
 	fuzzct = pkg.GetVal4File("fuzzct", fuzzct)
-	fuzz404 = pkg.GetVal4File("fuzz404", fuzz404)
-	fuzz404 = pkg.GetVal4File("fuzz404", fuzz404)
-	sz404Url = pkg.GetVal4File("404url", sz404Url)
-	asz404Url = strings.Split(strings.TrimSpace(sz404Url), "\n")
-	page404Content1 = pkg.GetVal4File("page404Content1", page404Content1)
-	page404Title = strings.Split(strings.TrimSpace(fuzz404), "\n")
-	page404Content = strings.Split(strings.TrimSpace(page404Content1), "\n")
+
 	InitGeneral()
 	regs = strings.Split(strings.TrimSpace(fuzzct), "\n")
 	var err error
@@ -188,10 +171,20 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	)
 	url404, url404req, err := reqPage(u + path404)
 	if err == nil {
+		go lib.CheckHeader(url404req.Header, u)
+		// 跳过当前目标所有的fuzz,后续所有的fuzz都无意义了
+		if 200 == url404.StatusCode || 301 == url404.StatusCode || 302 == url404.StatusCode {
+			return []string{}, []string{}
+		}
 		// 其实这里无论状态码是什么，都是404
 		// 所有异常页面 > 400 > 500都做异常页面fuzz指纹
-		if url404req.StatusCode > 400 {
+		// 提高精准度，可以只考虑404
+		//if url404req.StatusCode > 400 {
+		if url404req.StatusCode == 404 {
 			technologies = Addfingerprints404(technologies, url404req, url404) //基于404页面文件扫描指纹添加
+			go StudyErrPageAI(url404req, url404, nil)                          // 异常页面学习
+		} else {
+			return []string{}, []string{}
 		}
 	}
 	var wg sync.WaitGroup
@@ -204,7 +197,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	var async_data = make(chan []string, 64)
 	var async_technologies = make(chan []string, 64)
 	defer func() {
-		pkg.CloseChan(ch)
+		lib.CloseChan(ch)
 		close(async_data)
 		close(async_technologies)
 	}()
@@ -217,7 +210,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 			case x1 := <-async_data:
 				path = append(path, x1...)
 				if len(path) > 40 {
-					pkg.CloseChan(CloseAll)
+					lib.CloseChan(CloseAll)
 					atomic.AddInt32(&errorTimes, 21)
 				}
 			case x2 := <-async_technologies:
@@ -231,7 +224,6 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		if atomic.LoadInt32(&errorTimes) >= 20 {
 			break
 		}
-		var is404Page = false
 
 		ch <- struct{}{}
 		//log.Println(u, " ", payload)
@@ -252,7 +244,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 				default:
 					// 01-异常>20关闭所有fuzz
 					if atomic.LoadInt32(&errorTimes) >= 20 {
-						pkg.CloseChan(CloseAll)
+						lib.CloseChan(CloseAll)
 						return
 					}
 					// 修复url，默认 认为 payload 不包含/
@@ -261,38 +253,46 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 						szUrl = u + payload[1:]
 					}
 					if fuzzPage, req, err := reqPage(szUrl); err == nil && 0 < len(req.Body) {
+						go lib.CheckHeader(req.Header, u)
 						// 02-状态码和req1相同，且与req1相似度>9.5，关闭所有fuzz
 						fXsd := strsim.Compare(url404req.Body, req.Body)
 						bBig95 := 9.5 < fXsd
 						if url404.StatusCode == fuzzPage.StatusCode && bBig95 {
-							pkg.CloseChan(CloseAll)
+							lib.CloseChan(CloseAll)
 							atomic.AddInt32(&errorTimes, 21)
 							return
 						}
+						var path1, technologies1 = []string{}, []string{}
 						// 03-异常页面（>400），或相似度与404匹配
-						if fuzzPage.StatusCode > 400 || bBig95 {
+						if fuzzPage.StatusCode >= 400 || bBig95 || fuzzPage.StatusCode != 200 {
 							// 03.01-异常页面指纹匹配
 							technologies = Addfingerprints404(technologies, req, fuzzPage) //基于404页面文件扫描指纹添加
 							// 03.02-与绝对404相似度低于0.8，添加body 404 body list
 							// 03.03-添加404titlelist
 							if 0.8 > fXsd {
-								go StudyErrPageAI(req, fuzzPage) // 异常页面学习
+								go StudyErrPageAI(req, fuzzPage, nil) // 异常页面学习
 							}
-						}
-						var path1, technologies1 = []string{}, []string{}
-						// 04-403： 403 by pass
-						if fuzzPage.is403 {
-							a11 := ByPass403(&u, &payload, &wg)
-							// 表示 ByPass403 成功了, 结果、控制台输出点什么？
-							if 0 < len(a11) {
-								path1 = append(path1, a11...)
+							// 04-403： 403 by pass
+							if fuzzPage.is403 && !url404.is403 {
+								a11 := ByPass403(&u, &payload, &wg)
+								// 表示 ByPass403 成功了, 结果、控制台输出点什么？
+								if 0 < len(a11) {
+									async_data <- a11
+								}
 							}
-						}
-						// 05-跳转检测
-						if CheckDirckt(fuzzPage, req) {
 							return
 						}
-						is404Page = CheckIsErrPageAI(req, fuzzPage)
+						// 当前和绝对404不等于404，后续的比较也没有意义了，都等于[200,301,302]都没有意义了，都说明没有fuzz成功
+						if url404.StatusCode != 404 && url404.StatusCode == fuzzPage.StatusCode {
+							return
+						}
+
+						// 05-跳转检测,即便是跳转，如果和绝对404不一样，说明检测成功
+						//if CheckDirckt(fuzzPage, req) && url404.StatusCode != fuzzPage.StatusCode {
+						//	return
+						//}
+						// 1、状态码和绝对404一样 2、智能识别算出来
+						is404Page := url404.StatusCode == fuzzPage.StatusCode || CheckIsErrPageAI(req, fuzzPage)
 						// 06-成功页面, 非异常页面
 						if !is404Page {
 							// 1、指纹匹配

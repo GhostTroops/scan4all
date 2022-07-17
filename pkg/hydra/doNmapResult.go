@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/antchfx/xmlquery"
+	"github.com/hktalent/scan4all/lib"
 	"github.com/hktalent/scan4all/pkg"
-	"github.com/hktalent/scan4all/pocs_go"
 	"io/ioutil"
 	"log"
 	"os"
@@ -62,9 +62,12 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 					}
 					m1[ip] = append(xx09, []string{szPort, service})
 					if "445" == szPort && service == "microsoft-ds" {
-						pocs_go.Apc <- &pocs_go.AsyncPocCheck{
-							Wappalyzertechnologies: []string{service},
+						lib.PocCheck_pipe <- lib.PocCheck{
+							Wappalyzertechnologies: &[]string{service},
 							URL:                    szUlr,
+							FinalURL:               szUlr,
+							Checklog4j:             false,
+							Wg:                     lib.Wg,
 						}
 					}
 				}

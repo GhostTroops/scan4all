@@ -8,7 +8,9 @@ import (
 	_ "embed"
 	"encoding/base64"
 	"fmt"
+	"github.com/hktalent/scan4all/lib"
 	"github.com/hktalent/scan4all/pkg"
+
 	uuid "github.com/satori/go.uuid"
 	"io"
 	"log"
@@ -62,7 +64,7 @@ func getkeylen(u string, indexlen int, rememberMe string) (int, error) {
 	var header = make(map[string]string, 1)
 	header["Cookie"] = "rememberMe=" + rememberMe
 	if req, err := pkg.HttpRequset(u, "GET", "", false, header); err == nil {
-		return pkg.CheckShiroCookie(req), nil
+		return lib.CheckShiroCookie(req.Header), nil
 	}
 	return indexlen, nil
 }
