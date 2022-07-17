@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"context"
 	"net/http"
 	"regexp"
 	"sync"
@@ -9,8 +10,11 @@ import (
 // 全局线程控制
 var Wg *sync.WaitGroup
 
+// 全局控制
+var RootContext = context.Background()
+
 // 全局关闭所有线程
-var G_CloseAll = make(chan struct{})
+var Ctx_global, StopAll = context.WithCancel(RootContext)
 
 // 多次使用，一次性编译效率更高
 var DeleteMe = regexp.MustCompile("rememberMe=deleteMe")
@@ -39,11 +43,10 @@ type PocCheck struct {
 	URL                    string
 	FinalURL               string
 	Checklog4j             bool
-	Wg                     *sync.WaitGroup
 }
 
 // go POC 检测管道，避免循环引用
-var PocCheck_pipe = make(chan PocCheck, 16)
+var PocCheck_pipe = make(chan PocCheck, 64)
 
 // 头信息同一检查，并调用合适到go poc进一步爆破、检测
 //  1、需要认证
@@ -63,7 +66,7 @@ func CheckHeader(header *http.Header, szUrl string) {
 				a1 = append(a1, "shiro")
 			}
 			if 0 < len(a1) {
-				PocCheck_pipe <- PocCheck{Wappalyzertechnologies: &a1, URL: szUrl, FinalURL: szUrl, Checklog4j: false, Wg: Wg}
+				PocCheck_pipe <- PocCheck{Wappalyzertechnologies: &a1, URL: szUrl, FinalURL: szUrl, Checklog4j: false}
 			}
 		}
 	}()

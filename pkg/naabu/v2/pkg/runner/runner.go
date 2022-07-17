@@ -53,9 +53,6 @@ var Naabubuffer = bytes.Buffer{}
 func (r *Runner) Httpxrun() error {
 	httpxrunner.Naabubuffer = Naabubuffer
 	var nucleiDone = make(chan bool)
-	defer func() {
-		<-nucleiDone
-	}()
 	// 集成nuclei
 	//log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
 	//Naabubuffer1 := bytes.Buffer{}
@@ -112,12 +109,13 @@ func (r *Runner) Httpxrun() error {
 	httpxoptions = pkg.ParseOption[httpxrunner.Options]("httpx", httpxoptions)
 	rx, err := httpxrunner.New(httpxoptions)
 	if err != nil {
+		<-nucleiDone
 		return err
 	}
 	rx.RunEnumeration()
 	rx.Close()
 	// wait nuclei
-
+	<-nucleiDone
 	return nil
 }
 

@@ -1,6 +1,7 @@
 package brute
 
 import (
+	"context"
 	_ "embed"
 	"github.com/antlabs/strsim"
 	"github.com/hktalent/scan4all/lib"
@@ -12,6 +13,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 // fuzz请求返回的结果
@@ -182,18 +184,17 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		//if url404req.StatusCode > 400 {
 		if url404req.StatusCode == 404 {
 			technologies = Addfingerprints404(technologies, url404req, url404) //基于404页面文件扫描指纹添加
-			go StudyErrPageAI(url404req, url404, "")                           // 异常页面学习
+			StudyErrPageAI(url404req, url404, "")                              // 异常页面学习
 		} else {
 			return []string{}, []string{}
 		}
 	}
 	var wg sync.WaitGroup
 	// 中途控制关闭当前目标所有fuzz
-	var CloseAll = make(chan struct{})
+	ctx, stop := context.WithCancel(lib.Ctx_global)
 	// 控制 fuzz 线程数
 	var ch = make(chan struct{}, pkg.Fuzzthreads)
 	// 异步接收结果
-	wg.Add(1)
 	var async_data = make(chan []string, 64)
 	var async_technologies = make(chan []string, 64)
 	defer func() {
@@ -201,33 +202,33 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		close(async_data)
 		close(async_technologies)
 	}()
+	log.Printf("start fuzz: %s for", u)
 	go func() {
-		defer wg.Done()
 		for {
 			select {
-			case <-CloseAll:
+			case <-ctx.Done():
 				return
 			case x1 := <-async_data:
 				path = append(path, x1...)
 				if len(path) > 40 {
-					lib.CloseChan(CloseAll)
+					stop() //发停止指令
 					atomic.AddInt32(&errorTimes, 21)
 				}
 			case x2 := <-async_technologies:
 				technologies = append(technologies, x2...)
+			default:
+				<-time.After(time.Duration(100) * time.Millisecond)
 			}
 		}
 	}()
-
 	for _, payload := range filedic {
 		// 接收到停止信号
 		if atomic.LoadInt32(&errorTimes) >= 20 {
 			break
 		}
-
-		ch <- struct{}{}
 		//log.Println(u, " ", payload)
 		endP := u[len(u)-1:] == "/"
+		ch <- struct{}{}
 		wg.Add(1)
 		go func(payload string) {
 			defer func() {
@@ -236,15 +237,13 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 			}()
 			for {
 				select {
-				case _, ok := <-CloseAll: // 00-捕获所有线程关闭信号，并退出，close for all
-					if false == ok {
-						atomic.AddInt32(&errorTimes, 21)
-					}
+				case <-ctx.Done(): // 00-捕获所有线程关闭信号，并退出，close for all
+					atomic.AddInt32(&errorTimes, 21)
 					return
 				default:
 					// 01-异常>20关闭所有fuzz
 					if atomic.LoadInt32(&errorTimes) >= 20 {
-						lib.CloseChan(CloseAll)
+						stop() //发停止指令
 						return
 					}
 					// 修复url，默认 认为 payload 不包含/
@@ -252,13 +251,14 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 					if strings.HasPrefix(payload, "/") && endP {
 						szUrl = u + payload[1:]
 					}
+					log.Printf("start fuzz: %s", szUrl)
 					if fuzzPage, req, err := reqPage(szUrl); err == nil && 0 < len(req.Body) {
 						go lib.CheckHeader(req.Header, u)
 						// 02-状态码和req1相同，且与req1相似度>9.5，关闭所有fuzz
 						fXsd := strsim.Compare(url404req.Body, req.Body)
 						bBig95 := 9.5 < fXsd
 						if url404.StatusCode == fuzzPage.StatusCode && bBig95 {
-							lib.CloseChan(CloseAll)
+							stop() //发停止指令
 							atomic.AddInt32(&errorTimes, 21)
 							return
 						}
@@ -270,7 +270,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 							// 03.02-与绝对404相似度低于0.8，添加body 404 body list
 							// 03.03-添加404titlelist
 							if 0.8 > fXsd {
-								go StudyErrPageAI(req, fuzzPage, "") // 异常页面学习
+								StudyErrPageAI(req, fuzzPage, "") // 异常页面学习
 							}
 							// 04-403： 403 by pass
 							if fuzzPage.is403 && !url404.is403 {
@@ -316,6 +316,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	}
 	// 默认情况等待所有结束
 	wg.Wait()
+	stop() //发停止指令
 	return path, technologies
 }
 

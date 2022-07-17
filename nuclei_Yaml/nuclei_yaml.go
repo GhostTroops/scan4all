@@ -27,7 +27,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool) {
 		xx <- true
 		close(xx)
 	}()
-	if pkg.GetValAsBool("enableNuclei") {
+	if !pkg.GetValAsBool("enableNuclei") {
 		return
 	}
 	// json 控制参数
@@ -53,6 +53,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool) {
 			options.Verbose = x01.Verbose
 			options.Silent = x01.Silent
 			options.Debug = x01.Debug
+			options.EnableProgressBar = x01.EnableProgressBar
 		}
 	}
 	////////////////////////////////////*/

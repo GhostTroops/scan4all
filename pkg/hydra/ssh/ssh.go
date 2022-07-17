@@ -12,7 +12,7 @@ func Check(Host, Username, Password string, Port int) (bool, error) {
 	config := &ssh.ClientConfig{
 		User:    Username,
 		Auth:    Auth,
-		Timeout: 5 * time.Second,
+		Timeout: 3 * time.Second,
 		HostKeyCallback: func(hostname string, remote net.Addr, key ssh.PublicKey) error {
 			return nil
 		},

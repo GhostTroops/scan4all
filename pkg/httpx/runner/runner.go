@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/ammario/ipisp/v2"
 	"github.com/hktalent/scan4all/brute"
+	"github.com/hktalent/scan4all/lib"
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"github.com/hktalent/scan4all/pocs_go"
@@ -1299,8 +1300,9 @@ retry:
 				}
 				return nn
 			}
+			lib.Wg.Add(1)
 			//通过wFingerprint获取到的指纹进行检测gopoc check
-			poctechnologies1 = pocs_go.POCcheck(technologies, ul, finalURL, false, nil)
+			poctechnologies1 = pocs_go.POCcheck(technologies, ul, finalURL, false)
 			Vullist = append(Vullist, poctechnologies1...)
 			for _, technology := range technologies {
 				pocYmlList1 := pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology)) // 通过wFingerprint获取到的指纹进行ymlpoc check
@@ -1311,8 +1313,8 @@ retry:
 			filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)
 			// 取差集合
 			filefuzzTechnologies = difference(filefuzzTechnologies, technologies)
-
-			poctechnologies2 = pocs_go.POCcheck(filefuzzTechnologies, ul, finalURL, true, nil) //通过敏感文件扫描获取到的指纹进行检测gopoc check
+			lib.Wg.Add(1)
+			poctechnologies2 = pocs_go.POCcheck(filefuzzTechnologies, ul, finalURL, true) //通过敏感文件扫描获取到的指纹进行检测gopoc check
 			Vullist = append(Vullist, poctechnologies2...)
 			for _, technology := range filefuzzTechnologies {
 				pocYmlList2 := pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology)) //通过敏感文件扫描获取到的指纹进行检测ymlpoc check

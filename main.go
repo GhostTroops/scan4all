@@ -40,9 +40,11 @@ func main() {
 		// fingerprint.ClearData()
 	}()
 	options := naaburunner.ParseOptions()
-	if options.Debug {
+	szTip := ""
+	if options.Debug && pkg.GetValAsBool("enablDevDebug") {
 		// debug 优化时启用///////////////////////
 		go func() {
+			szTip = "Since you started http://127.0.0.1:6060/debug/pprof/ with -debug, close the program with: control + C"
 			fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/\n\ngo tool pprof -seconds=10 -http=:9999 http://localhost:6060/debug/pprof/heap")
 			http.ListenAndServe(":6060", nil)
 		}()
@@ -71,6 +73,7 @@ func main() {
 	if err != nil {
 		gologger.Fatal().Msgf("naabuRunner.Httpxrun Could not run httpRunner: %s\n", err)
 	}
-	Wg.Wait()
-	close(myConst.G_CloseAll)
+	log.Printf("wait for all threads to end\n%s", szTip)
+	myConst.Wg.Wait()
+	myConst.StopAll()
 }
