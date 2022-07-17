@@ -15,12 +15,25 @@ import (
 
 // 弱口令检测
 func CheckWeakPassword(ip, service string, port int) {
-	// 在弱口令检测范围就开始检测，结果....
-	service = strings.ToLower(service)
-	if pkg.Contains(ProtocolList, service) {
-		//log.Println("start CheckWeakPassword ", ip, ":", port, "(", service, ")")
-		Start(ip, port, service)
-	}
+	lib.Wg.Add(1)
+	go func() {
+		defer lib.Wg.Done()
+		// 在弱口令检测范围就开始检测，结果....
+		service = strings.ToLower(service)
+		if pkg.Contains(ProtocolList, service) {
+			//log.Println("start CheckWeakPassword ", ip, ":", port, "(", service, ")")
+			Start(ip, port, service)
+		}
+	}()
+
+}
+
+// 开启了es
+var enableEsSv, bCheckWeakPassword bool
+
+func init() {
+	enableEsSv = pkg.GetValAsBool("enableEsSv")
+	bCheckWeakPassword = pkg.GetValAsBool("CheckWeakPassword")
 }
 
 func GetAttr(att []xmlquery.Attr, name string) string {
@@ -38,7 +51,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 		log.Println("DoParseXml： ", err)
 		return
 	}
-	var enableEsSv = pkg.GetVal("enableEsSv")
+
 	m1 := make(map[string][][]string)
 	for _, n := range xmlquery.Find(doc, "//host") {
 		x1 := n.SelectElement("address").Attr[0].Value
@@ -52,30 +65,32 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 				//bf.Write([]byte(fmt.Sprintf("%s:%s\n", ip, szPort)))
 				szUlr := fmt.Sprintf("http://%s:%s\n", ip, szPort)
 				bf.Write([]byte(szUlr))
-				go CheckWeakPassword(ip, service, port)
+				if bCheckWeakPassword {
+					CheckWeakPassword(ip, service, port)
+				}
 				// 存储结果到其他地方
 				//x9 := AuthInfo{IPAddr: ip, Port: port, Protocol: service}
-				if "true" == enableEsSv {
+				// 构造发送es等数据
+				if enableEsSv {
 					var xx09 = [][]string{}
 					if a1, ok := m1[ip]; ok {
 						xx09 = a1
 					}
 					m1[ip] = append(xx09, []string{szPort, service})
-					if "445" == szPort && service == "microsoft-ds" {
-						lib.PocCheck_pipe <- lib.PocCheck{
-							Wappalyzertechnologies: &[]string{service},
-							URL:                    szUlr,
-							FinalURL:               szUlr,
-							Checklog4j:             false,
-							Wg:                     lib.Wg,
-						}
+				}
+				if "445" == szPort && service == "microsoft-ds" {
+					lib.PocCheck_pipe <- lib.PocCheck{
+						Wappalyzertechnologies: &[]string{service},
+						URL:                    szUlr,
+						FinalURL:               szUlr,
+						Checklog4j:             false,
 					}
 				}
 				log.Printf("%s\t%d\t%s\n", ip, port, service)
 			}
 		}
 	}
-	if "true" == enableEsSv {
+	if enableEsSv {
 		if 0 < len(m1) {
 			for k, x := range m1 {
 				pkg.SendAData[[]string](k, x, "nmap")

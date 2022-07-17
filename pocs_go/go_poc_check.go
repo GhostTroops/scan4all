@@ -26,13 +26,13 @@ import (
 	"log"
 	"net/url"
 	"strings"
-	"sync"
+	"time"
 )
 
 // 需优化：相同都目标，相同都检测只做一次
-func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool, wg *sync.WaitGroup) []string {
-	if nil != wg {
-		defer wg.Done()
+func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool) []string {
+	if nil != lib.Wg {
+		defer lib.Wg.Done()
 	}
 	var HOST, hostname string
 	var technologies []string
@@ -244,12 +244,25 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 func init() {
 	// 异步启动一个线程处理检测，避免
 	go func() {
+		nMax := 240 // 等xxx秒都没有消息进入就退出
+		nCnt := 0
 		for {
 			select {
-			case <-lib.G_CloseAll:
+			case <-lib.Ctx_global.Done():
 				return
 			case x1 := <-lib.PocCheck_pipe:
-				POCcheck(*x1.Wappalyzertechnologies, x1.URL, x1.FinalURL, x1.Checklog4j, x1.Wg)
+				nCnt = 0
+				log.Printf("<-lib.PocCheck_pipe: %+v  %s", *x1.Wappalyzertechnologies, x1.URL)
+				lib.Wg.Add(1)
+				POCcheck(*x1.Wappalyzertechnologies, x1.URL, x1.FinalURL, x1.Checklog4j)
+			default:
+				if nMax < nCnt {
+					close(lib.PocCheck_pipe)
+					return
+				}
+				fmt.Printf(" POCcheck wait %d ....\r", nMax-nCnt)
+				<-time.After(time.Duration(1) * time.Second)
+				nCnt += 1
 			}
 		}
 	}()
