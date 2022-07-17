@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	myConst "github.com/hktalent/scan4all/lib"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -31,12 +32,16 @@ func Log(v ...any) {
 	log.Println(v...)
 }
 
+// 一定得有全局得线程等待
 func SendAnyData(data interface{}, szType string) {
 	data1, _ := json.Marshal(data)
 	if 0 < len(data1) && "true" == GetVal("enableEsSv") {
 		hasher := sha1.New()
 		hasher.Write(data1)
 		k := hex.EncodeToString(hasher.Sum(nil))
+		if nil != myConst.Wg {
+			myConst.Wg.Add(1)
+		}
 		go SendReq(data, k, szType)
 	}
 }
@@ -50,7 +55,12 @@ func SendAData[T any](k string, data []T, szType string) {
 	}
 }
 
+// 发送数据到ES
 func SendReq(data1 interface{}, id, szType string) {
+	// 全局任务等待结束
+	if nil != myConst.Wg {
+		defer myConst.Wg.Done()
+	}
 	if !enableEsSv {
 		return
 	}

@@ -363,6 +363,12 @@ github.com/itchyny/gojq
 # github.com/itchyny/timefmt-go v0.1.3
 ## explicit; go 1.14
 github.com/itchyny/timefmt-go
+# github.com/jinzhu/inflection v1.0.0
+## explicit
+github.com/jinzhu/inflection
+# github.com/jinzhu/now v1.1.5
+## explicit; go 1.12
+github.com/jinzhu/now
 # github.com/jlaffaye/ftp v0.0.0-20190624084859-c1312a7102bf
 ## explicit
 github.com/jlaffaye/ftp
@@ -442,6 +448,9 @@ github.com/mattn/go-isatty
 # github.com/mattn/go-runewidth v0.0.13
 ## explicit; go 1.9
 github.com/mattn/go-runewidth
+# github.com/mattn/go-sqlite3 v1.14.12
+## explicit; go 1.12
+github.com/mattn/go-sqlite3
 # github.com/mfonda/simhash v0.0.0-20151007195837-79f94a1100d6
 ## explicit
 github.com/mfonda/simhash
@@ -740,7 +749,7 @@ github.com/projectdiscovery/uncover/uncover/agent/shodanidb
 # github.com/projectdiscovery/urlutil v0.0.0-20210805190935-3d83726391c1
 ## explicit; go 1.16
 github.com/projectdiscovery/urlutil
-# github.com/projectdiscovery/wappalyzergo v0.0.50
+# github.com/projectdiscovery/wappalyzergo v0.0.51
 ## explicit; go 1.16
 github.com/projectdiscovery/wappalyzergo
 # github.com/projectdiscovery/yamldoc-go v1.0.3-0.20211126104922-00d2c6bb43b6
@@ -1164,6 +1173,18 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
+# gorm.io/driver/sqlite v1.3.6
+## explicit; go 1.14
+gorm.io/driver/sqlite
+# gorm.io/gorm v1.23.8
+## explicit; go 1.14
+gorm.io/gorm
+gorm.io/gorm/callbacks
+gorm.io/gorm/clause
+gorm.io/gorm/logger
+gorm.io/gorm/migrator
+gorm.io/gorm/schema
+gorm.io/gorm/utils
 # moul.io/http2curl v1.0.0
 ## explicit
 moul.io/http2curl
