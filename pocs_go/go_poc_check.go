@@ -236,7 +236,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 	}
 	// 发送结果
 	if 0 < len(technologies) {
-		go pkg.SendAnyData(map[string]interface{}{"Urls": []string{URL, finalURL}, "technologies": technologies}, "vscan")
+		pkg.SendAnyData(map[string]interface{}{"Urls": []string{URL, finalURL}, "technologies": technologies}, "vscan")
 	}
 	return technologies
 }

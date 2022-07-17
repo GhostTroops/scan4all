@@ -620,7 +620,7 @@ func (r *Runner) handleOutput() {
 					aN = append(aN, port)
 					gologger.Silent().Msgf("%s:%d\n", host, port)
 				}
-				go pkg.SendAData[int](host, aN, "naabu")
+				pkg.SendAData[int](host, aN, "naabu")
 			}
 			// file output
 			if file != nil {
