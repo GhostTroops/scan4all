@@ -35,7 +35,7 @@ func Log(v ...any) {
 // 一定得有全局得线程等待
 func SendAnyData(data interface{}, szType string) {
 	data1, _ := json.Marshal(data)
-	if 0 < len(data1) && "true" == GetVal("enableEsSv") {
+	if 0 < len(data1) && enableEsSv {
 		hasher := sha1.New()
 		hasher.Write(data1)
 		k := hex.EncodeToString(hasher.Sum(nil))
@@ -48,7 +48,7 @@ func SendAnyData(data interface{}, szType string) {
 
 // k is id
 func SendAData[T any](k string, data []T, szType string) {
-	if 0 < len(data) && "true" == GetVal("enableEsSv") {
+	if 0 < len(data) && enableEsSv {
 		m2 := make(map[string]interface{})
 		m2[k] = data
 		SendReq(m2, k, szType)
