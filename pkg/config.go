@@ -18,6 +18,7 @@ import (
 	"strings"
 )
 
+// 字符串包含关系，且大小写不敏感
 func StrContains(s1, s2 string) bool {
 	return strings.Contains(strings.ToLower(s1), strings.ToLower(s2))
 }

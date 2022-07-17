@@ -1,45 +1,133 @@
 package brute
 
 import (
+	_ "embed"
+	"github.com/antlabs/strsim"
+	"github.com/hktalent/scan4all/db"
+	"github.com/hktalent/scan4all/lib"
 	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/pkg/fingerprint"
+	"gorm.io/gorm"
 	"regexp"
 	"strings"
 )
 
-// 智能学习: 非正常页面，并记录到库中永久使用
+// 异常页面数据库
+type ErrPage struct {
+	gorm.Model
+	FingerprintsTag []string `json:"fingerprintsTag"` // 指纹标签,带标签是指纹数据，不是异常数据
+	Title           string   `json:"title"`           // 标题
+	Body            string   `json:"body"`            // body
+	BodyLen         int      `json:"bodyLen"`         // body len
+	BodyHash        string   `json:"bodyHash"`        // body hash， Favicohash4key
+	BodyMd5         string   `json:"bodyMd5"`         // body md5
+	HitCnt          uint32   `json:"hitCnt"`          // 命中统计
+}
+
+var (
+	page404Title []string // 404 标题库、正文库
+	asz404Url    []string // 404url,智能学习
+)
+
+// 异常、404、500、505 标题、内容 存在到信息库
+//  允许正则表达式
+//go:embed dicts/fuzz404.txt
+var fuzz404 string
+
+// 常见404 url 列表,智能学习
+//go:embed dicts/404url.txt
+var sz404Url string
+
+// 初始化字典到库中，且防止重复
+func init() {
+	fuzz404 = pkg.GetVal4File("fuzz404", fuzz404)
+	sz404Url = pkg.GetVal4File("404url", sz404Url)
+	page404Title = strings.Split(strings.TrimSpace(fuzz404), "\n")
+	asz404Url = strings.Split(strings.TrimSpace(sz404Url), "\n")
+	db.GetDb(&ErrPage{})
+}
+
+// 智能学习: 非正常页面，并记录到库中永久使用,使用该方法到页面
+// 要么是异常页面，要么是需要学习到指纹，带标记带
 //  0、识别学习过的url就跳过
 //  1、body 学习
 //  2、标题 学习
 //  3、url 去重记录
-func StudyErrPageAI(req *pkg.Response, page *Page) {
-	if nil == req || nil == page {
+func StudyErrPageAI(req *pkg.Response, page *Page, fingerprintsTag *[]string) {
+	if nil == req || nil == page || "" == req.Body {
 		return
 	}
+	lib.Wg.Add(1)
+	go func() {
+		defer lib.Wg.Done()
+		var data *ErrPage
+		body := []byte(req.Body)
+		szHs, szMd5 := fingerprint.GetHahsMd5(body)
+		// 这里后期优化基于其他查询
+		r1 := db.GetOne[ErrPage](data, "bodyHash=? and bodyMd5=?", szHs, szMd5)
+		if nil != r1 {
+			data = r1
+		} else {
+			data = &ErrPage{Title: *page.title, Body: req.Body, BodyLen: len(body), FingerprintsTag: []string{}}
+			data.BodyHash = szHs
+			data.BodyMd5 = szMd5
+			if nil != fingerprintsTag {
+				data.FingerprintsTag = *fingerprintsTag
+			}
+			// 学些匹配，不重复再记录
+			if bRst, _ := CheckRepeat(data); !bRst {
+				db.Create[ErrPage](data)
+			}
+		}
+	}()
+}
 
-	//// 找到 site 网站 的起点url 页面，通常这里可以尝试做一些安全检测
-	//if url404.is302 {
-	//	location404 = append(location404, *url404.locationUrl)
-	//	// 通常，可能存在XSS，获取状态漏洞
-	//	//if strings.HasSuffix(url404.locationUrl, file_not_support) {
-	//	//	skip302 = true
-	//	//}
-	//}
-	//if url404req.StatusCode == 200 {
-	//	page404Title = append(page404Title, *url404.title)
-	//}
+// 相似度精准度
+var fXsdPrecision float64 = 0.96
 
+// 判断库中是否已经存在
+func CheckRepeat(data *ErrPage) (bool, *ErrPage) {
+	var aRst []ErrPage
+	aRst1 := db.GetSubQueryLists[ErrPage, ErrPage](*data, "", aRst, 10000, 0)
+	if nil != aRst1 {
+		aRst = *aRst1
+		for _, x := range aRst {
+			if 0 == len(x.FingerprintsTag) && x.BodyLen == data.BodyLen && (x.BodyHash == data.BodyHash || x.BodyMd5 == data.BodyMd5) {
+				return true, &x
+			}
+			if strsim.Compare(x.Body, data.Body) >= fXsdPrecision {
+				return true, &x
+			}
+		}
+	}
+	return false, nil
 }
 
 // 检测是否为异常页面，包括状态码检测
 func CheckIsErrPageAI(req *pkg.Response, page *Page) bool {
-
-	return false
+	body := []byte(req.Body)
+	szHs, szMd5 := fingerprint.GetHahsMd5(body)
+	var data = &ErrPage{Title: *page.title, Body: req.Body, BodyLen: len(body)}
+	data.BodyHash = szHs
+	data.BodyMd5 = szMd5
+	bRst, _ := CheckRepeat(data)
+	if false && (0 < len(data.Title) || 0 < len(data.Body)) {
+		for _, x := range page404Title {
+			// 异常页面标题检测成功
+			if 0 < len(data.Title) && (pkg.StrContains(x, data.Title) || pkg.StrContains(data.Title, x)) || 0 < len(data.Body) && pkg.StrContains(data.Body, x) {
+				db.Create[ErrPage](data)
+				return true
+			}
+		}
+	}
+	return bRst
 }
 
 // 获取标题
 func Gettitle(body string) *string {
+	body = strings.ToLower(body)
 	title := ""
-	domainreg2 := regexp.MustCompile(`(?i)<title>([^<]*)</title>`)
+	domainreg2 := regexp.MustCompile(`<title>([^<]*)</title>`)
 	titlelist := domainreg2.FindStringSubmatch(body)
 	if len(titlelist) > 1 {
 		title = strings.ToLower(strings.TrimSpace(titlelist[1]))
