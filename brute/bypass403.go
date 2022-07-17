@@ -110,7 +110,6 @@ func ByPass403(domain, path *string, wg *sync.WaitGroup) []string {
 	for _, h := range headerPayloads {
 		go PenetrateEndpoint(wg, validDomain+"/"+validPath, x01, h)
 	}
-	wg.Wait()
 	aR := []string{}
 	var n = 0
 BreakAll:

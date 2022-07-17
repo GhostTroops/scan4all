@@ -66,7 +66,7 @@
   "naabu_dns": {},
   "naabu": {"TopPorts": "1000","ScanAllIPS": true,"Threads": 25},
   "priorityNmap": true,
-  "enableNuclei": true,
+  "enableNuclei": false,
   "nuclei": {
     "RateLimit": 150,
     "BulkSize":64,
@@ -76,6 +76,7 @@
     "HeadlessTemplateThreads": 10,
     "ReportingConfig": "config/nuclei_esConfig.yaml"
   },
+  "enablDevDebug": false,
   "enablEmbedYaml": true,
   "enablFileFuzz": true,
   "httpx": {
@@ -89,6 +90,7 @@
     "MaxRedirects": 3
   },
   "enableEsSv": false,
+  "CheckWeakPassword": true,
   "esthread": 8,
   "hydrathread": 8,
   "Fuzzthreads": 32,
