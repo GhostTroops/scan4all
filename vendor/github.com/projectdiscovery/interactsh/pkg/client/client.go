@@ -208,7 +208,7 @@ func (c *Client) parseServerURLs(serverURL string, payload []byte) error {
 		if err := c.performRegistration(parsed.String(), payload); err != nil {
 			if !c.disableHTTPFallback && parsed.Scheme == "https" {
 				parsed.Scheme = "http"
-				gologger.Error().Msgf("Could not register to %s: %s, retrying with http\n", parsed.String(), err)
+				gologger.Verbose().Msgf("Could not register to %s: %s, retrying with http\n", parsed.String(), err)
 				goto makeReq
 			}
 			return err
@@ -218,13 +218,13 @@ func (c *Client) parseServerURLs(serverURL string, payload []byte) error {
 	}
 	err := registerFunc(gotValue)
 	if err != nil {
-		gologger.Error().Msgf("Could not register to %s: %s, retrying with remaining\n", gotValue, err)
+		gologger.Verbose().Msgf("Could not register to %s: %s, retrying with remaining\n", gotValue, err)
 		values = removeIndex(values, firstIdx)
 		mathrand.Shuffle(len(values), func(i, j int) { values[i], values[j] = values[j], values[i] })
 
 		for _, value := range values {
 			if err = registerFunc(value); err != nil {
-				gologger.Error().Msgf("Could not register to %s: %s, retrying with remaining\n", gotValue, err)
+				gologger.Verbose().Msgf("Could not register to %s: %s, retrying with remaining\n", gotValue, err)
 				continue
 			}
 			break

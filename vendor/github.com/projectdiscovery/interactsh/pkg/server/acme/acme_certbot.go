@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/caddyserver/certmagic"
 	"github.com/pkg/errors"
@@ -13,9 +14,15 @@ import (
 	"go.uber.org/zap"
 )
 
+// CleanupStorage perform cleanup routines tasks
+func CleanupStorage() {
+	cleanupOptions := certmagic.CleanStorageOptions{OCSPStaples: true}
+	certmagic.CleanStorage(context.Background(), certmagic.Default.Storage, cleanupOptions)
+}
+
 // HandleWildcardCertificates handles ACME wildcard cert generation with DNS
 // challenge using certmagic library from caddyserver.
-func HandleWildcardCertificates(domain, email string, store *Provider, debug bool) (*tls.Config, error) {
+func HandleWildcardCertificates(domain, email string, store *Provider, debug bool) ([]tls.Certificate, error) {
 	logger, err := zap.NewProduction()
 	if err != nil {
 		return nil, err
@@ -67,24 +74,32 @@ func HandleWildcardCertificates(domain, email string, store *Provider, debug boo
 
 	if creating {
 		home, _ := os.UserHomeDir()
-		gologger.Info().Msgf("Successfully Created SSL Certificate at: %s", filepath.Join(filepath.Join(home, ".local", "share"), "certmagic"))
+		gologger.Info().Msgf("Successfully Created SSL Certificate at: %s", filepath.Join(home, ".local", "share", "certmagic"))
 	}
 
 	// attempts to extract certificates from caddy
 	var certs []tls.Certificate
 	for _, domain := range domains {
+		var retried bool
+	retry_cert:
 		certPath, privKeyPath, err := extractCaddyPaths(cfg, &certmagic.DefaultACME, domain)
 		if err != nil {
 			return nil, err
 		}
 		cert, err := tls.LoadX509KeyPair(certPath, privKeyPath)
+		if err != nil && !retried {
+			retried = true
+			// wait I/O to sync
+			time.Sleep(5 * time.Second)
+			goto retry_cert
+		}
 		if err != nil {
 			return nil, err
 		}
 		certs = append(certs, cert)
 	}
 
-	return BuildTlsConfigWithCerts(domain, certs...)
+	return certs, nil
 }
 
 // certAlreadyExists returns true if a cert already exists

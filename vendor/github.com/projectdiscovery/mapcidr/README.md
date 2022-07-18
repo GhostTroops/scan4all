@@ -33,12 +33,16 @@ mapCIDR is developed to ease load distribution for mass scanning operations, it 
   <br>
 </h1>
 
- - CIDR expansion support.
- - CIDR slicing support.
- - CIDR/IP aggregation support.
- - CIDR based IP filter support.
- - IP/PORT shuffling support.
- - STD IN/OUT support.
+ - CIDR expansion support (**default**)
+ - CIDR slicing support (`sbh`, `sbc`)
+ - CIDR/IP aggregation support (`a`, `aa`)
+ - CIDR based IP filter support (`cidr`, `ip`)
+ - CIDR/IP sorting support (`s`, `sr`)
+ - CIDR host count support (`c`)
+ - IP/PORT shuffling support (`si`, `sp`)
+ - IPv4/IPv6 Conversation support (`t4`, `t6`)
+ - IPv4/IPv6 Filter support (`f4`, `f6`)
+ - CIDR STD IN/OUT support
 
 # Installation
 
@@ -56,23 +60,35 @@ This will display help for the tool. Here are all the switches it supports.
 
 ```yaml
 INPUT:
-   -cidr string          CIDR to process
-   -l, -list string      File containing list of CIDRs to process
-   -il, -ip-list string  File containing list of IPs to process
+   -cl, -cidr string[]  CIDR/File containing list of CIDRs to process
+   -il, -ip string[]    IP/File containing list of IPs to process
 
 PROCESS:
-   -sbc int                   Slice CIDRs by given CIDR count
-   -sbh int                   Slice CIDRs by given HOST count
-   -agg, -aggregate           Aggregate IPs/CIDRs into the minimum subnet
-   -sip, -shuffle-ip          Shuffle input ip
-   -sp, -shuffle-port string  Shuffle input ip:port
+   -sbc int                Slice CIDRs by given CIDR count
+   -sbh int                Slice CIDRs by given HOST count
+   -a, -aggregate          Aggregate IPs/CIDRs into minimum subnet
+   -aa, -aggregate-approx  Aggregate sparse IPs/CIDRs into minimum approximated subnet
+   -c, -count              Count number of IPs in given CIDR
+   -t4, -to-ipv4           Convert IPs to IPv4 format
+   -t6, -to-ipv6           Convert IPs to IPv6 format
+
+FILTER:
+   -f4, -filter-ipv4  Filter IPv4 IPs from input
+   -f6, -filter-ipv6  Filter IPv6 IPs from input
+   -skip-base         Skip base IPs (ending in .0) in output
+   -skip-broadcast    Skip broadcast IPs (ending in .255) in output
+
+MISCELLANEOUS:
+   -s, -sort                  Sort input IPs/CIDRs in ascending order
+   -sr, -sort-reverse         Sort input IPs/CIDRs in descending order
+   -si, -shuffle-ip           Shuffle Input IPs in random order
+   -sp, -shuffle-port string  Shuffle Input IP:Port in random order
 
 OUTPUT:
+   -verbose            Verbose mode
    -o, -output string  File to write output to
    -silent             Silent mode
-   -version            Show version
-   -skip-base          Skip base IPs (ending in .0) in output
-   -skip-broadcast     Skip broadcast IPs (ending in .255) in output
+   -version            Show version of the project
 ```
 
 # Running mapCIDR
@@ -109,7 +125,7 @@ mapcidr -cidr 173.0.84.0/24
 173.0.84.16
 ```
 
-### CIDR Slicing by CIDR
+### CIDR Slicing by CIDR Count
 
 In order to slice given CIDR or list of CIDR by CIDR count or slice into multiple and equal smaller subnets, use the following command.
 
@@ -131,7 +147,7 @@ mapcidr -cidr 173.0.84.0/24 -sbc 10 -silent
 173.0.84.224/28
 ```
 
-### CIDR slicing by HOST 
+### CIDR slicing by HOST Count
 
 In order to slice given CIDR for equal number of host count in each CIDR, use the following command.
 
@@ -148,26 +164,98 @@ mapcidr -cidr 173.0.84.0/16 -sbh 20000 -silent
 
 Note: it's possible to obtain a perfect split only when the desired amount of slices or hosts per subnet is a powers of two. Otherwise, the tool will attempt to automatically find the best split strategy to obtain the desired outcome. 
 
-### CIDR/IP aggregation
+### CIDR/IP Aggregation
 
 In order to merge multiple CIDR ranges into smaller subnet block, use the following command.
 
 ```console
-mapcidr -l cidrs.txt -silent -aggregate
+$ mapcidr -cl cidrs.txt -aggregate
 ```
 
 In order to list CIDR blocks for given list of IPs, use the following command.
 
 ```console
-mapcidr -l ips.txt -silent -aggregate
+$ mapcidr -il ips.txt -aggregate
 ```
 
-### CIDR based IP filtering
+It's also possible to perform approximated aggregations for sparse ips groups (only version 4). The final interval will contain contiguous ips not belonging to the input:
+
+```console
+$ cat ips.txt 
+
+1.1.1.1
+1.1.1.16
+1.1.1.31
+```
+
+```console
+$ cat ips.txt | mapcidr -aggregate-approx
+
+1.1.1.0/27
+```
+
+### CIDR based IP Filtering
 
 In order to filter IPs from the given list of CIDR ranges, use the following command.
 
 ```console
-mapcidr -ips ip-list.txt -l cirds.txt
+$ mapcidr -il ip-list.txt -cl cirds.txt
+```
+
+### IPS Conversion
+
+**IPv4 | IPv6** addresses can be converted from either the v6 to v4 notation or IPv4-mapped notation into IPv4 addresses using `-t4` and `-t6` to IPv4 and IPv6 respectively.
+
+```console
+$ cat ips.txt 
+
+1.1.1.1
+2.2.2.2
+```
+
+```
+$ mapcidr -il ipv4-list.txt -t6
+
+00:00:00:00:00:ffff:0101:0101
+00:00:00:00:00:ffff:0202:0202
+```
+
+<table>
+<tr>
+<td>
+<h3>Note:</h3>
+
+Not all IPv6 address can be converted to IPv4. You can only convert valid IPv4 represented IPv6 addresses.
+</td>
+</tr>
+</table>
+
+### IPS Filtering
+
+**IPv4 | IPv6** addresses can be filtered from an input list containing both IPv4/IPv6 formatted IPs using `-f4` and `-f6` flag.
+
+
+```console
+$ cat ips.txt 
+
+1.1.1.1
+00:00:00:00:00:ffff:ad00:5400
+```
+
+```console
+$ mapcidr -il ips.txt -f4
+
+1.1.1.1
+```
+
+### CIDR Host Counting
+
+In order to count number of hosts for a given CIDR or list of CIDR, use the following command.
+
+```console
+$ echo 173.0.84.0/16 | mapcidr -count -silent
+
+65536
 ```
 
 # Use mapCIDR as a library

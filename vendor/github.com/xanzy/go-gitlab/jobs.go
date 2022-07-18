@@ -71,12 +71,13 @@ type Job struct {
 		IsShared    bool   `json:"is_shared"`
 		Name        string `json:"name"`
 	} `json:"runner"`
-	Stage   string   `json:"stage"`
-	Status  string   `json:"status"`
-	Tag     bool     `json:"tag"`
-	WebURL  string   `json:"web_url"`
-	Project *Project `json:"project"`
-	User    *User    `json:"user"`
+	Stage         string   `json:"stage"`
+	Status        string   `json:"status"`
+	FailureReason string   `json:"failure_reason"`
+	Tag           bool     `json:"tag"`
+	WebURL        string   `json:"web_url"`
+	Project       *Project `json:"project"`
+	User          *User    `json:"user"`
 }
 
 // Bridge represents a pipeline bridge.
@@ -102,7 +103,10 @@ type Bridge struct {
 	DownstreamPipeline *PipelineInfo `json:"downstream_pipeline"`
 }
 
-// ListJobsOptions are options for two list apis
+// ListJobsOptions represents the available ListProjectJobs() options.
+//
+// GitLab API docs:
+// https://docs.gitlab.com/ce/api/jobs.html#list-project-jobs
 type ListJobsOptions struct {
 	ListOptions
 	Scope          *[]BuildStateValue `url:"scope[],omitempty" json:"scope,omitempty"`

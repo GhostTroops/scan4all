@@ -49,8 +49,11 @@ type Release struct {
 		AvatarURL string `json:"avatar_url"`
 		WebURL    string `json:"web_url"`
 	} `json:"author"`
-	Commit Commit `json:"commit"`
-	Assets struct {
+	Commit          Commit `json:"commit"`
+	UpcomingRelease bool   `json:"upcoming_release"`
+	CommitPath      string `json:"commit_path"`
+	TagPath         string `json:"tag_path"`
+	Assets          struct {
 		Count   int `json:"count"`
 		Sources []struct {
 			Format string `json:"format"`

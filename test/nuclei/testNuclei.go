@@ -25,12 +25,12 @@ nuclei -duc -u http://192.168.10.31:8888 -t "http://127.0.0.1:8088/goSwaggerAPI.
 func DoNuclei(buf *bytes.Buffer, wg *sync.WaitGroup, oOpts *map[string]interface{}) {
 	defer wg.Done()
 	xx := make(chan bool)
-	go nuclei_Yaml.RunNuclei(buf, xx, nil)
+	go nuclei_Yaml.RunNuclei(buf, xx, oOpts)
 	<-xx
 }
 
 func main() {
-	if false {
+	if true {
 		go func() {
 			//szTip = "Since you started http://127.0.0.1:6060/debug/pprof/ with -debug, close the program with: control + C"
 			fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/\n\ngo tool pprof -seconds=10 -http=:9999 http://localhost:6060/debug/pprof/heap")
@@ -43,13 +43,10 @@ func main() {
 		pwd, _ := os.Getwd()
 		m1 := map[string]interface{}{"UpdateTemplates": false, "Templates": []string{pwd + "/config/nuclei-templates"}, "TemplatesDirectory": pwd + "/config/nuclei-templates", "NoUpdateTemplates": true}
 		DoNuclei(&buf, &wg, &m1)
-		wg.Add(1)
-		DoNuclei(&buf, &wg, &m1)
+		//wg.Add(1)
+		//DoNuclei(&buf, &wg, &m1)
 		//wg.Add(1)
 		//DoNuclei(&buf, &wg, &m1)
 		wg.Wait()
 	}
-
-	var MUrl *sync.Map = new(sync.Map)
-	MUrl.
 }
