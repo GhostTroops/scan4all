@@ -814,9 +814,10 @@ func (s *UsersService) GetEmail(email int, options ...RequestOptionFunc) (*Email
 
 // AddEmailOptions represents the available AddEmail() options.
 //
-// GitLab API docs: https://docs.gitlab.com/ce/api/projects.html#add-email
+// GitLab API docs: https://docs.gitlab.com/ce/api/users.html#add-email
 type AddEmailOptions struct {
-	Email *string `url:"email,omitempty" json:"email,omitempty"`
+	Email            *string `url:"email,omitempty" json:"email,omitempty"`
+	SkipConfirmation *bool   `url:"skip_confirmation,omitempty" json:"skip_confirmation,omitempty"`
 }
 
 // AddEmail creates a new email owned by the currently authenticated user.
