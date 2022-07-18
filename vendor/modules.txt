@@ -19,6 +19,10 @@ github.com/PuerkitoBio/goquery
 # github.com/RumbleDiscovery/jarm-go v0.0.6
 ## explicit; go 1.15
 github.com/RumbleDiscovery/jarm-go
+# github.com/Ullaakut/nmap v2.0.2+incompatible
+## explicit
+github.com/Ullaakut/nmap
+github.com/Ullaakut/nmap/pkg/osfamilies
 # github.com/akrylysov/pogreb v0.10.1
 ## explicit; go 1.12
 github.com/akrylysov/pogreb

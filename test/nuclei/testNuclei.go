@@ -39,12 +39,12 @@ func main() {
 		buf := bytes.Buffer{}
 		var wg sync.WaitGroup
 		wg.Add(1)
-		buf.WriteString("http://192.168.10.31:8888\n")
+		buf.WriteString("http://192.168.0.111:8000\n")
 		pwd, _ := os.Getwd()
 		m1 := map[string]interface{}{"UpdateTemplates": false, "Templates": []string{pwd + "/config/nuclei-templates"}, "TemplatesDirectory": pwd + "/config/nuclei-templates", "NoUpdateTemplates": true}
 		DoNuclei(&buf, &wg, &m1)
-		//wg.Add(1)
-		//DoNuclei(&buf, &wg, &m1)
+		wg.Add(1)
+		DoNuclei(&buf, &wg, &m1)
 		//wg.Add(1)
 		//DoNuclei(&buf, &wg, &m1)
 		wg.Wait()
