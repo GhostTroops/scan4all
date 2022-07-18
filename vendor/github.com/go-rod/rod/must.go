@@ -59,9 +59,9 @@ func (b *Browser) MustClose() {
 
 // MustIncognito is similar to Browser.Incognito
 func (b *Browser) MustIncognito() *Browser {
-	b, err := b.Incognito()
+	p, err := b.Incognito()
 	b.e(err)
-	return b
+	return p
 }
 
 // MustPage is similar to Browser.Page.
@@ -444,7 +444,7 @@ func (p *Page) MustEvaluate(opts *EvalOptions) *proto.RuntimeRemoteObject {
 
 // MustWait is similar to Page.Wait
 func (p *Page) MustWait(js string, params ...interface{}) *Page {
-	p.e(p.Wait(nil, js, params))
+	p.e(p.Wait(Eval(js, params...)))
 	return p
 }
 
@@ -867,7 +867,7 @@ func (el *Element) MustWaitStable() *Element {
 
 // MustWait is similar to Element.Wait
 func (el *Element) MustWait(js string, params ...interface{}) *Element {
-	el.e(el.Wait(Eval(js, params)))
+	el.e(el.Wait(Eval(js, params...)))
 	return el
 }
 

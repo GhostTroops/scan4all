@@ -225,6 +225,7 @@ type ProjectNamespace struct {
 	Path      string `json:"path"`
 	Kind      string `json:"kind"`
 	FullPath  string `json:"full_path"`
+	ParentID  int    `json:"parent_id"`
 	AvatarURL string `json:"avatar_url"`
 	WebURL    string `json:"web_url"`
 }
@@ -695,6 +696,9 @@ type ContainerExpirationPolicyAttributes struct {
 	NameRegex *string `url:"name_regex,omitempty" json:"name_regex,omitempty"`
 }
 
+// ProjectAvatar represents a GitLab project avatar.
+//
+// GitLab API docs: https://docs.gitlab.com/ee/api/projects.html#create-project
 type ProjectAvatar struct {
 	Filename string
 	Image    io.Reader

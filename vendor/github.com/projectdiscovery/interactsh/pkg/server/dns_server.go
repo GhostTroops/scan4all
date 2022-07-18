@@ -11,15 +11,14 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/miekg/dns"
 	"github.com/projectdiscovery/gologger"
+	"github.com/projectdiscovery/stringsutil"
 )
 
 // DNSServer is a DNS server instance that listens on port 53.
 type DNSServer struct {
 	options    *Options
-	mxDomain   string
-	ns1Domain  string
-	ns2Domain  string
-	dotDomain  string
+	mxDomains  map[string]string
+	nsDomains  map[string][]string
 	ipAddress  net.IP
 	timeToLive uint32
 	server     *dns.Server
@@ -28,14 +27,26 @@ type DNSServer struct {
 
 // NewDNSServer returns a new DNS server.
 func NewDNSServer(network string, options *Options) *DNSServer {
-	dotdomain := dns.Fqdn(options.Domain)
+	mxDomains := make(map[string]string)
+	nsDomains := make(map[string][]string)
+
+	for _, domain := range options.Domains {
+		dotdomain := dns.Fqdn(domain)
+
+		mxDomain := fmt.Sprintf("mail.%s", dotdomain)
+		mxDomains[dotdomain] = mxDomain
+
+		ns1Domain := fmt.Sprintf("ns1.%s", dotdomain)
+		ns2Domain := fmt.Sprintf("ns2.%s", dotdomain)
+		nsDomains[dotdomain] = []string{ns1Domain, ns2Domain}
+
+	}
+
 	server := &DNSServer{
 		options:    options,
 		ipAddress:  net.ParseIP(options.IPAddress),
-		mxDomain:   "mail." + dotdomain,
-		ns1Domain:  "ns1." + dotdomain,
-		ns2Domain:  "ns2." + dotdomain,
-		dotDomain:  "." + dotdomain,
+		mxDomains:  mxDomains,
+		nsDomains:  nsDomains,
 		timeToLive: 3600,
 	}
 	server.server = &dns.Server{
@@ -142,39 +153,76 @@ func (h *DNSServer) handleACMETXTChallenge(zone string, m *dns.Msg) error {
 func (h *DNSServer) handleACNAMEANY(zone string, m *dns.Msg) {
 	nsHeader := dns.RR_Header{Name: zone, Rrtype: dns.TypeNS, Class: dns.ClassINET, Ttl: h.timeToLive}
 
-	resultFunction := func(ipAddress net.IP) {
+	resultFunction := func(zone string, ipAddress net.IP) {
 		m.Answer = append(m.Answer, &dns.A{Hdr: dns.RR_Header{Name: zone, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: h.timeToLive}, A: ipAddress})
+		dotDomains := []string{zone, dns.Fqdn(h.options.Domains[0])}
+		for _, dotDomain := range dotDomains {
+			if nsDomains, ok := h.nsDomains[dotDomain]; ok {
+				for _, nsDomain := range nsDomains {
+					m.Ns = append(m.Ns, &dns.NS{Hdr: nsHeader, Ns: nsDomain})
+					m.Extra = append(m.Extra, &dns.A{Hdr: dns.RR_Header{Name: nsDomain, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: h.timeToLive}, A: h.ipAddress})
+				}
+				return
+			}
+		}
+	}
 
-		m.Ns = append(m.Ns, &dns.NS{Hdr: nsHeader, Ns: h.ns1Domain})
-		m.Ns = append(m.Ns, &dns.NS{Hdr: nsHeader, Ns: h.ns2Domain})
-		m.Extra = append(m.Extra, &dns.A{Hdr: dns.RR_Header{Name: h.ns1Domain, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: h.timeToLive}, A: h.ipAddress})
-		m.Extra = append(m.Extra, &dns.A{Hdr: dns.RR_Header{Name: h.ns2Domain, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: h.timeToLive}, A: h.ipAddress})
+	dotDomain := dns.Fqdn(h.options.Domains[0])
+	for _, domain := range h.options.Domains {
+		configuredDotDomain := dns.Fqdn(domain)
+		if dns.Fqdn(domain) == zone {
+			dotDomain = configuredDotDomain
+			break
+		}
 	}
 
 	switch {
-	case strings.EqualFold(zone, "aws"+h.dotDomain):
-		resultFunction(net.ParseIP("169.254.169.254"))
-	case strings.EqualFold(zone, "alibaba"+h.dotDomain):
-		resultFunction(net.ParseIP("100.100.100.200"))
+	case strings.EqualFold(zone, "aws"+dotDomain):
+		resultFunction(zone, net.ParseIP("169.254.169.254"))
+	case strings.EqualFold(zone, "alibaba"+dotDomain):
+		resultFunction(zone, net.ParseIP("100.100.100.200"))
 	default:
-		resultFunction(h.ipAddress)
+		resultFunction(zone, h.ipAddress)
 	}
 }
 
 func (h *DNSServer) handleMX(zone string, m *dns.Msg) {
 	nsHdr := dns.RR_Header{Name: zone, Rrtype: dns.TypeMX, Class: dns.ClassINET, Ttl: h.timeToLive}
-	m.Answer = append(m.Answer, &dns.MX{Hdr: nsHdr, Mx: h.mxDomain, Preference: 1})
+
+	dotDomains := []string{zone, dns.Fqdn(h.options.Domains[0])}
+	for _, dotDomain := range dotDomains {
+		if mxdomain, ok := h.mxDomains[dotDomain]; ok {
+			m.Answer = append(m.Answer, &dns.MX{Hdr: nsHdr, Mx: mxdomain, Preference: 1})
+			return
+		}
+	}
 }
 
 func (h *DNSServer) handleNS(zone string, m *dns.Msg) {
 	nsHeader := dns.RR_Header{Name: zone, Rrtype: dns.TypeNS, Class: dns.ClassINET, Ttl: h.timeToLive}
-	m.Answer = append(m.Answer, &dns.NS{Hdr: nsHeader, Ns: h.ns1Domain})
-	m.Answer = append(m.Answer, &dns.NS{Hdr: nsHeader, Ns: h.ns2Domain})
+
+	dotDomains := []string{zone, dns.Fqdn(h.options.Domains[0])}
+	for _, dotDomain := range dotDomains {
+		if nsDomains, ok := h.nsDomains[dotDomain]; ok {
+			for _, nsDomain := range nsDomains {
+				m.Answer = append(m.Answer, &dns.NS{Hdr: nsHeader, Ns: nsDomain})
+			}
+			return
+		}
+	}
 }
 
 func (h *DNSServer) handleSOA(zone string, m *dns.Msg) {
 	nsHdr := dns.RR_Header{Name: zone, Rrtype: dns.TypeSOA, Class: dns.ClassINET}
-	m.Answer = append(m.Answer, &dns.SOA{Hdr: nsHdr, Ns: h.ns1Domain, Mbox: certificateAuthority, Serial: 1, Expire: 60, Minttl: 60})
+	dotDomains := []string{zone, dns.Fqdn(h.options.Domains[0])}
+	for _, dotDomain := range dotDomains {
+		if nsDomains, ok := h.nsDomains[dotDomain]; ok {
+			for _, nsDomain := range nsDomains {
+				m.Answer = append(m.Answer, &dns.SOA{Hdr: nsHdr, Ns: nsDomain, Mbox: certificateAuthority, Serial: 1, Expire: 60, Minttl: 60})
+				return
+			}
+		}
+	}
 }
 
 func (h *DNSServer) handleTXT(zone string, m *dns.Msg) {
@@ -212,9 +260,18 @@ func (h *DNSServer) handleInteraction(domain string, w dns.ResponseWriter, r *dn
 
 	gologger.Debug().Msgf("New DNS request: %s\n", requestMsg)
 
+	var foundDomain string
+	for _, configuredDomain := range h.options.Domains {
+		configuredDotDomain := dns.Fqdn(configuredDomain)
+		if stringsutil.HasSuffixI(domain, configuredDotDomain) {
+			foundDomain = configuredDomain
+			break
+		}
+	}
+
 	// if root-tld is enabled stores any interaction towards the main domain
-	if h.options.RootTLD && strings.HasSuffix(domain, h.dotDomain) {
-		correlationID := h.options.Domain
+	if h.options.RootTLD && foundDomain != "" {
+		correlationID := foundDomain
 		host, _, _ := net.SplitHostPort(w.RemoteAddr().String())
 		interaction := &Interaction{
 			Protocol:      "dns",
@@ -237,7 +294,7 @@ func (h *DNSServer) handleInteraction(domain string, w dns.ResponseWriter, r *dn
 		}
 	}
 
-	if strings.HasSuffix(domain, h.dotDomain) {
+	if foundDomain != "" {
 		parts := strings.Split(domain, ".")
 		for i, part := range parts {
 			if h.options.isCorrelationID(part) {

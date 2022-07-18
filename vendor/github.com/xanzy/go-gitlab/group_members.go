@@ -64,7 +64,8 @@ type GroupMember struct {
 // https://docs.gitlab.com/ce/api/members.html#list-all-members-of-a-group-or-project
 type ListGroupMembersOptions struct {
 	ListOptions
-	Query *string `url:"query,omitempty" json:"query,omitempty"`
+	Query   *string `url:"query,omitempty" json:"query,omitempty"`
+	UserIDs *[]int  `url:"user_ids[],omitempty" json:"user_ids,omitempty"`
 }
 
 // ListGroupMembers get a list of group members viewable by the authenticated

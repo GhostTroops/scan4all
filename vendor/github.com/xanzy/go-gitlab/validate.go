@@ -50,15 +50,21 @@ type ProjectLintResult struct {
 	MergedYaml string   `json:"merged_yaml"`
 }
 
+// LintOptions represents the available Lint() options.
+//
+// Gitlab API docs:
+// https://docs.gitlab.com/ee/api/lint.html#validate-the-ci-yaml-configuration
+type LintOptions struct {
+	Content           string `url:"content,omitempty" json:"content,omitempty"`
+	IncludeMergedYAML bool   `url:"include_merged_yaml,omitempty" json:"include_merged_yaml,omitempty"`
+	IncludeJobs       bool   `url:"include_jobs,omitempty" json:"include_jobs,omitempty"`
+}
+
 // Lint validates .gitlab-ci.yml content.
 //
-// GitLab API docs: https://docs.gitlab.com/ce/api/lint.html
-func (s *ValidateService) Lint(content string, options ...RequestOptionFunc) (*LintResult, *Response, error) {
-	var opts struct {
-		Content string `url:"content,omitempty" json:"content,omitempty"`
-	}
-	opts.Content = content
-
+// Gitlab API docs:
+// https://docs.gitlab.com/ee/api/lint.html#validate-the-ci-yaml-configuration
+func (s *ValidateService) Lint(opts *LintOptions, options ...RequestOptionFunc) (*LintResult, *Response, error) {
 	req, err := s.client.NewRequest(http.MethodPost, "ci/lint", &opts, options)
 	if err != nil {
 		return nil, nil, err
