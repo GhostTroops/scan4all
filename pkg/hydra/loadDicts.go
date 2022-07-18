@@ -154,6 +154,7 @@ func init() {
 		Paswd:     pkg.GetVal4File("es_pswd", es_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("es_default", es_default),
 	}
+	md["router"] = md["wap-wsp"]
 	md["mongodb"] = PPDict{
 		Username:  pkg.GetVal4File("mongodb_username", mongodbusername),
 		Paswd:     pkg.GetVal4File("mongodb_pswd", mongodb_pswd),
