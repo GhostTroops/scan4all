@@ -33,8 +33,8 @@ type Interaction struct {
 
 // Options contains configuration options for the servers
 type Options struct {
-	// Domain is the domain for the instance.
-	Domain string
+	// Domains is the list domains for the instance.
+	Domains []string
 	// IPAddress is the IP address of the current server.
 	IPAddress string
 	// ListenIP is the IP address to listen servers on
@@ -58,7 +58,7 @@ type Options struct {
 	// FtpPort is the port to listen Ftp server on
 	LdapPort int
 	// Hostmaster is the hostmaster email for the server.
-	Hostmaster string
+	Hostmasters []string
 	// Storage is a storage for interaction data storage
 	Storage *storage.Storage
 	// Auth requires client to authenticate
@@ -81,6 +81,8 @@ type Options struct {
 	CertificatePath string
 	// Private Key Path
 	PrivateKeyPath string
+	// HTTP header containing origin IP
+	OriginIPHeader string
 
 	ACMEStore *acme.Provider
 }

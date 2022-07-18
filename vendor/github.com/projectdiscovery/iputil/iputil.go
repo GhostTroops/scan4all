@@ -2,6 +2,7 @@ package iputil
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -9,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/projectdiscovery/mapcidr"
 )
 
@@ -50,13 +52,13 @@ func IsCidrWithExpansion(str string) bool {
 }
 
 // CountIPsInCIDR counts the number of ips in cidr
-func CountIPsInCIDR(cidr string) int64 {
+func CountIPsInCIDR(includeBase, includeBroadcast bool, cidr string) int64 {
 	_, c, err := net.ParseCIDR(cidr)
 	if err != nil {
 		return 0
 	}
 
-	return mapcidr.CountIPsInCIDR(c).Int64()
+	return mapcidr.CountIPsInCIDR(includeBase, includeBroadcast, c).Int64()
 }
 
 // ToCidr converts a cidr string to net.IPNet pointer
@@ -133,4 +135,61 @@ func WhatsMyIP() (string, error) {
 	}
 
 	return string(ip), nil
+}
+
+// GetSourceIP gets the local ip based the destination ip
+func GetSourceIP(target string) (net.IP, error) {
+	hostPort := net.JoinHostPort(target, "12345")
+	serverAddr, err := net.ResolveUDPAddr("udp", hostPort)
+	if err != nil {
+		return nil, err
+	}
+
+	con, dialUpErr := net.DialUDP("udp", nil, serverAddr)
+	if dialUpErr != nil {
+		return nil, dialUpErr
+	}
+
+	defer con.Close()
+
+	if udpaddr, ok := con.LocalAddr().(*net.UDPAddr); ok {
+		return udpaddr.IP, nil
+	}
+
+	return nil, errors.New("could not get source ip")
+}
+
+// GetBindableAddress on port p from a list of ips
+func GetBindableAddress(port int, ips ...string) (string, error) {
+	var errs error
+	// iterate over ips and return the first bindable one on port p
+	for _, ip := range ips {
+		if ip == "" {
+			continue
+		}
+		ipPort := net.JoinHostPort(ip, fmt.Sprint(port))
+		// check if we can listen on tcp
+		l, err := net.Listen("tcp", ipPort)
+		if err != nil {
+			errs = multierror.Append(errs, err)
+			continue
+		}
+		l.Close()
+		udpAddr := net.UDPAddr{
+			Port: port,
+			IP:   net.ParseIP(ip),
+		}
+		// check if we can listen on udp
+		lu, err := net.ListenUDP("udp", &udpAddr)
+		if err != nil {
+			errs = multierror.Append(errs, err)
+			continue
+		}
+		lu.Close()
+
+		// we found a bindable ip
+		return ip, nil
+	}
+
+	return "", errs
 }

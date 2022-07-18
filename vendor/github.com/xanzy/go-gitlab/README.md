@@ -131,7 +131,7 @@ to list all projects for user "svanharmelen":
 
 ```go
 git := gitlab.NewClient("yourtokengoeshere")
-opt := &ListProjectsOptions{Search: gitlab.String("svanharmelen")}
+opt := &gitlab.ListProjectsOptions{Search: gitlab.String("svanharmelen")}
 projects, _, err := git.Projects.ListProjects(opt)
 ```
 

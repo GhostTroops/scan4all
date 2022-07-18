@@ -2,7 +2,6 @@
 package mapcidr
 
 import (
-	"encoding/binary"
 	"fmt"
 	"math"
 	"math/big"
@@ -219,19 +218,6 @@ func currentSubnet(network *net.IPNet, prefixLen int) (*net.IPNet, error) {
 	return &net.IPNet{IP: currentFirst.Mask(mask), Mask: mask}, nil
 }
 
-// func previousSubnet(network *net.IPNet, prefixLen int) (*net.IPNet, bool) {
-// 	startIP := network.IP
-// 	previousIP := make(net.IP, len(startIP))
-// 	copy(previousIP, startIP)
-// 	cMask := net.CIDRMask(prefixLen, 8*len(previousIP))
-// 	previousIP = dec(previousIP)
-// 	previous := &net.IPNet{IP: previousIP.Mask(cMask), Mask: cMask}
-// 	if startIP.Equal(net.IPv4zero) || startIP.Equal(net.IPv6zero) {
-// 		return previous, true
-// 	}
-// 	return previous, false
-// }
-
 // nextSubnet returns the next subnet for an ipnet
 func nextSubnet(network *net.IPNet, prefixLen int) (*net.IPNet, error) {
 	_, currentLast, err := AddressRange(network)
@@ -282,36 +268,30 @@ func IPAddressesAsStream(cidr string) (chan string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ipAddresses(ipnet), nil
+	return IpAddresses(ipnet), nil
 }
 
 // IPAddressesIPnet returns all IP addresses in an IPNet.
 func IPAddressesIPnet(ipnet *net.IPNet) (ips []string) {
-	for ip := range ipAddresses(ipnet) {
+	for ip := range IpAddresses(ipnet) {
 		ips = append(ips, ip)
 	}
 	return ips
 }
 
-func ipAddresses(ipnet *net.IPNet) (ips chan string) {
+// IpAddresses as stream
+func IpAddresses(ipnet *net.IPNet) (ips chan string) {
 	ips = make(chan string)
 	go func() {
 		defer close(ips)
 
-		// convert IPNet struct mask and address to uint32
-		mask := binary.BigEndian.Uint32(ipnet.Mask)
-		start := binary.BigEndian.Uint32(ipnet.IP)
-
-		// find the final address
-		finish := (start & mask) | (mask ^ 0xffffffff)
-
-		// loop through addresses as uint32
-		for i := start; i <= finish; i++ {
-			// convert back to net.IP
-			ip := make(net.IP, 4) //nolint
-			binary.BigEndian.PutUint32(ip, i)
+		netWithRange := ipNetToRange(*ipnet)
+		for ip := *netWithRange.First; !ip.Equal(*netWithRange.Last); ip = GetNextIP(ip) {
 			ips <- ip.String()
 		}
+
+		// Add the last IP
+		ips <- netWithRange.Last.String()
 	}()
 	return ips
 }

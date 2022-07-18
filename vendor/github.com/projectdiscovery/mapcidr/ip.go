@@ -21,20 +21,32 @@ const (
 // CountIPsInCIDR takes a RFC4632/RFC4291-formatted IPv4/IPv6 CIDR and
 // determines how many IP addresses reside within that CIDR.
 // Returns 0 if the input CIDR cannot be parsed.
-func CountIPsInCIDR(ipnet *net.IPNet) *big.Int {
+func CountIPsInCIDR(includeBase, includeBroadcast bool, ipnet *net.IPNet) *big.Int {
 	subnet, size := ipnet.Mask.Size()
 	if subnet == size {
 		return big.NewInt(1)
 	}
-	return big.NewInt(0).
-		Sub(
-			big.NewInt(2).Exp(big.NewInt(2), //nolint
-				big.NewInt(int64(size-subnet)), nil),
-			big.NewInt(1),
-		)
+	numberOfIps := big.NewInt(2).Exp(big.NewInt(2), big.NewInt(int64(size-subnet)), nil)
+	if !includeBase {
+		numberOfIps = numberOfIps.Sub(numberOfIps, big.NewInt(1))
+	}
+	if !includeBroadcast {
+		numberOfIps = numberOfIps.Sub(numberOfIps, big.NewInt(1))
+	}
+	return numberOfIps
+}
+
+// CountIPsInCIDR counts the number of ips from a group of cidr
+func CountIPsInCIDRs(includeBase, includeBroadcast bool, ipnets ...*net.IPNet) *big.Int {
+	numberOfIPs := big.NewInt(0)
+	for _, ipnet := range ipnets {
+		numberOfIPs = numberOfIPs.Add(numberOfIPs, CountIPsInCIDR(includeBase, includeBroadcast, ipnet))
+	}
+	return numberOfIPs
 }
 
 var (
+	DefaultMaskSize4 = 32
 	// v4Mappedv6Prefix is the RFC2765 IPv4-mapped address prefix.
 	v4Mappedv6Prefix  = []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0xff, 0xff}
 	ipv4LeadingZeroes = []byte{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0}
@@ -162,24 +174,6 @@ PreLoop:
 
 	return allowCIDRs, nil
 }
-
-// func getNetworkPrefix(ipNet *net.IPNet) *net.IP {
-// 	var mask net.IP
-
-// 	if ipNet.IP.To4() == nil {
-// 		mask = make(net.IP, net.IPv6len)
-// 		for i := 0; i < len(ipNet.Mask); i++ {
-// 			mask[net.IPv6len-i-1] = ipNet.IP[net.IPv6len-i-1] & ^ipNet.Mask[i]
-// 		}
-// 	} else {
-// 		mask = make(net.IP, net.IPv4len)
-// 		for i := 0; i < net.IPv4len; i++ {
-// 			mask[net.IPv4len-i-1] = ipNet.IP[net.IPv6len-i-1] & ^ipNet.Mask[i]
-// 		}
-// 	}
-
-// 	return &mask
-// }
 
 func removeCIDR(allowCIDR, removeCIDR *net.IPNet) ([]*net.IPNet, error) {
 	var allowIsIpv4, removeIsIpv4 bool
@@ -508,6 +502,44 @@ func CoalesceCIDRs(cidrs []*net.IPNet) (coalescedIPV4, coalescedIPV6 []*net.IPNe
 	return
 }
 
+func AggregateApproxIPV4s(ips []*net.IPNet) (approxIPs []*net.IPNet) {
+	cidrs := make(map[string]*net.IPNet)
+
+	for _, ip := range ips {
+		if n, ok := cidrs[ip.IP.Mask(net.CIDRMask(24, 32)).String()]; ok {
+			var baseNet byte
+			var nowN, newN byte
+			for i := 8; i > 0; i-- {
+				nowN = n.IP[3] & (1 << (i - 1)) >> (i - 1)
+				newN = ip.IP[3] & (1 << (i - 1)) >> (i - 1)
+				if nowN&newN == 1 {
+					baseNet += 1 << (i - 1)
+				}
+				if nowN^newN == 1 {
+					n.Mask = net.CIDRMask(32-i, 32)
+					n.IP[3] = baseNet
+					break
+				}
+			}
+		} else {
+			cidrs[ip.IP.Mask(net.CIDRMask(24, 32)).String()] = ip
+		}
+	}
+
+	approxIPs = make([]*net.IPNet, len(cidrs))
+	var index int
+	for _, cidr := range cidrs {
+		approxIPs[index] = cidr
+		index++
+	}
+
+	sort.Slice(approxIPs, func(i, j int) bool {
+		return bytes.Compare(approxIPs[i].IP, approxIPs[j].IP) < 0
+	})
+
+	return approxIPs
+}
+
 // rangeToCIDRs converts the range of IPs covered by firstIP and lastIP to
 // a list of CIDRs that contains all of the IPs covered by the range.
 func rangeToCIDRs(firstIP, lastIP net.IP) []*net.IPNet {
@@ -766,6 +798,11 @@ func IsIPv4(ip net.IP) bool {
 	return ip.To4() != nil
 }
 
+// IsIPv4 returns true if the given IP is an IPv6
+func IsIPv6(ip net.IP) bool {
+	return ip.To16() != nil
+}
+
 // Inet_ntoa convert uint to net.IP
 func Inet_ntoa(ipnr int64) net.IP { //nolint
 	var b [4]byte
@@ -794,4 +831,39 @@ func Inet_aton(ipnr net.IP) int64 { //nolint
 	sum += int64(b3)
 
 	return sum
+}
+
+// ToIP6 converts an IP to IP6
+func ToIP6(host string) (string, error) {
+	ip := net.ParseIP(host)
+	switch {
+	default:
+		return "", ParseIPError
+	case ip == nil:
+		return "", ParseIPError
+	case ip.To16() != nil:
+		return host, nil
+	case ip.To4() != nil:
+		return ip.To16().String(), nil
+	}
+}
+
+// ToIP6 converts an IP to IP4
+func ToIP4(host string) (string, error) {
+	ip := net.ParseIP(host)
+	switch {
+	default:
+		return "", ParseIPError
+	case ip == nil:
+		return "", ParseIPError
+	case ip.To4() != nil:
+		return host, nil
+	case ip.To16() != nil:
+		return ip.To4().String(), nil
+	}
+}
+
+// FmtIP4MappedIP6 prints an ip4-mapped as ip6 with ip6 format
+func FmtIP4MappedIP6(ip6 net.IP) string {
+	return fmt.Sprintf("00:00:00:00:00:ffff:%02x%02x:%02x%02x", ip6[12], ip6[13], ip6[14], ip6[15])
 }

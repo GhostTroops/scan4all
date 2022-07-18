@@ -11,6 +11,7 @@ import (
 	"git.mills.io/prologic/smtpd"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/gologger"
+	"github.com/projectdiscovery/stringsutil"
 )
 
 // SMTPServer is a smtp server instance that listens both
@@ -35,7 +36,7 @@ func NewSMTPServer(options *Options) (*SMTPServer, error) {
 		Addr:        fmt.Sprintf("%s:%d", options.ListenIP, options.SmtpPort),
 		AuthHandler: authHandler,
 		HandlerRcpt: rcptHandler,
-		Hostname:    options.Domain,
+		Hostname:    options.Domains[0],
 		Appname:     "interactsh",
 		Handler:     smtpd.Handler(server.defaultHandler),
 	}
@@ -43,7 +44,7 @@ func NewSMTPServer(options *Options) (*SMTPServer, error) {
 		Addr:        fmt.Sprintf("%s:%d", options.ListenIP, options.SmtpsPort),
 		AuthHandler: authHandler,
 		HandlerRcpt: rcptHandler,
-		Hostname:    options.Domain,
+		Hostname:    options.Domains[0],
 		Appname:     "interactsh",
 		Handler:     smtpd.Handler(server.defaultHandler),
 	}
@@ -56,7 +57,7 @@ func (h *SMTPServer) ListenAndServe(tlsConfig *tls.Config, smtpAlive, smtpsAlive
 		if tlsConfig == nil {
 			return
 		}
-		srv := &smtpd.Server{Addr: fmt.Sprintf("%s:%d", h.options.ListenIP, h.options.SmtpAutoTLSPort), Handler: h.defaultHandler, Appname: "interactsh", Hostname: h.options.Domain}
+		srv := &smtpd.Server{Addr: fmt.Sprintf("%s:%d", h.options.ListenIP, h.options.SmtpAutoTLSPort), Handler: h.defaultHandler, Appname: "interactsh", Hostname: h.options.Domains[0]}
 		srv.TLSConfig = tlsConfig
 
 		smtpsAlive <- true
@@ -89,26 +90,30 @@ func (h *SMTPServer) defaultHandler(remoteAddr net.Addr, from string, to []strin
 
 	// if root-tld is enabled stores any interaction towards the main domain
 	for _, addr := range to {
-		if h.options.RootTLD && strings.HasSuffix(addr, h.options.Domain) {
-			ID := h.options.Domain
-			host, _, _ := net.SplitHostPort(remoteAddr.String())
-			address := addr[strings.Index(addr, "@"):]
-			interaction := &Interaction{
-				Protocol:      "smtp",
-				UniqueID:      address,
-				FullId:        address,
-				RawRequest:    dataString,
-				SMTPFrom:      from,
-				RemoteAddress: host,
-				Timestamp:     time.Now(),
-			}
-			buffer := &bytes.Buffer{}
-			if err := jsoniter.NewEncoder(buffer).Encode(interaction); err != nil {
-				gologger.Warning().Msgf("Could not encode root tld SMTP interaction: %s\n", err)
-			} else {
-				gologger.Debug().Msgf("Root TLD SMTP Interaction: \n%s\n", buffer.String())
-				if err := h.options.Storage.AddInteractionWithId(ID, buffer.Bytes()); err != nil {
-					gologger.Warning().Msgf("Could not store root tld smtp interaction: %s\n", err)
+		if h.options.RootTLD {
+			for _, domain := range h.options.Domains {
+				if stringsutil.HasSuffixI(addr, domain) {
+					ID := domain
+					host, _, _ := net.SplitHostPort(remoteAddr.String())
+					address := addr[strings.Index(addr, "@"):]
+					interaction := &Interaction{
+						Protocol:      "smtp",
+						UniqueID:      address,
+						FullId:        address,
+						RawRequest:    dataString,
+						SMTPFrom:      from,
+						RemoteAddress: host,
+						Timestamp:     time.Now(),
+					}
+					buffer := &bytes.Buffer{}
+					if err := jsoniter.NewEncoder(buffer).Encode(interaction); err != nil {
+						gologger.Warning().Msgf("Could not encode root tld SMTP interaction: %s\n", err)
+					} else {
+						gologger.Debug().Msgf("Root TLD SMTP Interaction: \n%s\n", buffer.String())
+						if err := h.options.Storage.AddInteractionWithId(ID, buffer.Bytes()); err != nil {
+							gologger.Warning().Msgf("Could not store root tld smtp interaction: %s\n", err)
+						}
+					}
 				}
 			}
 		}
