@@ -2,6 +2,7 @@ package nuclei_Yaml
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/hktalent/scan4all/nuclei_Yaml/internal/runner"
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/projectdiscovery/fileutil"
@@ -19,31 +20,31 @@ import (
 
 var (
 	cfgFile string
-	options = &types.Options{}
 )
 
-func RunNuclei(buf *bytes.Buffer, xx chan bool) {
+func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}) {
+	options := &types.Options{}
 	defer func() {
 		xx <- true
 		close(xx)
 	}()
-	if !pkg.GetValAsBool("enableNuclei") {
-		return
-	}
+	//if !pkg.GetValAsBool("enableNuclei") {
+	//	return
+	//}
 	// json 控制参数
 	options = pkg.ParseOption[types.Options]("nuclei", options)
 	if err := runner.ConfigureOptions(); err != nil {
 		gologger.Fatal().Msgf("Could not initialize options: %s\n", err)
 	}
 
-	readConfig()
+	readConfig(options)
 	options.Targets = strings.Split(strings.TrimSpace(buf.String()), "\n")
 	log.Printf("options.Targets = %+v", options.Targets)
-	runner.ParseOptions(options)
 	/////////////////////////////////////
 	options.Verbose = false
 	options.UpdateNuclei = false
 	options.Stream = false
+	options.EnableProgressBar = true
 	if nil != pkg.G_Options {
 		x01, ok := pkg.G_Options.(types.Options)
 		if ok {
@@ -53,10 +54,21 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool) {
 			options.Verbose = x01.Verbose
 			options.Silent = x01.Silent
 			options.Debug = x01.Debug
-			options.EnableProgressBar = x01.EnableProgressBar
+			options.EnableProgressBar = x01.EnableProgressBar // 开启进度条
 		}
 	}
 	////////////////////////////////////*/
+	if nil != oOpts {
+		// 指定覆盖
+		data, err := json.Marshal(oOpts)
+		if nil == err && 0 < len(data) {
+			err := json.Unmarshal(data, options)
+			if nil != err {
+				log.Println("oOpts err ", err)
+			}
+		}
+	}
+	runner.ParseOptions(options)
 	nucleiRunner, err := runner.New(options)
 	if err != nil {
 		//fmt.Println(options)
@@ -67,6 +79,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool) {
 	}
 	//data, _ := json.Marshal(options)
 	//log.Printf("%+v", string(data))
+
 	if err := nucleiRunner.RunEnumeration(); err != nil {
 		if options.Validate {
 			gologger.Fatal().Msgf("Could not validate templates: %s\n", err)
@@ -76,7 +89,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool) {
 	}
 	nucleiRunner.Close()
 }
-func readConfig() {
+func readConfig(options *types.Options) {
 	pwd, _ := os.Getwd()
 	options.Targets = []string{}
 	options.TargetsFilePath = ""
@@ -310,10 +323,9 @@ func readConfig() {
 		options.Templates = []string{pwd + "/config/nuclei-templates"}
 		options.NoUpdateTemplates = true
 	} else {
-
 		options.NoUpdateTemplates = false
 	}
-	options.EnableProgressBar = false
+	options.EnableProgressBar = true
 	options.StatsJSON = false
 	options.StatsInterval = 5
 	options.Metrics = false
