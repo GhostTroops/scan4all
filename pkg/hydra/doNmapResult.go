@@ -86,6 +86,9 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 						Checklog4j:             false,
 					}
 				}
+				if bCheckWeakPassword && "8728" == szPort && service == "unknown" {
+					CheckWeakPassword(ip, "router", port)
+				}
 				log.Printf("%s\t%d\t%s\n", ip, port, service)
 			}
 		}

@@ -219,6 +219,10 @@ github.com/go-rod/rod/lib/launcher
 github.com/go-rod/rod/lib/launcher/flags
 github.com/go-rod/rod/lib/proto
 github.com/go-rod/rod/lib/utils
+# github.com/go-routeros/routeros v0.0.0-20210123142807-2a44d57c6730
+## explicit
+github.com/go-routeros/routeros
+github.com/go-routeros/routeros/proto
 # github.com/go-sql-driver/mysql v1.6.0
 ## explicit; go 1.10
 github.com/go-sql-driver/mysql
