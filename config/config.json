@@ -68,6 +68,7 @@
   "priorityNmap": true,
   "enableNuclei": false,
   "nuclei": {
+    "Severities": "critical,high,medium",
     "RateLimit": 150,
     "BulkSize":64,
     "TemplateThreads": 64,
