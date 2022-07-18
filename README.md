@@ -1,12 +1,12 @@
 [![Tweet](https://img.shields.io/twitter/url/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
 <p align="center">
-   <a href="/README_EN.md">README_EN</a>
+   <a href="/README_EN.md">README_EN</a> •
    <a href="/static/Installation.md">编译/安装/运行</a> •
    <a href="/static/usage.md">参数说明</a> •
    <a href="/static/running.md">如何使用</a> •
    <a href="/static/scenario.md">使用场景</a> •
    <a href="/static/pocs.md">POC列表</a> •
-   <a href="/static/development.md">自定义扫描</a>
+   <a href="/static/development.md">自定义扫描</a> •
    <a href="/static/NicePwn.md">最佳实践</a>
 </p>
 
@@ -16,7 +16,10 @@
 <img width="928" alt="image" src="https://user-images.githubusercontent.com/18223385/175768227-098c779b-6c5f-48ee-91b1-c56e3daa9c87.png">
 </h1>
 
-- 轻量级、高度可定制、开源、跨平台使用，支持Linux、windows、mac os等
+- 什么是scan4all：集成vscan、nuclei、ksubdomain、subfinder等，充分自动化、智能化 
+  并对这些集成对项目进行代码级别优化、参数优化，个别模块重写  
+  原则上不重复造轮子，除非轮子bug、问题太多
+- 跨平台：基于golang实现，轻量级、高度可定制、开源，支持Linux、windows、mac os等
 - 支持18种密码爆破，支持自定义字典
   rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,smb,telnet,snmp,wap-wsp（Elasticsearch）、http、weblogic、tomcat、jboss
 - 默认开启http密码智能爆破，需要http密码时才会自动启动，无需人工干预
