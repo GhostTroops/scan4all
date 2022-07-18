@@ -79,6 +79,7 @@ require github.com/spaolacci/murmur3 v1.1.0
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/RumbleDiscovery/jarm-go v0.0.6
+	github.com/Ullaakut/nmap v2.0.2+incompatible
 	github.com/ammario/ipisp/v2 v2.0.0
 	github.com/antchfx/xmlquery v1.3.11
 	github.com/antlabs/strsim v0.0.2

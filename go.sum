@@ -66,6 +66,8 @@ github.com/RumbleDiscovery/jarm-go v0.0.6 h1:n3JEmOhPyfhmu1aeDEK/10Y2F+GMUYrtGFZ
 github.com/RumbleDiscovery/jarm-go v0.0.6/go.mod h1:dXV7z5vBXQI0cNaHXwzGtq2PJ2LgM3XgcFiX32FU3bg=
 github.com/RumbleDiscovery/rumble-tools v0.0.0-20201105153123-f2adbb3244d2/go.mod h1:jD2+mU+E2SZUuAOHZvZj4xP4frlOo+N/YrXDvASFhkE=
 github.com/StackExchange/wmi v1.2.1/go.mod h1:rcmrprowKIVzvc+NUiLncP2uuArMWLCbu9SBzvHz7e8=
+github.com/Ullaakut/nmap v2.0.2+incompatible h1:edw45QpSQBQ2B/Hqfg86Bt5rrK79tp/fAcqIHyNSdQs=
+github.com/Ullaakut/nmap v2.0.2+incompatible/go.mod h1:fkC066hwfcoKwlI7DS2ARTggSVtBTZYCjVH1TzuTMaQ=
 github.com/akrylysov/pogreb v0.10.0/go.mod h1:pNs6QmpQ1UlTJKDezuRWmaqkgUE2TuU0YTWyqJZ7+lI=
 github.com/akrylysov/pogreb v0.10.1 h1:FqlR8VR7uCbJdfUob916tPM+idpKgeESDXOA1K0DK4w=
 github.com/akrylysov/pogreb v0.10.1/go.mod h1:pNs6QmpQ1UlTJKDezuRWmaqkgUE2TuU0YTWyqJZ7+lI=

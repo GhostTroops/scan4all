@@ -20,7 +20,8 @@ type Cracker struct {
 var (
 	DefaultAuthMap map[string]*AuthList
 	CustomAuthMap  *AuthList
-	ProtocolList   = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,smb,telnet,snmp,wap-wsp", ",")
+	// rtsp: 554, 5554,8554
+	ProtocolList = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,smb,telnet,snmp,wap-wsp", ",")
 )
 
 func NewCracker(info *AuthInfo, isAuthUpdate bool, threads int) *Cracker {
