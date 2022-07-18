@@ -90,6 +90,7 @@ require (
 	github.com/dgraph-io/badger v1.6.2
 	github.com/dlclark/regexp2 v1.4.0
 	github.com/go-playground/validator/v10 v10.11.0
+	github.com/go-routeros/routeros v0.0.0-20210123142807-2a44d57c6730
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/google/cel-go v0.11.4
 	github.com/google/go-github v17.0.0+incompatible

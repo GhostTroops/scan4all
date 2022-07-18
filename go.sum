@@ -237,6 +237,8 @@ github.com/go-rod/rod v0.91.1/go.mod h1:/W4lcZiCALPD603MnJGIvhtywP3R6yRB9EDfFfsH
 github.com/go-rod/rod v0.106.8/go.mod h1:xkZOchuKqTOkMOBkrzb7uJpbKZRab1haPCWDvuZkS2U=
 github.com/go-rod/rod v0.108.1 h1:2lKs+v/+B/2pbGKZgNIRbURhduTKNDZ3PXIvTRAV2Mg=
 github.com/go-rod/rod v0.108.1/go.mod h1:yNvL687cwcjgebRuArQN9AStFdm8iS/e/rzImrS9Pzg=
+github.com/go-routeros/routeros v0.0.0-20210123142807-2a44d57c6730 h1:EuqwWLv/LPPjhvFqkeD2bz+FOlvw2DjvDI7vK8GVeyY=
+github.com/go-routeros/routeros v0.0.0-20210123142807-2a44d57c6730/go.mod h1:em1mEqFKnoeQuQP9Sg7i26yaW8o05WwcNj7yLhrXxSQ=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
 github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
 github.com/go-stack/stack v1.8.0 h1:5SgMzNM5HxrEjV0ww2lTmX6E2Izsfxas4+YHWRs3Lsk=
