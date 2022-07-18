@@ -11,6 +11,7 @@ import (
 	"github.com/hktalent/scan4all/pkg/hydra/postgresql"
 	"github.com/hktalent/scan4all/pkg/hydra/rdp"
 	"github.com/hktalent/scan4all/pkg/hydra/redis"
+	"github.com/hktalent/scan4all/pkg/hydra/router"
 	"github.com/hktalent/scan4all/pkg/hydra/smb"
 	"github.com/hktalent/scan4all/pkg/hydra/snmp"
 	"github.com/hktalent/scan4all/pkg/hydra/ssh"
@@ -144,6 +145,18 @@ func snmpCracker(i interface{}) interface{} {
 
 	if err, ok := snmp.ScanSNMP(&snmp.Service{Ip: info.IPAddr, Port: info.Port, Username: info.Auth.Username, Password: info.Auth.Password}); nil != ok && ok.Result {
 		slog.Printf(slog.DEBUG, "snmp://%s:%s@%s:%d:%s", info.Auth.Username, info.Auth.Password, info.IPAddr, info.Port, err)
+		info.Status = true
+		return info
+	}
+	return nil
+}
+
+func RouterOsCracker(i interface{}) interface{} {
+	info := i.(AuthInfo)
+	info.Auth.MakePassword()
+	// info.IPAddr, info.Auth.Username, info.Auth.Password, info.Port
+	if ok, err := router.RouterOSAuth(info.IPAddr, fmt.Sprintf("%d", info.Port), info.Auth.Username, info.Auth.Password); ok {
+		slog.Printf(slog.DEBUG, "%s:%s@%s:%d:%s", info.Auth.Username, info.Auth.Password, info.IPAddr, info.Port, err)
 		info.Status = true
 		return info
 	}
