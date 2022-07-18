@@ -57,7 +57,7 @@ func (r *Runner) Httpxrun() error {
 	//log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
 	//Naabubuffer1 := bytes.Buffer{}
 	//Naabubuffer1.Write(httpxrunner.Naabubuffer.Bytes())
-	go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone)
+	go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone, nil)
 	httpxoptions := httpxrunner.ParseOptions()
 	// 指纹去重复 请求路径
 	if "" != fingerprint.FgDictFile {
