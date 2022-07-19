@@ -45,7 +45,7 @@ func GetVal(key string) string {
 	}
 	key1 = strings.ToLower(key)
 	if s, ok := mData[key1]; ok {
-		return fmt.Sprintf("%v", s)
+		return strings.TrimSpace(fmt.Sprintf("%v", s))
 	}
 	return ""
 }
