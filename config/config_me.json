@@ -66,6 +66,7 @@
     "ReportingConfig": "config/nuclei_esConfig.yaml"
   },
   "priorityNmap": true,
+  "CheckWeakPassword": true,
   "enablEmbedYaml": true,
   "enablFileFuzz": true,
   "httpx": {
