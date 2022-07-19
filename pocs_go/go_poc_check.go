@@ -55,6 +55,10 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			s1 := ms.CheckCVE_2021_26855(hostname)
 			if "" != s1 {
 				technologies = append(technologies, s1)
+				a := ms.CheckExchange(&hostname)
+				if 0 < len(a) {
+					technologies = append(technologies, a...)
+				}
 			}
 			s1 = ms.GetExFQND(hostname)
 			if "" != s1 {
