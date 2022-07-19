@@ -37,7 +37,7 @@
   * Wap-wsp（Elasticsearch）
   * RouterOs
   * HTTP BasicAuth
-  * Weblogic
+  * Weblogic，同时通过enableNuclei=true开启nuclei，支持T3、IIOP等检测
   * Tomcat
   * Jboss
   * Winrm(wsman)
