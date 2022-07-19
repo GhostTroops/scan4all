@@ -46,6 +46,11 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 	for tech := range wappalyzertechnologies {
 		caseStr := strings.ToLower(wappalyzertechnologies[tech])
 		switch caseStr {
+		case "RouterOS":
+			a := ms.CVE_2018_14847(hostname)
+			if 0 < len(a) {
+				technologies = append(technologies, fmt.Sprintf("CVE-2018-14847 MikroTik RouterOS: %+v", a))
+			}
 		case "Microsoft Exchange Server":
 			s1 := ms.CheckCVE_2021_26855(hostname)
 			if "" != s1 {

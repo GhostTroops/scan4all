@@ -9,7 +9,7 @@
                 "idMethod": 11515,
                 "idPart": 11522,
                 "pattern": "<assemblyIdentity.*version=\"(%d+.%d+.%d+.%d+)\"",
-                "url": "/"
+                "url": "/ecp/Current/exporttool/microsoft.exchange.ediscovery.exporttool.application"
             }
         ]
     },
