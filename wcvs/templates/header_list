@@ -1,0 +1,6 @@
+// lines which start with // or are empty will be ignored
+// Cookies specified here won't work. Use --setcookies (-sc) instead
+
+// Example Headers:
+//X-Forwarded-Host:example.com
+//User-Agent: Safari/1.1
