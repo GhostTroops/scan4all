@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // 弱口令检测
@@ -25,15 +26,18 @@ func CheckWeakPassword(ip, service string, port int) {
 			Start(ip, port, service)
 		}
 	}()
-
 }
 
 // 开启了es
-var enableEsSv, bCheckWeakPassword bool
+var enableEsSv, bCheckWeakPassword bool = false, true
+var one sync.Once
 
-func init() {
-	enableEsSv = pkg.GetValAsBool("enableEsSv")
-	bCheckWeakPassword = pkg.GetValAsBool("CheckWeakPassword")
+func Init() {
+	one.Do(func() {
+		enableEsSv = pkg.GetValAsBool("enableEsSv")
+		bCheckWeakPassword = pkg.GetValAsBool("CheckWeakPassword")
+		log.Println("CheckWeakPassword = ", pkg.GetVal("CheckWeakPassword"), " bCheckWeakPassword = ", bCheckWeakPassword)
+	})
 }
 
 func GetAttr(att []xmlquery.Attr, name string) string {
@@ -46,6 +50,7 @@ func GetAttr(att []xmlquery.Attr, name string) string {
 }
 
 func DoParseXml(s string, bf *bytes.Buffer) {
+	Init()
 	doc, err := xmlquery.Parse(strings.NewReader(s))
 	if err != nil {
 		log.Println("DoParseXml： ", err)
@@ -67,6 +72,8 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 				bf.Write([]byte(szUlr))
 				if bCheckWeakPassword {
 					CheckWeakPassword(ip, service, port)
+				} else {
+					log.Println("bCheckWeakPassword = ", bCheckWeakPassword)
 				}
 				// 存储结果到其他地方
 				//x9 := AuthInfo{IPAddr: ip, Port: port, Protocol: service}
