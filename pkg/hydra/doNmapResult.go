@@ -83,7 +83,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 					}
 					m1[ip] = append(xx09, []string{szPort, service})
 				}
-				if "445" == szPort && service == "microsoft-ds" {
+				if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
 					lib.PocCheck_pipe <- lib.PocCheck{
 						Wappalyzertechnologies: &[]string{service},
 						URL:                    szUlr,
@@ -91,6 +91,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 						Checklog4j:             false,
 					}
 				}
+
 				if bCheckWeakPassword && "8728" == szPort && service == "unknown" {
 					CheckWeakPassword(ip, "router", port)
 				} else if bCheckWeakPassword && ("5985" == szPort || "5986" == szPort) && -1 < strings.Index(service, "microsoft ") {
