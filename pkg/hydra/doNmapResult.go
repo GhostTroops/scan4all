@@ -16,16 +16,14 @@ import (
 
 // 弱口令检测
 func CheckWeakPassword(ip, service string, port int) {
-	lib.Wg.Add(1)
-	go func() {
-		defer lib.Wg.Done()
+	lib.DoSyncFunc(func() {
 		// 在弱口令检测范围就开始检测，结果....
 		service = strings.ToLower(service)
 		if pkg.Contains(ProtocolList, service) {
 			//log.Println("start CheckWeakPassword ", ip, ":", port, "(", service, ")")
 			Start(ip, port, service)
 		}
-	}()
+	})
 }
 
 // 开启了es
@@ -66,7 +64,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 				ip := x1
 				szPort := GetAttr(x.Attr, "portid")
 				port, _ := strconv.Atoi(szPort)
-				service := GetAttr(x.SelectElement("service").Attr, "name")
+				service := strings.ToLower(GetAttr(x.SelectElement("service").Attr, "name"))
 				//bf.Write([]byte(fmt.Sprintf("%s:%s\n", ip, szPort)))
 				szUlr := fmt.Sprintf("http://%s:%s\n", ip, szPort)
 				bf.Write([]byte(szUlr))
@@ -95,7 +93,10 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 				}
 				if bCheckWeakPassword && "8728" == szPort && service == "unknown" {
 					CheckWeakPassword(ip, "router", port)
+				} else if bCheckWeakPassword && ("5985" == szPort || "5986" == szPort) && -1 < strings.Index(service, "microsoft ") {
+					CheckWeakPassword(ip, "winrm", port)
 				}
+
 				log.Printf("%s\t%d\t%s\n", ip, port, service)
 			}
 		}
