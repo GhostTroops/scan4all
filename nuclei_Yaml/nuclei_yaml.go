@@ -28,9 +28,9 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}) {
 		xx <- true
 		close(xx)
 	}()
-	//if !pkg.GetValAsBool("enableNuclei") {
-	//	return
-	//}
+	if !pkg.GetValAsBool("enableNuclei") {
+		return
+	}
 	// json 控制参数
 	options = pkg.ParseOption[types.Options]("nuclei", options)
 	if err := runner.ConfigureOptions(); err != nil {
