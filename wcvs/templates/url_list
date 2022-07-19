@@ -1,0 +1,5 @@
+// lines which start with // or are empty will be ignored
+
+// Example URLs:
+//https://www.example.com
+//http://api.example.com/?admin=true&verbosity=2
