@@ -46,6 +46,15 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 	for tech := range wappalyzertechnologies {
 		caseStr := strings.ToLower(wappalyzertechnologies[tech])
 		switch caseStr {
+		case "Microsoft Exchange Server":
+			s1 := ms.CheckCVE_2021_26855(hostname)
+			if "" != s1 {
+				technologies = append(technologies, s1)
+			}
+			s1 = ms.GetExFQND(hostname)
+			if "" != s1 {
+				technologies = append(technologies, s1)
+			}
 		case "msrpc":
 			a, err := ms.CheckDCom(hostname)
 			if nil != err && 0 < len(a) {

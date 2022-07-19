@@ -57,14 +57,7 @@ func SendAData[T any](k string, data []T, szType string) {
 
 // 发送数据到ES
 func SendReq(data1 interface{}, id, szType string) {
-	if nil != myConst.Wg {
-		myConst.Wg.Add(1)
-	}
-	go func() {
-		// 全局任务等待结束
-		if nil != myConst.Wg {
-			defer myConst.Wg.Done()
-		}
+	myConst.DoSyncFunc(func() {
 		if !enableEsSv {
 			return
 		}
@@ -116,5 +109,5 @@ func SendReq(data1 interface{}, id, szType string) {
 		// json.NewDecoder(resp.Body).Decode(&data)
 		// req.Body.Close()
 		// go http.Post(resUrl, "application/json",, post_body)
-	}()
+	})
 }

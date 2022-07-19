@@ -180,7 +180,9 @@ func FingerScan(headers map[string][]string, body []byte, title string, url stri
 				//if -1 < strings.Index(url, "/favicon.ico") && finp.Cms == "SpringBoot" {
 				//	log.Println(url)
 				//}
-				if finp.Location == "body" { // 识别区域；body
+				if finp.Location == "all" {
+					cms = append(cms, CaseMethod(url, finp.Method, headersjson+bodyString, favhash, md5Body, hexBody, finp)...)
+				} else if finp.Location == "body" { // 识别区域；body
 					cms = append(cms, CaseMethod(url, finp.Method, bodyString, favhash, md5Body, hexBody, finp)...)
 				} else if finp.Location == "header" { // 识别区域：header
 					cms = append(cms, CaseMethod(url, finp.Method, headersjson, favhash, md5Header, hexHeader, finp)...)
