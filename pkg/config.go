@@ -278,6 +278,8 @@ func doDir(config *embed.FS, s fs.DirEntry, szPath string) {
 		log.Println("doDir:", err)
 	}
 }
+
+// 初始化到开头
 func Init2(config *embed.FS) {
 	szPath := "config"
 	log.Println("wait for init config files ... ")
