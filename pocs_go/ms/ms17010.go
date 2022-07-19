@@ -20,6 +20,8 @@ var (
 	trans2SessionSetupRequest, _ = hex.DecodeString("0000004eff534d4232000000001807c00000000000000000000000000008fffe000841000f0c0000000100000000000000a6d9a40000000c00420000004e0001000e000d0000000000000000000000000000")
 )
 
+// https://docs.microsoft.com/en-us/security-updates/securitybulletins/2017/ms17-010
+// CVE-2017-0143	CVE-2017-0144	CVE-2017-0145	CVE-2017-0146	CVE-2017-0147	CVE-2017-0148
 func DoMS17010(ip string) {
 	lib.DoSyncFunc(func() {
 		MS17010(ip, 15)
@@ -122,6 +124,8 @@ func MS17010(ip string, timeout time.Duration) {
 		}
 
 		if reply[34] == 0x51 {
+			// CVE-2017-0143	CVE-2017-0144	CVE-2017-0145	CVE-2017-0146	CVE-2017-0147	CVE-2017-0148
+			pkg.SendAnyData(fmt.Sprintf("ms17-010:DOUBLEPULSAR SMB IMPLANT in %s\n", ip), "vscan")
 			fmt.Printf("DOUBLEPULSAR SMB IMPLANT in %s\n", ip)
 		}
 

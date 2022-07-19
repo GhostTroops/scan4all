@@ -31,7 +31,7 @@
   * Redis
   * FTP
   * Mongodb
-  * SMB,同时检测 MS17-010、SmbGhost
+  * SMB,同时检测 MS17-010（CVE-2017-0143、CVE-2017-0144、CVE-2017-0145、CVE-2017-0146、CVE-2017-0147、CVE-2017-0148）、SmbGhost（CVE-2020-0796）
   * Telnet
   * Snmp
   * Wap-wsp（Elasticsearch）
