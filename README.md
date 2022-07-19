@@ -20,7 +20,7 @@
   并对这些集成对项目进行代码级别优化、参数优化，个别模块重写  
   原则上不重复造轮子，除非轮子bug、问题太多
 - 跨平台：基于golang实现，轻量级、高度可定制、开源，支持Linux、windows、mac os等
-- 支持【19】种密码爆破，支持自定义字典 
+- 支持【20】种密码爆破，支持自定义字典 
   * RDP
   * SSH
   * rsh-spx
@@ -36,10 +36,11 @@
   * Snmp
   * Wap-wsp（Elasticsearch）
   * RouterOs
-  * HTTP
+  * HTTP BasicAuth
   * Weblogic
   * Tomcat
   * Jboss
+  * Winrm(wsman)
 - 默认开启http密码智能爆破，需要http密码时才会自动启动，无需人工干预
 - 默认检测系统是否存在nmap，存在优先则使用nmap进行快速扫描 
   默认使用naabu完成端口扫描 -stats=true 可以查看扫描进度 
