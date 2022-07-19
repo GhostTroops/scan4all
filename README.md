@@ -31,7 +31,7 @@
   * Redis
   * FTP
   * Mongodb
-  * SMB
+  * SMB,同时检测 MS17-010、SmbGhost
   * Telnet
   * Snmp
   * Wap-wsp（Elasticsearch）
