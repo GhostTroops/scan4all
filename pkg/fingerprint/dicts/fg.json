@@ -1,5 +1,19 @@
 [
     {
+        "_id": 999,
+        "firmId": 999,
+        "serviceName": 9999,
+        "name": "Microsoft Exchange Server",
+        "probeList": [
+            {
+                "idMethod": 11515,
+                "idPart": 11522,
+                "pattern": "<assemblyIdentity.*version=\"(%d+.%d+.%d+.%d+)\"",
+                "url": "/"
+            }
+        ]
+    },
+    {
         "_id": 16411,
         "firmId": 10601,
         "serviceName": 10607,

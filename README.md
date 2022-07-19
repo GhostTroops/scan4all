@@ -120,6 +120,7 @@ UrlPrecise=true ./scan4all -l xx.txt
 ```
 
 # 变更日志
+- 2022-07-19 添加dcom Protocol enumeration network interfaces
 - 2022-06-30 嵌入式集成私人版本nuclei-templates 共3744个YAML POC； 1、集成Elasticsearch存储中间结果 2、嵌入整个config目录到程序中
 - 2022-06-27 优化模糊匹配，提高正确率、鲁棒性;集成ksubdomain进度
 - 2022-06-24 优化指纹算法；增加工作流程图
