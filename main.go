@@ -28,6 +28,7 @@ func init() {
 var Wg sync.WaitGroup
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	myConst.Wg = &Wg
 	defer func() {
 		log.Println("start close cache, StopCPUProfile... ")
