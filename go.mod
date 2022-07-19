@@ -81,11 +81,14 @@ require (
 	github.com/RumbleDiscovery/jarm-go v0.0.6
 	github.com/Ullaakut/nmap v2.0.2+incompatible
 	github.com/ammario/ipisp/v2 v2.0.0
+	github.com/antchfx/htmlquery v1.2.5
 	github.com/antchfx/xmlquery v1.3.11
 	github.com/antlabs/strsim v0.0.2
 	github.com/apex/log v1.9.0
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/boy-hack/ksubdomain v1.9.5
+	github.com/chromedp/cdproto v0.0.0-20220629234738-4cfc9cdeeb92
+	github.com/chromedp/chromedp v0.8.2
 	github.com/denisenkom/go-mssqldb v0.12.2
 	github.com/dgraph-io/badger v1.6.2
 	github.com/dlclark/regexp2 v1.4.0
@@ -140,7 +143,6 @@ require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/andygrunwald/go-jira v1.15.1 // indirect
-	github.com/antchfx/htmlquery v1.2.5 // indirect
 	github.com/antchfx/xpath v1.2.1 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220418222510-f25a4f6275ed // indirect
 	github.com/aws/aws-sdk-go v1.44.55 // indirect
@@ -150,6 +152,7 @@ require (
 	github.com/c4milo/unpackit v0.1.0 // indirect
 	github.com/caddyserver/certmagic v0.16.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
