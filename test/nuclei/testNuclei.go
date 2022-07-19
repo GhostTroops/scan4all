@@ -2,11 +2,8 @@ package main
 
 import (
 	"bytes"
-	"crypto/aes"
-	"crypto/cipher"
 	"fmt"
 	"github.com/hktalent/scan4all/nuclei_Yaml"
-	uuid "github.com/satori/go.uuid"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -32,8 +29,13 @@ func DoNuclei(buf *bytes.Buffer, wg *sync.WaitGroup, oOpts *map[string]interface
 	<-xx
 }
 
+/*
+1、排除gov
+2、排除蜜罐
+*/
 func main() {
-	if false {
+	os.Setenv("enableNuclei", "true")
+	if true {
 		go func() {
 			//szTip = "Since you started http://127.0.0.1:6060/debug/pprof/ with -debug, close the program with: control + C"
 			fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/\n\ngo tool pprof -seconds=10 -http=:9999 http://localhost:6060/debug/pprof/heap")
@@ -53,23 +55,21 @@ func main() {
 		wg.Wait()
 	}
 
-	args := []string{"key111key111key111key111", "dataxxxxxxdataxxxxxxdataxxxxxxdataxxxxxxdataxxxxxx"}
-	key := args[0]
-	value := args[1]
-	Content := []byte(value)
-	block, _ := aes.NewCipher([]byte(key))
-	blockSize := block.BlockSize()
-	n := blockSize - len(Content)%blockSize
-	temp := bytes.Repeat([]byte{byte(n)}, n)
-	Content = append(Content, temp...)
-
-	iv := uuid.NewV4().Bytes()
-	fmt.Println(len(iv), iv)
-	blockMode := cipher.NewCBCEncrypter(block, iv)
-	cipherText := make([]byte, len(Content))
-	blockMode.CryptBlocks(cipherText, Content)
-	xx5 := append(iv[:], cipherText[:]...)
-
-	fmt.Printf("\x%0x", xx5)
+	//args := []string{"key111key111key111key111", "dataxxxxxxdataxxxxxxdataxxxxxxdataxxxxxxdataxxxxxx"}
+	//key := args[0]
+	//value := args[1]
+	//Content := []byte(value)
+	//block, _ := aes.NewCipher([]byte(key))
+	//blockSize := block.BlockSize()
+	//n := blockSize - len(Content)%blockSize
+	//temp := bytes.Repeat([]byte{byte(n)}, n)
+	//Content = append(Content, temp...)
+	//
+	//iv := uuid.NewV4().Bytes()
+	//fmt.Println(len(iv), iv)
+	//blockMode := cipher.NewCBCEncrypter(block, iv)
+	//cipherText := make([]byte, len(Content))
+	//blockMode.CryptBlocks(cipherText, Content)
+	//xx5 := append(iv[:], cipherText[:]...)
 
 }
