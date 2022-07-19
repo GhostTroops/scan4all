@@ -54,7 +54,7 @@ type HostInfo struct {
 
 var Scantype string
 
-func NetBIOS(info *HostInfo) string,error {
+func NetBIOS(info *HostInfo) (string, error) {
 	nbname, err := NetBIOS1(info)
 	var msg, isdc string
 
@@ -69,7 +69,7 @@ func NetBIOS(info *HostInfo) string,error {
 	if len(nbname.group) > 0 || len(nbname.unique) > 0 {
 		return msg, nil
 	}
-	return "",err
+	return "", err
 }
 
 func NetBIOS1(info *HostInfo) (nbname NbnsName, err error) {
