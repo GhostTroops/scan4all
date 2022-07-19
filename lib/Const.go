@@ -19,6 +19,24 @@ var Ctx_global, StopAll = context.WithCancel(RootContext)
 // 多次使用，一次性编译效率更高
 var DeleteMe = regexp.MustCompile("rememberMe=deleteMe")
 
+// 异步执行方法，只适合无返回值、或使用管道返回值的方法
+// 程序main整体等待
+func DoSyncFunc(cbk func()) {
+	Wg.Add(1)
+	go func() {
+		defer Wg.Done()
+		for {
+			select {
+			case <-Ctx_global.Done():
+				return
+			default:
+				cbk()
+				return
+			}
+		}
+	}()
+}
+
 // 检查 cookie
 // Shiro CVE_2016_4437 cookie
 // 其他POC cookie同一检查入口

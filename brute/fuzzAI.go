@@ -57,9 +57,7 @@ func StudyErrPageAI(req *pkg.Response, page *Page, fingerprintsTag string) {
 	if nil == req || nil == page || "" == req.Body {
 		return
 	}
-	lib.Wg.Add(1)
-	go func() {
-		defer lib.Wg.Done()
+	lib.DoSyncFunc(func() {
 		var data *ErrPage
 		body := []byte(req.Body)
 		szHs, szMd5 := fingerprint.GetHahsMd5(body)
@@ -79,7 +77,7 @@ func StudyErrPageAI(req *pkg.Response, page *Page, fingerprintsTag string) {
 				db.Create[ErrPage](data)
 			}
 		}
-	}()
+	})
 }
 
 // 相似度精准度

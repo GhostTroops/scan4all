@@ -195,6 +195,7 @@ func init() {
 		Paswd:     pkg.GetVal4File("smb_pswd", smb_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("smb_default", smb_default),
 	}
+	md["winrm"] = md["smb"]
 	md["telnet"] = PPDict{
 		Username:  pkg.GetVal4File("telnet_username", telnetusername),
 		Paswd:     pkg.GetVal4File("telnet_pswd", telnet_pswd),

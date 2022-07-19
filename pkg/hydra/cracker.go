@@ -16,6 +16,7 @@ import (
 	"github.com/hktalent/scan4all/pkg/hydra/snmp"
 	"github.com/hktalent/scan4all/pkg/hydra/ssh"
 	"github.com/hktalent/scan4all/pkg/hydra/telnet"
+	"github.com/hktalent/scan4all/pkg/hydra/winrm"
 	"github.com/hktalent/scan4all/pkg/kscan/core/slog"
 	"github.com/hktalent/scan4all/pkg/kscan/lib/gotelnet"
 	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp"
@@ -151,6 +152,17 @@ func snmpCracker(i interface{}) interface{} {
 	return nil
 }
 
+func WinrmCracker(i interface{}) interface{} {
+	info := i.(AuthInfo)
+	info.Auth.MakePassword()
+	// info.IPAddr, info.Auth.Username, info.Auth.Password, info.Port
+	if ok, err := winrm.WinrmAuth(info.IPAddr, info.Auth.Username, info.Auth.Password, info.Port); ok {
+		slog.Printf(slog.DEBUG, "%s:%s@%s:%d:%s", info.Auth.Username, info.Auth.Password, info.IPAddr, info.Port, err)
+		info.Status = true
+		return info
+	}
+	return nil
+}
 func RouterOsCracker(i interface{}) interface{} {
 	info := i.(AuthInfo)
 	info.Auth.MakePassword()
