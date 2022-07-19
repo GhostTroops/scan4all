@@ -46,6 +46,11 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 	for tech := range wappalyzertechnologies {
 		caseStr := strings.ToLower(wappalyzertechnologies[tech])
 		switch caseStr {
+		case "msrpc":
+			a, err := ms.CheckDCom(hostname)
+			if nil != err && 0 < len(a) {
+				technologies = append(technologies, fmt.Sprintf("microsoft port 135 Dcom :%s", hostname))
+			}
 		case "microsoft-ds":
 			key, err := ms.SmbGhostScan(hostname)
 			if nil == err && key {
