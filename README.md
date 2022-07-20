@@ -121,6 +121,8 @@ UrlPrecise=true ./scan4all -l xx.txt
 
 # Work Plan
 - 整合 web-cache-vulnerability-scanner 实现HTTP smuggling走私、缓存中毒检测
+- 联动 metasploit-framework，在系统已经安装好对前提条件下，配合tmux，并以 macos 环境为最佳实践完成联动
+- 整合 更多 fuzzer <!-- gryffin -->,如 联动 sqlmap
 - 整合 chromedp 实现对登陆页面截图，以及对纯js、js架构前端登陆页面进行检测、以及相应爬虫（敏感信息检测、页面爬取）
 - 整合 nmap-go 提高执行效率
 - 整合 ksubdomain 实现更快子域名爆破
