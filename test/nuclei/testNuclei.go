@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/hktalent/scan4all/nuclei_Yaml"
+	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -26,6 +27,7 @@ func DoNuclei(buf *bytes.Buffer, wg *sync.WaitGroup, oOpts *map[string]interface
 	defer wg.Done()
 	xx := make(chan bool)
 	go nuclei_Yaml.RunNuclei(buf, xx, oOpts)
+	log.Println("xxx start")
 	<-xx
 }
 
@@ -44,17 +46,23 @@ func main() {
 		buf := bytes.Buffer{}
 		var wg sync.WaitGroup
 		wg.Add(1)
-		buf.WriteString("http://192.168.0.111:8000\n")
+		buf.WriteString("http://192.168.10.31:8888\n")
 		pwd, _ := os.Getwd()
 		m1 := map[string]interface{}{"UpdateTemplates": false, "Templates": []string{pwd + "/config/nuclei-templates"}, "TemplatesDirectory": pwd + "/config/nuclei-templates", "NoUpdateTemplates": true}
-		DoNuclei(&buf, &wg, &m1)
+		go DoNuclei(&buf, &wg, &m1)
 		wg.Add(1)
-		DoNuclei(&buf, &wg, &m1)
-		//wg.Add(1)
-		//DoNuclei(&buf, &wg, &m1)
+		go DoNuclei(&buf, &wg, &m1)
+		wg.Add(1)
+		go DoNuclei(&buf, &wg, &m1)
 		wg.Wait()
 	}
-
+	//oUrl, err := url.Parse("173.82.115.38:80")
+	//if nil == err {
+	//	szK := oUrl.Scheme + "//" + oUrl.Hostname()
+	//	log.Println(szK)
+	//} else {
+	//	log.Println(err)
+	//}
 	//args := []string{"key111key111key111key111", "dataxxxxxxdataxxxxxxdataxxxxxxdataxxxxxxdataxxxxxx"}
 	//key := args[0]
 	//value := args[1]
