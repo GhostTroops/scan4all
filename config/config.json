@@ -65,8 +65,8 @@
   "EnableKsubdomain": true,
   "KsubdomainRegxp": "([0-9a-zA-Z\\-]+\\.[0-9a-zA-Z\\-]+)$",
   "naabu_dns": {},
-  "naabu": {"TopPorts": "1000","ScanAllIPS": true,"Threads": 25},
-  "priorityNmap": true,
+  "naabu": {"TopPorts": "http","ScanAllIPS": true,"Threads": 50,"EnableProgressBar": false},
+  "priorityNmap": false,
   "enableNuclei": false,
   "nuclei": {
     "Severities": "critical,high,medium",
@@ -75,6 +75,7 @@
     "TemplateThreads": 64,
     "HeadlessBulkSize": 10,
     "DisableRedirects": true,
+    "EnableProgressBar": true,
     "HeadlessTemplateThreads": 10,
     "ReportingConfig": "config/nuclei_esConfig.yaml"
   },

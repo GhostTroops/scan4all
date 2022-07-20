@@ -59,7 +59,7 @@ func doSub(s string) (aRst []string, err1 error) {
 		}
 	}
 	if bSend {
-		SendAData[string](s[:2], aRst, "subfinder")
+		SendAData[string](s[:2], aRst, Subfinder)
 	}
 	return aRst, nil
 }

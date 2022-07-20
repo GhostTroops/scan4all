@@ -259,7 +259,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 	}
 	// 发送结果
 	if 0 < len(technologies) {
-		pkg.SendAnyData(map[string]interface{}{"Urls": []string{URL, finalURL}, "technologies": technologies}, "vscan")
+		pkg.SendAnyData(map[string]interface{}{"Urls": []string{URL, finalURL}, "technologies": technologies}, pkg.Scan4all)
 	}
 	return technologies
 }
@@ -283,7 +283,7 @@ func init() {
 					close(lib.PocCheck_pipe)
 					return
 				}
-				fmt.Printf(" POCcheck wait %d ....\r", nMax-nCnt)
+				fmt.Printf(" go-POC-check wait %d ....\r", nMax-nCnt)
 				<-time.After(time.Duration(1) * time.Second)
 				nCnt += 1
 			}
