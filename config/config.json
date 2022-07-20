@@ -61,6 +61,7 @@
   "UrlPrecise": true,
   "ParseSSl": false,
   "EnableSubfinder": false,
+  "EnableHoneyportDetection": true,
   "EnableKsubdomain": true,
   "KsubdomainRegxp": "([0-9a-zA-Z\\-]+\\.[0-9a-zA-Z\\-]+)$",
   "naabu_dns": {},

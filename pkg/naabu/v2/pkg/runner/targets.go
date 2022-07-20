@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/asaskevich/govalidator"
+	"github.com/hktalent/scan4all/lib"
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/hydra"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
@@ -52,25 +53,43 @@ func (r *Runner) mergeToFile() (string, error) {
 	// target defined via CLI argument
 	if len(r.options.Host) > 0 {
 		for _, v := range r.options.Host {
-			if strings.HasPrefix(v, "https://") || strings.HasPrefix(v, "http://") {
-				if u, err := url.Parse(v); err == nil {
-					fmt.Fprintf(tempInput, "%s\n", u.Hostname())
+			if !lib.HoneyportDetection(v) {
+				if strings.HasPrefix(v, "https://") || strings.HasPrefix(v, "http://") {
+					if u, err := url.Parse(v); err == nil {
+						fmt.Fprintf(tempInput, "%s\n", u.Hostname())
+					}
+				} else {
+					fmt.Fprintf(tempInput, "%s\n", v)
 				}
 			} else {
-				fmt.Fprintf(tempInput, "%s\n", v)
+				log.Println("Honeypot found, skipped for you：", v)
 			}
 		}
 	}
 
 	// Targets from file
 	if r.options.HostsFile != "" {
-		f, err := os.Open(r.options.HostsFile)
-		if err != nil {
-			return "", err
-		}
-		defer f.Close()
-		if _, err := io.Copy(tempInput, f); err != nil {
-			return "", err
+		if lib.EnableHoneyportDetection {
+			data, err := ioutil.ReadFile(r.options.HostsFile)
+			if nil == err {
+				a := strings.Split(strings.TrimSpace(string(data)), "\n")
+				for _, x := range a {
+					if !lib.HoneyportDetection(x) {
+						tempInput.WriteString(x + "\n")
+					} else {
+						log.Println("Honeypot found, skipped for you：", x)
+					}
+				}
+			}
+		} else {
+			f, err := os.Open(r.options.HostsFile)
+			if err != nil {
+				return "", err
+			}
+			defer f.Close()
+			if _, err := io.Copy(tempInput, f); err != nil {
+				return "", err
+			}
 		}
 	}
 
