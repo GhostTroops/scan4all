@@ -69,6 +69,10 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}) {
 		}
 	}
 	runner.ParseOptions(options)
+	//data, err := json.Marshal(options)
+	//if nil == err {
+	//	fmt.Printf("%s", string(data))
+	//}
 	nucleiRunner, err := runner.New(options)
 	if err != nil {
 		//fmt.Println(options)

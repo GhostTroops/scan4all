@@ -103,7 +103,7 @@ func favicohashMd5(host string) string {
 		return "0"
 	}
 }
-func main2() {
+func main() {
 	url := os.Args[1]
 	s1 := favicohashMd5(url)
 	fmt.Println(s1)

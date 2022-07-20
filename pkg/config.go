@@ -5,6 +5,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/hktalent/scan4all/lib"
 	"github.com/spf13/viper"
 	"io/fs"
 	"io/ioutil"
@@ -194,6 +195,7 @@ func Init() {
 	config.Unmarshal(&mData)
 	viper.Set("Verbose", false)
 	initEs()
+	lib.EnableHoneyportDetection = GetValAsBool("EnableHoneyportDetection")
 }
 
 var G_Options interface{}
