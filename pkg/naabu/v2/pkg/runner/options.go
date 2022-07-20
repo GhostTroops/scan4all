@@ -120,7 +120,7 @@ func ParseOptions() *Options {
 			if runtime.GOOS == "windows" {
 				szNmap = strings.Replace(szNmap, "nmap", "nmap.exe", -1)
 			}
-			tempInput := pkg.GetTempFile(pkg.Naabu)
+			tempInput := pkg.GetTempFile(string(pkg.Naabu))
 			if tempInput != nil {
 				szNmap = strings.ReplaceAll(szNmap, "{filename}", tempInput.Name())
 			}

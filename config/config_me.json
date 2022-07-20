@@ -55,7 +55,7 @@
   "EnableHoneyportDetection": true,
   "KsubdomainRegxp": "([0-9a-zA-Z\\-]+\\.[0-9a-zA-Z\\-]+)$",
   "naabu_dns": {},
-  "naabu": {"TopPorts": "1000","ScanAllIPS": true,"Threads": 64},
+  "naabu": {"TopPorts": "http","ScanAllIPS": true,"Threads": 64,"EnableProgressBar": false},
   "enableNuclei": true,
   "nuclei": {
     "RateLimit": 150,
@@ -63,6 +63,7 @@
     "TemplateThreads": 64,
     "HeadlessBulkSize": 10,
     "DisableRedirects": true,
+    "EnableProgressBar": true,
     "HeadlessTemplateThreads": 10,
     "ReportingConfig": "config/nuclei_esConfig.yaml"
   },
