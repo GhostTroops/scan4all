@@ -119,7 +119,15 @@ go build
 UrlPrecise=true ./scan4all -l xx.txt
 ```
 
+# Work Plan
+- 整合 web-cache-vulnerability-scanner 实现HTTP smuggling走私、缓存中毒检测
+- 整合 chromedp 实现对登陆页面截图，以及对纯js、js架构前端登陆页面进行检测、以及相应爬虫（敏感信息检测、页面爬取）
+- 整合 nmap-go 提高执行效率
+- 整合 ksubdomain 实现更快子域名爆破
+- 整合 spider 以便发现更多漏洞
+
 # 变更日志
+- 2022-07-20 add web cache vulnerability scanner
 - 2022-07-19 添加dcom Protocol enumeration network interfaces
 - 2022-06-30 嵌入式集成私人版本nuclei-templates 共3744个YAML POC； 1、集成Elasticsearch存储中间结果 2、嵌入整个config目录到程序中
 - 2022-06-27 优化模糊匹配，提高正确率、鲁棒性;集成ksubdomain进度
