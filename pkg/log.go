@@ -65,7 +65,7 @@ func BurteLog(log string) {
 }
 
 func writeoutput(log string) {
-	SendAnyData(log, "vscan")
+	SendAnyData(log, Scan4all)
 	if "" == Output {
 		return
 	}

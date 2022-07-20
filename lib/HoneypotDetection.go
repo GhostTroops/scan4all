@@ -17,7 +17,10 @@ var hdCache sync.Map
 // 添加蜜罐检测，并自动跳过目标，默认false跳过蜜罐检测
 // 考虑内存缓存结果
 func HoneyportDetection(host string) bool {
-	if !strings.HasPrefix(host, "http") {
+	if 5 > len(host) {
+		return false
+	}
+	if "http" != strings.ToLower(host[0:4]) {
 		host = "http://" + host
 	}
 	oUrl, err := url.Parse(host)

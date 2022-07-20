@@ -42,10 +42,10 @@
   * Jboss
   * Winrm(wsman)
 - 默认开启http密码智能爆破，需要http密码时才会自动启动，无需人工干预
-- 默认检测系统是否存在nmap，存在优先则使用nmap进行快速扫描 
+- 检测系统是否存在nmap，存在通过 priorityNmap=true 启用nmap进行快速扫描，鉴于大多数人使用windows，默认关闭
+  使用nmap的弊端：因为设置网络包过大会导致结果不全
+  使用nmap另外需要将root密码设置到环境变量PPSSWWDD，更多参考config/doNmapScan.sh
   默认使用naabu完成端口扫描 -stats=true 可以查看扫描进度 
-  弊端：因为设置网络包过大会导致结果不全 
-  另外需要将root密码设置到环境变量PPSSWWDD，更多参考config/doNmapScan.sh
 - 快速 15000+ POC 检测功能，PoCs包含：
   * nuclei POC
   #### Nuclei Templates Top 10 statistics
@@ -87,6 +87,11 @@
   * 1、当列表中多个域名的ip相同时，合并端口扫描，提高效率
   * 2、智能处理http异常页面、及指纹计算和学习
 - 自动化供应链识别、分析和扫描
+- 联动 python3 <a href=https://github.com/hktalent/log4j-scan>log4j-scan</a>
+  * 该版本屏蔽你目标信息传递到 DNS Log Server 的bug，避免暴露漏洞
+  * 增加了将结果发送到 Elasticsearch 的功能，便于批量、盲打
+  * 未来有时间了再实现golang版本
+- 智能识别蜜罐，并跳过目标，默认该功能是关闭的，可设置EnableHoneyportDetection=true开启
 - 高度可定制：允许通过config/config.json配置定义自己的字典，或者控制更多细节，包含不限于:nuclei、httpx、naabu等
 
 # 工作流程
@@ -95,7 +100,7 @@
 
 # 如何安装
 ```bash
-go install github.com/hktalent/scan4all@2.4.8
+go install github.com/hktalent/scan4all@2.5.8
 scan4all -h
 ```
 # 如何使用
@@ -129,7 +134,9 @@ UrlPrecise=true ./scan4all -l xx.txt
 - 整合 spider 以便发现更多漏洞
 
 # 变更日志
+- 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/pull/2308>#2301</a> 并发多实例的bug
 - 2022-07-20 add web cache vulnerability scanner
+- 2022-07-19 PR nuclei <a href=https://github.com/projectdiscovery/nuclei/pull/2308>#2308</a> add dsl function: substr aes_cbc
 - 2022-07-19 添加dcom Protocol enumeration network interfaces
 - 2022-06-30 嵌入式集成私人版本nuclei-templates 共3744个YAML POC； 1、集成Elasticsearch存储中间结果 2、嵌入整个config目录到程序中
 - 2022-06-27 优化模糊匹配，提高正确率、鲁棒性;集成ksubdomain进度

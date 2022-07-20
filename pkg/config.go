@@ -73,10 +73,6 @@ func GetValAsInt(key string, nDefault int) int {
 	return n
 }
 
-var (
-	Naabu = "naabu"
-)
-
 var TmpFile = map[string][]*os.File{}
 
 // 临时结果文件，例如 nmap
@@ -281,8 +277,14 @@ func doDir(config *embed.FS, s fs.DirEntry, szPath string) {
 	}
 }
 
+var UserHomeDir string = "./"
+
 // 初始化到开头
 func Init2(config *embed.FS) {
+	dirname, err := os.UserHomeDir()
+	if nil == err {
+		UserHomeDir = dirname
+	}
 	szPath := "config"
 	log.Println("wait for init config files ... ")
 	if x1, err := config.ReadDir(szPath); nil == err {

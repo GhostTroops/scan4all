@@ -21,6 +21,7 @@ import (
 
 	"github.com/hktalent/scan4all/nuclei_Yaml"
 	httpxrunner "github.com/hktalent/scan4all/pkg/httpx/runner"
+
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
 	"github.com/pkg/errors"
@@ -618,7 +619,7 @@ func (r *Runner) handleOutput() {
 					aN = append(aN, port)
 					gologger.Silent().Msgf("%s:%d\n", host, port)
 				}
-				pkg.SendAData[int](host, aN, "naabu")
+				pkg.SendAData[int](host, aN, pkg.Naabu)
 			}
 			// file output
 			if file != nil {

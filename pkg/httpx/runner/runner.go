@@ -694,7 +694,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 					go func(target, method, protocol string) {
 						defer wg.Done()
 						result := r.analyze(hp, protocol, target, method, t, scanopts)
-						pkg.SendAnyData(result, "httpx")
+						pkg.SendAnyData(result, pkg.Httpx)
 						output <- result
 						if scanopts.TLSProbe && result.TLSData != nil {
 							scanopts.TLSProbe = false
@@ -749,7 +749,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 						defer wg.Done()
 						h, _ := urlutil.ChangePort(target, fmt.Sprint(port))
 						result := r.analyze(hp, protocol, h, method, t, scanopts)
-						pkg.SendAnyData(result, "httpx")
+						pkg.SendAnyData(result, pkg.Httpx)
 						output <- result
 						if scanopts.TLSProbe && result.TLSData != nil {
 							scanopts.TLSProbe = false
@@ -887,6 +887,7 @@ retry:
 		// in case of standard requests append the new path to the existing one
 		URL.RequestURI += scanopts.RequestURI
 	}
+	go pkg.DoLog4j(URL.String())
 	var req *retryablehttp.Request
 	if customIP != "" {
 		customHost = URL.Host
