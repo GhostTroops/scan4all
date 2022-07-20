@@ -194,13 +194,13 @@ func (r *Runner) DoTargets() (bool, error) {
 					//data, err := tempInput1.Stat()
 					//log.Println(tempInput1.Name(), " file size: ", data.Size())
 					//if nil == err && 100 < data.Size() {
-					if x99, ok := pkg.TmpFile[pkg.Naabu]; ok && 0 < len(x99) {
+					if x99, ok := pkg.TmpFile[string(pkg.Naabu)]; ok && 0 < len(x99) {
 						defer func(f09 *os.File) {
 							f09.Close()
 							os.RemoveAll(f09.Name())
 						}(x99[0])
 					}
-					pkg.TmpFile[pkg.Naabu] = []*os.File{tempInput1}
+					pkg.TmpFile[string(pkg.Naabu)] = []*os.File{tempInput1}
 					hydra.DoNmapRst(&Naabubuffer)
 					defer r.Close()
 					ioutil.WriteFile(r.targetsFile, []byte(""), os.ModePerm)
@@ -231,7 +231,7 @@ func (r *Runner) PreProcessTargets() error {
 	if b11, _ := r.DoTargets(); b11 {
 		return nil
 	} else {
-		log.Println("r.DoTargets 不正常，走naabu")
+		log.Println("Start port scanning with naabu according to the configuration r.DoTargets")
 	}
 	if r.options.Stream {
 		defer close(r.streamChannel)

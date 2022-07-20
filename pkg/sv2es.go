@@ -18,10 +18,21 @@ var nThreads chan struct{}
 var esUrl string
 var enableEsSv bool
 
+type ESaveType string
+
+const (
+	Naabu     ESaveType = "naabu"
+	Httpx     ESaveType = "httpx"
+	Hydra     ESaveType = "hydra"
+	Nmap      ESaveType = "nmap"
+	Scan4all  ESaveType = "scan4all"
+	Subfinder ESaveType = "subfinder"
+)
+
 func initEs() {
 	enableEsSv = GetValAsBool("enableEsSv")
+	esUrl = GetValByDefault("esUrl", "http://127.0.0.1:9200/%s_index/_doc/%s")
 	if enableEsSv {
-		esUrl = GetValByDefault("esUrl", "http://127.0.0.1:9200/%s_index/_doc/%s")
 		n1 = GetValAsInt("esthread", 4)
 		log.Printf("es 初始化线程数 = %d, esUrl = %s", n1, esUrl)
 		nThreads = make(chan struct{}, n1)
@@ -33,7 +44,7 @@ func Log(v ...any) {
 }
 
 // 一定得有全局得线程等待
-func SendAnyData(data interface{}, szType string) {
+func SendAnyData(data interface{}, szType ESaveType) {
 	data1, _ := json.Marshal(data)
 	if 0 < len(data1) && enableEsSv {
 		hasher := sha1.New()
@@ -47,7 +58,7 @@ func SendAnyData(data interface{}, szType string) {
 }
 
 // k is id
-func SendAData[T any](k string, data []T, szType string) {
+func SendAData[T any](k string, data []T, szType ESaveType) {
 	if 0 < len(data) && enableEsSv {
 		m2 := make(map[string]interface{})
 		m2[k] = data
@@ -56,7 +67,7 @@ func SendAData[T any](k string, data []T, szType string) {
 }
 
 // 发送数据到ES
-func SendReq(data1 interface{}, id, szType string) {
+func SendReq(data1 interface{}, id string, szType ESaveType) {
 	myConst.DoSyncFunc(func() {
 		if !enableEsSv {
 			return

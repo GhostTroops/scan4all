@@ -41,7 +41,7 @@ func Start(IPAddr string, Port int, Protocol string) {
 	for info := range crack.Out {
 		out = info
 		if nil != &out && "" != out.Protocol && out.IPAddr != "" && "" != out.Auth.Username {
-			pkg.SendAData[AuthInfo](fmt.Sprintf("%s:%d", out.IPAddr, out.Port), []AuthInfo{out}, "hydra")
+			pkg.SendAData[AuthInfo](fmt.Sprintf("%s:%d", out.IPAddr, out.Port), []AuthInfo{out}, pkg.Hydra)
 			data, _ := json.Marshal(out)
 			fmt.Println("成功密码破解：", aurora.BrightRed(string(data)))
 		}

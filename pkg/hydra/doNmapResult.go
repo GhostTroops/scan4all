@@ -114,14 +114,14 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 	if enableEsSv {
 		if 0 < len(m1) {
 			for k, x := range m1 {
-				pkg.SendAData[[]string](k, x, "nmap")
+				pkg.SendAData[[]string](k, x, pkg.Nmap)
 			}
 		}
 	}
 }
 
 func DoNmapRst(bf *bytes.Buffer) {
-	if x1, ok := pkg.TmpFile[pkg.Naabu]; ok {
+	if x1, ok := pkg.TmpFile[string(pkg.Naabu)]; ok {
 		for _, x := range x1 {
 			defer func(r *os.File) {
 				r.Close()
