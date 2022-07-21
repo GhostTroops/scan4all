@@ -109,7 +109,7 @@ func CheckIsErrPageAI(req *pkg.Response, page *Page) bool {
 	data.BodyHash = szHs
 	data.BodyMd5 = szMd5
 	bRst, _ := CheckRepeat(data)
-	if false && (0 < len(data.Title) || 0 < len(data.Body)) {
+	if false == bRst && (0 < len(data.Title) || 0 < len(data.Body)) {
 		for _, x := range page404Title {
 			// 异常页面标题检测成功
 			if 0 < len(data.Title) && (pkg.StrContains(x, data.Title) || pkg.StrContains(data.Title, x)) || 0 < len(data.Body) && pkg.StrContains(data.Body, x) {

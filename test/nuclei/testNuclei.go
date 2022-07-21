@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"github.com/hktalent/scan4all/nuclei_Yaml"
+	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
 	"log"
 	_ "net/http/pprof"
 	"os"

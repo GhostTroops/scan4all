@@ -1,9 +1,8 @@
 package pkg
 
 import (
-	"flag"
 	"fmt"
-	"os"
+	"log"
 	"runtime"
 	"strings"
 	"text/tabwriter"
@@ -34,7 +33,7 @@ func init() {
 
 }
 
-func ParseFlags(vers string) {
+func ParseFlags(vers, urlStr string) {
 	/* Getting Command-line flags */
 	version = vers
 	useragent = UserAgent + " v" + version
@@ -81,7 +80,6 @@ func ParseFlags(vers string) {
 
 	// Request Options
 	var (
-		urlStr           string
 		setCookiesStr    string
 		setHeadersStr    string
 		setParametersStr string
@@ -89,8 +87,6 @@ func ParseFlags(vers string) {
 		userAgentChrome  bool
 	)
 
-	appendString(&requestOptions, &urlStr,
-		"url", "u", "", "Url to scan. Has to start with http:// or https://. Otherwise use file: to specify a file with (multiple) urls. E.g. -u https://www.example.com or -u file:templates/url_list")
 	appendBoolean(&requestOptions, &Config.UseHTTP,
 		"usehttp", "http", false, "Use http instead of https for URLs, which doesn't specify either one")
 	appendBoolean(&requestOptions, &Config.DeclineCookies,
@@ -133,24 +129,20 @@ func ParseFlags(vers string) {
 
 	// Wordlist Options
 	appendString(&wordlistOptions, &Config.HeaderWordlist,
-		"headerwordlist", "hw", "wordlists/headers", "Wordlist for headers to test. Default path is 'wordlists/top-headers'")
+		"headerwordlist", "hw", "config/wordlists/headers", "Wordlist for headers to test. Default path is 'wordlists/top-headers'")
 	appendString(&wordlistOptions, &Config.QueryWordlist,
-		"parameterwordlist", "pw", "wordlists/parameters", "Wordlist for query parameters to test. Default path is 'wordlists/top-parameters'")
+		"parameterwordlist", "pw", "config/wordlists/parameters", "Wordlist for query parameters to test. Default path is 'wordlists/top-parameters'")
 
-	flag.CommandLine.Usage = help
+	//flag.CommandLine.Usage = help
 
 	// flags need to be parsed, before they are used
-	flag.Parse()
-
-	/* Checking values of Flags */
-	if len(flag.Args()) > 0 {
-		msg := fmt.Sprintf("%s: Args are not supported! Use flags. Use -h or --help to get a list of all supported flags\n", flag.Args())
-		PrintFatal(msg)
-	}
-	if urlStr == "" {
-		msg := "No url specified. Use -url or -u. Use -h or --help to get a list of all supported flags\n"
-		PrintFatal(msg)
-	}
+	//flag.Parse()
+	log.Printf("%+v", Config)
+	//
+	//if urlStr == "" {
+	//	msg := "No url specified. Use -url or -u. Use -h or --help to get a list of all supported flags\n"
+	//	PrintFatal(msg)
+	//}
 
 	// Change User Agent
 	if userAgentChrome {
@@ -208,35 +200,36 @@ func readFile(str string, field []string, name string) []string {
 	}
 }
 
-func help() {
-	w := new(tabwriter.Writer)
-	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
-
-	fmt.Println("Published by Hackmanit under http://www.apache.org/licenses/LICENSE-2.0")
-	fmt.Println("Author: Maximilian Hildebrand")
-	fmt.Println("Repository: https://github.com/Hackmanit/Web-Cache-Vulnerability-Scanner")
-	fmt.Println("Blog Post: https://hackmanit.de/en/blog-en/145-web-cache-vulnerability-scanner-wcvs-free-customizable-easy-to-use")
-	fmt.Printf("Version: %s\n\n", version)
-	fmt.Print("Usage: Web-Cache-Vulnerability-Scanner(.exe) [options]\n\n")
-
-	fmt.Println("General Options:")
-	fmt.Fprintf(w, "%s\t%s\t%s\n", "--help", "-h", "Show this help and quit")
-	writeToWriter(w, generalOptions)
-
-	fmt.Println("\nGenerate Options:")
-	writeToWriter(w, generateOptions)
-
-	fmt.Println("\nRequest Options:")
-	writeToWriter(w, requestOptions)
-
-	fmt.Println("\nCrawl Options:")
-	writeToWriter(w, crawlOptions)
-
-	fmt.Println("\nWordlist Options:")
-	writeToWriter(w, wordlistOptions)
-
-	os.Exit(0)
-}
+//
+//func help() {
+//	w := new(tabwriter.Writer)
+//	w.Init(os.Stdout, 8, 8, 0, '\t', 0)
+//
+//	fmt.Println("Published by Hackmanit under http://www.apache.org/licenses/LICENSE-2.0")
+//	fmt.Println("Author: Maximilian Hildebrand")
+//	fmt.Println("Repository: https://github.com/Hackmanit/Web-Cache-Vulnerability-Scanner")
+//	fmt.Println("Blog Post: https://hackmanit.de/en/blog-en/145-web-cache-vulnerability-scanner-wcvs-free-customizable-easy-to-use")
+//	fmt.Printf("Version: %s\n\n", version)
+//	fmt.Print("Usage: Web-Cache-Vulnerability-Scanner(.exe) [options]\n\n")
+//
+//	fmt.Println("General Options:")
+//	fmt.Fprintf(w, "%s\t%s\t%s\n", "--help", "-h", "Show this help and quit")
+//	writeToWriter(w, generalOptions)
+//
+//	fmt.Println("\nGenerate Options:")
+//	writeToWriter(w, generateOptions)
+//
+//	fmt.Println("\nRequest Options:")
+//	writeToWriter(w, requestOptions)
+//
+//	fmt.Println("\nCrawl Options:")
+//	writeToWriter(w, crawlOptions)
+//
+//	fmt.Println("\nWordlist Options:")
+//	writeToWriter(w, wordlistOptions)
+//
+//	os.Exit(0)
+//}
 
 func writeToWriter(w *tabwriter.Writer, flagStruct []FlagStruct) {
 	for _, ts := range flagStruct {
@@ -246,10 +239,7 @@ func writeToWriter(w *tabwriter.Writer, flagStruct []FlagStruct) {
 }
 
 func appendString(options *[]FlagStruct, varString *string, longFlag string, shortFlag string, defaultValue string, description string) {
-	flag.StringVar(varString, longFlag, defaultValue, "")
-	if shortFlag != longFlag {
-		flag.StringVar(varString, shortFlag, defaultValue, "")
-	}
+	varString = &defaultValue
 	*options = append(*options, FlagStruct{
 		LongFlag:    longFlag,
 		ShortFlag:   shortFlag,
@@ -257,10 +247,7 @@ func appendString(options *[]FlagStruct, varString *string, longFlag string, sho
 }
 
 func appendInt(options *[]FlagStruct, varInt *int, longFlag string, shortFlag string, defaultValue int, description string) {
-	flag.IntVar(varInt, longFlag, defaultValue, "")
-	if shortFlag != longFlag {
-		flag.IntVar(varInt, shortFlag, defaultValue, "")
-	}
+	varInt = &defaultValue
 	*options = append(*options, FlagStruct{
 		LongFlag:    longFlag,
 		ShortFlag:   shortFlag,
@@ -268,10 +255,7 @@ func appendInt(options *[]FlagStruct, varInt *int, longFlag string, shortFlag st
 }
 
 func appendFloat(options *[]FlagStruct, varFloat *float64, longFlag string, shortFlag string, defaultValue float64, description string) {
-	flag.Float64Var(varFloat, longFlag, defaultValue, "")
-	if shortFlag != longFlag {
-		flag.Float64Var(varFloat, shortFlag, defaultValue, "")
-	}
+	varFloat = &defaultValue
 	*options = append(*options, FlagStruct{
 		LongFlag:    longFlag,
 		ShortFlag:   shortFlag,
@@ -279,10 +263,7 @@ func appendFloat(options *[]FlagStruct, varFloat *float64, longFlag string, shor
 }
 
 func appendBoolean(options *[]FlagStruct, varBoolean *bool, longFlag string, shortFlag string, defaultValue bool, description string) {
-	flag.BoolVar(varBoolean, longFlag, defaultValue, "")
-	if shortFlag != longFlag {
-		flag.BoolVar(varBoolean, shortFlag, defaultValue, "")
-	}
+	varBoolean = &defaultValue
 	*options = append(*options, FlagStruct{
 		LongFlag:    longFlag,
 		ShortFlag:   shortFlag,

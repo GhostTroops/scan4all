@@ -132,6 +132,7 @@ UrlPrecise=true ./scan4all -l xx.txt
 - 整合 nmap-go 提高执行效率
 - 整合 ksubdomain 实现更快子域名爆破
 - 整合 spider 以便发现更多漏洞
+- 指纹半自动化学习，提高精准度
 
 # 变更日志
 - 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/pull/2308>#2301</a> 并发多实例的bug
