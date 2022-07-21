@@ -36,6 +36,7 @@ func (r *KvDbOp) Init(szDb string) error {
 	opts := badger.DefaultOptions(szDb)
 	opts.CompactL0OnClose = true
 	opts.EventLogging = false
+	opts.Logger = nil
 	opts.LevelOneSize = 256 << 10
 	opts.LevelSizeMultiplier = 20
 	db, err := badger.Open(opts)

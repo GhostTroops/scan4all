@@ -34,7 +34,7 @@ func Start(IPAddr string, Port int, Protocol string) {
 		nT = 8
 	}
 	crack := NewCracker(authInfo, true, nT)
-	fmt.Printf("\n[hydra]->开始对%v:%v[%v]进行暴力破解，字典长度为：%d\n", IPAddr, Port, Protocol, crack.Length())
+	fmt.Printf("\n[hydra]->开始对%v:%v [ %v ] 进行暴力破解，字典长度为：%d\n", IPAddr, Port, Protocol, crack.Length())
 	go crack.Run()
 	//爆破结果获取
 	var out AuthInfo
@@ -46,6 +46,6 @@ func Start(IPAddr string, Port int, Protocol string) {
 			fmt.Println("成功密码破解：", aurora.BrightRed(string(data)))
 		}
 	}
-	log.Printf("\n[hydra]-> %v:%v[%v]暴力破解 Finish\n", IPAddr, Port, Protocol)
+	log.Printf("\n[hydra]-> %v:%v [ %v ] 暴力破解 Finish\n", IPAddr, Port, Protocol)
 	//crack.Pool.Wait()
 }
