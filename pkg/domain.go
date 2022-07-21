@@ -3,7 +3,7 @@ package pkg
 import (
 	"crypto/tls"
 	"encoding/json"
-	"github.com/hktalent/scan4all/subfinder"
+	"github.com/hktalent/scan4all/projectdiscovery/subfinder"
 	"reflect"
 	"strings"
 )
