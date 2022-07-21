@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
-	"log"
 	_ "net/http/pprof"
 	"os"
 	"sync"
@@ -25,7 +24,6 @@ func DoNuclei(buf *bytes.Buffer, wg *sync.WaitGroup, oOpts *map[string]interface
 	defer wg.Done()
 	xx := make(chan bool)
 	go nuclei_Yaml.RunNuclei(buf, xx, oOpts)
-	log.Println("xxx start")
 	<-xx
 }
 
@@ -46,12 +44,20 @@ func main() {
 		wg.Add(1)
 		buf.WriteString("http://192.168.10.31:8888\n")
 		pwd, _ := os.Getwd()
-		m1 := map[string]interface{}{"UpdateTemplates": false, "Templates": []string{pwd + "/config/nuclei-templates"}, "TemplatesDirectory": pwd + "/config/nuclei-templates", "NoUpdateTemplates": true}
+		m1 := map[string]interface{}{"Severities": "critical,high,medium", "EnableProgressBar": false, "UpdateTemplates": false, "Templates": []string{pwd + "/config/nuclei-templates"}, "TemplatesDirectory": pwd + "/config/nuclei-templates", "NoUpdateTemplates": true}
 		go DoNuclei(&buf, &wg, &m1)
+
+		buf1 := bytes.Buffer{}
+		buf1.WriteString("http://pms.yx4.me\n")
 		wg.Add(1)
-		go DoNuclei(&buf, &wg, &m1)
+		m2 := map[string]interface{}{"Severities": "critical,high,medium", "EnableProgressBar": false, "Protocols": "http", "UpdateTemplates": false, "Templates": []string{pwd + "/config/nuclei-templates"}, "TemplatesDirectory": pwd + "/config/nuclei-templates", "NoUpdateTemplates": true}
+		go DoNuclei(&buf1, &wg, &m2)
+
+		buf2 := bytes.Buffer{}
+		buf2.WriteString("http://192.168.10.240\n")
+		m3 := map[string]interface{}{"Severities": "critical,high,medium", "EnableProgressBar": false, "Protocols": "network", "UpdateTemplates": false, "Templates": []string{pwd + "/config/nuclei-templates"}, "TemplatesDirectory": pwd + "/config/nuclei-templates", "NoUpdateTemplates": true}
 		wg.Add(1)
-		go DoNuclei(&buf, &wg, &m1)
+		go DoNuclei(&buf2, &wg, &m3)
 		wg.Wait()
 	}
 	//oUrl, err := url.Parse("173.82.115.38:80")

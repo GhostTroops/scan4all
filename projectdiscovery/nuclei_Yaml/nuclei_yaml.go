@@ -58,6 +58,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}) {
 		}
 	}
 	////////////////////////////////////*/
+	runner2.ParseOptions(options)
 	if nil != oOpts {
 		// 指定覆盖
 		data, err := json.Marshal(oOpts)
@@ -68,7 +69,6 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}) {
 			}
 		}
 	}
-	runner2.ParseOptions(options)
 	//data, err := json.Marshal(options)
 	//if nil == err {
 	//	fmt.Printf("%s", string(data))

@@ -135,7 +135,7 @@ UrlPrecise=true ./scan4all -l xx.txt
 - 指纹半自动化学习，提高精准度
 
 # 变更日志
-- 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/pull/2308>#2301</a> 并发多实例的bug
+- 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/issues/2301>#2301</a> 并发多实例的bug
 - 2022-07-20 add web cache vulnerability scanner
 - 2022-07-19 PR nuclei <a href=https://github.com/projectdiscovery/nuclei/pull/2308>#2308</a> add dsl function: substr aes_cbc
 - 2022-07-19 添加dcom Protocol enumeration network interfaces
