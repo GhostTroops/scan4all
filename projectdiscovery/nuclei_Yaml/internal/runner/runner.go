@@ -148,7 +148,8 @@ func New(options *types.Options) (*Runner, error) {
 	}
 
 	if (len(options.Templates) == 0 || !options.NewTemplates || (options.TargetsFilePath == "" && !options.Stdin && len(options.Targets) == 0)) && options.UpdateTemplates {
-		os.Exit(0)
+		//os.Exit(0)
+		return nil, errors.Wrap(err, "no templates files")
 	}
 
 	// Initialize the input source

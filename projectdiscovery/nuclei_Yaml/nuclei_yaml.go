@@ -358,6 +358,7 @@ func readConfig(options *types.Options) {
 	cleanupOldResumeFiles()
 }
 
+// 删除10天前文件
 func cleanupOldResumeFiles() {
 	root, err := config.GetConfigDir()
 	if err != nil {

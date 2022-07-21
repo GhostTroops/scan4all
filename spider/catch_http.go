@@ -135,7 +135,6 @@ func fullScreenshot(url string, quality int64, res *[]byte) chromedp.Tasks {
 			return nil
 		}),
 	}
-
 }
 
 func (a TLS) IsEmpty() bool {
