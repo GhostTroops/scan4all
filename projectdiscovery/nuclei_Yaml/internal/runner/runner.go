@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/internal/colorizer"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -17,7 +18,6 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/ratelimit"
 
-	"github.com/hktalent/scan4all/nuclei_Yaml/internal/colorizer"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog"
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog/config"

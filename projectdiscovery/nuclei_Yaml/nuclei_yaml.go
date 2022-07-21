@@ -3,8 +3,8 @@ package nuclei_Yaml
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/hktalent/scan4all/nuclei_Yaml/internal/runner"
 	"github.com/hktalent/scan4all/pkg"
+	runner2 "github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/internal/runner"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
@@ -33,7 +33,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}) {
 	}
 	// json 控制参数
 	options = pkg.ParseOption[types.Options]("nuclei", options)
-	if err := runner.ConfigureOptions(); err != nil {
+	if err := runner2.ConfigureOptions(); err != nil {
 		gologger.Fatal().Msgf("Could not initialize options: %s\n", err)
 	}
 
@@ -68,12 +68,12 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}) {
 			}
 		}
 	}
-	runner.ParseOptions(options)
+	runner2.ParseOptions(options)
 	//data, err := json.Marshal(options)
 	//if nil == err {
 	//	fmt.Printf("%s", string(data))
 	//}
-	nucleiRunner, err := runner.New(options)
+	nucleiRunner, err := runner2.New(options)
 	if err != nil {
 		//fmt.Println(options)
 		gologger.Fatal().Msgf("nucleiRunner Could not create runner: %s\n", err)
@@ -121,7 +121,7 @@ func readConfig(options *types.Options) {
 
 	options.Output = ""
 	options.StoreResponse = false
-	options.StoreResponseDir = runner.DefaultDumpTrafficOutputFolder
+	options.StoreResponseDir = runner2.DefaultDumpTrafficOutputFolder
 	options.Silent = false
 	options.NoColor = false
 	options.JSON = false

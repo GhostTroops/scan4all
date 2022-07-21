@@ -1,0 +1,87 @@
+{
+    "code": 200,
+    "status": "OK",
+    "result": {
+      "query": "service.service_name: HTTP",
+      "total": 50000,
+      "hits": [
+        {
+          "ip": "8.8.8.8",
+          "services": [
+            {
+              "port": 53,
+              "service_name": "DNS",
+              "transport_protocol": "UDP"
+            },
+            {
+              "port": 443,
+              "service_name": "HTTP",
+              "transport_protocol": "TCP",
+              "certificate": "e58e89a726d80bb0219b218c3ab9d818b4be75d77959508400d660ebe1c1be3d"
+            }
+          ],
+          "location": {
+            "continent": "North America",
+            "country": "United States",
+            "country_code": "US",
+            "postal_code": "48104",
+            "timezone": "America/Michigan",
+            "coordinates": {
+              "latitude": "42.273",
+              "longitude": "-83.751"
+            },
+            "registered_country": "United States",
+            "registered_country_code": "US"
+          },
+          "autonomous_system": {
+            "asn": 15169,
+            "description": "GOOGLE",
+            "bgp_prefix": "8.8.8.0/24",
+            "name": "GOOGLE",
+            "country_code": "US"
+          }
+        },
+        {
+          "name": "dns.google",
+          "ip": "8.8.8.8",
+          "services": [
+            {
+              "port": 53,
+              "service_name": "DNS",
+              "transport_protocol": "UDP"
+            },
+            {
+              "port": 443,
+              "service_name": "HTTP",
+              "transport_protocol": "TCP",
+              "certificate": "e58e89a726d80bb0219b218c3ab9d818b4be75d77959508400d660ebe1c1be3d"
+            }
+          ],
+          "location": {
+            "continent": "North America",
+            "country": "United States",
+            "country_code": "US",
+            "postal_code": "48104",
+            "timezone": "America/Michigan",
+            "coordinates": {
+              "latitude": "42.273",
+              "longitude": "-83.751"
+            },
+            "registered_country": "United States",
+            "registered_country_code": "US"
+          },
+          "autonomous_system": {
+            "asn": 15169,
+            "description": "GOOGLE",
+            "bgp_prefix": "8.8.8.0/24",
+            "name": "GOOGLE",
+            "country_code": "US"
+          }
+        }
+      ]
+    },
+    "links": {
+      "prev": "prevCursorToken",
+      "next": "nextCursorToken"
+    }
+  }
