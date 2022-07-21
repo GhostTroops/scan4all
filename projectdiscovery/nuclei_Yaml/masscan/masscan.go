@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"io"
 	"os/exec"
-	"time"
+	"regexp"
 )
 
 type Address struct {
@@ -78,6 +78,10 @@ func (m *Masscan) SetRate(rate string) {
 	m.Rate = rate
 }
 
+// 获取ip的正则表达式
+var GetIpPort = regexp.MustCompile("Discovered open port (\\d+)\\/tcp on ((\\d+\\.){3}\\d+)")
+
+// masscan -p- --rate=2000 192.168.10.31
 func (m *Masscan) Run() error {
 	var cmd *exec.Cmd
 	var outb, errs bytes.Buffer
@@ -123,7 +127,7 @@ func (m *Masscan) Parse() ([]Host, error) {
 		}
 		switch a := t1.(type) {
 		case xml.StartElement:
-			time.Sleep(3)
+			//time.Sleep(3)
 			if a.Name.Local == "nmaprun" {
 				for _, v := range a.Attr {
 					if v.Name.Local == "start" {
