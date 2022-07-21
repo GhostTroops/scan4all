@@ -16,9 +16,9 @@
 <img width="928" alt="image" src="https://user-images.githubusercontent.com/18223385/175768227-098c779b-6c5f-48ee-91b1-c56e3daa9c87.png">
 </h1>
 
-- 什么是scan4all：集成vscan、nuclei、ksubdomain、subfinder等，充分自动化、智能化 
-  并对这些集成对项目进行代码级别优化、参数优化，个别模块重写  
-  原则上不重复造轮子，除非轮子bug、问题太多
+- 什么是scan4all：集成 vscan、nuclei、ksubdomain、subfinder等，充分自动化、智能化 
+  并对这些集成的项目进行代码级别优化、参数优化，个别模块,如 vscan filefuzz部分进行了重写  
+  原则上不重复造轮子，除非存在bug、问题
 - 跨平台：基于golang实现，轻量级、高度可定制、开源，支持Linux、windows、mac os等
 - 支持【20】种密码爆破，支持自定义字典, 通过 "priorityNmap": true 开启 
   * RDP
@@ -37,15 +37,17 @@
   * Wap-wsp（Elasticsearch）
   * RouterOs
   * HTTP BasicAuth
-  * Weblogic，同时通过enableNuclei=true开启nuclei，支持T3、IIOP等检测
+  * Weblogic，同时通过 enableNuclei=true 开启nuclei，支持T3、IIOP等检测
   * Tomcat
   * Jboss
   * Winrm(wsman)
-- 默认开启http密码智能爆破，需要http密码时才会自动启动，无需人工干预
-- 检测系统是否存在nmap，存在通过 priorityNmap=true 启用nmap进行快速扫描，鉴于大多数人使用windows，默认关闭
-  使用nmap的弊端：因为设置网络包过大会导致结果不全
-  使用nmap另外需要将root密码设置到环境变量PPSSWWDD，更多参考config/doNmapScan.sh
-  默认使用naabu完成端口扫描 -stats=true 可以查看扫描进度 
+- 默认开启http密码智能爆破，需要 HTTP 密码时才会自动启动，无需人工干预
+- 检测系统是否存在 nmap ，存在通过 priorityNmap=true 启用 nmap 进行快速扫描，默认开启，优化过的 nmap 参数比 masscan 快
+  使用 nmap 的弊端：网络不好的是否，因为流量网络包过大可能会导致结果不全
+  使用 nmap 另外需要将 root 密码设置到环境变量
+  export PPSSWWDD=yourRootPswd 
+  更多参考：config/doNmapScan.sh
+  默认使用 naabu 完成端口扫描 -stats=true 可以查看扫描进度 
 - 快速 15000+ POC 检测功能，PoCs包含：
   * nuclei POC
   #### Nuclei Templates Top 10 statistics
@@ -66,11 +68,11 @@
     * vscan POC包含了：xray 2.0 300+ POC、 go POC等
   * scan4all POC  
   
-- 支持7000+web指纹扫描、识别：
-  * httpx指纹
-  * vscan指纹
-    * vscan指纹：包含 eHoleFinger、 localFinger等
-  * scan4all指纹 
+- 支持 7000+ web 指纹扫描、识别：
+  * httpx 指纹
+  * vscan 指纹
+    * vscan 指纹：包含 eHoleFinger、 localFinger等
+  * scan4all 指纹 
     
 - 支持146种协议90000+规则port扫描
   * 依赖nmap支持的协议、指纹
@@ -91,6 +93,10 @@
   * 该版本屏蔽你目标信息传递到 DNS Log Server 的bug，避免暴露漏洞
   * 增加了将结果发送到 Elasticsearch 的功能，便于批量、盲打
   * 未来有时间了再实现golang版本
+    如何使用？
+```bash
+mkdir ~/MyWork/;cd ~/MyWork/;git clone  https://github.com/hktalent/log4j-scan
+```
 - 智能识别蜜罐，并跳过目标，默认该功能是关闭的，可设置EnableHoneyportDetection=true开启
 - 高度可定制：允许通过config/config.json配置定义自己的字典，或者控制更多细节，包含不限于:nuclei、httpx、naabu等
 
@@ -122,6 +128,8 @@ http://127.0.0.1:9200/nmap_index/_doc/_search?q=_id:192.168.0.111
 go build
 # 精准扫描 url列表 UrlPrecise=true
 UrlPrecise=true ./scan4all -l xx.txt
+# 关闭适应nmap，使用naabu端口扫描其内部定义的http相关端口
+priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 ```
 
 # Work Plan
@@ -129,10 +137,10 @@ UrlPrecise=true ./scan4all -l xx.txt
 - 联动 metasploit-framework，在系统已经安装好对前提条件下，配合tmux，并以 macos 环境为最佳实践完成联动
 - 整合 更多 fuzzer <!-- gryffin -->,如 联动 sqlmap
 - 整合 chromedp 实现对登陆页面截图，以及对纯js、js架构前端登陆页面进行检测、以及相应爬虫（敏感信息检测、页面爬取）
-- 整合 nmap-go 提高执行效率
+- 整合 nmap-go 提高执行效率,动态解析结果流，并融合到当前任务瀑布流中
 - 整合 ksubdomain 实现更快子域名爆破
 - 整合 spider 以便发现更多漏洞
-- 指纹半自动化学习，提高精准度
+- 半自动化指纹学习，提高精准度；指定指纹名称，通过配置
 
 # 变更日志
 - 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/issues/2301>#2301</a> 并发多实例的bug

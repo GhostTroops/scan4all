@@ -129,74 +129,75 @@ type PPDict struct {
 	DefaultUp string
 }
 
-var md = map[string]PPDict{}
+var md = map[string]*PPDict{}
 
 func init() {
-	md["ftp"] = PPDict{
+	md["ftp"] = &PPDict{
 		Username:  pkg.GetVal4File("ftp_user", ftpusername),
 		Paswd:     pkg.GetVal4File("ftp_pswd", ftp_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("ftp_default", ftp_default),
 	}
-	md["ssh"] = PPDict{
+	md["ssh"] = &PPDict{
 		Username:  pkg.GetVal4File("ssh_username", username),
 		Paswd:     pkg.GetVal4File("ssh_pswd", pswd),
 		DefaultUp: pkg.GetVal4Filedefault("ssh_default", ssh_default),
 	}
 	md["rsh-spx"] = md["ssh"]
-	md["snmp"] = PPDict{
+	md["snmp"] = &PPDict{
 		Username:  pkg.GetVal4File("snmp_user", snmp_user),
 		Paswd:     pkg.GetVal4File("snmp_pswd", snmp_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("snmp_default", snmp_default),
 	}
 	// 再增加字典
-	md["wap-wsp"] = PPDict{
+	md["wap-wsp"] = &PPDict{
 		Username:  pkg.GetVal4File("es_user", es_user),
 		Paswd:     pkg.GetVal4File("es_pswd", es_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("es_default", es_default),
 	}
 	md["router"] = md["wap-wsp"]
-	md["mongodb"] = PPDict{
+	md["mongodb"] = &PPDict{
 		Username:  pkg.GetVal4File("mongodb_username", mongodbusername),
 		Paswd:     pkg.GetVal4File("mongodb_pswd", mongodb_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("mongodb_default", mongodb_default),
 	}
-	md["mssql"] = PPDict{
+	md["mongod"] = md["mongodb"]
+	md["mssql"] = &PPDict{
 		Username:  pkg.GetVal4File("mssql_username", mssqlusername),
 		Paswd:     pkg.GetVal4File("mssql_pswd", mssql_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("mssql_default", mssql_default),
 	}
-	md["mysql"] = PPDict{
+	md["mysql"] = &PPDict{
 		Username:  pkg.GetVal4File("mysql_username", mysqlusername),
 		Paswd:     pkg.GetVal4File("mysql_pswd", mysql_pswd),
 		DefaultUp: pkg.GetVal4File("mysql_default", mysql_default),
 	}
-	md["oracle"] = PPDict{
+	md["oracle"] = &PPDict{
 		Username:  pkg.GetVal4File("oracle_username", oracleusername),
 		Paswd:     pkg.GetVal4File("oracle_pswd", oracle_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("oracleh_default", oracle_default),
 	}
-	md["postgresql"] = PPDict{
+	md["postgresql"] = &PPDict{
 		Username:  pkg.GetVal4File("postgresql_username", postgresqlusername),
 		Paswd:     pkg.GetVal4File("postgresql_pswd", postgresql_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("postgresql_default", postgresql_default),
 	}
-	md["rdp"] = PPDict{
+	md["rdp"] = &PPDict{
 		Username:  pkg.GetVal4File("rdp_username", rdpusername),
 		Paswd:     pkg.GetVal4File("rdp_pswd", rdp_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("rdp_default", rdp_default),
 	}
-	md["redis"] = PPDict{
+	md["redis"] = &PPDict{
 		Username:  pkg.GetVal4File("redis_username", redisusername),
 		Paswd:     pkg.GetVal4File("redis_pswd", redis_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("redis_default", redis_default),
 	}
-	md["smb"] = PPDict{
+	md["smb"] = &PPDict{
 		Username:  pkg.GetVal4File("smb_username", smbusername),
 		Paswd:     pkg.GetVal4File("smb_pswd", smb_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("smb_default", smb_default),
 	}
 	md["winrm"] = md["smb"]
-	md["telnet"] = PPDict{
+	md["telnet"] = &PPDict{
 		Username:  pkg.GetVal4File("telnet_username", telnetusername),
 		Paswd:     pkg.GetVal4File("telnet_pswd", telnet_pswd),
 		DefaultUp: pkg.GetVal4Filedefault("telnet_default", telnet_default),
@@ -205,7 +206,7 @@ func init() {
 
 func GetDefaultFtpList(t string) *AuthList {
 	if x1, ok := md[t]; ok {
-		return func(o PPDict) *AuthList {
+		return func(o *PPDict) *AuthList {
 			a := NewAuthList()
 			a.Username = strings.Split(strings.TrimSpace(o.Username), "\n")
 			a.Password = strings.Split(strings.TrimSpace(o.Paswd), "\n")
