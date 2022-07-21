@@ -67,6 +67,7 @@
   "naabu_dns": {},
   "naabu": {"TopPorts": "1000","ScanAllIPS": true,"Threads": 50,"EnableProgressBar": false},
   "priorityNmap": true,
+  "noScan": false,
   "enableNuclei": false,
   "nuclei": {
     "Severities":  [5,4,3],
