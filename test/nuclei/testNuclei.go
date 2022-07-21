@@ -62,7 +62,7 @@ func main() {
 
 		buf2 := bytes.Buffer{}
 		buf2.WriteString("https://kb.bugscan.net\n")
-		m3 := map[string]interface{}{"Severities": h01, "EnableProgressBar": false, "Protocols": []nucleiType.ProtocolType{nucleiType.NetworkProtocol}, "UpdateTemplates": false, "Templates": []string{pwd + "/config/nuclei-templates/51pwn"}, "TemplatesDirectory": pwd + "/config/nuclei-templates", "NoUpdateTemplates": true}
+		m3 := map[string]interface{}{"Severities": h01, "EnableProgressBar": false, "Protocols": []nucleiType.ProtocolType{nucleiType.HTTPProtocol}, "UpdateTemplates": false, "Templates": []string{pwd + "/config/nuclei-templates/51pwn"}, "TemplatesDirectory": pwd + "/config/nuclei-templates/51pwn", "NoUpdateTemplates": true}
 		wg.Add(1)
 		go DoNuclei(&buf2, &wg, &m3)
 		wg.Wait()

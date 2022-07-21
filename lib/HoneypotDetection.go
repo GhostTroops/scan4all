@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -14,10 +15,12 @@ var EnableHoneyportDetection = true
 // 内存缓存，避免相同目标多次执行
 var hdCache sync.Map
 
+var ipCIDS = regexp.MustCompile("^(\\d+\\.){3}\\d+\\/\\d+$")
+
 // 添加蜜罐检测，并自动跳过目标，默认false跳过蜜罐检测
 // 考虑内存缓存结果
 func HoneyportDetection(host string) bool {
-	if 5 > len(host) {
+	if 5 > len(host) || ipCIDS.MatchString(host) {
 		return false
 	}
 	if "http" != strings.ToLower(host[0:4]) {
