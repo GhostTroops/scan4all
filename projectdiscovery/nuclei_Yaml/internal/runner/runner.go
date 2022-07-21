@@ -450,7 +450,7 @@ func (r *Runner) executeTemplatesInput(store *loader.Store, engine *core.Engine)
 
 	// 0 matches means no templates were found in directory
 	if templateCount == 0 {
-		return &atomic.Bool{}, errors.New("no valid templates were found")
+		return &atomic.Bool{}, nil //errors.New("no valid templates were found")
 	}
 
 	// tracks global progress and captures stdout/stderr until p.Wait finishes
@@ -483,7 +483,7 @@ func (r *Runner) displayExecutionInfo(store *loader.Store) {
 	messageStr := builder.String()
 	builder.Reset()
 
-	gologger.Info().Msgf("Using Nuclei Engine %s%s", config.Version, messageStr)
+	//gologger.Info().Msgf("Using Nuclei Engine %s%s", config.Version, messageStr)
 
 	if r.templatesConfig != nil && r.templatesConfig.NucleiTemplatesLatestVersion != "" { // TODO extract duplicated logic
 		builder.WriteString(" (")
