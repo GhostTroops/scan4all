@@ -20,7 +20,7 @@
   并对这些集成对项目进行代码级别优化、参数优化，个别模块重写  
   原则上不重复造轮子，除非轮子bug、问题太多
 - 跨平台：基于golang实现，轻量级、高度可定制、开源，支持Linux、windows、mac os等
-- 支持【20】种密码爆破，支持自定义字典 
+- 支持【20】种密码爆破，支持自定义字典, 通过 "priorityNmap": true 开启 
   * RDP
   * SSH
   * rsh-spx
@@ -100,7 +100,7 @@
 
 # 如何安装
 ```bash
-go install github.com/hktalent/scan4all@2.5.8
+go install github.com/hktalent/scan4all@2.5.9
 scan4all -h
 ```
 # 如何使用

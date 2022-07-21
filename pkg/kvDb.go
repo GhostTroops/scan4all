@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"github.com/dgraph-io/badger"
 	"log"
-	"os"
-	"runtime"
 	"sync"
 )
 
@@ -35,9 +33,6 @@ func (r *KvDbOp) SetExpiresAt(ExpiresAt uint64) {
 }
 
 func (r *KvDbOp) Init(szDb string) error {
-	if runtime.GOOS == "windows" {
-		os.RemoveAll(szDb)
-	}
 	opts := badger.DefaultOptions(szDb)
 	opts.CompactL0OnClose = true
 	opts.EventLogging = false
