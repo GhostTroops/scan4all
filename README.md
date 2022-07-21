@@ -48,6 +48,10 @@
   export PPSSWWDD=yourRootPswd 
   更多参考：config/doNmapScan.sh
   默认使用 naabu 完成端口扫描 -stats=true 可以查看扫描进度 
+     能否不扫描端口？
+```bash
+noScan=true  ./scan4all -l list.txt  -v
+```
 - 快速 15000+ POC 检测功能，PoCs包含：
   * nuclei POC
   #### Nuclei Templates Top 10 statistics
