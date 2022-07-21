@@ -207,7 +207,7 @@ func GetNmap() string {
 var hvNmap = false
 
 func CheckHvNmap() bool {
-	if runtime.GOOS == "windows" || !GetValAsBool("priorityNmap") {
+	if !GetValAsBool("priorityNmap") {
 		return false
 	}
 	if hvNmap {

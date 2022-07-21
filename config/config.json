@@ -65,8 +65,8 @@
   "EnableKsubdomain": true,
   "KsubdomainRegxp": "([0-9a-zA-Z\\-]+\\.[0-9a-zA-Z\\-]+)$",
   "naabu_dns": {},
-  "naabu": {"TopPorts": "http","ScanAllIPS": true,"Threads": 50,"EnableProgressBar": false},
-  "priorityNmap": false,
+  "naabu": {"TopPorts": "1000","ScanAllIPS": true,"Threads": 50,"EnableProgressBar": false},
+  "priorityNmap": true,
   "enableNuclei": false,
   "nuclei": {
     "Severities": "critical,high,medium",

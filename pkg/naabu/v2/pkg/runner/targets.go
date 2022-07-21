@@ -20,6 +20,7 @@ import (
 	"net/url"
 	"os"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
@@ -182,7 +183,11 @@ func (r *Runner) DoTargets() (bool, error) {
 		tempInput1, err := ioutil.TempFile("", "stdin-out-*")
 		if err == nil {
 			defer tempInput1.Close()
-			x := pkg.SzPwd + "/config/doNmapScan.sh " + r.targetsFile + " " + tempInput1.Name()
+			s009 := "/config/doNmapScan.sh "
+			if runtime.GOOS == "windows" {
+				s009 = "/config/doNmapScanWin.bat "
+			}
+			x := pkg.SzPwd + s009 + r.targetsFile + " " + tempInput1.Name()
 			log.Println(x)
 			ss, err := pkg.DoCmd(strings.Split(x, " ")...)
 			s0 := tempInput1.Name()

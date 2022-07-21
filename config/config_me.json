@@ -55,7 +55,7 @@
   "EnableHoneyportDetection": true,
   "KsubdomainRegxp": "([0-9a-zA-Z\\-]+\\.[0-9a-zA-Z\\-]+)$",
   "naabu_dns": {},
-  "naabu": {"TopPorts": "http","ScanAllIPS": true,"Threads": 64,"EnableProgressBar": false},
+  "naabu": {"TopPorts": "full","ScanAllIPS": true,"Threads": 64,"EnableProgressBar": false},
   "enableNuclei": true,
   "nuclei": {
     "RateLimit": 150,
