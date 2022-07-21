@@ -2,12 +2,14 @@ package brute
 
 import (
 	_ "embed"
+	"encoding/json"
 	"github.com/antlabs/strsim"
 	"github.com/hktalent/scan4all/db"
 	"github.com/hktalent/scan4all/lib"
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"gorm.io/gorm"
+	"net/url"
 	"regexp"
 	"strings"
 )
@@ -38,12 +40,21 @@ var fuzz404 string
 //go:embed dicts/404url.txt
 var sz404Url string
 
+var asz404UrlKey = "asz404Url"
+
 // 初始化字典到库中，且防止重复
 func init() {
 	fuzz404 = pkg.GetVal4File("fuzz404", fuzz404)
 	sz404Url = pkg.GetVal4File("404url", sz404Url)
 	page404Title = strings.Split(strings.TrimSpace(fuzz404), "\n")
 	asz404Url = strings.Split(strings.TrimSpace(sz404Url), "\n")
+	data, err := pkg.Cache1.Get(asz404UrlKey)
+	if nil == err && 0 < len(data) {
+		aT1 := asz404Url
+		if nil != json.Unmarshal(data, &asz404Url) {
+			asz404Url = aT1 // 容错
+		}
+	}
 	db.GetDb(&ErrPage{})
 }
 
@@ -115,6 +126,20 @@ func CheckIsErrPageAI(req *pkg.Response, page *Page) bool {
 			if 0 < len(data.Title) && (pkg.StrContains(x, data.Title) || pkg.StrContains(data.Title, x)) || 0 < len(data.Body) && pkg.StrContains(data.Body, x) {
 				db.Create[ErrPage](data)
 				return true
+			}
+			u01, err := url.Parse(*page.Url)
+			if nil == err && 2 < len(u01.Path) {
+				// 加 404 url判断
+				if pkg.Contains4sub[string](asz404Url, u01.Path) {
+					return true
+				}
+				// 添加到 asz404Url, 保存到库中
+				if 404 == req.StatusCode {
+					go func() {
+						asz404Url = append(asz404Url, u01.Path)
+						pkg.PutAny[[]string](asz404UrlKey, asz404Url) // 404 path 缓存起来，永久复用
+					}()
+				}
 			}
 		}
 	}
