@@ -8,6 +8,7 @@ import (
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/gologger"
 	"io"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -64,12 +65,22 @@ func main() {
 	if err != nil {
 		gologger.Fatal().Msgf("naaburunner.NewRunner Could not create runner: %s\n", err)
 	}
-	gologger.Info().Msg("Port scan starting....")
-	err = naabuRunner.RunEnumeration()
-	if err != nil {
-		gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
+	if pkg.GetValAsBool("noScan") {
+		s1, err := naabuRunner.MergeToFile()
+		if nil == err {
+			data, err := ioutil.ReadFile(s1)
+			if nil == err {
+				naaburunner.Naabubuffer.Write(data)
+			}
+		}
+	} else {
+		gologger.Info().Msg("Port scan starting....")
+		err = naabuRunner.RunEnumeration()
+		if err != nil {
+			gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
+		}
+		gologger.Info().Msg("Port scan over,web scan starting")
 	}
-	gologger.Info().Msg("Port scan over,web scan starting")
 	err = naabuRunner.Httpxrun()
 	if err != nil {
 		gologger.Fatal().Msgf("naabuRunner.Httpxrun Could not run httpRunner: %s\n", err)
@@ -77,4 +88,5 @@ func main() {
 	log.Printf("wait for all threads to end\n%s", szTip)
 	myConst.Wg.Wait()
 	myConst.StopAll()
+	naabuRunner.Close()
 }

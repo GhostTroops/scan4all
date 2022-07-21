@@ -49,6 +49,7 @@
   "HydraUser": "",
   "HydraPass": "",
   "UrlPrecise": true,
+  "noScan": false,
   "ParseSSl": true,
   "EnableSubfinder": true,
   "EnableKsubdomain": true,
