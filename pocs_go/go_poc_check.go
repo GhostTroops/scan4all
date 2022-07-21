@@ -283,7 +283,8 @@ func init() {
 					close(lib.PocCheck_pipe)
 					return
 				}
-				fmt.Printf(" go-POC-check wait %d ....\r", nMax-nCnt)
+				var f01 float32 = float32(nCnt/nMax) * 100
+				fmt.Printf(" Asynchronous go PoCs detection task %%%0.2f ....\r", f01)
 				<-time.After(time.Duration(1) * time.Second)
 				nCnt += 1
 			}

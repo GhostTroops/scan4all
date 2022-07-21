@@ -2,8 +2,8 @@ package color
 
 import (
 	"fmt"
+	"github.com/hktalent/scan4all/pkg"
 	"math/rand"
-	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -52,7 +52,7 @@ func Init(b bool) bool {
 		mod = 1
 		return false
 	}
-	if os.Getenv("github.com/hktalent/scan4all/pkg/kscan_COLOR") == "TRUE" {
+	if !pkg.GetValAsBool("kscan_COLOR") {
 		return false
 	}
 	mod = 0
