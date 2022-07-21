@@ -1,5 +1,6 @@
 <title>网站改版中</title>
 403
+<a href="/#/error/404">Found</a>
 404
 404 Not Found
 404.safedog.cn
