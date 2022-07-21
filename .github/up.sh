@@ -1,3 +1,6 @@
+cd $HOME/MyWork/nuclei-templates
+git pull
+cd $HOME/MyWork/scan4all
 cat ./go.mod|grep projectdiscovery|grep -E "subfinder|nuclei|wappalyzergo"|awk '{print $1}'|xargs -I % go get -u %
 
 ls ../nuclei-templates|xargs -I % cp -rf ../nuclei-templates/% config/nuclei-templates/

@@ -694,7 +694,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 					go func(target, method, protocol string) {
 						defer wg.Done()
 						result := r.analyze(hp, protocol, target, method, t, scanopts)
-						pkg.SendAnyData(result, pkg.Httpx)
+						pkg.SendAnyData(&result, pkg.Httpx)
 						output <- result
 						if scanopts.TLSProbe && result.TLSData != nil {
 							scanopts.TLSProbe = false
@@ -749,7 +749,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 						defer wg.Done()
 						h, _ := urlutil.ChangePort(target, fmt.Sprint(port))
 						result := r.analyze(hp, protocol, h, method, t, scanopts)
-						pkg.SendAnyData(result, pkg.Httpx)
+						pkg.SendAnyData(&result, pkg.Httpx)
 						output <- result
 						if scanopts.TLSProbe && result.TLSData != nil {
 							scanopts.TLSProbe = false

@@ -259,7 +259,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 	}
 	// 发送结果
 	if 0 < len(technologies) {
-		pkg.SendAnyData(map[string]interface{}{"Urls": []string{URL, finalURL}, "technologies": technologies}, pkg.Scan4all)
+		pkg.SendAnyData(&map[string]interface{}{"Urls": []string{URL, finalURL}, "technologies": technologies}, pkg.Scan4all)
 	}
 	return technologies
 }
@@ -277,7 +277,7 @@ func init() {
 				nCnt = 0
 				log.Printf("<-lib.PocCheck_pipe: %+v  %s", *x1.Wappalyzertechnologies, x1.URL)
 				lib.Wg.Add(1)
-				POCcheck(*x1.Wappalyzertechnologies, x1.URL, x1.FinalURL, x1.Checklog4j)
+				go POCcheck(*x1.Wappalyzertechnologies, x1.URL, x1.FinalURL, x1.Checklog4j)
 			default:
 				if nMax < nCnt {
 					close(lib.PocCheck_pipe)

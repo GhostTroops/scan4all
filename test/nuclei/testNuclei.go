@@ -2,9 +2,11 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
 	"github.com/projectdiscovery/nuclei/v2/pkg/model/types/severity"
 	nucleiType "github.com/projectdiscovery/nuclei/v2/pkg/templates/types"
+	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"sync"
@@ -36,12 +38,12 @@ func DoNuclei(buf *bytes.Buffer, wg *sync.WaitGroup, oOpts *map[string]interface
 func main() {
 	os.Setenv("enableNuclei", "true")
 	if true {
-		//go func() {
-		//	//szTip = "Since you started http://127.0.0.1:6060/debug/pprof/ with -debug, close the program with: control + C"
-		//	fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/\n\ngo tool pprof -seconds=10 -http=:9999 http://localhost:6060/debug/pprof/heap")
-		//	http.ListenAndServe(":6060", nil)
-		//}()
-		h01 := []severity.Severity{severity.Critical, severity.High, severity.Medium}
+		go func() {
+			//szTip = "Since you started http://127.0.0.1:6060/debug/pprof/ with -debug, close the program with: control + C"
+			fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/\n\ngo tool pprof -seconds=10 -http=:9999 http://localhost:6060/debug/pprof/heap")
+			http.ListenAndServe(":6060", nil)
+		}()
+		h01 := []severity.Severity{severity.Critical, severity.High, severity.Medium, 2, 1, 0}
 		//data1, err := json.Marshal(h01)
 		//if nil == err {
 		//	log.Printf("%+v", string(data1))
@@ -55,40 +57,18 @@ func main() {
 		go DoNuclei(&buf, &wg, &m1)
 
 		buf1 := bytes.Buffer{}
-		buf1.WriteString("http://pms.yx4.me\n")
+		buf1.WriteString("http://pms.yx4.me\nhttps://git.yx4.me/bugscan\n")
 		wg.Add(1)
 		m2 := map[string]interface{}{"Severities": h01, "EnableProgressBar": false, "Protocols": []nucleiType.ProtocolType{nucleiType.HTTPProtocol}, "UpdateTemplates": false, "Templates": []string{pwd + "/config/nuclei-templates"}, "TemplatesDirectory": pwd + "/config/nuclei-templates", "NoUpdateTemplates": true}
 		go DoNuclei(&buf1, &wg, &m2)
 
 		buf2 := bytes.Buffer{}
-		buf2.WriteString("https://kb.bugscan.net\n")
-		m3 := map[string]interface{}{"Severities": h01, "EnableProgressBar": false, "Protocols": []nucleiType.ProtocolType{nucleiType.HTTPProtocol}, "UpdateTemplates": false, "Templates": []string{pwd + "/config/nuclei-templates/51pwn"}, "TemplatesDirectory": pwd + "/config/nuclei-templates/51pwn", "NoUpdateTemplates": true}
+		buf2.WriteString("http://192.168.10.240\n")
+		// "Protocols": []nucleiType.ProtocolType{nucleiType.HTTPProtocol},
+		m3 := map[string]interface{}{"Severities": h01, "EnableProgressBar": true, "UpdateTemplates": false, "Templates": []string{pwd + "/config/nuclei-templates/51pwn"}, "TemplatesDirectory": pwd + "/config/nuclei-templates/51pwn", "NoUpdateTemplates": true}
 		wg.Add(1)
 		go DoNuclei(&buf2, &wg, &m3)
 		wg.Wait()
 	}
-	//oUrl, err := url.Parse("173.82.115.38:80")
-	//if nil == err {
-	//	szK := oUrl.Scheme + "//" + oUrl.Hostname()
-	//	log.Println(szK)
-	//} else {
-	//	log.Println(err)
-	//}
-	//args := []string{"key111key111key111key111", "dataxxxxxxdataxxxxxxdataxxxxxxdataxxxxxxdataxxxxxx"}
-	//key := args[0]
-	//value := args[1]
-	//Content := []byte(value)
-	//block, _ := aes.NewCipher([]byte(key))
-	//blockSize := block.BlockSize()
-	//n := blockSize - len(Content)%blockSize
-	//temp := bytes.Repeat([]byte{byte(n)}, n)
-	//Content = append(Content, temp...)
-	//
-	//iv := uuid.NewV4().Bytes()
-	//fmt.Println(len(iv), iv)
-	//blockMode := cipher.NewCBCEncrypter(block, iv)
-	//cipherText := make([]byte, len(Content))
-	//blockMode.CryptBlocks(cipherText, Content)
-	//xx5 := append(iv[:], cipherText[:]...)
 
 }

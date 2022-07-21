@@ -142,7 +142,6 @@ func (n *Nmap) Parse() ([]NmapResult, error) {
 					Os.Name = n1.Hosts[i].Os.OsMatches[y].Name
 					Os.Accuracy = tmp
 				}
-
 			}
 			if len(PortList) != 0 {
 				for _, v := range PortList {

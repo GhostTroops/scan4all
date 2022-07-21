@@ -22,7 +22,7 @@ var (
 	CustomAuthMap  *AuthList
 	// rtsp://admin:admin@192.168.0.111:554/0x8b6c42
 	// rtsp: 554, 5554,8554
-	ProtocolList = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,smb,telnet,snmp,wap-wsp,router,winrm", ",")
+	ProtocolList = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,mongod,smb,telnet,snmp,wap-wsp,router,winrm", ",")
 )
 
 func NewCracker(info *AuthInfo, isAuthUpdate bool, threads int) *Cracker {
@@ -78,11 +78,7 @@ func (c *Cracker) Run() {
 		//若SID未知，则不进行后续暴力破解
 	case "postgresql":
 		c.Pool.Function = postgresqlCracker
-	case "ldap":
-
-	case "rsh-spx":
-		c.Pool.Function = sshCracker
-	case "ssh":
+	case "ldap", "rsh-spx", "ssh":
 		c.Pool.Function = sshCracker
 	case "telnet":
 		serverType := getTelnetServerType(ip, port)
@@ -108,7 +104,7 @@ func (c *Cracker) Run() {
 		c.Pool.Function = RouterOsCracker
 	case "winrm":
 		c.Pool.Function = WinrmCracker
-	case "mongodb":
+	case "mongod", "mongodb":
 		c.Pool.Function = mongodbCracker
 	case "redis":
 		c.Pool.Function = redisCracker

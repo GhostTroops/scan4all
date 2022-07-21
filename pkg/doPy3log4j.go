@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"fmt"
 	"github.com/hktalent/scan4all/lib"
 	"net/url"
 	"os"
@@ -16,7 +15,7 @@ var log4jsv sync.Map
 // 3、只支持：https://github.com/hktalent/log4j-scan 版本
 func DoLog4j(szUrl string) {
 	if 5 > len(szUrl) || !FileExists(UserHomeDir+"/MyWork/log4j-scan") {
-		fmt.Println("DoLog4j: ", 5 > len(szUrl), !FileExists(UserHomeDir+"/MyWork/log4j-scan"))
+		//fmt.Println("DoLog4j: ", 5 > len(szUrl), !FileExists(UserHomeDir+"/MyWork/log4j-scan"))
 		return
 	}
 	lib.DoSyncFunc(func() {
