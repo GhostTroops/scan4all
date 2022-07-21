@@ -50,7 +50,7 @@ func HoneyportDetection(host string) bool {
 				defer resp.Body.Close()
 				if resp.StatusCode == 200 {
 					if a, ok := resp.Header["Server"]; ok {
-						if 1 < len(a[0]) || 3 < len(strings.Split(a[0], ",")) {
+						if 50 < len(a[0]) || 3 < len(strings.Split(a[0], ",")) {
 							hdCache.Store(szK, true)
 							return true
 						}
