@@ -58,6 +58,7 @@
   "naabu": {"TopPorts": "full","ScanAllIPS": true,"Threads": 64,"EnableProgressBar": false},
   "enableNuclei": true,
   "nuclei": {
+    "Severities":  [5,4,3],
     "RateLimit": 150,
     "BulkSize":64,
     "TemplateThreads": 64,

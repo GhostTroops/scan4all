@@ -3,6 +3,7 @@ package pkg
 import (
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"github.com/hktalent/scan4all/projectdiscovery/subfinder"
 	"reflect"
 	"strings"
@@ -13,6 +14,16 @@ import (
 func Contains[T any](a []T, s T) bool {
 	for _, x := range a {
 		if reflect.DeepEqual(s, x) {
+			return true
+		}
+	}
+	return false
+}
+func Contains4sub[T any](a []T, s T) bool {
+	s2 := fmt.Sprintf("%v", s)
+	for _, x := range a {
+		s1 := fmt.Sprintf("%v", x)
+		if -1 < strings.Index(s2, s1) {
 			return true
 		}
 	}
