@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
+	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/retryablehttp-go"
 	"log"
@@ -19,7 +20,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hktalent/scan4all/nuclei_Yaml"
 	httpxrunner "github.com/hktalent/scan4all/pkg/httpx/runner"
 
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
