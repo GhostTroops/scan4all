@@ -3,11 +3,10 @@ package runner
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"sort"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 const portListStrParts = 2
@@ -84,7 +83,7 @@ func ParsePorts(options *Options) ([]int, error) {
 				return nil, fmt.Errorf("could not read ports: %s", err)
 			}
 		default:
-			return nil, errors.New("invalid top ports option")
+			log.Println("no port scan")
 		}
 	}
 

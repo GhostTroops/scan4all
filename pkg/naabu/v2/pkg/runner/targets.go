@@ -28,7 +28,7 @@ func (r *Runner) Load() error {
 	r.scanner.State = scan.Init
 
 	// merge all target sources into a file
-	targetfile, err := r.mergeToFile()
+	targetfile, err := r.MergeToFile()
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func (r *Runner) Load() error {
 	return nil
 }
 
-func (r *Runner) mergeToFile() (string, error) {
+func (r *Runner) MergeToFile() (string, error) {
 	// merge all targets in a unique file
 	tempInput, err := ioutil.TempFile("", "stdin-input-*")
 	if err != nil {
@@ -250,14 +250,13 @@ func (r *Runner) PreProcessTargets() error {
 	s := bufio.NewScanner(f)
 	for s.Scan() {
 		wg.Add()
-		func(target string) {
+		go func(target string) {
 			defer wg.Done()
 			if err := r.AddTarget(target); err != nil {
 				gologger.Warning().Msgf("%s\n", err)
 			}
 		}(s.Text())
 	}
-
 	wg.Wait()
 	return nil
 }
