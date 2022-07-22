@@ -1,29 +1,29 @@
 [![Tweet](https://img.shields.io/twitter/url/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
 <p align="center">
-   <a href="/README_EN.md">README_EN</a> •
-   <a href="/static/Installation.md">编译/安装/运行</a> •
-   <a href="/static/usage.md">参数说明</a> •
-   <a href="/static/running.md">如何使用</a> •
-   <a href="/static/scenario.md">使用场景</a> •
-   <a href="/static/pocs.md">POC列表</a> •
-   <a href="/static/development.md">自定义扫描</a> •
-   <a href="/static/NicePwn.md">最佳实践</a>
+   <a href="/README_CN.md">README_中文</a> •
+   <a href="/static/Installation.md">Compile/Install/Run</a> •
+   <a href="/static/usage.md">Parameter Description</a> •
+   <a href="/static/running.md">How to use</a> •
+   <a href="/static/scenario.md">Scenario</a> •
+   <a href="/static/pocs.md">POC List</a> •
+   <a href="/static/development.md">Custom Scan</a> •
+   <a href="/static/NicePwn.md">Best Practices</a>
 </p>
 
-# 特性
+# Features
 
 <h1 align="center">
 <img width="928" alt="image" src="https://user-images.githubusercontent.com/18223385/175768227-098c779b-6c5f-48ee-91b1-c56e3daa9c87.png">
 </h1>
 
-- 什么是scan4all：集成 vscan、nuclei、ksubdomain、subfinder等，充分自动化、智能化 
-  并对这些集成的项目进行代码级别优化、参数优化，个别模块,如 vscan filefuzz部分进行了重写  
-  原则上不重复造轮子，除非存在bug、问题
-- 跨平台：基于golang实现，轻量级、高度可定制、开源，支持Linux、windows、mac os等
-- 支持【20】种密码爆破，支持自定义字典, 通过 "priorityNmap": true 开启 
+- What is scan4all: integrated vscan, nuclei, ksubdomain, subfinder, etc., fully automated and intelligent
+  Code-level optimization, parameter optimization, and individual modules, such as vscan filefuzz, have been rewritten for these integrated projects.
+  In principle, do not repeat the wheel, unless there are bugs, problems
+- Cross-platform: based on golang implementation, lightweight, highly customizable, open source, supports Linux, windows, mac os, etc.
+- Support [20] password blasting, support custom dictionary, open by "priorityNmap": true
   * RDP
   * SSH
-  * rsh-spx
+    *rsh-spx
   * Mysql
   * MsSql
   * Oracle
@@ -31,28 +31,28 @@
   * Redis
   * FTP
   * Mongodb
-  * SMB,同时检测 MS17-010（CVE-2017-0143、CVE-2017-0144、CVE-2017-0145、CVE-2017-0146、CVE-2017-0147、CVE-2017-0148）、SmbGhost（CVE-2020-0796）
+  * SMB, also detect MS17-010 (CVE-2017-0143, CVE-2017-0144, CVE-2017-0145, CVE-2017-0146, CVE-2017-0147, CVE-2017-0148), SmbGhost (CVE- 2020-0796)
   * Telnet
   * Snmp
-  * Wap-wsp（Elasticsearch）
+  * Wap-wsp (Elasticsearch)
   * RouterOs
   * HTTP BasicAuth
-  * Weblogic，同时通过 enableNuclei=true 开启nuclei，支持T3、IIOP等检测
+  * Weblogic, enable nuclei through enableNuclei=true at the same time, support T3, IIOP and other detection
   * Tomcat
   * Jboss
   * Winrm(wsman)
-- 默认开启http密码智能爆破，需要 HTTP 密码时才会自动启动，无需人工干预
-- 检测系统是否存在 nmap ，存在通过 priorityNmap=true 启用 nmap 进行快速扫描，默认开启，优化过的 nmap 参数比 masscan 快
-  使用 nmap 的弊端：网络不好的是否，因为流量网络包过大可能会导致结果不全
-  使用 nmap 另外需要将 root 密码设置到环境变量
-  export PPSSWWDD=yourRootPswd 
-  更多参考：config/doNmapScan.sh
-  默认使用 naabu 完成端口扫描 -stats=true 可以查看扫描进度 
-     能否不扫描端口？
+- By default, http password intelligent blasting is enabled, and it will be automatically activated when an HTTP password is required, without manual intervention
+- Detect whether there is nmap in the system, and enable nmap for fast scanning through priorityNmap=true, which is enabled by default, and the optimized nmap parameters are faster than masscan
+  Disadvantages of using nmap: Is the network bad, because the traffic network packet is too large, which may lead to incomplete results
+  Using nmap additionally requires setting the root password to an environment variable
+  export PPSSWWDD=yourRootPswd
+  More references: config/doNmapScan.sh
+  By default, naabu is used to complete port scanning -stats=true to view the scanning progress
+  Can I not scan ports?
 ```bash
-noScan=true  ./scan4all -l list.txt  -v
-```
-- 快速 15000+ POC 检测功能，PoCs包含：
+noScan=true ./scan4all -l list.txt -v
+````
+- Fast 15000+ POC detection capabilities, PoCs include: 
   * nuclei POC
   #### Nuclei Templates Top 10 statistics
 
@@ -68,101 +68,88 @@ noScan=true  ./scan4all -l list.txt  -v
 | rce       |   308 | princechaddha |   147 | workflows        |   187 |          |       |         |       |
 | wp-plugin |   295 | pussycat0x    |   127 | default-logins   |    99 |          |       |         |       |
 | tech      |   282 | gy741         |   124 | file             |    76 |          |       |         |       |
-  * vscan POC
-    * vscan POC包含了：xray 2.0 300+ POC、 go POC等
-  * scan4all POC  
-  
-- 支持 7000+ web 指纹扫描、识别：
-  * httpx 指纹
-  * vscan 指纹
-    * vscan 指纹：包含 eHoleFinger、 localFinger等
-  * scan4all 指纹 
-    
-- 支持146种协议90000+规则port扫描
-  * 依赖nmap支持的协议、指纹
-- 快速HTTP敏感文件检测，可以自定义字典
-- 登陆页面检测
-- 支持多种类型的输入 - STDIN/HOST/IP/CIDR/URL/TXT
-- 支持多种输出类型 - JSON/TXT/CSV/STDOUT
-- 高度可集成：可配置将结果统一存储到 Elasticsearch【强烈推荐】
-- 智能SSL分析：
-  * 深入分析，自动关联SSL信息中域名的扫描，如*.xxx.com，并根据配置完成子域遍历，结果自动添加目标到扫描列表
-  * 支持开启智能SSL信息中*.xx.com子域遍历功能， export EnableSubfinder=true，或者在配置文件中调整
-- 自动识别域（DNS）关联多个IP的情况，并自动扫描关联的多个IP
-- 智能处理： 
-  * 1、当列表中多个域名的ip相同时，合并端口扫描，提高效率
-  * 2、智能处理http异常页面、及指纹计算和学习
-- 自动化供应链识别、分析和扫描
-- 联动 python3 <a href=https://github.com/hktalent/log4j-scan>log4j-scan</a>
-  * 该版本屏蔽你目标信息传递到 DNS Log Server 的bug，避免暴露漏洞
-  * 增加了将结果发送到 Elasticsearch 的功能，便于批量、盲打
-  * 未来有时间了再实现golang版本
-    如何使用？
-```bash
-mkdir ~/MyWork/;cd ~/MyWork/;git clone  https://github.com/hktalent/log4j-scan
-```
-- 智能识别蜜罐，并跳过目标，默认该功能是关闭的，可设置EnableHoneyportDetection=true开启
-- 高度可定制：允许通过config/config.json配置定义自己的字典，或者控制更多细节，包含不限于:nuclei、httpx、naabu等
+* vscan POC
+  * vscan POC includes: xray 2.0 300+ POC, go POC, etc.
+* scan4all POC
 
-# 工作流程
+- Support 7000+ web fingerprint scanning, identification:
+  * httpx fingerprint
+    * vscan fingerprint
+    * vscan fingerprint: including eHoleFinger, localFinger, etc.
+  * scan4all fingerprint
+
+- Support 146 protocols and 90000+ rule port scanning
+  * Depends on protocols and fingerprints supported by nmap
+- Fast HTTP sensitive file detection, can customize dictionary
+- Landing page detection
+- Supports multiple types of input - STDIN/HOST/IP/CIDR/URL/TXT
+- Supports multiple output types - JSON/TXT/CSV/STDOUT
+- Highly integratable: Configurable unified storage of results to Elasticsearch [strongly recommended]
+- Smart SSL Analysis:
+  * In-depth analysis, automatically correlate the scanning of domain names in SSL information, such as *.xxx.com, and complete subdomain traversal according to the configuration, and the result will automatically add the target to the scanning list
+  * Support to enable *.xx.com subdomain traversal function in smart SSL information, export EnableSubfinder=true, or adjust in the configuration file
+- Automatically identify the case of multiple IPs associated with a domain (DNS), and automatically scan the associated multiple IPs
+- Smart processing:
+  * 1. When the IPs of multiple domain names in the list are the same, merge port scans to improve efficiency
+  * 2. Intelligently handle http abnormal pages, and fingerprint calculation and learning
+- Automated supply chain identification, analysis and scanning
+- Link python3 <a href=https://github.com/hktalent/log4j-scan>log4j-scan</a>
+  * This version blocks the bug that your target information is passed to the DNS Log Server to avoid exposing vulnerabilities
+  * Added the ability to send results to Elasticsearch for batch, touch typing
+  * There will be time in the future to implement the golang version
+    how to use?
+```bash
+mkdir ~/MyWork/;cd ~/MyWork/;git clone https://github.com/hktalent/log4j-scan
+````
+- Intelligently identify honeypots and skip targets. This function is disabled by default. You can set EnableHoneyportDetection=true to enable
+- Highly customizable: allow to define your own dictionary through config/config.json configuration, or control more details, including but not limited to: nuclei, httpx, naabu, etc.
+
+# work process
 
 <img src="static/workflow.jpg">
 
-# 如何安装
+# how to install
+download from
+<a href=https://github.com/hktalent/scan4all/releases>Releases</a>
 ```bash
-go install github.com/hktalent/scan4all@2.5.9
+go install github.com/hktalent/scan4all@2.6.1
 scan4all -h
-```
-# 如何使用
-- 1、启动 Elasticsearch, 当然你可以使用传统方式输出、结果
+````
+# how to use
+- 1. Start Elasticsearch, of course you can use the traditional way to output, results
 ```bash
 mkdir -p logs data
-docker run --restart=always --ulimit nofile=65536:65536 -p 9200:9200 -p 9300:9300 -d --name es -v $PWD/logs:/usr/share/elasticsearch/logs -v $PWD/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml -v $PWD/config/jvm.options:/usr/share/elasticsearch/config/jvm.options  -v $PWD/data:/usr/share/elasticsearch/data  hktalent/elasticsearch:7.16.2
-# 初始化es 索引,每种工具的结果结构不一样，分开存储
+docker run --restart=always --ulimit nofile=65536:65536 -p 9200:9200 -p 9300:9300 -d --name es -v $PWD/logs:/usr/share/elasticsearch/logs -v $PWD /config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml -v $PWD/config/jvm.options:/usr/share/elasticsearch/config/jvm.options -v $PWD/data:/ usr/share/elasticsearch/data hktalent/elasticsearch:7.16.2
+# Initialize the es index, the result structure of each tool is different, and it is stored separately
 ./config/initEs.sh
 
-# 搜索语法，更多的查询方法，自己学 Elasticsearch
+# Search syntax, more query methods, learn Elasticsearch by yourself
 http://127.0.0.1:9200/nmap_index/_doc/_search?q=_id:192.168.0.111
-其中92.168.0.111 是要查询的目标
+where 92.168.0.111 is the target to query
 
-```
-- 使用前请自行安装nmap
-<a href=https://github.com/hktalent/scan4all/discussions>使用帮助</a>
+````
+- Please install nmap by yourself before use
+  <a href=https://github.com/hktalent/scan4all/discussions>Using Help</a>
 ```bash
 go build
-# 精准扫描 url列表 UrlPrecise=true
+# Precise scan url list UrlPrecise=true
 UrlPrecise=true ./scan4all -l xx.txt
-# 关闭适应nmap，使用naabu端口扫描其内部定义的http相关端口
+# Disable adaptation to nmap and use naabu port to scan its internally defined http-related ports
 priorityNmap=false ./scan4all -tp http -list allOut.txt -v
-```
+````
 
 # Work Plan
-- 整合 web-cache-vulnerability-scanner 实现HTTP smuggling走私、缓存中毒检测
-- 联动 metasploit-framework，在系统已经安装好对前提条件下，配合tmux，并以 macos 环境为最佳实践完成联动
-- 整合 更多 fuzzer <!-- gryffin -->,如 联动 sqlmap
-- 整合 chromedp 实现对登陆页面截图，以及对纯js、js架构前端登陆页面进行检测、以及相应爬虫（敏感信息检测、页面爬取）
-- 整合 nmap-go 提高执行效率,动态解析结果流，并融合到当前任务瀑布流中
-- 整合 ksubdomain 实现更快子域名爆破
-- 整合 spider 以便发现更多漏洞
-- 半自动化指纹学习，提高精准度；指定指纹名称，通过配置
+- Integrate web-cache-vulnerability-scanner to realize HTTP smuggling smuggling and cache poisoning detection
+- Linkage with metasploit-framework, on the premise that the system has been installed, cooperate with tmux, and complete the linkage with the macos environment as the best practice
+- Integrate more fuzzers <!-- gryffin -->, such as linking sqlmap
+- Integrate chromedp to achieve screenshots of landing pages, detection of front-end landing pages with pure js and js architecture, and corresponding crawlers (sensitive information detection, page crawling)
+- Integrate nmap-go to improve execution efficiency, dynamically parse the result stream, and integrate it into the current task waterfall
+- Integrate ksubdomain to achieve faster subdomain blasting
+- Integrate spider to find more bugs
+- Semi-automatic fingerprint learning to improve accuracy; specify fingerprint name, configure
 
-# 变更日志
-- 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/issues/2301>#2301</a> 并发多实例的bug
-- 2022-07-20 add web cache vulnerability scanner
-- 2022-07-19 PR nuclei <a href=https://github.com/projectdiscovery/nuclei/pull/2308>#2308</a> add dsl function: substr aes_cbc
-- 2022-07-19 添加dcom Protocol enumeration network interfaces
-- 2022-06-30 嵌入式集成私人版本nuclei-templates 共3744个YAML POC； 1、集成Elasticsearch存储中间结果 2、嵌入整个config目录到程序中
-- 2022-06-27 优化模糊匹配，提高正确率、鲁棒性;集成ksubdomain进度
-- 2022-06-24 优化指纹算法；增加工作流程图
-- 2022-06-23 添加参数ParseSSl，控制默认不深度分析SSL中的DNS信息，默认不对SSL中dns进行扫描；优化：nmap未自动加.exe的bug；优化windows下缓存文件未优化体积的bug
-- 2022-06-22 集成11种协议弱口令检测、密码爆破：ftp、mongodb、mssql、mysql、oracle、postgresql、rdp、redis、smb、ssh、telnet，同时优化支持外挂密码字典
-- 2022-06-20 集成Subfinder，域名爆破，启动参数导出EnableSubfinder=true，注意启动后很慢； ssl证书中域名信息的自动深度钻取
-  允许通过 config/config.json 配置定义自己的字典，或设置相关开关
-- 2022-06-17 优化一个域名多个IP的情况，所有IP都会被端口扫描，然后按照后续的扫描流程
-- 2022-06-15 此版本增加了过去实战中获得的几个weblogic密码字典和webshell字典
-- 2022-06-10 完成核的整合，当然包括核模板的整合
-- 2022-06-07 添加相似度算法来检测 404
-- 2022-06-07 增加http url列表精准扫描参数，根据环境变量UrlPrecise=true开启
+# Changelog
+- 2022-07-20 fix and PR nuclei <a href
 
 # Donation
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |
