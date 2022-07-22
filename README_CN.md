@@ -98,7 +98,7 @@ noScan=true  ./scan4all -l list.txt  -v
   * 2、智能处理http异常页面、及指纹计算和学习
 - 自动化供应链识别、分析和扫描
 - 联动 python3 <a href=https://github.com/hktalent/log4j-scan>log4j-scan</a>
-  * 该版本屏蔽你目标信息传递到 DNS Log Server 的bug，避免暴露漏洞
+  * <a href=https://github.com/fullhunt/log4j-scan/pull/128/files>该版本屏蔽你目标信息传递到 DNS Log Server 的bug，避免暴露漏洞</a>
   * 增加了将结果发送到 Elasticsearch 的功能，便于批量、盲打
   * 未来有时间了再实现golang版本
     如何使用？
