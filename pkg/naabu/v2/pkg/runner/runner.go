@@ -54,6 +54,7 @@ var Naabubuffer = bytes.Buffer{}
 func (r *Runner) Httpxrun() error {
 	httpxrunner.Naabubuffer = Naabubuffer
 	var nucleiDone = make(chan bool)
+	//log.Printf("%+v", httpxrunner.Naabubuffer.String())
 	// 集成nuclei
 	//log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
 	//Naabubuffer1 := bytes.Buffer{}
