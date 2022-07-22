@@ -45,7 +45,11 @@
 - Detect whether there is nmap in the system, and enable nmap for fast scanning through priorityNmap=true, which is enabled by default, and the optimized nmap parameters are faster than masscan
   Disadvantages of using nmap: Is the network bad, because the traffic network packet is too large, which may lead to incomplete results
   Using nmap additionally requires setting the root password to an environment variable
-  export PPSSWWDD=yourRootPswd
+
+```bash  
+  export PPSSWWDD=yourRootPswd 
+```
+
   More references: config/doNmapScan.sh
   By default, naabu is used to complete port scanning -stats=true to view the scanning progress
   Can I not scan ports?
