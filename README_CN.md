@@ -118,6 +118,11 @@ go install github.com/hktalent/scan4all@2.6.1
 scan4all -h
 ```
 # 如何使用
+docker ubuntu install
+```bash 
+apt update;apt install -yy libpcap0.8-dev
+```
+
 - 1、启动 Elasticsearch, 当然你可以使用传统方式输出、结果
 ```bash
 mkdir -p logs data
