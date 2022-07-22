@@ -14,7 +14,7 @@ info:
 requests:
   - method: GET
     path:
-      - "{{BaseURL}}/?a=display&templateFile=README_CN.md"
+      - "{{BaseURL}}/?a=display&templateFile=README.md"
 
     matchers-condition: and
     matchers:
