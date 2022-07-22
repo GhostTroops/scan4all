@@ -37,6 +37,7 @@ func DoNuclei(buf *bytes.Buffer, wg *sync.WaitGroup, oOpts *map[string]interface
 */
 func main() {
 	os.Setenv("enableNuclei", "true")
+
 	if true {
 		go func() {
 			//szTip = "Since you started http://127.0.0.1:6060/debug/pprof/ with -debug, close the program with: control + C"
