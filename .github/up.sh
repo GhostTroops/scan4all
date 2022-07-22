@@ -1,5 +1,10 @@
 upGit xray
 upGit nuclei-templates
+upGit h2csmuggler
+upGit http-request-smuggler
+upGit request_smuggler
+upGit smuggler
+
 cd $HOME/MyWork/scan4all
 cat ./go.mod|grep projectdiscovery|grep -E "subfinder|nuclei|wappalyzergo"|awk '{print $1}'|xargs -I % go get -u %
 
