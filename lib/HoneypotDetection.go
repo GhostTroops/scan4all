@@ -20,6 +20,7 @@ var ipCIDS = regexp.MustCompile("^(\\d+\\.){3}\\d+\\/\\d+$")
 // 添加蜜罐检测，并自动跳过目标，默认false跳过蜜罐检测
 // 考虑内存缓存结果
 func HoneyportDetection(host string) bool {
+	host = strings.TrimSpace(host)
 	if !EnableHoneyportDetection || 5 > len(host) || ipCIDS.MatchString(host) {
 		return false
 	}
