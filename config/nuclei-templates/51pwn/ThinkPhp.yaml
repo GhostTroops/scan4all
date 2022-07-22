@@ -61,13 +61,16 @@ requests:
     req-condition: true
     stop-at-first-match: true
 
-    matchers-condition: or
+    matchers-condition: and
     matchers:
       - type: word
         part: body
         words:
           - "56540676a129760a3"
         condition: or
+      - type: dsl
+        dsl:
+          - 'status_code != 404'
     iterate-all: true
     extractors:
       - type: regex
@@ -177,7 +180,7 @@ requests:
     req-condition: true
     stop-at-first-match: true
 
-    matchers-condition: or
+    matchers-condition: and
     matchers:
       # - type: status
       #   status:
@@ -223,6 +226,9 @@ requests:
     stop-at-first-match: true
     matchers-condition: and
     matchers:
+      - type: dsl
+        dsl:
+          - 'status_code != 404'
       - type: regex
         part: body
         regex:
