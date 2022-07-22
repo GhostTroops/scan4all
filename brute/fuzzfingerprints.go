@@ -102,7 +102,7 @@ func Addfingerprintsnormal(payload string, technologies []string, req *pkg.Respo
 	case "/actuator/gateway/routes", "/actuator/gateway/globalfilters", "/actuator/gateway/routefilters":
 		technologies = append(technologies, "Spring")
 		technologies = append(technologies, "SpringGateway")
-	case "/vendor/phpunit/phpunit/LICENSE", "/vendor/phpunit/phpunit/README.md":
+	case "/vendor/phpunit/phpunit/LICENSE", "/vendor/phpunit/phpunit/README_CN.md":
 		technologies = append(technologies, "phpunit")
 	case "/wp-config.php.bak", "/wp-content/debug.log", "/wp-content/uploads/dump.sql", "/wp-json/", "/wp-json/wp/v2/users", "/.wp-config.php.swp":
 		technologies = append(technologies, "WordPress")
