@@ -27,6 +27,9 @@ func HoneyportDetection(host string) bool {
 		host = "http://" + host
 	}
 	oUrl, err := url.Parse(host)
+	if err != err {
+		return false
+	}
 	szK := oUrl.Scheme + "//" + oUrl.Hostname()
 	if EnableHoneyportDetection {
 		if v, ok := hdCache.Load(szK); ok {
