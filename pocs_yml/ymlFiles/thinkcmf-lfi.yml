@@ -6,7 +6,7 @@ rules:
         request:
             cache: true
             method: GET
-            path: /?a=display&templateFile=README_CN.md
+            path: /?a=display&templateFile=README.md
         expression: response.status == 200 && response.body.bcontains(bytes(string(b"ThinkCMF"))) && response.body.bcontains(bytes(string(b"## README")))
 expression: r0()
 detail:
