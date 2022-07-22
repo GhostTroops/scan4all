@@ -65,6 +65,6 @@ func HoneyportDetection(host string) bool {
 		}
 	}
 	hdCache.Store(szK, false)
-	
+
 	return false
 }
