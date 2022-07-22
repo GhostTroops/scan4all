@@ -45,7 +45,9 @@ Vulnerabilities Scan；15000+PoC漏洞扫描；20种应用密码爆破；7000+We
 - 检测系统是否存在 nmap ，存在通过 priorityNmap=true 启用 nmap 进行快速扫描，默认开启，优化过的 nmap 参数比 masscan 快
   使用 nmap 的弊端：网络不好的是否，因为流量网络包过大可能会导致结果不全
   使用 nmap 另外需要将 root 密码设置到环境变量
+```bash  
   export PPSSWWDD=yourRootPswd 
+```
   更多参考：config/doNmapScan.sh
   默认使用 naabu 完成端口扫描 -stats=true 可以查看扫描进度 
      能否不扫描端口 ？ 跳过端口扫描，意外做基于端口指纹进行密码爆破的检测将失效，密码破解功能也一并被跳过
