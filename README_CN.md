@@ -48,7 +48,7 @@ Vulnerabilities Scan；15000+PoC漏洞扫描；20种应用密码爆破；7000+We
   export PPSSWWDD=yourRootPswd 
   更多参考：config/doNmapScan.sh
   默认使用 naabu 完成端口扫描 -stats=true 可以查看扫描进度 
-     能否不扫描端口？
+     能否不扫描端口 ？ 跳过端口扫描，意外做基于端口指纹进行密码爆破的检测将失效，密码破解功能也一并被跳过
 ```bash
 noScan=true  ./scan4all -l list.txt  -v
 ```
