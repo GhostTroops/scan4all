@@ -71,7 +71,7 @@ noScan=true  ./scan4all -l list.txt  -v
 
 **281 directories, 3922 files**.
   * vscan POC
-    * vscan POC包含了：xray 2.0 300+ POC、 go POC等
+    * vscan POC包含了：xray 2.0 300+ POC、 go POC等；特别注意，xray POC检测需要有指纹命中后才会触发检测
   * scan4all POC  
   
 - 支持 7000+ web 指纹扫描、识别：

@@ -68,7 +68,7 @@
   "naabu": {"TopPorts": "1000","ScanAllIPS": true,"Threads": 50,"EnableProgressBar": false},
   "priorityNmap": true,
   "noScan": false,
-  "enableNuclei": false,
+  "enableNuclei": true,
   "nuclei": {
     "Severities":  [5,4,3],
     "RateLimit": 150,
