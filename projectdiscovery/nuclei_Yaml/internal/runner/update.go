@@ -418,7 +418,7 @@ func calculateTemplateAbsolutePath(zipFilePath, configuredTemplateDirectory stri
 	directory, fileName := filepath.Split(zipFilePath)
 
 	if !strings.EqualFold(fileName, ".new-additions") {
-		if strings.TrimSpace(fileName) == "" || strings.HasPrefix(fileName, ".") || strings.EqualFold(fileName, "README.md") {
+		if strings.TrimSpace(fileName) == "" || strings.HasPrefix(fileName, ".") || strings.EqualFold(fileName, "README_CN.md") {
 			return "", true, nil
 		}
 	}
