@@ -2,7 +2,7 @@ package redis
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"net"
 	"time"
 )
@@ -27,7 +27,7 @@ func Check(Host, Password string, Port int) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if pkg.StrContains(reply, "+OK") == false {
+	if util.StrContains(reply, "+OK") == false {
 		return false, err
 	}
 	return true, err

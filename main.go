@@ -3,8 +3,7 @@ package main
 import (
 	"embed"
 	"fmt"
-	myConst "github.com/hktalent/scan4all/lib"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/gologger"
 	"io"
@@ -23,7 +22,7 @@ import (
 var config embed.FS
 
 func init() {
-	pkg.Init2(&config)
+	util.Init2(&config)
 	rand.Seed(time.Now().UnixNano())
 }
 
@@ -31,11 +30,11 @@ var Wg sync.WaitGroup
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	myConst.Wg = &Wg
+	util.Wg = &Wg
 	defer func() {
-		pkg.Cache1.Close()
-		if runtime.GOOS == "windows" || pkg.GetValAsBool("autoRmCache") {
-			os.RemoveAll(pkg.GetVal(pkg.CacheName))
+		util.Cache1.Close()
+		if runtime.GOOS == "windows" || util.GetValAsBool("autoRmCache") {
+			os.RemoveAll(util.GetVal(util.CacheName))
 		}
 		// clear
 		// 程序都结束了，没有必要清理内存了
@@ -43,7 +42,7 @@ func main() {
 	}()
 	options := naaburunner.ParseOptions()
 	szTip := ""
-	if options.Debug && pkg.GetValAsBool("enablDevDebug") {
+	if options.Debug && util.GetValAsBool("enablDevDebug") {
 		// debug 优化时启用///////////////////////
 		go func() {
 			szTip = "Since you started http://127.0.0.1:6060/debug/pprof/ with -debug, close the program with: control + C"
@@ -57,7 +56,7 @@ func main() {
 		log.SetFlags(0)
 		log.SetOutput(io.Discard)
 	}
-	pkg.G_Options = options
+	util.G_Options = options
 	if runtime.GOOS == "windows" {
 		options.NoColor = true
 	}
@@ -65,7 +64,7 @@ func main() {
 	if err != nil {
 		gologger.Fatal().Msgf("naaburunner.NewRunner Could not create runner: %s\n", err)
 	}
-	if pkg.GetValAsBool("noScan") {
+	if util.GetValAsBool("noScan") {
 		s1, err := naabuRunner.MergeToFile()
 		if nil == err {
 			data, err := ioutil.ReadFile(s1)
@@ -86,7 +85,7 @@ func main() {
 		gologger.Fatal().Msgf("naabuRunner.Httpxrun Could not run httpRunner: %s\n", err)
 	}
 	log.Printf("wait for all threads to end\n%s", szTip)
-	myConst.Wg.Wait()
-	myConst.StopAll()
+	util.Wg.Wait()
+	util.StopAll()
 	naabuRunner.Close()
 }

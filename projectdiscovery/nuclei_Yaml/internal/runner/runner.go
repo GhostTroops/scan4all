@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/internal/colorizer"
 	"net/http"
 	_ "net/http/pprof"
@@ -472,7 +472,7 @@ func (r *Runner) displayExecutionInfo(store *loader.Store) {
 	if r.templatesConfig != nil && r.templatesConfig.NucleiLatestVersion != "" {
 		builder.WriteString(" (")
 
-		if pkg.StrContains(config.Version, "-dev") {
+		if util.StrContains(config.Version, "-dev") {
 			builder.WriteString(r.colorizer.Blue("development").String())
 		} else if config.Version == r.templatesConfig.NucleiLatestVersion {
 			builder.WriteString(r.colorizer.Green("latest").String())

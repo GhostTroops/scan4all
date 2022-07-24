@@ -1,10 +1,10 @@
 package pkg
 
 import (
+	myconfig "github.com/hktalent/scan4all/lib/util"
 	"net/http"
 	"net/url"
 
-	myconfig "github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
 	"golang.org/x/time/rate"
 )

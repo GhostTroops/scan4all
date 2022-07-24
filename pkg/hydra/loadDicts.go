@@ -2,7 +2,7 @@ package hydra
 
 import (
 	_ "embed"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"strings"
 )
 
@@ -133,74 +133,74 @@ var md = map[string]*PPDict{}
 
 func init() {
 	md["ftp"] = &PPDict{
-		Username:  pkg.GetVal4File("ftp_user", ftpusername),
-		Paswd:     pkg.GetVal4File("ftp_pswd", ftp_pswd),
-		DefaultUp: pkg.GetVal4Filedefault("ftp_default", ftp_default),
+		Username:  util.GetVal4File("ftp_user", ftpusername),
+		Paswd:     util.GetVal4File("ftp_pswd", ftp_pswd),
+		DefaultUp: util.GetVal4Filedefault("ftp_default", ftp_default),
 	}
 	md["ssh"] = &PPDict{
-		Username:  pkg.GetVal4File("ssh_username", username),
-		Paswd:     pkg.GetVal4File("ssh_pswd", pswd),
-		DefaultUp: pkg.GetVal4Filedefault("ssh_default", ssh_default),
+		Username:  util.GetVal4File("ssh_username", username),
+		Paswd:     util.GetVal4File("ssh_pswd", pswd),
+		DefaultUp: util.GetVal4Filedefault("ssh_default", ssh_default),
 	}
 	md["rsh-spx"] = md["ssh"]
 	md["snmp"] = &PPDict{
-		Username:  pkg.GetVal4File("snmp_user", snmp_user),
-		Paswd:     pkg.GetVal4File("snmp_pswd", snmp_pswd),
-		DefaultUp: pkg.GetVal4Filedefault("snmp_default", snmp_default),
+		Username:  util.GetVal4File("snmp_user", snmp_user),
+		Paswd:     util.GetVal4File("snmp_pswd", snmp_pswd),
+		DefaultUp: util.GetVal4Filedefault("snmp_default", snmp_default),
 	}
 	// 再增加字典
 	md["wap-wsp"] = &PPDict{
-		Username:  pkg.GetVal4File("es_user", es_user),
-		Paswd:     pkg.GetVal4File("es_pswd", es_pswd),
-		DefaultUp: pkg.GetVal4Filedefault("es_default", es_default),
+		Username:  util.GetVal4File("es_user", es_user),
+		Paswd:     util.GetVal4File("es_pswd", es_pswd),
+		DefaultUp: util.GetVal4Filedefault("es_default", es_default),
 	}
 	md["router"] = md["wap-wsp"]
 	md["mongodb"] = &PPDict{
-		Username:  pkg.GetVal4File("mongodb_username", mongodbusername),
-		Paswd:     pkg.GetVal4File("mongodb_pswd", mongodb_pswd),
-		DefaultUp: pkg.GetVal4Filedefault("mongodb_default", mongodb_default),
+		Username:  util.GetVal4File("mongodb_username", mongodbusername),
+		Paswd:     util.GetVal4File("mongodb_pswd", mongodb_pswd),
+		DefaultUp: util.GetVal4Filedefault("mongodb_default", mongodb_default),
 	}
 	md["mongod"] = md["mongodb"]
 	md["mssql"] = &PPDict{
-		Username:  pkg.GetVal4File("mssql_username", mssqlusername),
-		Paswd:     pkg.GetVal4File("mssql_pswd", mssql_pswd),
-		DefaultUp: pkg.GetVal4Filedefault("mssql_default", mssql_default),
+		Username:  util.GetVal4File("mssql_username", mssqlusername),
+		Paswd:     util.GetVal4File("mssql_pswd", mssql_pswd),
+		DefaultUp: util.GetVal4Filedefault("mssql_default", mssql_default),
 	}
 	md["mysql"] = &PPDict{
-		Username:  pkg.GetVal4File("mysql_username", mysqlusername),
-		Paswd:     pkg.GetVal4File("mysql_pswd", mysql_pswd),
-		DefaultUp: pkg.GetVal4File("mysql_default", mysql_default),
+		Username:  util.GetVal4File("mysql_username", mysqlusername),
+		Paswd:     util.GetVal4File("mysql_pswd", mysql_pswd),
+		DefaultUp: util.GetVal4File("mysql_default", mysql_default),
 	}
 	md["oracle"] = &PPDict{
-		Username:  pkg.GetVal4File("oracle_username", oracleusername),
-		Paswd:     pkg.GetVal4File("oracle_pswd", oracle_pswd),
-		DefaultUp: pkg.GetVal4Filedefault("oracleh_default", oracle_default),
+		Username:  util.GetVal4File("oracle_username", oracleusername),
+		Paswd:     util.GetVal4File("oracle_pswd", oracle_pswd),
+		DefaultUp: util.GetVal4Filedefault("oracleh_default", oracle_default),
 	}
 	md["postgresql"] = &PPDict{
-		Username:  pkg.GetVal4File("postgresql_username", postgresqlusername),
-		Paswd:     pkg.GetVal4File("postgresql_pswd", postgresql_pswd),
-		DefaultUp: pkg.GetVal4Filedefault("postgresql_default", postgresql_default),
+		Username:  util.GetVal4File("postgresql_username", postgresqlusername),
+		Paswd:     util.GetVal4File("postgresql_pswd", postgresql_pswd),
+		DefaultUp: util.GetVal4Filedefault("postgresql_default", postgresql_default),
 	}
 	md["rdp"] = &PPDict{
-		Username:  pkg.GetVal4File("rdp_username", rdpusername),
-		Paswd:     pkg.GetVal4File("rdp_pswd", rdp_pswd),
-		DefaultUp: pkg.GetVal4Filedefault("rdp_default", rdp_default),
+		Username:  util.GetVal4File("rdp_username", rdpusername),
+		Paswd:     util.GetVal4File("rdp_pswd", rdp_pswd),
+		DefaultUp: util.GetVal4Filedefault("rdp_default", rdp_default),
 	}
 	md["redis"] = &PPDict{
-		Username:  pkg.GetVal4File("redis_username", redisusername),
-		Paswd:     pkg.GetVal4File("redis_pswd", redis_pswd),
-		DefaultUp: pkg.GetVal4Filedefault("redis_default", redis_default),
+		Username:  util.GetVal4File("redis_username", redisusername),
+		Paswd:     util.GetVal4File("redis_pswd", redis_pswd),
+		DefaultUp: util.GetVal4Filedefault("redis_default", redis_default),
 	}
 	md["smb"] = &PPDict{
-		Username:  pkg.GetVal4File("smb_username", smbusername),
-		Paswd:     pkg.GetVal4File("smb_pswd", smb_pswd),
-		DefaultUp: pkg.GetVal4Filedefault("smb_default", smb_default),
+		Username:  util.GetVal4File("smb_username", smbusername),
+		Paswd:     util.GetVal4File("smb_pswd", smb_pswd),
+		DefaultUp: util.GetVal4Filedefault("smb_default", smb_default),
 	}
 	md["winrm"] = md["smb"]
 	md["telnet"] = &PPDict{
-		Username:  pkg.GetVal4File("telnet_username", telnetusername),
-		Paswd:     pkg.GetVal4File("telnet_pswd", telnet_pswd),
-		DefaultUp: pkg.GetVal4Filedefault("telnet_default", telnet_default),
+		Username:  util.GetVal4File("telnet_username", telnetusername),
+		Paswd:     util.GetVal4File("telnet_pswd", telnet_pswd),
+		DefaultUp: util.GetVal4Filedefault("telnet_default", telnet_default),
 	}
 }
 

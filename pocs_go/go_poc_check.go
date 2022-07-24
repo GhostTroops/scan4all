@@ -3,8 +3,7 @@ package pocs_go
 import (
 	"fmt"
 	"github.com/hktalent/scan4all/brute"
-	"github.com/hktalent/scan4all/lib"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pocs_go/Springboot"
 	"github.com/hktalent/scan4all/pocs_go/ThinkPHP"
 	"github.com/hktalent/scan4all/pocs_go/apache"
@@ -32,8 +31,8 @@ import (
 
 // 需优化：相同都目标，相同都检测只做一次
 func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool) []string {
-	if nil != lib.Wg {
-		defer lib.Wg.Done()
+	if nil != util.Wg {
+		defer util.Wg.Done()
 	}
 	var HOST, hostname string
 	var technologies []string
@@ -260,7 +259,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 	}
 	// 发送结果
 	if 0 < len(technologies) {
-		pkg.SendAnyData(&map[string]interface{}{"Urls": []string{URL, finalURL}, "technologies": technologies}, pkg.Scan4all)
+		util.SendAnyData(&map[string]interface{}{"Urls": []string{URL, finalURL}, "technologies": technologies}, util.Scan4all)
 	}
 	return technologies
 }
@@ -272,20 +271,20 @@ func init() {
 		nCnt := 0
 		for {
 			select {
-			case <-lib.Ctx_global.Done():
+			case <-util.Ctx_global.Done():
 				return
-			case x1 := <-lib.PocCheck_pipe:
+			case x1 := <-util.PocCheck_pipe:
 				nCnt = 0
 				log.Printf("<-lib.PocCheck_pipe: %+v  %s", *x1.Wappalyzertechnologies, x1.URL)
-				lib.Wg.Add(1)
+				util.Wg.Add(1)
 				go POCcheck(*x1.Wappalyzertechnologies, x1.URL, x1.FinalURL, x1.Checklog4j)
 			default:
 				if os.Getenv("NoPOC") == "true" {
-					close(lib.PocCheck_pipe)
+					close(util.PocCheck_pipe)
 					return
 				}
 				if nMax < nCnt {
-					close(lib.PocCheck_pipe)
+					close(util.PocCheck_pipe)
 					return
 				}
 				var f01 float32 = float32(nCnt) / float32(nMax) * float32(100)

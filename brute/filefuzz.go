@@ -5,7 +5,7 @@ import (
 	_ "embed"
 	"github.com/antlabs/strsim"
 	"github.com/hktalent/scan4all/lib"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"log"
 	"net/http"
 	"net/url"
@@ -19,18 +19,18 @@ import (
 // fuzz请求返回的结果
 // 尽可能使用指针，节约内存开销
 type Page struct {
-	isBackUpPath bool          // 备份、敏感泄露文件检测请求url
-	isBackUpPage bool          // 发现备份、敏感泄露文件
-	title        *string       // 标题
-	locationUrl  *string       // 跳转页面
-	is302        bool          // 是302页面
-	is403        bool          // 403页面
-	Url          *string       // 作为本地永久缓存key，提高执行效率
-	BodyStr      *string       // body = trim() + ToLower
-	BodyLen      int           // body 长度
-	Header       *http.Header  // 基于指针，节约内存空间
-	StatusCode   int           // 状态码
-	Resqonse     *pkg.Response // 基于指针，节约内存空间
+	isBackUpPath bool           // 备份、敏感泄露文件检测请求url
+	isBackUpPage bool           // 发现备份、敏感泄露文件
+	title        *string        // 标题
+	locationUrl  *string        // 跳转页面
+	is302        bool           // 是302页面
+	is403        bool           // 403页面
+	Url          *string        // 作为本地永久缓存key，提高执行效率
+	BodyStr      *string        // body = trim() + ToLower
+	BodyLen      int            // body 长度
+	Header       *http.Header   // 基于指针，节约内存空间
+	StatusCode   int            // 状态码
+	Resqonse     *util.Response // 基于指针，节约内存空间
 }
 
 // 备份、敏感文件后缀
@@ -52,7 +52,7 @@ var (
 
 // 生成敏感信息字典
 func InitGeneral() int {
-	szPrefix = pkg.GetVal4File("prefix", szPrefix)
+	szPrefix = util.GetVal4File("prefix", szPrefix)
 	prefix = strings.Split(strings.TrimSpace(szPrefix), "\n")
 	suffix = strings.Split(strings.TrimSpace(bakSuffix), "\n")
 
@@ -61,12 +61,12 @@ func InitGeneral() int {
 			ret = append(ret, "/"+prefix[i]+suffix[j])
 		}
 	}
-	eableFileFuzz = !pkg.GetValAsBool("enablFileFuzz")
+	eableFileFuzz = !util.GetValAsBool("enablFileFuzz")
 	return len(ret)
 }
 
 // 请求url并返回自定义对象
-func reqPage(u string) (*Page, *pkg.Response, error) {
+func reqPage(u string) (*Page, *util.Response, error) {
 	page := &Page{Url: &u}
 	var method = "GET"
 	for _, ext := range suffix {
@@ -81,7 +81,7 @@ func reqPage(u string) (*Page, *pkg.Response, error) {
 	header["Pragma"] = "no-cache"
 	// fuzz check Shiro CVE_2016_4437
 	header["Cookie"] = "JSESSIONID=" + RandStr4Cookie + ";rememberMe=123"
-	if req, err := pkg.HttpRequset(u, method, "", false, header); err == nil && nil != req && nil != req.Header {
+	if req, err := util.HttpRequset(u, method, "", false, header); err == nil && nil != req && nil != req.Header {
 		//if pkg.IntInSlice(req.StatusCode, []int{301, 302, 307, 308}) {
 		// 简单粗暴效率高
 		if 300 <= req.StatusCode && req.StatusCode < 400 {
@@ -106,7 +106,7 @@ func reqPage(u string) (*Page, *pkg.Response, error) {
 
 // 敏感文件头信息检测:
 //  检测头信息是否有敏感文件、本份文件、流文件等敏感信息
-func CheckBakPage(req *pkg.Response) bool {
+func CheckBakPage(req *util.Response) bool {
 	if x0, ok := (*req.Header)["Content-Type"]; ok && 0 < len(x0) {
 		x0B := []byte(x0[0])
 		for _, reg := range regs {
@@ -131,8 +131,8 @@ var (
 
 // 初始化字典、数组等
 func init() {
-	bakSuffix = pkg.GetVal4File("bakSuffix", bakSuffix)
-	fuzzct = pkg.GetVal4File("fuzzct", fuzzct)
+	bakSuffix = util.GetVal4File("bakSuffix", bakSuffix)
+	fuzzct = util.GetVal4File("fuzzct", fuzzct)
 
 	InitGeneral()
 	regs = strings.Split(strings.TrimSpace(fuzzct), "\n")
@@ -154,7 +154,7 @@ var file_not_support = "file_not_support"
 var RandStr = file_not_support + "_scan4all"
 
 // 随机10个字符串
-var RandStr4Cookie = pkg.RandStringRunes(10)
+var RandStr4Cookie = util.RandStringRunes(10)
 
 // 重写了fuzz：优化流程、优化算法、修复线程安全bug、增加智能功能
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
@@ -173,7 +173,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	)
 	url404, url404req, err := reqPage(u + path404)
 	if err == nil {
-		go lib.CheckHeader(url404req.Header, u)
+		go util.CheckHeader(url404req.Header, u)
 		// 跳过当前目标所有的fuzz,后续所有的fuzz都无意义了
 		if 200 == url404.StatusCode || 301 == url404.StatusCode || 302 == url404.StatusCode {
 			return []string{}, []string{}
@@ -191,9 +191,9 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	}
 	var wg sync.WaitGroup
 	// 中途控制关闭当前目标所有fuzz
-	ctx, stop := context.WithCancel(lib.Ctx_global)
+	ctx, stop := context.WithCancel(util.Ctx_global)
 	// 控制 fuzz 线程数
-	var ch = make(chan struct{}, pkg.Fuzzthreads)
+	var ch = make(chan struct{}, util.Fuzzthreads)
 	// 异步接收结果
 	var async_data = make(chan []string, 64)
 	var async_technologies = make(chan []string, 64)
@@ -253,7 +253,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 					}
 					log.Printf("start fuzz: %s", szUrl)
 					if fuzzPage, req, err := reqPage(szUrl); err == nil && 0 < len(req.Body) {
-						go lib.CheckHeader(req.Header, u)
+						go util.CheckHeader(req.Header, u)
 						// 02-状态码和req1相同，且与req1相似度>9.5，关闭所有fuzz
 						fXsd := strsim.Compare(url404req.Body, req.Body)
 						bBig95 := 9.5 < fXsd
@@ -330,7 +330,7 @@ var reg2 = regexp.MustCompile("(window|self|top)\\.location\\.href\\s*=")
 //  1、状态码跳转：301 代表永久性转移(Permanently Moved)；302 redirect: 302 代表暂时性转移(Temporarily Moved )
 //  2、html刷新跳转
 //  3、js 跳转
-func CheckDirckt(fuzzPage *Page, req *pkg.Response) bool {
+func CheckDirckt(fuzzPage *Page, req *util.Response) bool {
 	if nil == fuzzPage || nil == req {
 		return false
 	}

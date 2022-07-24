@@ -1,7 +1,7 @@
 package hydra
 
 import (
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"strings"
 )
 
@@ -46,7 +46,7 @@ func NewSpecialAuth(username, password string) Auth {
 }
 
 func (a *Auth) MakePassword() {
-	if pkg.StrContains(a.Password, "%user%") {
+	if util.StrContains(a.Password, "%user%") {
 		a.Password = strings.ReplaceAll(a.Password, "%user%", a.Username)
 	}
 }

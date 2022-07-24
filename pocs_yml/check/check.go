@@ -2,7 +2,7 @@ package check
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
 	"io"
@@ -51,7 +51,7 @@ func Start(target string, pocs []*xray_structs.Poc) []string {
 				gologger.Error().Msgf("Execute Poc (%v) error: %v", poc.Name, err.Error())
 			}
 			if isVul {
-				pkg.YmlPocLog(fmt.Sprintf("%s (%s)\n", target, poc.Name))
+				util.YmlPocLog(fmt.Sprintf("%s (%s)\n", target, poc.Name))
 				Vullist = append(Vullist, poc.Name)
 			}
 		}

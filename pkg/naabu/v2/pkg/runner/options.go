@@ -2,7 +2,7 @@ package runner
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
 	"net"
@@ -114,14 +114,14 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.CSV, "csv", false, "write output in csv format"),
 	)
 	var szNmap = ""
-	if pkg.CheckHvNmap() {
+	if util.CheckHvNmap() {
 		// 读取结果
-		szNmap = pkg.GetVal("nmap")
+		szNmap = util.GetVal("nmap")
 		if "" != szNmap {
 			if runtime.GOOS == "windows" {
 				szNmap = strings.Replace(szNmap, "nmap", "nmap.exe", -1)
 			}
-			tempInput := pkg.GetTempFile(string(pkg.Naabu))
+			tempInput := util.GetTempFile(string(util.Naabu))
 			if tempInput != nil {
 				szNmap = strings.ReplaceAll(szNmap, "{filename}", tempInput.Name())
 			}

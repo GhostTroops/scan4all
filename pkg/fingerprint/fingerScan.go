@@ -3,7 +3,7 @@ package fingerprint
 import (
 	"encoding/hex"
 	"encoding/json"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"log"
 	"net/url"
 	"strings"
@@ -146,7 +146,7 @@ func CaseMethod(szUrl, method, bodyString, favhash, md5Body, hexBody string, fin
 	return cms
 }
 
-var enableFingerTitleHeaderMd5Hex = pkg.GetValAsBool("enableFingerTitleHeaderMd5Hex")
+var enableFingerTitleHeaderMd5Hex = util.GetValAsBool("enableFingerTitleHeaderMd5Hex")
 
 // 相同的url、组件（产品），>=2 个指纹命中，那么该组件的其他指纹匹配将跳过
 func FingerScan(headers map[string][]string, body []byte, title string, url string, status_code string) []string {

