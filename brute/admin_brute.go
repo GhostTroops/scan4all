@@ -3,7 +3,7 @@ package brute
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"net/url"
 	"regexp"
 	"strings"
@@ -14,8 +14,8 @@ var SkipAdminBrute bool
 func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl string, ismd5 bool) {
 	usernamekey = "username"
 	passwordkey = "password"
-	if req, err := pkg.HttpRequset(inputurl, "GET", "", true, nil); err == nil {
-		if pkg.StrContains(req.Body, "md5.js") {
+	if req, err := util.HttpRequset(inputurl, "GET", "", true, nil); err == nil {
+		if util.StrContains(req.Body, "md5.js") {
 			ismd5 = true
 		}
 		u, err := url.Parse(req.RequestUrl)
@@ -32,7 +32,7 @@ func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl
 		if hreflist != nil {
 			href, _ := url.Parse(hreflist[len(hreflist)-1:][0])
 			hrefurl := u.ResolveReference(href)
-			req, err = pkg.HttpRequset(hrefurl.String(), "GET", "", true, nil)
+			req, err = util.HttpRequset(hrefurl.String(), "GET", "", true, nil)
 			if err != nil {
 				return "", "", "", false
 			}
@@ -94,7 +94,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 		adminfalse302location string
 		testfalse302location  string
 	)
-	if adminfalseurl, err := pkg.HttpRequset(loginurl, "POST", adminfalsedata, false, nil); err == nil {
+	if adminfalseurl, err := util.HttpRequset(loginurl, "POST", adminfalsedata, false, nil); err == nil {
 		code := adminfalseurl.StatusCode
 		switch code {
 		case 301, 302, 307, 308:
@@ -106,7 +106,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 		case 401:
 			falseis401 = true
 		case 200:
-			if pkg.SliceInString(adminfalseurl.Body, noaccount) {
+			if util.SliceInString(adminfalseurl.Body, noaccount) {
 				adminaccount = false
 			}
 			falseis200 = true
@@ -118,7 +118,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 		falseis500 = true
 	}
 
-	if testfalseurl, err := pkg.HttpRequset(loginurl, "POST", testfalsedata, false, nil); err == nil {
+	if testfalseurl, err := util.HttpRequset(loginurl, "POST", testfalsedata, false, nil); err == nil {
 		code := testfalseurl.StatusCode
 		switch code {
 		case 301, 302, 307, 308:
@@ -130,7 +130,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 		case 401:
 			falseis401 = true
 		case 200:
-			if pkg.SliceInString(testfalseurl.Body, noaccount) {
+			if util.SliceInString(testfalseurl.Body, noaccount) {
 				testaccount = false
 			}
 			falseis200 = true
@@ -163,10 +163,10 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 				has := md5.Sum(data)
 				pass = fmt.Sprintf("%x", has)
 			}
-			if req, err2 := pkg.HttpRequset(loginurl, "POST", fmt.Sprintf("%s=%s&%s=%s", usernamekey, user, passwordkey, pass), false, nil); err2 == nil {
+			if req, err2 := util.HttpRequset(loginurl, "POST", fmt.Sprintf("%s=%s&%s=%s", usernamekey, user, passwordkey, pass), false, nil); err2 == nil {
 				if falseis401 {
 					if req.StatusCode != 401 {
-						pkg.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
+						util.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
 						return user, pass, loginurl
 					}
 				}
@@ -176,16 +176,16 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 					}
 					if req.Location != adminfalse302location && req.Location != testfalse302location {
 						sucesstestdata := fmt.Sprintf("%s=%s&%s=Qweasd123zxc", usernamekey, user, passwordkey)
-						if sucesstest, err := pkg.HttpRequset(loginurl, "POST", sucesstestdata, false, nil); err == nil {
+						if sucesstest, err := util.HttpRequset(loginurl, "POST", sucesstestdata, false, nil); err == nil {
 							if sucesstest.Location != req.Location {
-								pkg.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
+								util.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
 								return user, pass, loginurl
 							}
 						}
 					}
 				}
 				if falseis200 {
-					if pkg.SliceInString(req.Body, lockContent) {
+					if util.SliceInString(req.Body, lockContent) {
 						return "", "", ""
 					}
 					adminlenabs := req.ContentLength - adminfalseContentlen
@@ -198,9 +198,9 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 					}
 					if (req.ContentLength != 0 || req.StatusCode == 301 || req.StatusCode == 302 || req.StatusCode == 307 || req.StatusCode == 308) && adminlenabs > 2 && testlenabs > 2 {
 						sucesstestdata := fmt.Sprintf("%s=%s&%s=Qweasd123zxc", usernamekey, user, passwordkey)
-						if sucesstest, err := pkg.HttpRequset(loginurl, "POST", sucesstestdata, false, nil); err == nil {
+						if sucesstest, err := util.HttpRequset(loginurl, "POST", sucesstestdata, false, nil); err == nil {
 							if sucesstest.ContentLength != req.ContentLength {
-								pkg.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
+								util.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
 								return user, pass, loginurl
 							}
 						}

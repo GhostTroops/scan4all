@@ -2,7 +2,7 @@ package brute
 
 import (
 	_ "embed"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"strings"
 )
 
@@ -65,11 +65,11 @@ func CvtLines(s string) []string {
 var basicusers []string
 
 func init() {
-	tomcatuserpass = CvtUps(pkg.GetVal4File("tomcatuserpass", szTomcatuserpass))
-	jbossuserpass = CvtUps(pkg.GetVal4File("jbossuserpass", szJbossuserpass))
-	weblogicuserpass = CvtUps(pkg.GetVal4File("weblogicuserpass", szWeblogicuserpass))
-	filedic = append(filedic, CvtLines(pkg.GetVal4File("filedic", szFiledic))...)
-	top100pass = append(top100pass, CvtLines(pkg.GetVal4File("top100pass", szTop100pass))...)
-	basicusers = strings.Split(strings.TrimSpace(pkg.GetVal4File("httpuser", httpass)), "\n")
-	top100pass = append(top100pass, strings.Split(strings.TrimSpace(pkg.GetVal4File("httpass", httpass)), "\n")...)
+	tomcatuserpass = CvtUps(util.GetVal4File("tomcatuserpass", szTomcatuserpass))
+	jbossuserpass = CvtUps(util.GetVal4File("jbossuserpass", szJbossuserpass))
+	weblogicuserpass = CvtUps(util.GetVal4File("weblogicuserpass", szWeblogicuserpass))
+	filedic = append(filedic, CvtLines(util.GetVal4File("filedic", szFiledic))...)
+	top100pass = append(top100pass, CvtLines(util.GetVal4File("top100pass", szTop100pass))...)
+	basicusers = strings.Split(strings.TrimSpace(util.GetVal4File("httpuser", httpass)), "\n")
+	top100pass = append(top100pass, strings.Split(strings.TrimSpace(util.GetVal4File("httpass", httpass)), "\n")...)
 }

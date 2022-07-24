@@ -2,7 +2,7 @@ package color
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"math/rand"
 	"runtime"
 	"strconv"
@@ -52,7 +52,7 @@ func Init(b bool) bool {
 		mod = 1
 		return false
 	}
-	if !pkg.GetValAsBool("kscan_COLOR") {
+	if !util.GetValAsBool("kscan_COLOR") {
 		return false
 	}
 	mod = 0

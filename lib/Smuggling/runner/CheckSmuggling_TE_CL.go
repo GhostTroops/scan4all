@@ -8,6 +8,7 @@ import (
 )
 
 // check HTTP Request Smuggling
+// https://hackerone.com/reports/1630668
 // https://github.com/nodejs/llhttp/blob/master/src/llhttp/http.ts#L483
 func Check_TE_CL(target string, port int) bool {
 	s1 := socket.NewCheckTarget(target, "tcp", port, 15).SendOnePayload(fmt.Sprintf(Smuggling.TE_Payload[0], fmt.Sprintf("%s:%d", target, port)))

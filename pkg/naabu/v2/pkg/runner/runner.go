@@ -5,7 +5,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
 	"github.com/projectdiscovery/fileutil"
@@ -81,10 +81,10 @@ func (r *Runner) Httpxrun() error {
 	httpxoptions.NoPOC = r.options.NoPOC
 	httpxoptions.CeyeApi = r.options.CeyeApi
 	httpxoptions.CeyeDomain = r.options.CeyeDomain
-	pkg.CeyeApi = r.options.CeyeApi
-	pkg.CeyeDomain = r.options.CeyeDomain
-	pkg.HttpProxy = r.options.Proxy
-	pkg.Fuzzthreads = r.options.Threads
+	util.CeyeApi = r.options.CeyeApi
+	util.CeyeDomain = r.options.CeyeDomain
+	util.HttpProxy = r.options.Proxy
+	util.Fuzzthreads = r.options.Threads
 
 	if httpxoptions.RateLimit == 0 {
 		httpxoptions.RateLimit = 1
@@ -108,7 +108,7 @@ func (r *Runner) Httpxrun() error {
 	//}
 
 	// json 控制参数
-	httpxoptions = pkg.ParseOption[httpxrunner.Options]("httpx", httpxoptions)
+	httpxoptions = util.ParseOption[httpxrunner.Options]("httpx", httpxoptions)
 	rx, err := httpxrunner.New(httpxoptions)
 	if err != nil {
 		<-nucleiDone
@@ -148,7 +148,7 @@ func NewRunner(options *Options) (*Runner, error) {
 		return nil, err
 	}
 	runner.scanner = scanner
-	options = pkg.ParseOption[Options]("naabu", options)
+	options = util.ParseOption[Options]("naabu", options)
 	runner.scanner.Ports, err = ParsePorts(options)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse ports: %s", err)
@@ -163,7 +163,7 @@ func NewRunner(options *Options) (*Runner, error) {
 	if err != nil {
 		return nil, err
 	}
-	dnsOptions = *pkg.ParseOption[dnsx.Options]("naabu_dns", &dnsOptions)
+	dnsOptions = *util.ParseOption[dnsx.Options]("naabu_dns", &dnsOptions)
 	dnsclient, err := dnsx.New(dnsOptions)
 	if err != nil {
 		return nil, err
@@ -620,7 +620,7 @@ func (r *Runner) handleOutput() {
 					aN = append(aN, port)
 					gologger.Silent().Msgf("%s:%d\n", host, port)
 				}
-				pkg.SendAData[int](host, aN, pkg.Naabu)
+				util.SendAData[int](host, aN, util.Naabu)
 			}
 			// file output
 			if file != nil {

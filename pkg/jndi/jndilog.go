@@ -2,7 +2,7 @@ package jndi
 
 import (
 	"encoding/hex"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 )
 
 func Jndilogchek(randomstr string) bool {
@@ -11,7 +11,7 @@ func Jndilogchek(randomstr string) bool {
 	}
 	for _, log := range JndiLog {
 		HexRandomstr := hex.EncodeToString([]byte(randomstr))
-		if pkg.StrContains(log, HexRandomstr) {
+		if util.StrContains(log, HexRandomstr) {
 			return true
 		}
 	}

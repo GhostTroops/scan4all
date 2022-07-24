@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/antchfx/xmlquery"
-	"github.com/hktalent/scan4all/lib"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg"
 	"io/ioutil"
 	"log"
@@ -16,7 +16,7 @@ import (
 
 // 弱口令检测
 func CheckWeakPassword(ip, service string, port int) {
-	lib.DoSyncFunc(func() {
+	util.DoSyncFunc(func() {
 		// 在弱口令检测范围就开始检测，结果....
 		service = strings.ToLower(service)
 		if pkg.Contains(ProtocolList, service) {
@@ -32,9 +32,9 @@ var one sync.Once
 
 func Init() {
 	one.Do(func() {
-		enableEsSv = pkg.GetValAsBool("enableEsSv")
-		bCheckWeakPassword = pkg.GetValAsBool("CheckWeakPassword")
-		log.Println("CheckWeakPassword = ", pkg.GetVal("CheckWeakPassword"), " bCheckWeakPassword = ", bCheckWeakPassword)
+		enableEsSv = util.GetValAsBool("enableEsSv")
+		bCheckWeakPassword = util.GetValAsBool("CheckWeakPassword")
+		log.Println("CheckWeakPassword = ", util.GetVal("CheckWeakPassword"), " bCheckWeakPassword = ", bCheckWeakPassword)
 	})
 }
 
@@ -85,7 +85,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 				}
 				if os.Getenv("NoPOC") != "true" {
 					if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
-						lib.PocCheck_pipe <- lib.PocCheck{
+						util.PocCheck_pipe <- util.PocCheck{
 							Wappalyzertechnologies: &[]string{service},
 							URL:                    szUlr,
 							FinalURL:               szUlr,
@@ -94,7 +94,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 					}
 					// CVE_2018_14847
 					if "8291" == szPort {
-						lib.PocCheck_pipe <- lib.PocCheck{
+						util.PocCheck_pipe <- util.PocCheck{
 							Wappalyzertechnologies: &[]string{"RouterOS"},
 							URL:                    szUlr,
 							FinalURL:               szUlr,
@@ -116,14 +116,14 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 	if enableEsSv {
 		if 0 < len(m1) {
 			for k, x := range m1 {
-				pkg.SendAData[[]string](k, x, pkg.Nmap)
+				util.SendAData[[]string](k, x, util.Nmap)
 			}
 		}
 	}
 }
 
 func DoNmapRst(bf *bytes.Buffer) {
-	if x1, ok := pkg.TmpFile[string(pkg.Naabu)]; ok {
+	if x1, ok := util.TmpFile[string(util.Naabu)]; ok {
 		for _, x := range x1 {
 			defer func(r *os.File) {
 				r.Close()

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/antlabs/strsim"
 	"github.com/hktalent/scan4all/db"
-	"github.com/hktalent/scan4all/lib"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"gorm.io/gorm"
@@ -44,11 +44,11 @@ var asz404UrlKey = "asz404Url"
 
 // 初始化字典到库中，且防止重复
 func init() {
-	fuzz404 = pkg.GetVal4File("fuzz404", fuzz404)
-	sz404Url = pkg.GetVal4File("404url", sz404Url)
+	fuzz404 = util.GetVal4File("fuzz404", fuzz404)
+	sz404Url = util.GetVal4File("404url", sz404Url)
 	page404Title = strings.Split(strings.TrimSpace(fuzz404), "\n")
 	asz404Url = strings.Split(strings.TrimSpace(sz404Url), "\n")
-	data, err := pkg.Cache1.Get(asz404UrlKey)
+	data, err := util.Cache1.Get(asz404UrlKey)
 	if nil == err && 0 < len(data) {
 		aT1 := asz404Url
 		if nil != json.Unmarshal(data, &asz404Url) {
@@ -64,11 +64,11 @@ func init() {
 //  1、body 学习
 //  2、标题 学习
 //  3、url 去重记录
-func StudyErrPageAI(req *pkg.Response, page *Page, fingerprintsTag string) {
+func StudyErrPageAI(req *util.Response, page *Page, fingerprintsTag string) {
 	if nil == req || nil == page || "" == req.Body {
 		return
 	}
-	lib.DoSyncFunc(func() {
+	util.DoSyncFunc(func() {
 		var data *ErrPage
 		body := []byte(req.Body)
 		szHs, szMd5 := fingerprint.GetHahsMd5(body)
@@ -113,7 +113,7 @@ func CheckRepeat(data *ErrPage) (bool, *ErrPage) {
 }
 
 // 检测是否为异常页面，包括状态码检测
-func CheckIsErrPageAI(req *pkg.Response, page *Page) bool {
+func CheckIsErrPageAI(req *util.Response, page *Page) bool {
 	body := []byte(req.Body)
 	szHs, szMd5 := fingerprint.GetHahsMd5(body)
 	var data = &ErrPage{Title: *page.title, Body: req.Body, BodyLen: len(body)}
@@ -123,7 +123,7 @@ func CheckIsErrPageAI(req *pkg.Response, page *Page) bool {
 	if false == bRst && (0 < len(data.Title) || 0 < len(data.Body)) {
 		for _, x := range page404Title {
 			// 异常页面标题检测成功
-			if 0 < len(data.Title) && (pkg.StrContains(x, data.Title) || pkg.StrContains(data.Title, x)) || 0 < len(data.Body) && pkg.StrContains(data.Body, x) {
+			if 0 < len(data.Title) && (util.StrContains(x, data.Title) || util.StrContains(data.Title, x)) || 0 < len(data.Body) && util.StrContains(data.Body, x) {
 				db.Create[ErrPage](data)
 				return true
 			}
@@ -137,7 +137,7 @@ func CheckIsErrPageAI(req *pkg.Response, page *Page) bool {
 				if 404 == req.StatusCode {
 					go func() {
 						asz404Url = append(asz404Url, u01.Path)
-						pkg.PutAny[[]string](asz404UrlKey, asz404Url) // 404 path 缓存起来，永久复用
+						util.PutAny[[]string](asz404UrlKey, asz404Url) // 404 path 缓存起来，永久复用
 					}()
 				}
 			}
