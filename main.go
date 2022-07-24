@@ -13,6 +13,7 @@ import (
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
 	"runtime"
 	"sync"
 	"time"
@@ -32,11 +33,10 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	myConst.Wg = &Wg
 	defer func() {
-		log.Println("start close cache, StopCPUProfile... ")
 		pkg.Cache1.Close()
-		//if "true" == pkg.GetVal("autoRmCache") {
-		//	os.RemoveAll(pkg.GetVal(pkg.CacheName))
-		//}
+		if runtime.GOOS == "windows" || pkg.GetValAsBool("autoRmCache") {
+			os.RemoveAll(pkg.GetVal(pkg.CacheName))
+		}
 		// clear
 		// 程序都结束了，没有必要清理内存了
 		// fingerprint.ClearData()

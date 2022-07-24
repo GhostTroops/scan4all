@@ -56,7 +56,7 @@ func (s *Wappalyze) checkBody(body []byte) []string {
 				// 	s.fingerprints.matchString(data, jsPart)...,
 				// )
 			case "meta":
-				// For meta tag, we are only intrested in name and content attributes.
+				// For meta tag, we are only interested in name and content attributes.
 				name, content, found := getMetaNameAndContent(token)
 				if !found {
 					continue

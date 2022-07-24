@@ -40,15 +40,15 @@ func (s *Wappalyze) loadFingerprints() error {
 	return nil
 }
 
-// Fingerprint identifies technologies on a target based on
-// headers and response recieved.
+// Fingerprint identifies technologies on a target,
+// based on the received response headers and body.
 //
-// Body should not be mutated while this function is being called or it may
+// Body should not be mutated while this function is being called, or it may
 // lead to unexpected things.
 func (s *Wappalyze) Fingerprint(headers map[string][]string, body []byte) map[string]struct{} {
 	uniqueFingerprints := newUniqueFingerprints()
 
-	// Lowercase everything that we have recieved to check
+	// Lowercase everything that we have received to check
 	normalizedBody := bytes.ToLower(body)
 	normalizedHeaders := s.normalizeHeaders(headers)
 
@@ -122,15 +122,16 @@ func (u uniqueFingerprints) setIfNotExists(value string) {
 	u.values[value] = struct{}{}
 }
 
-// FingerprintWithTitle identifies technologies on a target based on
-// headers and response recieved. It also returns the title of the page.
+// FingerprintWithTitle identifies technologies on a target,
+// based on the received response headers and body.
+// It also returns the title of the page.
 //
-// Body should not be mutated while this function is being called or it may
+// Body should not be mutated while this function is being called, or it may
 // lead to unexpected things.
 func (s *Wappalyze) FingerprintWithTitle(headers map[string][]string, body []byte) (map[string]struct{}, string) {
 	uniqueFingerprints := newUniqueFingerprints()
 
-	// Lowercase everything that we have recieved to check
+	// Lowercase everything that we have received to check
 	normalizedBody := bytes.ToLower(body)
 	normalizedHeaders := s.normalizeHeaders(headers)
 
