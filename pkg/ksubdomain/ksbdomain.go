@@ -3,7 +3,7 @@ package ksubdomain
 import (
 	"github.com/boy-hack/ksubdomain/core/conf"
 	"github.com/boy-hack/ksubdomain/core/gologger"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	cli "github.com/urfave/cli/v2"
 	"os"
 	"regexp"
@@ -11,8 +11,8 @@ import (
 
 // cat $HOME/MyWork/scan4all/pkg/ksubdomain/*.go|grep "github.com/boy-hack/ksubdomain"|sed 's/"//g'|sort -u|uniq|xargs -I % go get %
 func DoSubfinder(a []string, out chan string, done chan bool) {
-	if "true" == pkg.GetVal("EnableKsubdomain") {
-		s1 := pkg.GetVal("KsubdomainRegxp")
+	if "true" == util.GetVal("EnableKsubdomain") {
+		s1 := util.GetVal("KsubdomainRegxp")
 		if "" != s1 {
 			r1, err := regexp.Compile(s1)
 			if nil == err {

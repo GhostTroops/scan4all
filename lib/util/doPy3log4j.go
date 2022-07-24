@@ -1,7 +1,6 @@
-package pkg
+package util
 
 import (
-	"github.com/hktalent/scan4all/lib"
 	"net/url"
 	"os"
 	"strings"
@@ -18,11 +17,11 @@ func DoLog4j(szUrl string) {
 		//fmt.Println("DoLog4j: ", 5 > len(szUrl), !FileExists(UserHomeDir+"/MyWork/log4j-scan"))
 		return
 	}
-	lib.DoSyncFunc(func() {
-		if "" == esUrl {
-			esUrl = GetValByDefault("esUrl", "http://127.0.0.1:9200/%s_index/_doc/%s")
+	DoSyncFunc(func() {
+		if "" == EsUrl {
+			EsUrl = GetValByDefault("esUrl", "http://127.0.0.1:9200/%s_index/_doc/%s")
 		}
-		oUrl, err := url.Parse(esUrl)
+		oUrl, err := url.Parse(EsUrl)
 		if nil == err {
 			p1, err := os.Getwd()
 			if nil == err {

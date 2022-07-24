@@ -5,6 +5,12 @@ upGit http-request-smuggler
 upGit request_smuggler
 upGit smuggler
 
+cd $HOME/MyWork/nuclei-templates
+git fetch  origin master
+git checkout 51pwn
+git merge origin/master
+
+
 cd $HOME/MyWork/scan4all
 cat ./go.mod|grep projectdiscovery|grep -E "subfinder|nuclei|wappalyzergo"|awk '{print $1}'|xargs -I % go get -u %
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/asaskevich/govalidator"
 	"github.com/hktalent/scan4all/lib"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/hydra"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
@@ -112,7 +113,7 @@ func (r *Runner) MergeToFile() (string, error) {
 
 func (r *Runner) DoSsl(target string) []string {
 	// 处理ssl 数字证书中包含的域名信息，深度挖掘漏洞
-	if "true" == pkg.GetVal("ParseSSl") {
+	if "true" == util.GetVal("ParseSSl") {
 		aH, err := pkg.DoDns(target)
 		if nil == err {
 			return aH
@@ -170,7 +171,7 @@ func (r *Runner) DoTargets() (bool, error) {
 		aR = append(aR, x)
 	}
 	a = nil
-	aR = pkg.RemoveDuplication_map(aR)
+	aR = util.RemoveDuplication_map(aR)
 	//log.Printf("DoTargets:: %+v", aR)
 	err = ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
 	if nil != err {
@@ -178,7 +179,7 @@ func (r *Runner) DoTargets() (bool, error) {
 	}
 	// 有nmap那么就直接调用nmap了
 	bRw := false
-	if pkg.CheckHvNmap() {
+	if util.CheckHvNmap() {
 		bRw = true
 		tempInput1, err := ioutil.TempFile("", "stdin-out-*")
 		if err == nil {
@@ -187,25 +188,25 @@ func (r *Runner) DoTargets() (bool, error) {
 			if runtime.GOOS == "windows" {
 				s009 = "/config/doNmapScanWin.bat "
 			}
-			x := pkg.SzPwd + s009 + r.targetsFile + " " + tempInput1.Name()
+			x := util.SzPwd + s009 + r.targetsFile + " " + tempInput1.Name()
 			log.Println(x)
-			ss, err := pkg.DoCmd(strings.Split(x, " ")...)
+			ss, err := util.DoCmd(strings.Split(x, " ")...)
 			s0 := tempInput1.Name()
 			if nil == err {
 				if "" != ss {
 					log.Println(ss, "\n")
 				}
-				if pkg.FileExists(s0) {
+				if util.FileExists(s0) {
 					//data, err := tempInput1.Stat()
 					//log.Println(tempInput1.Name(), " file size: ", data.Size())
 					//if nil == err && 100 < data.Size() {
-					if x99, ok := pkg.TmpFile[string(pkg.Naabu)]; ok && 0 < len(x99) {
+					if x99, ok := util.TmpFile[string(util.Naabu)]; ok && 0 < len(x99) {
 						defer func(f09 *os.File) {
 							f09.Close()
 							os.RemoveAll(f09.Name())
 						}(x99[0])
 					}
-					pkg.TmpFile[string(pkg.Naabu)] = []*os.File{tempInput1}
+					util.TmpFile[string(util.Naabu)] = []*os.File{tempInput1}
 					hydra.DoNmapRst(&Naabubuffer)
 					defer r.Close()
 					ioutil.WriteFile(r.targetsFile, []byte(""), os.ModePerm)
@@ -268,11 +269,11 @@ func Add2Naabubuffer(target string) {
 	}
 	//fmt.Println("Add2Naabubuffer：", target)
 	k1 := target + "_Add2Naabubuffer"
-	if b1, err := pkg.Cache1.Get(k1); nil == err && string(b1) == target {
+	if b1, err := util.Cache1.Get(k1); nil == err && string(b1) == target {
 		fmt.Println("重复：", target)
 		return
 	}
-	pkg.PutAny[string](k1, target)
+	util.PutAny[string](k1, target)
 	Naabubuffer.Write([]byte(target))
 }
 
@@ -292,11 +293,11 @@ func (r *Runner) AddTarget(target string) error {
 	}
 	//log.Println("target: ", target)
 	k1 := target + "_AddTarget"
-	if b1, err := pkg.Cache1.Get(k1); nil == err && string(b1) == target {
+	if b1, err := util.Cache1.Get(k1); nil == err && string(b1) == target {
 		log.Println("重复：", target)
 		return nil
 	}
-	pkg.PutAny[string](k1, target)
+	util.PutAny[string](k1, target)
 	if target == "" {
 		return nil
 	} else if ipranger.IsCidr(target) {
@@ -319,7 +320,7 @@ func (r *Runner) AddTarget(target string) error {
 				//Add2Naabubuffer(u.Hostname())
 				// target 长度 大于 s1才处理
 				////UrlPrecise     bool // 精准url扫描，不去除url清单上下文 2022-06-08
-				UrlPrecise := pkg.GetVal(pkg.UrlPrecise)
+				UrlPrecise := util.GetVal(util.UrlPrecise)
 				if "true" == UrlPrecise && len(target) > len(s1) {
 					s2 := r1.ReplaceAllString(target[len(s1):], "")
 					// 包含1个以上/表示有上下文

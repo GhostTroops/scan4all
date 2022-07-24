@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/kscan/core/slog"
 	_ "github.com/sijms/go-ora/v2"
 	"time"
@@ -84,7 +84,7 @@ func Check(Host, Username, Password string, Port int, SID string) (bool, error) 
 	db.SetMaxIdleConns(0)
 	err = db.Ping()
 	if err != nil {
-		if pkg.StrContains(err.Error(), "ORA-28009") {
+		if util.StrContains(err.Error(), "ORA-28009") {
 			return true, nil
 		}
 		return false, err
@@ -121,16 +121,16 @@ func CheckSID(sid, Host string, Port int) bool {
 		db.Close()
 		return true
 	}
-	if pkg.StrContains(err.Error(), "ORA-") == false {
+	if util.StrContains(err.Error(), "ORA-") == false {
 		return false
 	}
-	if pkg.StrContains(err.Error(), "ORA-12505") {
+	if util.StrContains(err.Error(), "ORA-12505") {
 		return false
 	}
-	if pkg.StrContains(err.Error(), "ORA-12504") {
+	if util.StrContains(err.Error(), "ORA-12504") {
 		return false
 	}
-	if pkg.StrContains(err.Error(), "ORA-12514") {
+	if util.StrContains(err.Error(), "ORA-12514") {
 		return false
 	}
 	return true
@@ -149,5 +149,5 @@ func CheckProtocol(Host string, Port int) bool {
 		db.Close()
 		return true
 	}
-	return pkg.StrContains(err.Error(), "ORA-")
+	return util.StrContains(err.Error(), "ORA-")
 }

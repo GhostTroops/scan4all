@@ -2,7 +2,7 @@ package brute
 
 import (
 	"context"
-	"github.com/hktalent/scan4all/lib"
+	"github.com/hktalent/scan4all/lib/util"
 	"net/http"
 	"regexp"
 	"strings"
@@ -63,7 +63,7 @@ func constructEndpointPayloads(domain, path string) []string {
 }
 
 func PenetrateEndpoint(wg *sync.WaitGroup, url string, rst chan Result403, header ...string) {
-	ctx, cancel := context.WithTimeout(lib.Ctx_global, 20*time.Second)
+	ctx, cancel := context.WithTimeout(util.Ctx_global, 20*time.Second)
 	defer func() {
 		cancel()
 		wg.Done()

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	httpxrunner "github.com/hktalent/scan4all/pkg/httpx/runner"
 	"log"
@@ -33,8 +33,8 @@ https://115.159.88.218
 http://46.26.46.13/
 https://182.92.89.1
 https://47.104.237.208`))
-	if nil == pkg.Cache1 {
-		pkg.NewKvDbOp()
+	if nil == util.Cache1 {
+		util.NewKvDbOp()
 	}
 	httpxoptions := httpxrunner.ParseOptions()
 	if "" != fingerprint.FgDictFile {

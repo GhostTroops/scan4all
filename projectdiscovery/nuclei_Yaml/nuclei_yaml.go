@@ -3,7 +3,7 @@ package nuclei_Yaml
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	runner2 "github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/internal/runner"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
@@ -28,11 +28,11 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}) {
 		xx <- true
 		close(xx)
 	}()
-	if !pkg.GetValAsBool("enableNuclei") {
+	if !util.GetValAsBool("enableNuclei") {
 		return
 	}
 	// json 控制参数
-	options = pkg.ParseOption[types.Options]("nuclei", options)
+	options = util.ParseOption[types.Options]("nuclei", options)
 	if err := runner2.ConfigureOptions(); err != nil {
 		gologger.Fatal().Msgf("Could not initialize options: %s\n", err)
 	}
@@ -45,8 +45,8 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}) {
 	options.UpdateNuclei = false
 	options.Stream = false
 	options.EnableProgressBar = true
-	if nil != pkg.G_Options {
-		x01, ok := pkg.G_Options.(types.Options)
+	if nil != util.G_Options {
+		x01, ok := util.G_Options.(types.Options)
 		if ok {
 			options.Output = x01.Output
 			options.JSON = x01.JSON
@@ -140,7 +140,7 @@ func readConfig(options *types.Options) {
 
 	options.ReportingConfig = ""
 	// 启动es记录
-	if "true" == pkg.GetVal("enableEsSv") {
+	if "true" == util.GetVal("enableEsSv") {
 		options.ReportingConfig = pwd + "/config/nuclei_esConfig.yaml"
 	}
 	options.CustomHeaders = []string{}
@@ -323,7 +323,7 @@ func readConfig(options *types.Options) {
 	options.UpdateTemplates = false
 	options.TemplatesDirectory = pwd + "/config/nuclei-templates"
 	// 嵌入式集成私人版本nuclei-templates 共3744个YAML POC
-	if "true" == pkg.GetVal("enablEmbedYaml") {
+	if "true" == util.GetVal("enablEmbedYaml") {
 		options.Templates = []string{pwd + "/config/nuclei-templates"}
 		options.NoUpdateTemplates = true
 	} else {

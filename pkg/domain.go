@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/projectdiscovery/subfinder"
 	"reflect"
 	"strings"
@@ -47,7 +48,7 @@ func doAppends(a []string, s []string) []string {
 func doSub(s string) (aRst []string, err1 error) {
 	bSend := false
 	if "*." == s[:2] {
-		EnableSubfinder := GetVal(EnableSubfinder)
+		EnableSubfinder := util.GetVal(util.EnableSubfinder)
 		if "" != EnableSubfinder {
 			var out = make(chan string, 1000)
 			var close chan bool
@@ -70,7 +71,7 @@ func doSub(s string) (aRst []string, err1 error) {
 		}
 	}
 	if bSend {
-		SendAData[string](s[:2], aRst, Subfinder)
+		util.SendAData[string](s[:2], aRst, util.Subfinder)
 	}
 	return aRst, nil
 }
@@ -88,7 +89,7 @@ func DoDns(s string) (aRst []string, err1 error) {
 	}
 
 	// read from cache
-	data, err := Cache1.Get(s)
+	data, err := util.Cache1.Get(s)
 	if nil == err && 0 < len(data) {
 		json.Unmarshal(data, &aRst)
 		return
@@ -110,7 +111,7 @@ func DoDns(s string) (aRst []string, err1 error) {
 			}
 		}
 	}
-	PutAny[[]string](s, aRst)
+	util.PutAny[[]string](s, aRst)
 	return aRst, nil
 }
 

@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"crypto/tls"
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/httpx/common/stringz"
 	"io/ioutil"
 	"log"
@@ -63,12 +63,12 @@ func GetHahsMd5(body []byte) (hash string, md5R string) {
 //  key: cache key
 func Favicohash4key(host, key string) (hash string, md5R string) {
 	k1 := host + key
-	body, err := pkg.Cache1.Get(k1)
+	body, err := util.Cache1.Get(k1)
 	if nil != err && 0 == len(body) {
 		timeout := time.Duration(8 * time.Second)
 		var tr *http.Transport
-		if pkg.HttpProxy != "" {
-			uri, _ := url.Parse(pkg.HttpProxy)
+		if util.HttpProxy != "" {
+			uri, _ := url.Parse(util.HttpProxy)
 			tr = &http.Transport{
 				MaxIdleConnsPerHost: -1,
 				TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
@@ -94,7 +94,7 @@ func Favicohash4key(host, key string) (hash string, md5R string) {
 			defer resp.Body.Close()
 			if resp.StatusCode == 200 {
 				body, err = ioutil.ReadAll(resp.Body)
-				pkg.Cache1.Put(k1, body)
+				util.Cache1.Put(k1, body)
 				if err != nil {
 					//log.Println("favicon file read error: ", err)
 					return "0", ""

@@ -3,14 +3,14 @@ package smb
 import (
 	"context"
 	"errors"
-	"github.com/hktalent/scan4all/lib"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/stacktitan/smb/smb"
 	"time"
 )
 
 func Check(Host, Username, Domain, Password string, Port int) (bool, error) {
 	status := make(chan error)
-	ctx, cancel := context.WithTimeout(lib.Ctx_global, time.Second*5)
+	ctx, cancel := context.WithTimeout(util.Ctx_global, time.Second*5)
 	defer cancel()
 	options := smb.Options{
 		Host:        Host,

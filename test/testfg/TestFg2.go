@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"io/ioutil"
 	"log"
@@ -72,8 +72,8 @@ https://47.104.237.208`, "\n")
 	//a := []string{"http://1.119.203.138:8181/",
 	//	"http://1.117.5.50/",
 	//	"http://103.235.238.253"}
-	if nil == pkg.Cache1 {
-		pkg.NewKvDbOp()
+	if nil == util.Cache1 {
+		util.NewKvDbOp()
 	}
 	fingerprint.New()
 	//log.Printf("%+v", fingerprint.FgUrls)

@@ -1,7 +1,7 @@
-~/MyWork/scan4all/config/CreateEs.sh nmap
-~/MyWork/scan4all/config/CreateEs.sh naabu
-~/MyWork/scan4all/config/CreateEs.sh httpx
-~/MyWork/scan4all/config/CreateEs.sh nuclei
-~/MyWork/scan4all/config/CreateEs.sh scan4all
-~/MyWork/scan4all/config/CreateEs.sh hydra
-~/MyWork/scan4all/config/CreateEs.sh subfinder
+./config/CreateEs.sh nmap
+./config/CreateEs.sh naabu
+./config/CreateEs.sh httpx
+./config/CreateEs.sh nuclei
+./config/CreateEs.sh scan4all
+./config/CreateEs.sh hydra
+./config/CreateEs.sh subfinder

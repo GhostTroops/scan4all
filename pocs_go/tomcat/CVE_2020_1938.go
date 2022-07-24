@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/lib/util"
 	"net"
 	"regexp"
 	"strings"
@@ -234,7 +234,7 @@ func CVE_2020_1938(host string) bool {
 	ajpBuffer := makePayload(host, 8009)
 	isVulnerable, version := getVersion(host, 8009, ajpBuffer)
 	if isVulnerable {
-		pkg.GoPocLog(fmt.Sprintf("Found vuln Tomcat CVE_2020_1938 %s:%d Tomcat AJP LFI is vulnerable, Tomcat version: %s\n", host, 8009, version))
+		util.GoPocLog(fmt.Sprintf("Found vuln Tomcat CVE_2020_1938 %s:%d Tomcat AJP LFI is vulnerable, Tomcat version: %s\n", host, 8009, version))
 		return true
 	}
 	return false

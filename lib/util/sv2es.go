@@ -1,4 +1,4 @@
-package pkg
+package util
 
 import (
 	"bytes"
@@ -6,7 +6,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	myConst "github.com/hktalent/scan4all/lib"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -15,7 +14,7 @@ import (
 
 var n1 int
 var nThreads chan struct{}
-var esUrl string
+var EsUrl string
 var enableEsSv bool
 
 type ESaveType string
@@ -31,10 +30,10 @@ const (
 
 func initEs() {
 	enableEsSv = GetValAsBool("enableEsSv")
-	esUrl = GetValByDefault("esUrl", "http://127.0.0.1:9200/%s_index/_doc/%s")
+	EsUrl = GetValByDefault("EsUrl", "http://127.0.0.1:9200/%s_index/_doc/%s")
 	if enableEsSv {
 		n1 = GetValAsInt("esthread", 4)
-		log.Printf("es 初始化线程数 = %d, esUrl = %s", n1, esUrl)
+		log.Printf("es 初始化线程数 = %d, EsUrl = %s", n1, EsUrl)
 		nThreads = make(chan struct{}, n1)
 	}
 }
@@ -45,7 +44,7 @@ func Log(v ...any) {
 
 // 一定得有全局得线程等待
 func SendAnyData(data interface{}, szType ESaveType) {
-	myConst.DoSyncFunc(func() {
+	DoSyncFunc(func() {
 		data1, _ := json.Marshal(data)
 		if 0 < len(data1) && enableEsSv {
 			hasher := sha1.New()
@@ -67,7 +66,7 @@ func SendAData[T any](k string, data []T, szType ESaveType) {
 
 // 发送数据到ES
 func SendReq(data1 interface{}, id string, szType ESaveType) {
-	myConst.DoSyncFunc(func() {
+	DoSyncFunc(func() {
 		if !enableEsSv {
 			return
 		}
@@ -77,8 +76,8 @@ func SendReq(data1 interface{}, id string, szType ESaveType) {
 		defer func() {
 			<-nThreads
 		}()
-		//log.Println("esUrl = ", esUrl)
-		url := fmt.Sprintf(esUrl, szType, url.QueryEscape(id))
+		//log.Println("EsUrl = ", EsUrl)
+		url := fmt.Sprintf(EsUrl, szType, url.QueryEscape(id))
 		//log.Println("url = ", url)
 		req, err := http.NewRequest("POST", url, bytes.NewReader(data))
 		if err != nil {
