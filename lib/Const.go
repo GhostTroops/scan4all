@@ -3,6 +3,7 @@ package lib
 import (
 	"context"
 	"net/http"
+	"os"
 	"regexp"
 	"sync"
 )
@@ -83,7 +84,7 @@ func CheckHeader(header *http.Header, szUrl string) {
 			if 0 < CheckShiroCookie(header) {
 				a1 = append(a1, "shiro")
 			}
-			if 0 < len(a1) {
+			if 0 < len(a1) && os.Getenv("NoPOC") != "true" {
 				PocCheck_pipe <- PocCheck{Wappalyzertechnologies: &a1, URL: szUrl, FinalURL: szUrl, Checklog4j: false}
 			}
 		}

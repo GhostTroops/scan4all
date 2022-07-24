@@ -6,9 +6,9 @@ Uses data from https://github.com/AliasIO/wappalyzer
 
 ## Features
 
-- Very simple and easy to use, with clear code base.
+- Very simple and easy to use, with clean codebase.
 - Normalized regexes + auto-updating database of wappalyzer fingerprints.
-- Optimized for performance, parsing html manually for best speed.
+- Optimized for performance: parsing HTML manually for best speed.
 
 ### Using *go install*
 

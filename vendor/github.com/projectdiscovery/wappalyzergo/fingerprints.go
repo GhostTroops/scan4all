@@ -375,7 +375,7 @@ func formatAppVersion(app, version string) string {
 	return fmt.Sprintf("%s:%s", app, version)
 }
 
-// GetFingerprints returns the finerprint string from wappalyzer
+// GetFingerprints returns the fingerprint string from wappalyzer
 func GetFingerprints() string {
 	return fingerprints
 }

@@ -83,21 +83,23 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 					}
 					m1[ip] = append(xx09, []string{szPort, service})
 				}
-				if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
-					lib.PocCheck_pipe <- lib.PocCheck{
-						Wappalyzertechnologies: &[]string{service},
-						URL:                    szUlr,
-						FinalURL:               szUlr,
-						Checklog4j:             false,
+				if os.Getenv("NoPOC") != "true" {
+					if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
+						lib.PocCheck_pipe <- lib.PocCheck{
+							Wappalyzertechnologies: &[]string{service},
+							URL:                    szUlr,
+							FinalURL:               szUlr,
+							Checklog4j:             false,
+						}
 					}
-				}
-				// CVE_2018_14847
-				if "8291" == szPort {
-					lib.PocCheck_pipe <- lib.PocCheck{
-						Wappalyzertechnologies: &[]string{"RouterOS"},
-						URL:                    szUlr,
-						FinalURL:               szUlr,
-						Checklog4j:             false,
+					// CVE_2018_14847
+					if "8291" == szPort {
+						lib.PocCheck_pipe <- lib.PocCheck{
+							Wappalyzertechnologies: &[]string{"RouterOS"},
+							URL:                    szUlr,
+							FinalURL:               szUlr,
+							Checklog4j:             false,
+						}
 					}
 				}
 
