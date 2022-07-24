@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"fmt"
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
@@ -132,7 +133,7 @@ func ParseOptions() *Options {
 	flagSet.CreateGroup("config", "Configuration",
 		flagSet.StringVar(&options.CeyeApi, "ceyeapi", "", "ceye.io api key"),
 		flagSet.StringVar(&options.CeyeDomain, "ceyedomain", "", "ceye.io subdomain"),
-		flagSet.BoolVar(&options.NoPOC, "np", false, "Skip POC check"),
+		flagSet.BoolVar(&options.NoPOC, "np", false, "Skip pocs_go check"),
 		flagSet.BoolVarP(&options.ScanAllIPS, "sa", "scan-all-ips", true, "scan all the IP's associated with DNS record"),
 		flagSet.StringVarP(&options.ScanType, "s", "scan-type", SynScan, "type of port scan (SYN/CONNECT)"),
 		flagSet.StringVar(&options.SourceIP, "source-ip", "", "source ip"),
@@ -167,6 +168,8 @@ func ParseOptions() *Options {
 	)
 
 	_ = flagSet.Parse()
+
+	os.Setenv("NoPOC", fmt.Sprintf("%v", options.NoPOC))
 
 	// Check if stdin pipe was given
 	options.Stdin = fileutil.HasStdin()

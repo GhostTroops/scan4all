@@ -25,6 +25,7 @@ import (
 	"github.com/hktalent/scan4all/pocs_go/zabbix"
 	"log"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
@@ -279,6 +280,10 @@ func init() {
 				lib.Wg.Add(1)
 				go POCcheck(*x1.Wappalyzertechnologies, x1.URL, x1.FinalURL, x1.Checklog4j)
 			default:
+				if os.Getenv("NoPOC") == "true" {
+					close(lib.PocCheck_pipe)
+					return
+				}
 				if nMax < nCnt {
 					close(lib.PocCheck_pipe)
 					return
