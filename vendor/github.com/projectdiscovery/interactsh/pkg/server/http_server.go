@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/http/httputil"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -20,9 +22,11 @@ import (
 // HTTPServer is a http server instance that listens both
 // TLS and Non-TLS based servers.
 type HTTPServer struct {
-	options      *Options
-	tlsserver    http.Server
-	nontlsserver http.Server
+	options       *Options
+	tlsserver     http.Server
+	nontlsserver  http.Server
+	customBanner  string
+	staticHandler http.Handler
 }
 
 type noopLogger struct {
@@ -32,10 +36,36 @@ func (l *noopLogger) Write(p []byte) (n int, err error) {
 	return 0, nil
 }
 
+// disableDirectoryListing disables directory listing on http.FileServer
+func disableDirectoryListing(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/") || r.URL.Path == "" {
+			http.NotFound(w, r)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
 // NewHTTPServer returns a new TLS & Non-TLS HTTP server.
 func NewHTTPServer(options *Options) (*HTTPServer, error) {
 	server := &HTTPServer{options: options}
 
+	// If a static directory is specified, also serve it.
+	if options.HTTPDirectory != "" {
+		abs, _ := filepath.Abs(options.HTTPDirectory)
+		gologger.Info().Msgf("Loading directory (%s) to serve from : %s/s/", abs, strings.Join(options.Domains, ","))
+		server.staticHandler = http.StripPrefix("/s/", disableDirectoryListing(http.FileServer(http.Dir(options.HTTPDirectory))))
+	}
+	// If custom index, read the custom index file and serve it.
+	// Supports {DOMAIN} placeholders.
+	if options.HTTPIndex != "" {
+		abs, _ := filepath.Abs(options.HTTPDirectory)
+		gologger.Info().Msgf("Using custom server index: %s", abs)
+		if data, err := ioutil.ReadFile(options.HTTPIndex); err == nil {
+			server.customBanner = string(data)
+		}
+	}
 	router := &http.ServeMux{}
 	router.Handle("/", server.logger(http.HandlerFunc(server.defaultHandler)))
 	router.Handle("/register", server.corsMiddleware(server.authMiddleware(http.HandlerFunc(server.registerHandler))))
@@ -206,9 +236,16 @@ func (h *HTTPServer) defaultHandler(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 	w.Header().Set("Server", domain)
+	w.Header().Set("X-Interactsh-Version", h.options.Version)
 
-	if req.URL.Path == "/" && reflection == "" {
-		fmt.Fprintf(w, banner, domain)
+	if stringsutil.HasPrefixI(req.URL.Path, "/s/") && h.staticHandler != nil {
+		h.staticHandler.ServeHTTP(w, req)
+	} else if req.URL.Path == "/" && reflection == "" {
+		if h.customBanner != "" {
+			fmt.Fprint(w, strings.ReplaceAll(h.customBanner, "{DOMAIN}", domain))
+		} else {
+			fmt.Fprintf(w, banner, domain)
+		}
 	} else if strings.EqualFold(req.URL.Path, "/robots.txt") {
 		fmt.Fprintf(w, "User-agent: *\nDisallow: / # %s", reflection)
 	} else if stringsutil.HasSuffixI(req.URL.Path, ".json") {

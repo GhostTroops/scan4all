@@ -117,8 +117,8 @@ github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d h1:Byv0BzEl
 github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d/go.mod h1:WaHUgvxTVq04UNunO+XhnAqY/wQc+bxr74GqbsZ/Jqw=
 github.com/aws/aws-sdk-go v1.20.6/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/aws/aws-sdk-go v1.44.27/go.mod h1:y4AeaBuwd2Lk+GepC1E9v0qOiTws0MIWAX4oIKwKHZo=
-github.com/aws/aws-sdk-go v1.44.55 h1:h+p61sPEsLOpnQ2mKnGPrIe1MFUKwwA0X5eQYAcjOMU=
-github.com/aws/aws-sdk-go v1.44.55/go.mod h1:y4AeaBuwd2Lk+GepC1E9v0qOiTws0MIWAX4oIKwKHZo=
+github.com/aws/aws-sdk-go v1.44.60 h1:KTTogelVR+4dWiIPl7eyxoxaJkziChON6/Y/hVfTipk=
+github.com/aws/aws-sdk-go v1.44.60/go.mod h1:y4AeaBuwd2Lk+GepC1E9v0qOiTws0MIWAX4oIKwKHZo=
 github.com/aybabtme/rgbterm v0.0.0-20170906152045-cc83f3b3ce59/go.mod h1:q/89r3U2H7sSsE2t6Kca0lfwTK8JdoNGS/yzM/4iH5I=
 github.com/aymerick/douceur v0.2.0 h1:Mv+mAeH1Q+n9Fr+oyamOlAkUNPWPlA8PPGR0QAaYuPk=
 github.com/aymerick/douceur v0.2.0/go.mod h1:wlT5vV2O3h55X9m7iVYN0TBM0NH/MmbLnd30/FjWUq4=
@@ -477,8 +477,8 @@ github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+o
 github.com/klauspost/compress v1.4.1/go.mod h1:RyIbtBH6LamlWaDj8nUwkbUhJ87Yi3uG0guNDohfE1A=
 github.com/klauspost/compress v1.13.6/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
 github.com/klauspost/compress v1.15.2/go.mod h1:PhcZ0MbTNciWF3rruxRgKxI5NkcHHrHUDtV4Yw2GlzU=
-github.com/klauspost/compress v1.15.6 h1:6D9PcO8QWu0JyaQ2zUMmu16T1T+zjjEpP91guRsvDfY=
-github.com/klauspost/compress v1.15.6/go.mod h1:PhcZ0MbTNciWF3rruxRgKxI5NkcHHrHUDtV4Yw2GlzU=
+github.com/klauspost/compress v1.15.8 h1:JahtItbkWjf2jzm/T+qgMxkP9EMHsqEUA6vCMGmXvhA=
+github.com/klauspost/compress v1.15.8/go.mod h1:PhcZ0MbTNciWF3rruxRgKxI5NkcHHrHUDtV4Yw2GlzU=
 github.com/klauspost/cpuid v1.2.0/go.mod h1:Pj4uuM528wm8OyEC2QMXAi2YiTZ96dNQPGgoMS4s3ek=
 github.com/klauspost/cpuid/v2 v2.0.11 h1:i2lw1Pm7Yi/4O6XCSyJWqEHI2MDw2FzUK6o/D21xn2A=
 github.com/klauspost/cpuid/v2 v2.0.11/go.mod h1:g2LTdtYhdyuGPqyWyv7qRAmj1WBqxuObKfj5c0PQa7c=
@@ -676,8 +676,8 @@ github.com/projectdiscovery/httputil v0.0.0-20210816170244-86fd46bc09f5 h1:Gzruq
 github.com/projectdiscovery/httputil v0.0.0-20210816170244-86fd46bc09f5/go.mod h1:BueJPSPWAX11IFS6bdAqTkekiIz5Fgco5LVc1kqO9L4=
 github.com/projectdiscovery/interactsh v0.0.4/go.mod h1:PtJrddeBW1/LeOVgTvvnjUl3Hu/17jTkoIi8rXeEODE=
 github.com/projectdiscovery/interactsh v1.0.4/go.mod h1:57Xl3Q59aTb8VaFNGkCPO8pWTyTYhlM33p+HDhL8Ygw=
-github.com/projectdiscovery/interactsh v1.0.5 h1:/hWP/0qGAzPa3quG8y87Ki4bFZkzXu1OXmyxEWrgnvk=
-github.com/projectdiscovery/interactsh v1.0.5/go.mod h1:qEbFdjL3QWbLa5cvoHs9VSYBYCA7uDyViGkM+QqJCQk=
+github.com/projectdiscovery/interactsh v1.0.6 h1:nuJmJ9zSUiG5tcgwgtkFdXpYghuB+i+OuvohXSCPhxo=
+github.com/projectdiscovery/interactsh v1.0.6/go.mod h1:xyFWrqgMRJMrd19tPLdjtIOsg/kUhIAUXp+Yg+yoAvg=
 github.com/projectdiscovery/ipranger v0.0.2/go.mod h1:kcAIk/lo5rW+IzUrFkeYyXnFJ+dKwYooEOHGVPP/RWE=
 github.com/projectdiscovery/ipranger v0.0.3-0.20210831161617-ac80efae0961 h1:WqZewGI1Oe8uAwiFaHb8NNM1CLxoxxy6OV5NNePmyxM=
 github.com/projectdiscovery/ipranger v0.0.3-0.20210831161617-ac80efae0961/go.mod h1:lh3xQA3Hv7PSwA5t0L9MwTq/mhE6io7zMXmiKHxrxGg=
@@ -700,8 +700,8 @@ github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220612112524-9b1adac
 github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220612112524-9b1adac8563c/go.mod h1:xzGWG0Q8yWbuKeeaKjo7QIoDI6gheSp3RgvKnLBR9sI=
 github.com/projectdiscovery/nuclei/v2 v2.5.1/go.mod h1:sU2qcY0MQFS0CqP1BgkR8ZnUyFhqK0BdnY6bvTKNjXY=
 github.com/projectdiscovery/nuclei/v2 v2.7.2/go.mod h1:eCpc1TIHiHEmj8K7Xi1GUYcVZvL9PZtDAlR7vUZkoQw=
-github.com/projectdiscovery/nuclei/v2 v2.7.4 h1:W2S0ExlR1HLxxBwuH0yIdsNp1oh4C/EVWu4t78zfNbE=
-github.com/projectdiscovery/nuclei/v2 v2.7.4/go.mod h1:dYP9Hz8qlXwJfZvdSV/4D/UdS545qJX1tnJrFx+F6bE=
+github.com/projectdiscovery/nuclei/v2 v2.7.5 h1:q9jAvrVy9v284+QvxR4rPZZWA8uTYQm2MlHy/+FGZ8w=
+github.com/projectdiscovery/nuclei/v2 v2.7.5/go.mod h1:Gi6c6b8NJMi9QO5salpFv/n3TlcERP49hCYxIiwFfQM=
 github.com/projectdiscovery/nvd v1.0.9-0.20220314070650-d4a214c1f87d/go.mod h1:nGHAo7o6G4V4kscZlm488qKp/ZrZYiBoKqAQrn3X4Og=
 github.com/projectdiscovery/rawhttp v0.0.7/go.mod h1:PQERZAhAv7yxI/hR6hdDPgK1WTU56l204BweXrBec+0=
 github.com/projectdiscovery/rawhttp v0.0.8-0.20220526170355-03de6bb78f37 h1:odvvszpfUvNq5UMzUhimete71/ph+XQzzL11C/u3lUc=
@@ -870,8 +870,8 @@ github.com/wsxiaoys/terminal v0.0.0-20160513160801-0940f3fc43a0 h1:3UeQBvD0TFrlV
 github.com/wsxiaoys/terminal v0.0.0-20160513160801-0940f3fc43a0/go.mod h1:IXCdmsXIht47RaVFLEdVnh1t+pgYtTAhQGj73kz+2DM=
 github.com/xanzy/go-gitlab v0.50.3/go.mod h1:Q+hQhV508bDPoBijv7YjK/Lvlb4PhVhJdKqXVQrUoAE=
 github.com/xanzy/go-gitlab v0.68.0/go.mod h1:o4yExCtdaqlM8YGdDJWuZoBmfxBsmA9TPEjs9mx1UO4=
-github.com/xanzy/go-gitlab v0.68.2 h1:bRVpa+czzpR2j2UV9oeJRU3SO40ieOHlgKlVwW0LRBw=
-github.com/xanzy/go-gitlab v0.68.2/go.mod h1:o4yExCtdaqlM8YGdDJWuZoBmfxBsmA9TPEjs9mx1UO4=
+github.com/xanzy/go-gitlab v0.69.0 h1:sPci9xHzlX+lcJvPqNu3y3BQpePuR2R694Bal4AeyB8=
+github.com/xanzy/go-gitlab v0.69.0/go.mod h1:o4yExCtdaqlM8YGdDJWuZoBmfxBsmA9TPEjs9mx1UO4=
 github.com/xdg-go/pbkdf2 v1.0.0 h1:Su7DPu48wXMwC3bs7MCNG+z4FhcyEuz5dlvchbq0B0c=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
 github.com/xdg-go/scram v1.0.2 h1:akYIkZ28e6A96dkWNJQu3nmCzH3YfwMPQExUYDaRv7w=
