@@ -124,9 +124,10 @@ func (s *ReleasesService) GetRelease(pid interface{}, tagName string, options ..
 // GitLab API docs:
 // https://docs.gitlab.com/ce/api/releases/index.html#create-a-release
 type CreateReleaseOptions struct {
-	Name        *string               `url:"name" json:"name"`
-	TagName     *string               `url:"tag_name" json:"tag_name"`
-	Description *string               `url:"description" json:"description"`
+	Name        *string               `url:"name,omitempty" json:"name,omitempty"`
+	TagName     *string               `url:"tag_name,omitempty" json:"tag_name,omitempty"`
+	TagMessage  *string               `url:"tag_message,omitempty" json:"tag_message,omitempty"`
+	Description *string               `url:"description,omitempty" json:"description,omitempty"`
 	Ref         *string               `url:"ref,omitempty" json:"ref,omitempty"`
 	Milestones  *[]string             `url:"milestones,omitempty" json:"milestones,omitempty"`
 	Assets      *ReleaseAssetsOptions `url:"assets,omitempty" json:"assets,omitempty"`

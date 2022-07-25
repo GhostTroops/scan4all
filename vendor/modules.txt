@@ -92,7 +92,7 @@ github.com/apex/log
 # github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 ## explicit; go 1.13
 github.com/asaskevich/govalidator
-# github.com/aws/aws-sdk-go v1.44.55
+# github.com/aws/aws-sdk-go v1.44.60
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -534,7 +534,7 @@ github.com/json-iterator/go
 # github.com/karlseguin/ccache v2.0.3+incompatible
 ## explicit
 github.com/karlseguin/ccache
-# github.com/klauspost/compress v1.15.6
+# github.com/klauspost/compress v1.15.8
 ## explicit; go 1.16
 github.com/klauspost/compress
 github.com/klauspost/compress/flate
@@ -736,7 +736,7 @@ github.com/projectdiscovery/hmap/store/hybrid
 # github.com/projectdiscovery/httputil v0.0.0-20210816170244-86fd46bc09f5
 ## explicit; go 1.14
 github.com/projectdiscovery/httputil
-# github.com/projectdiscovery/interactsh v1.0.5
+# github.com/projectdiscovery/interactsh v1.0.6
 ## explicit; go 1.17
 github.com/projectdiscovery/interactsh/pkg/client
 github.com/projectdiscovery/interactsh/pkg/filewatcher
@@ -760,7 +760,7 @@ github.com/projectdiscovery/networkpolicy
 # github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220612112524-9b1adac8563c
 ## explicit; go 1.16
 github.com/projectdiscovery/nuclei-updatecheck-api/client
-# github.com/projectdiscovery/nuclei/v2 v2.7.4
+# github.com/projectdiscovery/nuclei/v2 v2.7.5
 ## explicit; go 1.17
 github.com/projectdiscovery/nuclei/v2/internal/colorizer
 github.com/projectdiscovery/nuclei/v2/pkg/catalog
@@ -1050,7 +1050,7 @@ github.com/valyala/fasttemplate
 # github.com/weppos/publicsuffix-go v0.15.1-0.20210928183822-5ee35905bd95
 ## explicit; go 1.11
 github.com/weppos/publicsuffix-go/publicsuffix
-# github.com/xanzy/go-gitlab v0.68.2
+# github.com/xanzy/go-gitlab v0.69.0
 ## explicit; go 1.18
 github.com/xanzy/go-gitlab
 # github.com/xdg-go/pbkdf2 v1.0.0

@@ -112,7 +112,7 @@ require (
 	github.com/olivere/elastic v6.2.37+incompatible
 	github.com/projectdiscovery/folderutil v0.0.0-20220215113126-add60a1e8e08
 	github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220612112524-9b1adac8563c
-	github.com/projectdiscovery/nuclei/v2 v2.7.4
+	github.com/projectdiscovery/nuclei/v2 v2.7.5
 	github.com/projectdiscovery/subfinder/v2 v2.5.2
 	github.com/satori/go.uuid v1.2.0
 	github.com/sijms/go-ora/v2 v2.4.25
@@ -145,7 +145,7 @@ require (
 	github.com/andygrunwald/go-jira v1.15.1 // indirect
 	github.com/antchfx/xpath v1.2.1 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220418222510-f25a4f6275ed // indirect
-	github.com/aws/aws-sdk-go v1.44.55 // indirect
+	github.com/aws/aws-sdk-go v1.44.60 // indirect
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bits-and-blooms/bitset v1.2.0 // indirect
 	github.com/bits-and-blooms/bloom/v3 v3.0.1 // indirect
@@ -207,7 +207,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/karlseguin/ccache v2.0.3+incompatible // indirect
-	github.com/klauspost/compress v1.15.6 // indirect
+	github.com/klauspost/compress v1.15.8 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.11 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
@@ -234,7 +234,7 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
 	github.com/projectdiscovery/chaos-client v0.1.8 // indirect
 	github.com/projectdiscovery/filekv v0.0.0-20210915124239-3467ef45dd08 // indirect
-	github.com/projectdiscovery/interactsh v1.0.5 // indirect
+	github.com/projectdiscovery/interactsh v1.0.6 // indirect
 	github.com/projectdiscovery/reflectutil v0.0.0-20210804085554-4d90952bf92f // indirect
 	github.com/projectdiscovery/yamldoc-go v1.0.3-0.20211126104922-00d2c6bb43b6 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
@@ -257,7 +257,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
 	github.com/weppos/publicsuffix-go v0.15.1-0.20210928183822-5ee35905bd95 // indirect
-	github.com/xanzy/go-gitlab v0.68.2 // indirect
+	github.com/xanzy/go-gitlab v0.69.0 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.0.2 // indirect
 	github.com/xdg-go/stringprep v1.0.2 // indirect
