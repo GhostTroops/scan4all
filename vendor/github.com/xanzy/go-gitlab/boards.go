@@ -33,11 +33,21 @@ type IssueBoardsService struct {
 //
 // GitLab API docs: https://docs.gitlab.com/ce/api/boards.html
 type IssueBoard struct {
-	ID        int          `json:"id"`
-	Name      string       `json:"name"`
-	Project   *Project     `json:"project"`
-	Milestone *Milestone   `json:"milestone"`
-	Lists     []*BoardList `json:"lists"`
+	ID        int        `json:"id"`
+	Name      string     `json:"name"`
+	Project   *Project   `json:"project"`
+	Milestone *Milestone `json:"milestone"`
+	Assignee  *struct {
+		ID        int    `json:"id"`
+		Username  string `json:"username"`
+		Name      string `json:"name"`
+		State     string `json:"state"`
+		AvatarURL string `json:"avatar_url"`
+		WebURL    string `json:"web_url"`
+	} `json:"assignee"`
+	Lists  []*BoardList    `json:"lists"`
+	Weight int             `json:"weight"`
+	Labels []*LabelDetails `json:"labels"`
 }
 
 func (b IssueBoard) String() string {
@@ -48,9 +58,18 @@ func (b IssueBoard) String() string {
 //
 // GitLab API docs: https://docs.gitlab.com/ce/api/boards.html
 type BoardList struct {
-	ID       int    `json:"id"`
-	Label    *Label `json:"label"`
-	Position int    `json:"position"`
+	ID       int `json:"id"`
+	Assignee *struct {
+		ID       int    `json:"id"`
+		Name     string `json:"name"`
+		Username string `json:"username"`
+	} `json:"assignee"`
+	Iteration      *ProjectIteration `json:"iteration"`
+	Label          *Label            `json:"label"`
+	MaxIssueCount  int               `json:"max_issue_count"`
+	MaxIssueWeight int               `json:"max_issue_weight"`
+	Milestone      *Milestone        `json:"milestone"`
+	Position       int               `json:"position"`
 }
 
 func (b BoardList) String() string {
@@ -257,7 +276,10 @@ func (s *IssueBoardsService) GetIssueBoardList(pid interface{}, board, list int,
 //
 // GitLab API docs: https://docs.gitlab.com/ce/api/boards.html#new-board-list
 type CreateIssueBoardListOptions struct {
-	LabelID *int `url:"label_id" json:"label_id"`
+	LabelID     *int `url:"label_id,omitempty" json:"label_id,omitempty"`
+	AssigneeID  *int `url:"assignee_id,omitempty" json:"assignee_id,omitempty"`
+	MilestoneID *int `url:"milestone_id,omitempty" json:"milestone_id,omitempty"`
+	IterationID *int `url:"iteration_id,omitempty" json:"iteration_id,omitempty"`
 }
 
 // CreateIssueBoardList creates a new issue board list.
