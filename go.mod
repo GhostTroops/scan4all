@@ -108,6 +108,7 @@ require (
 	github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40
 	github.com/masterzen/winrm v0.0.0-20220513085036-69f69afcd9e9
 	github.com/mfonda/simhash v0.0.0-20151007195837-79f94a1100d6
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/olivere/elastic v6.2.37+incompatible
 	github.com/projectdiscovery/folderutil v0.0.0-20220215113126-add60a1e8e08
@@ -223,7 +224,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.12 // indirect
 	github.com/mholt/acmez v1.0.2 // indirect
 	github.com/mholt/archiver v3.1.1+incompatible // indirect
-	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/nwaples/rardecode v1.1.2 // indirect
 	github.com/openrdap/rdap v0.9.1-0.20191017185644-af93e7ef17b7 // indirect
