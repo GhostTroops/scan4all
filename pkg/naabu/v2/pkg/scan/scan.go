@@ -21,7 +21,7 @@ import (
 	"golang.org/x/net/proxy"
 )
 
-// State determines the internal scan state
+// State determines the nclruner scan state
 type State int
 
 const (
