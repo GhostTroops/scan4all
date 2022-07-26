@@ -22,7 +22,7 @@ var (
 	cfgFile string
 )
 
-func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}) {
+func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, outNuclei chan<- *runner2.Runner) {
 	options := &types.Options{}
 	defer func() {
 		xx <- true
@@ -83,7 +83,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}) {
 	}
 	//data, _ := json.Marshal(options)
 	//log.Printf("%+v", string(data))
-
+	outNuclei <- nucleiRunner
 	if err := nucleiRunner.RunEnumeration(); err != nil {
 		if options.Validate {
 			gologger.Fatal().Msgf("Could not validate templates: %s\n", err)
