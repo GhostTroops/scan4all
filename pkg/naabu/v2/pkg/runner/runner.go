@@ -8,6 +8,7 @@ import (
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
+	runner2 "github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/retryablehttp-go"
 	"log"
@@ -59,7 +60,16 @@ func (r *Runner) Httpxrun() error {
 	//log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
 	//Naabubuffer1 := bytes.Buffer{}
 	//Naabubuffer1.Write(httpxrunner.Naabubuffer.Bytes())
-	go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone, nil)
+	var xx1 = make(chan *runner2.Runner, 3)
+	go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone, nil, xx1)
+	select {
+	case <-xx1:
+		close(xx1)
+	case <-nucleiDone:
+		close(xx1)
+	default:
+	}
+
 	httpxoptions := httpxrunner.ParseOptions()
 	// 指纹去重复 请求路径
 	if "" != fingerprint.FgDictFile {
