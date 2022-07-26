@@ -2,11 +2,9 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
 	"github.com/projectdiscovery/nuclei/v2/pkg/model/types/severity"
 	nucleiType "github.com/projectdiscovery/nuclei/v2/pkg/templates/types"
-	"net/http"
 	_ "net/http/pprof"
 	"os"
 	"sync"
@@ -39,11 +37,11 @@ func main() {
 	os.Setenv("enableNuclei", "true")
 
 	if true {
-		go func() {
-			//szTip = "Since you started http://127.0.0.1:6060/debug/pprof/ with -debug, close the program with: control + C"
-			fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/\n\ngo tool pprof -seconds=10 -http=:9999 http://localhost:6060/debug/pprof/heap")
-			http.ListenAndServe(":6060", nil)
-		}()
+		//go func() {
+		//	//szTip = "Since you started http://127.0.0.1:6060/debug/pprof/ with -debug, close the program with: control + C"
+		//	fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/\n\ngo tool pprof -seconds=10 -http=:9999 http://localhost:6060/debug/pprof/heap")
+		//	http.ListenAndServe(":6060", nil)
+		//}()
 		h01 := []severity.Severity{severity.Critical, severity.High, severity.Medium, 2, 1, 0}
 		//data1, err := json.Marshal(h01)
 		//if nil == err {
