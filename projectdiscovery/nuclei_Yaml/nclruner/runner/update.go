@@ -200,7 +200,7 @@ func getVersions(runner *Runner) (semver.Version, semver.Version, error) {
 	return latestVersion, currentVersion, nil
 }
 
-// readInternalConfigurationFile reads the internal configuration file for nuclei
+// readInternalConfigurationFile reads the nclruner configuration file for nuclei
 func (r *Runner) readInternalConfigurationFile(configDir string) error {
 	templatesConfigFile := filepath.Join(configDir, nucleiConfigFilename)
 	if _, statErr := os.Stat(templatesConfigFile); !os.IsNotExist(statErr) {

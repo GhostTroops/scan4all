@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/hktalent/scan4all/lib/util"
-	runner2 "github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/internal/runner"
+	runner2 "github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
@@ -309,7 +309,7 @@ func readConfig(options *types.Options) {
 	//	flagSet.BoolVarP(&options.DebugRequests, "debug-req", "dreq", false, "show all sent requests"),
 	//	flagSet.BoolVarP(&options.DebugResponse, "debug-resp", "dresp", false, "show all received responses"),
 	//	flagSet.NormalizedOriginalStringSliceVarP(&options.Proxy, "proxy", "p", []string{}, "list of http/socks5 proxy to use (comma separated or file input)"),
-	//	flagSet.BoolVarP(&options.ProxyInternal, "proxy-internal", "pi", false, "proxy all internal requests"),
+	//	flagSet.BoolVarP(&options.ProxyInternal, "proxy-nclruner", "pi", false, "proxy all nclruner requests"),
 	//	flagSet.StringVarP(&options.TraceLogFile, "trace-log", "tlog", "", "file to write sent requests trace log"),
 	//	flagSet.StringVarP(&options.ErrorLogFile, "error-log", "elog", "", "file to write sent requests error log"),
 	//	flagSet.BoolVar(&options.Version, "version", false, "show nuclei version"),

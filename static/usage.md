@@ -24,7 +24,7 @@ PORT:
    -exclude-cdn, -ec           skip full port scans for CDN's (only checks for 80,443)
 
 RATE-LIMIT:
-   -c int     general internal worker threads (default 25)
+   -c int     general nclruner worker threads (default 25)
    -rate int  packets to send per second (default 1000)
 
 OUTPUT:
