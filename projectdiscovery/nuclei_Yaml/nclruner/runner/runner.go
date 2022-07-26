@@ -20,7 +20,7 @@ import (
 	"go.uber.org/atomic"
 	"go.uber.org/ratelimit"
 
-	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/internal/colorizer"
+	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/nclruner/colorizer"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog"
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog/config"

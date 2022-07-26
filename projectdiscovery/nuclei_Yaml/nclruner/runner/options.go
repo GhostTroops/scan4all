@@ -70,7 +70,7 @@ func ParseOptions(options *types.Options) {
 	// Load the resolvers if user asked for them
 	loadResolvers(options)
 
-	// removes all cli variables containing payloads and add them to the internal struct
+	// removes all cli variables containing payloads and add them to the nclruner struct
 	for key, value := range options.Vars.AsMap() {
 		if fileutil.FileExists(value.(string)) {
 			_ = options.Vars.Del(key)

@@ -95,7 +95,7 @@ file:
         regex:
           - 'glob'
       - type: regex
-        # Remember that sensitive data get copied on fork.  For example, a random number generator's internal state will get duplicated, and the child may start outputting identical number streams.
+        # Remember that sensitive data get copied on fork.  For example, a random number generator's nclruner state will get duplicated, and the child may start outputting identical number streams.
         regex:
           - 'fork'
       - type: regex
