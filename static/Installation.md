@@ -32,3 +32,20 @@ ls -all /lib64/libpcap*
 ```sh
 ln -s /lib64/libpcap.so.1.9.1 /lib64/libpcap.so.0.8
 ```
+
+## docker ubuntu
+```bash 
+apt update;apt install -yy libpcap0.8-dev
+```
+## centos
+```bash
+yum install -yy glibc-devel.x86_64
+```
+### linux
+too many open files
+查看当前打开的文件数
+```
+awk '{print $1}' /proc/sys/fs/file-nr
+ulimit -a
+ulimit -n 819200
+```

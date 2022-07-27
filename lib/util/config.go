@@ -289,7 +289,6 @@ func Init2(config *embed.FS) {
 		szFile := newpath + "/.nuclei-ignore"
 		if nil == err && !FileExists(szFile) {
 			ioutil.WriteFile(szFile, []byte(`tags:
-  - "fuzz"
   - "dos"`), os.ModePerm)
 		}
 	}
