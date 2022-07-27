@@ -120,11 +120,14 @@ go install github.com/hktalent/scan4all@2.6.1
 scan4all -h
 ```
 # 如何使用
-docker ubuntu install
+## docker ubuntu
 ```bash 
 apt update;apt install -yy libpcap0.8-dev
 ```
-
+## centos
+```bash
+yum install -yy glibc-devel.x86_64
+```
 - 1、启动 Elasticsearch, 当然你可以使用传统方式输出、结果
 ```bash
 mkdir -p logs data
@@ -148,7 +151,8 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 ```
 
 # Work Plan
-- 整合 web-cache-vulnerability-scanner 实现HTTP smuggling 走私、缓存中毒检测
+- 整合 smuggling 实现HTTP smuggling 走私、缓存中毒检测
+- 重构 naabu、httpx的集成方式，解决vscan嵌入代码集成方式，导致无法升级依赖包的弊端
 - 联动 metasploit-framework，在系统已经安装好对前提条件下，配合tmux，并以 macos 环境为最佳实践完成联动
 - 重构 vscan 的代码，目标是直接调用 naabu、httpx 而不是嵌入他们，导致他们的bug难以通过升级包的方式得以解决
 - 整合 更多 fuzzer <!-- gryffin -->,如 联动 sqlmap
