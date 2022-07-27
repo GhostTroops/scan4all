@@ -284,6 +284,11 @@ func Init2(config *embed.FS) {
 	dirname, err := os.UserHomeDir()
 	if nil == err {
 		UserHomeDir = dirname
+		newpath := UserHomeDir + "/.config/nuclei"
+		err := os.MkdirAll(newpath, os.ModePerm)
+		if nil == err {
+			ioutil.WriteFile(newpath+"/.nuclei-ignore", []byte(""), os.ModePerm)
+		}
 	}
 	szPath := "config"
 	log.Println("wait for init config files ... ")
