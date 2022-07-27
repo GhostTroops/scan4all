@@ -286,8 +286,11 @@ func Init2(config *embed.FS) {
 		UserHomeDir = dirname
 		newpath := UserHomeDir + "/.config/nuclei"
 		err := os.MkdirAll(newpath, os.ModePerm)
-		if nil == err {
-			ioutil.WriteFile(newpath+"/.nuclei-ignore", []byte(""), os.ModePerm)
+		szFile := newpath + "/.nuclei-ignore"
+		if nil == err && !FileExists(szFile) {
+			ioutil.WriteFile(szFile, []byte(`tags:
+  - "fuzz"
+  - "dos"`), os.ModePerm)
 		}
 	}
 	szPath := "config"
