@@ -1,4 +1,4 @@
-id: iis-nclruner-ip-disclosure
+id: iis-internal-ip-disclosure
 
 info:
   name: IIS Internal IP Disclosure Template
