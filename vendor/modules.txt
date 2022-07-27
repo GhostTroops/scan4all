@@ -757,7 +757,7 @@ github.com/projectdiscovery/mapcidr
 # github.com/projectdiscovery/networkpolicy v0.0.1
 ## explicit; go 1.14
 github.com/projectdiscovery/networkpolicy
-# github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220612112524-9b1adac8563c
+# github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220726130814-981d44a34f84
 ## explicit; go 1.16
 github.com/projectdiscovery/nuclei-updatecheck-api/client
 # github.com/projectdiscovery/nuclei/v2 v2.7.5
@@ -1186,7 +1186,7 @@ golang.org/x/crypto/ssh/terminal
 # golang.org/x/mod v0.4.2
 ## explicit; go 1.12
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20220725212005-46097bf591d3
+# golang.org/x/net v0.0.0-20220726230323-06994584191e
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context

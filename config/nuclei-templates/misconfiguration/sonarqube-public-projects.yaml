@@ -5,7 +5,7 @@ info:
   author: sickwell
   severity: low
   reference:
-    - https://next.sonarqube.com/sonarqube/web_api/api/components/suggestions?nclruner=true
+    - https://next.sonarqube.com/sonarqube/web_api/api/components/suggestions?internal=true
   tags: sonarqube,misconfig
 
 requests:

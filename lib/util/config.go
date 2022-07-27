@@ -287,16 +287,18 @@ func Init2(config *embed.FS) {
 	}
 	szPath := "config"
 	log.Println("wait for init config files ... ")
-	if x1, err := config.ReadDir(szPath); nil == err {
-		for _, x2 := range x1 {
-			if x2.IsDir() {
-				doDir(config, x2, szPath)
-			} else {
-				doFile(config, x2, szPath)
+	if nil != config {
+		if x1, err := config.ReadDir(szPath); nil == err {
+			for _, x2 := range x1 {
+				if x2.IsDir() {
+					doDir(config, x2, szPath)
+				} else {
+					doFile(config, x2, szPath)
+				}
 			}
+		} else {
+			log.Println("Init:", err)
 		}
-	} else {
-		log.Println("Init:", err)
 	}
 	Init()
 	log.Println("init config files is over .")

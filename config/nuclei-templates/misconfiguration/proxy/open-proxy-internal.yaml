@@ -1,12 +1,12 @@
-id: open-proxy-nclruner
+id: open-proxy-internal
 
 info:
   name: Open Proxy To Internal Network
   author: sullo
   severity: high
-  description: The host is configured as a proxy which allows access to other hosts on the nclruner network.
+  description: The host is configured as a proxy which allows access to other hosts on the internal network.
   reference:
-    - https://blog.projectdiscovery.io/abusing-reverse-proxies-nclruner-access/
+    - https://blog.projectdiscovery.io/abusing-reverse-proxies-internal-access/
     - https://en.wikipedia.org/wiki/Open_proxy
     - https://www.acunetix.com/vulnerabilities/web/apache-configured-to-run-as-proxy/
   classification:
