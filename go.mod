@@ -20,7 +20,7 @@ require (
 	github.com/projectdiscovery/networkpolicy v0.0.1
 	github.com/remeh/sizedwaitgroup v1.0.0
 	go.uber.org/ratelimit v0.2.0
-	golang.org/x/net v0.0.0-20220725212005-46097bf591d3
+	golang.org/x/net v0.0.0-20220726230323-06994584191e
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
 )
 
@@ -112,7 +112,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/olivere/elastic v6.2.37+incompatible
 	github.com/projectdiscovery/folderutil v0.0.0-20220215113126-add60a1e8e08
-	github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220612112524-9b1adac8563c
+	github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220726130814-981d44a34f84
 	github.com/projectdiscovery/nuclei/v2 v2.7.5
 	github.com/projectdiscovery/subfinder/v2 v2.5.2
 	github.com/satori/go.uuid v1.2.0
