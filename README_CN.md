@@ -128,6 +128,14 @@ apt update;apt install -yy libpcap0.8-dev
 ```bash
 yum install -yy glibc-devel.x86_64
 ```
+### linux
+too many open files 
+查看当前打开的文件数
+```
+awk '{print $1}' /proc/sys/fs/file-nr
+ulimit -a
+ulimit -n 819200
+```
 - 1、启动 Elasticsearch, 当然你可以使用传统方式输出、结果
 ```bash
 mkdir -p logs data
