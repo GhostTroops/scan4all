@@ -589,7 +589,6 @@ func (request *Request) executeRequest(reqURL string, generatedRequest *generate
 		for k, v := range outputEvent {
 			finalEvent[k] = v
 		}
-		someMapMutex.Unlock()
 
 		// Add to history the current request number metadata if asked by the user.
 		if request.ReqCondition {
