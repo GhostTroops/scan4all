@@ -1,0 +1,76 @@
+{
+      "Name": "Couchdb Unauth",
+      "Level": "3",
+      "Tags": [
+            "unauth"
+      ],
+      "GobyQuery": "app=\"APACHE-CouchDB\"",
+      "Description": "remote attacker to gain unauthorized access to a targeted system",
+      "Product": "APACHE-CouchDB",
+      "Homepage": "http://couchdb.apache.org/",
+      "Author": "aetkrad",
+      "Impact": "<p>Allows remote attackers to execute arbitrary code<br></p>",
+      "Recommendation": "",
+      "References": [
+            "https://www.seebug.org/vuldb/ssvid-91597"
+      ],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/_config",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "httpd_design_handlers",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "external_manager",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "replicator_manager",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-10 20:27:45",
+      "GobyVersion": "1.8.302"
+}

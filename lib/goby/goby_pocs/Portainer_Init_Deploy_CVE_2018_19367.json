@@ -1,0 +1,90 @@
+{
+      "Name": "Portainer Init Deploy CVE-2018-19367",
+      "Level": "2",
+      "Tags": [
+            "unauthorized access"
+      ],
+      "GobyQuery": "title=\"Portainer\"",
+      "Description": "Portainer is a Universal Container Management System for Kubernetes, Docker/Swarm, and Nomad that simplifies container operations so you can deliver software to more places, faster.",
+      "Product": "Portainer",
+      "Homepage": "https://portainer.io/",
+      "Author": "",
+      "Impact": "Portainer through 1.19.2 provides an API endpoint (/api/users/admin/check) to verify that the admin user is already created. This API endpoint will return 404 if admin was not created and 204 if it was already created. Attackers can set an admin password in the 404 case.",
+      "Recommendation": "",
+      "References": [
+            "https://documentation.portainer.io/v2.0/deploy/initial/",
+            "https://nvd.nist.gov/vuln/detail/CVE-2018-19367"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/api/users/admin/check",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "404",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/test.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

