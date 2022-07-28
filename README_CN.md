@@ -124,6 +124,14 @@ go install github.com/hktalent/scan4all@2.6.1
 scan4all -h
 ```
 # 如何使用
+To install libcap on Linux:
+```bash
+sudo apt install -y libpcap-dev
+```
+on Mac:
+```bash
+brew install libpcap
+```
 ## docker ubuntu
 ```bash 
 apt update;apt install -yy libpcap0.8-dev
