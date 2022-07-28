@@ -54,6 +54,10 @@ Vulnerabilities Scan；15000+PoC漏洞扫描；20种应用密码爆破；7000+We
 ```bash
 noScan=true  ./scan4all -l list.txt  -v
 ```
+- 支持直接使用 nmap xml结果输入：
+```bash
+./scan4all -l nmapScanResults.xml  -v
+```
 - 快速 15000+ POC 检测功能，PoCs包含：
   * nuclei POC
   ## Nuclei Templates Top 10 statistics
