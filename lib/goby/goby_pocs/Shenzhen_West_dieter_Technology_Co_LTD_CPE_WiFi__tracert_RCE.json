@@ -1,11 +1,4 @@
-package exploits
-
-import (
-	"git.gobies.org/goby/goscanner/goutils"
-)
-
-func init() {
-	expJson := `{
+{
   "Name": "Shenzhen West dieter Technology Co LTD CPE-WiFi tracert RCE",
   "Description": "Shenzhen West dieter Technology Co., LTD CPE-WiFi Command execution vulnerability exists, and attackers can use this vulnerability to execute system commands.  ",
   "Product": "CPE-WiFi",
@@ -107,12 +100,4 @@ func init() {
       "CPE-WiFi"
     ]
   }
-}`
-
-	ExpManager.AddExploit(NewExploit(
-		goutils.GetFileName(),
-		expJson,
-		nil,
-		nil,
-	))
 }

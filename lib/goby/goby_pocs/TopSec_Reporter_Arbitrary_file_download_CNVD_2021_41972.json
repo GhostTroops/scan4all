@@ -1,11 +1,4 @@
-package exploits
-
-import (
-	"git.gobies.org/goby/goscanner/goutils"
-)
-
-func init() {
-	expJson := `{
+{
   "Name": "TopSec Reporter Arbitrary file download CNVD-2021-41972",
   "Description": "Tianrongxin Technology Group, founded on August 30, 1985, is a leading provider of network security, big data and secure cloud services in China.\\nRandom file download vulnerability exists in Tianrongxin Technology Group Reporter, which can be used by attackers to obtain sensitive information.",
   "Product": "TOPSEC Reporter",
@@ -125,12 +118,4 @@ func init() {
     "System": null,
     "Hardware": null
   }
-}`
-
-	ExpManager.AddExploit(NewExploit(
-		goutils.GetFileName(),
-		expJson,
-		nil,
-		nil,
-	))
 }

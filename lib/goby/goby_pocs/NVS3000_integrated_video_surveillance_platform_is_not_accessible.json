@@ -1,11 +1,4 @@
-package exploits
-
-import (
-	"git.gobies.org/goby/goscanner/goutils"
-)
-
-func init() {
-	expJson := `{
+{
   "Name": "NVS3000 integrated video surveillance platform is not accessible CNVD-2021-19742",
   "Description": "Datang Telecom Technology Co., Ltd. is a provider of information and communication products and integrated solutions.\\nNVS3000 integrated video surveillance platform of Datang Telecom Technology Co., LTD has an unauthorized access vulnerability, which can be used by attackers to obtain sensitive system information.",
   "Product": "NVS3000 integrated video surveillance platform",
@@ -117,12 +110,4 @@ func init() {
     "System": null,
     "Hardware": null
   }
-}`
-
-	ExpManager.AddExploit(NewExploit(
-		goutils.GetFileName(),
-		expJson,
-		nil,
-		nil,
-	))
 }

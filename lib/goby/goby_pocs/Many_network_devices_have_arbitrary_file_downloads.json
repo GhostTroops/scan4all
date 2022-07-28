@@ -1,11 +1,4 @@
-package exploits
-
-import (
-	"git.gobies.org/goby/goscanner/goutils"
-)
-
-func init() {
-	expJson := `{
+{
   "Name": "Many network devices have arbitrary file downloads",
   "Description": "The download.php page contains any file downloads",
   "Product": "Many network devices",
@@ -158,12 +151,4 @@ func init() {
     "System": null,
     "Hardware": null
   }
-}`
-
-	ExpManager.AddExploit(NewExploit(
-		goutils.GetFileName(),
-		expJson,
-		nil,
-		nil,
-	))
 }

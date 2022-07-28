@@ -1,11 +1,4 @@
-package exploits
-
-import (
-	"git.gobies.org/goby/goscanner/goutils"
-)
-
-func init() {
-	expJson := `{
+{
   "Name": "AceNet AceReporter Report component Arbitrary file download",
   "Description": "All firewall devices that use the AceNet AceReporter report component can download arbitrary files",
   "Product": "AceNet AceReporter Report component",
@@ -125,12 +118,4 @@ func init() {
     "System": null,
     "Hardware": null
   }
-}`
-
-	ExpManager.AddExploit(NewExploit(
-		goutils.GetFileName(),
-		expJson,
-		nil,
-		nil,
-	))
 }
