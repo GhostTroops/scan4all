@@ -122,6 +122,25 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 	}
 }
 
+// 处理使用者自己扫描的结果
+func DoNmapWithFile(s string, bf *bytes.Buffer) bool {
+	if strings.HasSuffix(strings.ToLower(s), ".xml") {
+		util.Wg.Add(1)
+		go func() {
+			defer util.Wg.Done()
+			b, err := ioutil.ReadFile(s)
+			if nil == err && 0 < len(b) {
+				DoParseXml(string(b), bf)
+			} else {
+				log.Println("DoNmapWithFile: ", err)
+			}
+		}()
+		return true
+	}
+	return false
+}
+
+// 处理 naabu 端口扫描环节的结果文件
 func DoNmapRst(bf *bytes.Buffer) {
 	if x1, ok := util.TmpFile[string(util.Naabu)]; ok {
 		for _, x := range x1 {

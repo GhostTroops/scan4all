@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg/hydra"
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/gologger"
 	"io"
@@ -40,6 +41,7 @@ func main() {
 		// 程序都结束了，没有必要清理内存了
 		// fingerprint.ClearData()
 	}()
+
 	options := naaburunner.ParseOptions()
 	szTip := ""
 	if options.Debug && util.GetValAsBool("enablDevDebug") {
@@ -64,7 +66,13 @@ func main() {
 	if err != nil {
 		gologger.Fatal().Msgf("naaburunner.NewRunner Could not create runner: %s\n", err)
 	}
-	if util.GetValAsBool("noScan") {
+	noScan := util.GetValAsBool("noScan")
+
+	// 直接使用 nmap xml结果文件
+	if hydra.DoNmapWithFile(options.HostsFile, &naaburunner.Naabubuffer) {
+		os.Setenv("noScan", "true")
+		naabuRunner.Close()
+	} else if noScan {
 		s1, err := naabuRunner.MergeToFile()
 		if nil == err {
 			data, err := ioutil.ReadFile(s1)
@@ -72,6 +80,7 @@ func main() {
 				naaburunner.Naabubuffer.Write(data)
 			}
 		}
+		naabuRunner.Close()
 	} else {
 		gologger.Info().Msg("Port scan starting....")
 		err = naabuRunner.RunEnumeration()
@@ -87,5 +96,7 @@ func main() {
 	log.Printf("wait for all threads to end\n%s", szTip)
 	util.Wg.Wait()
 	util.StopAll()
-	naabuRunner.Close()
+	if !noScan {
+		naabuRunner.Close()
+	}
 }
