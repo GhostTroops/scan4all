@@ -1,0 +1,109 @@
+{
+      "Name": "YAPI RCE",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "app=\"YAPI\" || title==\"YApi-高效、易用、功能强大的可视化接口管理平台\" || title==\"YApi Pro-高效、易用、功能强大的可视化接口管理平台\"",
+      "Description": "YApi is an efficient, easy-to-use and powerful visual interface management platform.",
+      "Product": "YAPI",
+      "Homepage": "https://github.com/YMFE/yapi",
+      "Author": "",
+      "Impact": "A vulnerability in Yapi allows remote unauthenticated attackers to cause the product to execute arbitrary code.",
+      "Recommendation": "",
+      "References": [
+            "https://www.secpulse.com/archives/162502.html",
+            "https://gist.github.com/pikpikcu/0145fb71203c8a3ad5c67b8aab47165b",
+            "https://twitter.com/sec715/status/1415484190561161216",
+            "https://mp.weixin.qq.com/s/zobag3-fIl_0vrc8BrnRjg"
+      ],
+      "HasExp": true,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/api/user/reg",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "not contains",
+                                    "value": "禁止注册，请联系管理员",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "邮箱不能为空",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/test.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

