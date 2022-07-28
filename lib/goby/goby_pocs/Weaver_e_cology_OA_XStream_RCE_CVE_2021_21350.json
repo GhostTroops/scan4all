@@ -1,11 +1,4 @@
-package exploits
-
-import (
-	"git.gobies.org/goby/goscanner/goutils"
-)
-
-func init() {
-	expJson := `{
+{
   "Name": "Weaver e_cology OA XStream Remote Code Execution",
   "Level": "3",
   "Tags": [
@@ -95,12 +88,4 @@ func init() {
     "Hardware": null
   },
   "DisclosureDate": "2021-05-22"
-}`
-
-	ExpManager.AddExploit(NewExploit(
-		goutils.GetFileName(),
-		expJson,
-		nil,
-		nil,
-	))
 }

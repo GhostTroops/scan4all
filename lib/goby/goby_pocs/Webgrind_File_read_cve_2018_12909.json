@@ -1,11 +1,4 @@
-package exploits
-
-import (
-	"git.gobies.org/goby/goscanner/goutils"
-)
-
-func init() {
-	expJson := `{
+{
   "Name": "Webgrind_File_read_cve-2018-12909",
   "Description": "<p>Webgrind是一套PHP执行时间分析工具。</p><p>Webgrind 1.5版本中存在安全漏洞，该漏洞源于程序依靠用户输入来显示文件。攻击者可借助index.php?op=fileviewer＆file= URI利用该漏洞查看可被Webserver用户访问的本地文件系统上的文件。</p>",
   "Product": "",
@@ -151,12 +144,4 @@ func init() {
     "System": null,
     "Hardware": null
   }
-}`
-
-	ExpManager.AddExploit(NewExploit(
-		goutils.GetFileName(),
-		expJson,
-		nil,
-		nil,
-	))
 }

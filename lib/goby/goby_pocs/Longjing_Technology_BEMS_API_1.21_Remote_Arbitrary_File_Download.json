@@ -1,11 +1,4 @@
-package exploits
-
-import (
-	"git.gobies.org/goby/goscanner/goutils"
-)
-
-func init() {
-	expJson := `{
+{
   "Name": "Longjing Technology BEMS API 1.21 Remote Arbitrary File Download",
   "Description": "The application suffers from an unauthenticated arbitrary file download vulnerability.  Input passed through the fileName parameter through downloads endpoint is not properly verified before being used to download files.  This can be exploited to disclose the contents of arbitrary and sensitive files through directory traversal attacks.",
   "Product": "Battery Energy Management System",
@@ -132,12 +125,4 @@ func init() {
     "System": null,
     "Hardware": null
   }
-}`
-
-	ExpManager.AddExploit(NewExploit(
-		goutils.GetFileName(),
-		expJson,
-		nil,
-		nil,
-	))
 }

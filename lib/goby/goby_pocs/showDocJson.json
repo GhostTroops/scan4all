@@ -1,13 +1,4 @@
-package exploits
-
-import (
-	"gopoc"
-
-	"git.gobies.org/goby/goscanner/goutils"
-)
-
-func init() {
-	expJson := `{
+{
   "Name": "Showdoc存在文件上传漏洞",
   "Description": "Showdoc存在文件上传漏洞，攻击者可以利用漏洞获取服务器权限。",
   "Product": "",
@@ -211,14 +202,4 @@ func init() {
   },
   "Disable": false,
   "Recommandation": ""
-}`
-
-	gopoc.ExpManager.AddExploit(gopoc.NewExploit(
-		goutils.GetFileName(),
-		expJson,
-		nil,
-		nil,
-	))
 }
-
-// generate by genpoc: goby-cmd -mode genpoc -CNVDID CNVD-2020-26585 -exportFile exploits\user\CNVD-export.go
