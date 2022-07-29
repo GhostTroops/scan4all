@@ -45,6 +45,7 @@ scan4all -host 127.0.0.1 -p 7001,7002
 
 ```shell    
 scan4all -host 127.0.0.1 -top-ports 1000
+scan4all -host 127.0.0.1 -top-ports http
 ```
 对 127.0.0.1 进行 NmapTop1000 端口进行检测 (不使用此参数，默认进行http常用端口扫描)
 
@@ -100,6 +101,12 @@ scan4all -host 127.0.0.1 -proxy socks5://127.0.0.1:1080
 
 ```shell    
 scan4all -host www.google.com -ec
+```
+
+##  直接使用nmap扫描结果，跳过内部端口扫描
+
+```shell    
+scan4all -l nmapResult.xml -v
 ```
 
 ## 其他
