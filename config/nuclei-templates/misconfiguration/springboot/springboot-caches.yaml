@@ -1,17 +1,21 @@
-id: springboot-env
+id: springboot-caches
 
 info:
-  name: Detect Springboot Env Actuator
-  author: that_juan_,dwisiswant0,wdahlenb,philippedelteil
+  name: Springboot Actuator Caches
+  author: ELSFA7110
   severity: low
-  description: Sensitive environment variables may not be masked
-  tags: springboot,exposure
+  description: The caches endpoint provides access to the application's caches.
+  reference:
+    - https://docs.spring.io/spring-boot/docs/current/actuator-api/htmlsingle/#caches
+  metadata:
+    verified: true
+  tags: misconfig,springboot,exposure
 
 requests:
   - method: GET
     path:
-      - "{{BaseURL}}/env"
-      - "{{BaseURL}}/actuator/env"
+      - "{{BaseURL}}/caches"
+      - "{{BaseURL}}/actuator/caches"
 
     stop-at-first-match: true
     matchers-condition: and
@@ -19,16 +23,7 @@ requests:
       - type: word
         part: body
         words:
-          - "applicationConfig"
-          - "activeProfiles"
-        condition: or
-
-      - type: word
-        part: body
-        words:
-          - "server.port"
-          - "local.server.port"
-        condition: or
+          - "cacheManagers"
 
       - type: word
         part: header
