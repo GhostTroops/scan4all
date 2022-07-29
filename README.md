@@ -55,6 +55,8 @@
   Can I not scan ports?
 ```bash
 noScan=true ./scan4all -l list.txt -v
+# nmap result default noScan=true 
+./scan4all -l nmapRssuilt.xml -v
 ````
 - Fast 15000+ POC detection capabilities, PoCs include: 
   * nuclei POC
