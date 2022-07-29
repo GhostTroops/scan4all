@@ -20,8 +20,8 @@ require (
 	github.com/projectdiscovery/networkpolicy v0.0.1
 	github.com/remeh/sizedwaitgroup v1.0.0
 	go.uber.org/ratelimit v0.2.0
-	golang.org/x/net v0.0.0-20220726230323-06994584191e
-	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
+	golang.org/x/net v0.0.0-20220728211354-c7608f3a8462
+	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10
 )
 
 require (

@@ -1,16 +1,21 @@
-id: springboot-loggers
+id: springboot-flyway
 
 info:
-  name: Detect Springboot Loggers
-  author: that_juan_,dwisiswant0,wdahlenb
+  name: Springboot Flyway API
+  author: ELSFA7110
   severity: low
-  tags: springboot,exposure
+  description: This endpoint to retrieve the migrations
+  reference:
+    - https://docs.spring.io/spring-boot/docs/current/actuator-api/htmlsingle/#flyway
+  metadata:
+    verified: true
+  tags: misconfig,springboot,exposure,flyway
 
 requests:
   - method: GET
     path:
-      - "{{BaseURL}}/loggers"
-      - "{{BaseURL}}/actuator/loggers"
+      - "{{BaseURL}}/flyway"
+      - "{{BaseURL}}/actuator/flyway"
 
     stop-at-first-match: true
     matchers-condition: and
@@ -18,9 +23,7 @@ requests:
       - type: word
         part: body
         words:
-          - '"loggers"'
-          - '"levels"'
-        condition: and
+          - "flywayBeans"
 
       - type: word
         part: header
@@ -28,6 +31,7 @@ requests:
           - "application/json"
           - "application/vnd.spring-boot.actuator"
           - "application/vnd.spring-boot.actuator.v1+json"
+          - "application/vnd.spring-boot.actuator.v2+json"
         condition: or
 
       - type: status
