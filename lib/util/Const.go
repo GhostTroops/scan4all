@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"strings"
 	"sync"
 )
 
@@ -19,6 +20,26 @@ var Ctx_global, StopAll = context.WithCancel(RootContext)
 
 // 多次使用，一次性编译效率更高
 var DeleteMe = regexp.MustCompile("rememberMe=deleteMe")
+
+// 自定义http 头
+var CustomHeaders []string
+
+// 获取 自定义头信息等raw模式
+func GetCustomHeadersRaw() string {
+	if 0 < len(CustomHeaders) {
+		return "\r\n" + strings.Join(CustomHeaders, "\r\n")
+	}
+	return ""
+}
+
+func SetHeader(m *http.Header) {
+	if 0 < len(CustomHeaders) && nil != m {
+		for _, i := range CustomHeaders {
+			n := strings.Index(i, ":")
+			m.Set(strings.TrimSpace(i[:n]), strings.TrimSpace(i[n+1:]))
+		}
+	}
+}
 
 // 异步执行方法，只适合无返回值、或使用管道返回值的方法
 // 程序main整体等待

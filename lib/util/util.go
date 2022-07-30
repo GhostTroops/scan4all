@@ -10,7 +10,9 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"os"
 	"reflect"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -77,6 +79,7 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 	req.SetBasicAuth(username, password)
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 	req.Header.Set("User-Agent", uarand.GetRandom())
+	SetHeader(&req.Header)
 	for v, k := range headers {
 		req.Header[v] = []string{k}
 	}
@@ -142,6 +145,8 @@ func HttpRequset(urlstring string, method string, postdata string, isredirect bo
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
 	req.Header.Set("User-Agent", uarand.GetRandom())
+	// 设置全局自定义头、cookie信息
+	SetHeader(&req.Header)
 	for v, k := range headers {
 		req.Header[v] = []string{k}
 	}
@@ -273,4 +278,25 @@ func Convert2Domains(x string) []string {
 		aRst = append(aRst, x)
 	}
 	return aRst
+}
+
+// 关闭所有资源
+func CloseAll() {
+	StopAll()
+	// clear
+	// 程序都结束了，没有必要清理内存了
+	// fingerprint.ClearData()
+	log4jsv.Range(func(key, value any) bool {
+		log4jsv.Store(key, nil)
+		log4jsv.Delete(key)
+		return true
+	})
+	if nil != Cache1 {
+		Cache1.Close()
+		Cache1 = nil
+	}
+
+	if runtime.GOOS == "windows" || GetValAsBool("autoRmCache") {
+		os.RemoveAll(GetVal(CacheName))
+	}
 }

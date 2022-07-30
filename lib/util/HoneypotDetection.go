@@ -1,4 +1,4 @@
-package lib
+package util
 
 import (
 	"crypto/tls"
@@ -16,6 +16,16 @@ var EnableHoneyportDetection = true
 var hdCache sync.Map
 
 var ipCIDS = regexp.MustCompile("^(\\d+\\.){3}\\d+\\/\\d+$")
+
+//  检查 蜜罐 Server信息，check Honeypor server info
+func CheckHoneyportDetection4HeaderServer(server, szUrl string) bool {
+	if 50 < len(server) || 3 < len(strings.Split(server, ",")) {
+		hdCache.Store(szUrl, true)
+		SendLog(szUrl, string(Scan4all), "Honeypot found", "")
+		return true
+	}
+	return false
+}
 
 // 添加蜜罐检测，并自动跳过目标，默认false跳过蜜罐检测
 // 考虑内存缓存结果
@@ -57,8 +67,7 @@ func HoneyportDetection(host string) bool {
 			defer resp.Body.Close()
 			if resp.StatusCode == 200 {
 				if a, ok := resp.Header["Server"]; ok {
-					if 50 < len(a[0]) || 3 < len(strings.Split(a[0], ",")) {
-						hdCache.Store(szK, true)
+					if CheckHoneyportDetection4HeaderServer(a[0], szK) {
 						return true
 					}
 				}

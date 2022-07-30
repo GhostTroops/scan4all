@@ -8,7 +8,7 @@ import (
 var ClTePayload = []string{`POST %s HTTP/1.1
 Host: %s
 Connection: keep-alive
-Content-Type: application/x-www-form-urlencoded
+Content-Type: application/x-www-form-urlencoded%s
 Content-Length: 6
 Transfer-Encoding: chunked
 
