@@ -5,7 +5,6 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"github.com/hktalent/scan4all/lib"
 	"github.com/spf13/viper"
 	"io/fs"
 	"io/ioutil"
@@ -31,6 +30,8 @@ type Config4scanAllModel struct {
 }
 
 var Config4scanAll = Config4scanAllModel{}
+
+// 配置缓存
 var mData = map[string]interface{}{}
 var (
 	UrlPrecise      = "UrlPrecise"
@@ -191,7 +192,7 @@ func Init() {
 	config.Unmarshal(&mData)
 	viper.Set("Verbose", false)
 	initEs()
-	lib.EnableHoneyportDetection = GetValAsBool("EnableHoneyportDetection")
+	EnableHoneyportDetection = GetValAsBool("EnableHoneyportDetection")
 }
 
 var G_Options interface{}

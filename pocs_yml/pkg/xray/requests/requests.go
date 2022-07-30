@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"crypto/tls"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pocs_yml/pkg/xray/structs"
 	"io"
 	"io/ioutil"
@@ -133,6 +134,8 @@ func DoRequest(req *http.Request, redirect bool) (*http.Response, int64, error) 
 	)
 	if req.Body == nil || req.Body == http.NoBody {
 	} else {
+		// 设置自定义头，包括cookie
+		util.SetHeader(&req.Header)
 		req.Header.Set("Content-Length", strconv.Itoa(int(req.ContentLength)))
 		if req.Header.Get("Content-Type") == "" {
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")

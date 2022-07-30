@@ -112,6 +112,7 @@ mkdir ~/MyWork/;cd ~/MyWork/;git clone  https://github.com/hktalent/log4j-scan
 - 智能识别蜜罐，并跳过目标，默认该功能是关闭的，可设置EnableHoneyportDetection=true开启
 - 高度可定制：允许通过config/config.json配置定义自己的字典，或者控制更多细节，包含不限于:nuclei、httpx、naabu等
 - 支持HTTP请求走私漏洞检测: CL-TE、TE-CL、TE-TE
+- 支持 通过参数 Cookie='PHPSession=xxxx' ./scan4all -host xxxx.com, 兼容 nuclei、httpx、go-poc、x-ray POC、filefuzz、http Smuggling等
 
 # 工作流程
 
@@ -182,6 +183,7 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 - 整合 ksubdomain 实现更快子域名爆破
 - 整合 spider 以便发现更多漏洞
 - 半自动化指纹学习，提高精准度；指定指纹名称，通过配置
+- 加载osvdb 并驱动执行
 
 # 变更日志
 - 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/issues/2301>#2301</a> 并发多实例的bug

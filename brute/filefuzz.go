@@ -4,7 +4,6 @@ import (
 	"context"
 	_ "embed"
 	"github.com/antlabs/strsim"
-	"github.com/hktalent/scan4all/lib"
 	"github.com/hktalent/scan4all/lib/util"
 	"log"
 	"net/http"
@@ -198,7 +197,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	var async_data = make(chan []string, 64)
 	var async_technologies = make(chan []string, 64)
 	defer func() {
-		lib.CloseChan(ch)
+		util.CloseChan(ch)
 		close(async_data)
 		close(async_technologies)
 	}()

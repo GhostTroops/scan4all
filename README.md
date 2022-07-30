@@ -112,6 +112,7 @@ mkdir ~/MyWork/;cd ~/MyWork/;git clone https://github.com/hktalent/log4j-scan
 - Intelligently identify honeypots and skip targets. This function is disabled by default. You can set EnableHoneyportDetection=true to enable
 - Highly customizable: allow to define your own dictionary through config/config.json configuration, or control more details, including but not limited to: nuclei, httpx, naabu, etc.
 - support HTTP Request Smuggling: CL-TE、TE-CL、TE-TE
+- Support via parameter Cookie='PHPSession=xxxx' ./scan4all -host xxxx.com, compatible with nuclei, httpx, go-poc, x-ray POC
 # work process
 
 <img src="static/workflow.jpg">

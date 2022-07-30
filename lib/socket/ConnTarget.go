@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/tls"
 	"fmt"
+	"github.com/hktalent/scan4all/lib/util"
 	"net"
 	"net/url"
 	"strconv"
@@ -79,7 +80,7 @@ func (r *CheckTarget) SendOnePayload(str, szPath, szHost string, nTimes int) str
 	if nil == err {
 		defer r.Close()
 		for i := 0; i < nTimes; i++ {
-			r.WriteWithFlush(fmt.Sprintf(str, szPath, szHost))
+			r.WriteWithFlush(fmt.Sprintf(str, szPath, szHost, util.GetCustomHeadersRaw()))
 		}
 		s1 := *r.ReadAll2Str()
 		if "" != s1 {

@@ -55,13 +55,31 @@ var Naabubuffer = bytes.Buffer{}
 func (r *Runner) Httpxrun() error {
 	httpxrunner.Naabubuffer = Naabubuffer
 	var nucleiDone = make(chan bool)
+	Cookie := util.GetVal("Cookie")
+	if "" != Cookie {
+		Cookie = "Cookie: " + Cookie + ";rememberMe=123" // add
+	}
 	//log.Printf("%+v", httpxrunner.Naabubuffer.String())
 	// 集成nuclei
 	//log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
 	//Naabubuffer1 := bytes.Buffer{}
 	//Naabubuffer1.Write(httpxrunner.Naabubuffer.Bytes())
 	var xx1 = make(chan *runner2.Runner, 3)
-	go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone, nil, xx1)
+	httpxoptions := httpxrunner.ParseOptions()
+
+	opts := map[string]interface{}{}
+	if "" != Cookie {
+		if nil == httpxoptions.CustomHeaders {
+			httpxoptions.CustomHeaders = []string{Cookie}
+		} else {
+			httpxoptions.CustomHeaders.Set(Cookie)
+		}
+		var a []string
+		a = append(a, httpxoptions.CustomHeaders...)
+		opts["CustomHeaders"] = a
+		util.CustomHeaders = a
+	}
+	go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone, &opts, xx1)
 	select {
 	case <-xx1:
 		close(xx1)
@@ -70,7 +88,6 @@ func (r *Runner) Httpxrun() error {
 	default:
 	}
 
-	httpxoptions := httpxrunner.ParseOptions()
 	// 指纹去重复 请求路径
 	if "" != fingerprint.FgDictFile {
 		httpxoptions.RequestURIs = fingerprint.FgDictFile
