@@ -42,7 +42,8 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 		buf1.WriteString(strings.Join(aHttp, "\n"))
 		m1 := map[string]interface{}{
 			// DNSProtocol,FileProtocol,NetworkProtocol,WorkflowProtocol,SSLProtocol,WebsocketProtocol,WHOISProtocol
-			"Protocols": []int{2, 3, 4, 6, 7, 8, 9},
+			"Protocols":         []int{2, 3, 4, 6, 7, 8, 9},
+			"EnableProgressBar": false, // 看进度条
 		}
 		go RunNucleiP(&buf1, nucleiDone1, &m1, outNuclei)
 	}
@@ -51,7 +52,8 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 		buf1.WriteString(strings.Join(noHttp, "\n"))
 		m1 := map[string]interface{}{
 			// DNSProtocol,FileProtocol,NetworkProtocol,WorkflowProtocol,SSLProtocol,WHOISProtocol
-			"Protocols": []int{1, 2, 5, 6, 7},
+			"Protocols":         []int{1, 2, 5, 6, 7},
+			"EnableProgressBar": false, // 看进度条
 		}
 		go RunNucleiP(&buf1, nucleiDone2, &m1, outNuclei)
 	}
