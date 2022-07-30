@@ -3,6 +3,7 @@ package pocs_go
 import (
 	"fmt"
 	"github.com/hktalent/scan4all/brute"
+	"github.com/hktalent/scan4all/lib/Smuggling"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pocs_go/Springboot"
 	"github.com/hktalent/scan4all/pocs_go/ThinkPHP"
@@ -46,6 +47,8 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 	for tech := range wappalyzertechnologies {
 		caseStr := strings.ToLower(wappalyzertechnologies[tech])
 		switch caseStr {
+		case "httpCheckSmuggling":
+			Smuggling.DoCheckSmuggling(finalURL, "")
 		case "RouterOS":
 			a := ms.CVE_2018_14847(hostname)
 			if 0 < len(a) {

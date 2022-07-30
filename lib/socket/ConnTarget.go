@@ -2,8 +2,12 @@ package socket
 
 import (
 	"bufio"
+	"crypto/tls"
 	"fmt"
 	"net"
+	"net/url"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -16,19 +20,50 @@ type CheckTarget struct {
 	ConnType      string         `json:"connType"`      // 连接类型：tcp
 	ReadTimeout   int            `json:"readTimeout"`   // 读数据超市
 	CheckCbkLists []*CheckCbkFuc `json:"checkCbkLists"` // 回调接口
-	Conn          *net.Conn      `json:"conn"`          // 连接对象
-	MacReadSize   uint32         `json:"macReadSize"`   // 最大允许读取调数据，避免被反制内存攻击，default:200k
+	Conn          net.Conn       `json:"conn"`          // 连接对象
+	//ConnTLS       *tls.Conn      `json:"conn"`          // ssl 连接对象
+	MacReadSize uint32 `json:"macReadSize"` // 最大允许读取调数据，避免被反制内存攻击，default:200k
+	HostName    string `json:"hostName"`    // http header host
+	UrlPath     string `json:"urlPath"`     // http中url path
+	UrlRaw      string `json:"urlRaw"`      // full url
+	IsTLS       bool   `json:"isTLS"`       // https
 }
 
 // 准备要检测、链接带目标
-func NewCheckTarget(target, SzType string, port, readWriteTimeout int) *CheckTarget {
+// 需要考虑 ssl的情况
+func NewCheckTarget(szUrl, SzType string, readWriteTimeout int) *CheckTarget {
+	u, err := url.Parse(szUrl)
+
+	//target, SzType string, port
+
 	if "" == SzType {
 		SzType = "tcp"
 	}
 	if 0 >= readWriteTimeout {
 		readWriteTimeout = 20
 	}
-	return &CheckTarget{MacReadSize: 200 * 1024 * 1024, Target: target, Port: port, ConnType: SzType, ReadTimeout: readWriteTimeout, CheckCbkLists: []*CheckCbkFuc{}}
+	r11 := &CheckTarget{UrlRaw: szUrl, UrlPath: "/", MacReadSize: 200 * 1024 * 1024, ConnType: SzType, ReadTimeout: readWriteTimeout, CheckCbkLists: []*CheckCbkFuc{}}
+	if err == nil {
+		r11.Target = u.Hostname()
+		r11.Port = 80
+		// https://eli.thegreenplace.net/2021/go-socket-servers-with-tls/
+		r11.IsTLS = strings.HasPrefix(strings.ToLower(u.Scheme), "https")
+		if "" == u.Port() {
+			if r11.IsTLS {
+				r11.Port = 443
+			}
+		} else {
+			n, err := strconv.Atoi(u.Port())
+			if nil == err {
+				r11.Port = n
+			}
+		}
+		if "" != u.RawPath {
+			r11.UrlPath = u.RawPath
+		}
+
+	}
+	return r11
 }
 
 // 添加检测函数
@@ -39,12 +74,12 @@ func (r *CheckTarget) AddCheck(fnCbk CheckCbkFuc, aN ...int) *CheckTarget {
 }
 
 // send one payload and close
-func (r *CheckTarget) SendOnePayload(str string, nTimes int) string {
+func (r *CheckTarget) SendOnePayload(str, szPath, szHost string, nTimes int) string {
 	_, err := r.ConnTarget()
 	if nil == err {
 		defer r.Close()
 		for i := 0; i < nTimes; i++ {
-			r.WriteWithFlush(str)
+			r.WriteWithFlush(fmt.Sprintf(str, szPath, szHost))
 		}
 		s1 := *r.ReadAll2Str()
 		if "" != s1 {
@@ -64,7 +99,7 @@ func (r *CheckTarget) WriteWithFlush(s string) (nn int, err error) {
 
 // 获取操作io
 func (r *CheckTarget) GetBufReader() *bufio.Reader {
-	return bufio.NewReader(*r.Conn)
+	return bufio.NewReader(r.Conn)
 }
 
 func (r *CheckTarget) ReadAll2Bytes() *[]byte {
@@ -95,35 +130,53 @@ func (r *CheckTarget) ReadAll2Str() *string {
 }
 
 func (r *CheckTarget) GetBufWriter() *bufio.Writer {
-	return bufio.NewWriter(*r.Conn)
+	return bufio.NewWriter(r.Conn)
 }
 
 // 关闭连接
 func (r *CheckTarget) Close() {
-	if nil != r.Conn && r.ConnState {
+	if r.ConnState {
 		r.ConnState = false
-		(*r.Conn).Close()
+		if nil != r.Conn {
+			r.Conn.Close()
+		}
 	}
 }
 
 // 连接目标
 func (r *CheckTarget) ConnTarget() (*CheckTarget, error) {
-	conn1, err := net.Dial(r.ConnType, fmt.Sprintf("%s:%d", r.Target, r.Port))
-	if err != nil {
-		return r, err
+	var err error
+	if r.IsTLS {
+		conf := &tls.Config{
+			InsecureSkipVerify: true,
+		}
+		r.Conn, err = tls.Dial(r.ConnType, fmt.Sprintf("%s:%d", r.Target, r.Port), conf)
+		if err == nil {
+			// 设置读取超时
+			err = r.Conn.SetReadDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
+			if err != nil {
+				defer r.Close()
+				return r, err
+			}
+			r.ConnState = true
+		}
+	} else {
+		r.Conn, err = net.Dial(r.ConnType, fmt.Sprintf("%s:%d", r.Target, r.Port))
+		if err != nil {
+			return r, err
+		}
+		// 设置读取超时
+		err = r.Conn.SetReadDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
+		if err != nil {
+			defer r.Close()
+			return r, err
+		}
+		// 设置写超时
+		//conn1.SetWriteDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
+		//if err != nil {
+		//	return r, err
+		//}
+		r.ConnState = true
 	}
-	// 设置读取超时
-	err = conn1.SetReadDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
-	if err != nil {
-		defer (*r.Conn).Close()
-		return r, err
-	}
-	// 设置写超时
-	//conn1.SetWriteDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
-	//if err != nil {
-	//	return r, err
-	//}
-	r.ConnState = true
-	r.Conn = &conn1
-	return r, err
+	return r, nil
 }
