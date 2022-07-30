@@ -6,10 +6,6 @@ import (
 	"sync"
 )
 
-func init() {
-
-}
-
 var (
 	logger *log.Logger
 	level  LEVEL

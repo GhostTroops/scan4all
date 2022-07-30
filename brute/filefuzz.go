@@ -130,20 +130,22 @@ var (
 
 // 初始化字典、数组等
 func init() {
-	bakSuffix = util.GetVal4File("bakSuffix", bakSuffix)
-	fuzzct = util.GetVal4File("fuzzct", fuzzct)
+	util.RegInitFunc(func() {
+		bakSuffix = util.GetVal4File("bakSuffix", bakSuffix)
+		fuzzct = util.GetVal4File("fuzzct", fuzzct)
 
-	InitGeneral()
-	regs = strings.Split(strings.TrimSpace(fuzzct), "\n")
-	var err error
-	// 初始化多时候一次性编译，否则会影响效率
-	for _, reg := range regs {
-		regsMap[reg], err = regexp.Compile(reg)
-		if nil != err {
-			log.Println(reg, " regexp.Compile error: ", err)
+		InitGeneral()
+		regs = strings.Split(strings.TrimSpace(fuzzct), "\n")
+		var err error
+		// 初始化多时候一次性编译，否则会影响效率
+		for _, reg := range regs {
+			regsMap[reg], err = regexp.Compile(reg)
+			if nil != err {
+				log.Println(reg, " regexp.Compile error: ", err)
+			}
 		}
-	}
-	//regs = append(regs, ret...)
+		//regs = append(regs, ret...)
+	})
 }
 
 // 绝对404请求文件前缀
