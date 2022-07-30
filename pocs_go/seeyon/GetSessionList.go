@@ -1,7 +1,6 @@
 package seeyon
 
 import (
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 )
 
@@ -10,7 +9,7 @@ import (
 func GetSessionList(u string) bool {
 	if req, err := util.HttpRequset(u+"/yyoa/ext/https/getSessionList.jsp?cmd=getAll", "GET", "", false, nil); err == nil {
 		if req.StatusCode == 200 && util.StrContains(req.Body, "sessionID") {
-			util.GoPocLog(fmt.Sprintf("Found vuln seeyon GetSessionList|%s\n", u+"/yyoa/ext/https/getSessionList.jsp?cmd=getAll"))
+			util.SendLog(req.RequestUrl, "seeyon", "Found vuln seeyon GetSessionList", "")
 			return true
 		}
 	}

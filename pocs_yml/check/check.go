@@ -51,7 +51,7 @@ func Start(target string, pocs []*xray_structs.Poc) []string {
 				gologger.Error().Msgf("Execute Poc (%v) error: %v", poc.Name, err.Error())
 			}
 			if isVul {
-				util.YmlPocLog(fmt.Sprintf("%s (%s)\n", target, poc.Name))
+				util.SendLog(target, poc.Name, "", poc.Name)
 				Vullist = append(Vullist, poc.Name)
 			}
 		}
