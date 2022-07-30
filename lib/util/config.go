@@ -309,6 +309,7 @@ func Init2(config *embed.FS) {
 		}
 	}
 	Init()
+	init5()
 	log.Println("init config files is over .")
 }
 
