@@ -74,7 +74,7 @@ func fingerprint(t target, duration int) string {
 }
 func Jarm(host string, duration int) string {
 	t := target{}
-	if u, err := url.Parse(host); err == nil {
+	if u, err := url.Parse(strings.TrimSpace(host)); err == nil {
 		if u.Scheme == "http" {
 			return ""
 		}

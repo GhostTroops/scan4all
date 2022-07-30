@@ -80,11 +80,17 @@ func (r *Runner) Httpxrun() error {
 		util.CustomHeaders = a
 	}
 	go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone, &opts, xx1)
+XX1009:
 	select {
-	case <-xx1:
-		close(xx1)
 	case <-nucleiDone:
 		close(xx1)
+		break XX1009
+	case <-xx1:
+		close(xx1)
+		break XX1009
+	case <-nucleiDone:
+		close(xx1)
+		break XX1009
 	default:
 	}
 
@@ -138,13 +144,11 @@ func (r *Runner) Httpxrun() error {
 	httpxoptions = util.ParseOption[httpxrunner.Options]("httpx", httpxoptions)
 	rx, err := httpxrunner.New(httpxoptions)
 	if err != nil {
-		<-nucleiDone
 		return err
 	}
 	rx.RunEnumeration()
 	rx.Close()
 	// wait nuclei
-	<-nucleiDone
 	return nil
 }
 

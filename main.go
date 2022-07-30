@@ -19,8 +19,8 @@ var Wg sync.WaitGroup
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	util.DoInit(&config)
 	util.Wg = &Wg
+	util.DoInit(&config)
 	defer util.CloseAll()
 	szTip := ""
 	if util.GetValAsBool("enablDevDebug") {
@@ -33,8 +33,6 @@ func main() {
 		//////////////////////////////////////////*/
 	}
 	api.StartScan(nil)
-
 	log.Printf("wait for all threads to end\n%s", szTip)
 	util.Wg.Wait()
-
 }

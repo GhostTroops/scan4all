@@ -85,7 +85,7 @@ func CaseMethod(szUrl, method, bodyString, favhash, md5Body, hexBody string, fin
 		log.Printf("%+v", finp)
 		return cms
 	}
-	u01, _ := url.Parse(szUrl)
+	u01, _ := url.Parse(strings.TrimSpace(szUrl))
 	if _, ok := Mfavhash.Load(u01.Host + favhash); ok {
 		return cms
 	}
