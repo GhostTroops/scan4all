@@ -12,7 +12,7 @@ func Check(u string, finalURL string) bool {
 	if (util.CeyeApi != "" && util.CeyeDomain != "") || jndi.JndiAddress != "" {
 		var host = "null"
 		randomstr := util.RandomStr()
-		if ux, err := url.Parse(u); err == nil {
+		if ux, err := url.Parse(strings.TrimSpace(u)); err == nil {
 			host = strings.Replace(ux.Host, ":", ".", -1)
 		}
 		domainx, intputs := getinputurl(finalURL)
@@ -95,7 +95,7 @@ func getinputurl(domainurl string) (domainurlx []string, inputlist []string) {
 		} else if domainx == "" {
 			loginurl = loginurl
 		} else if domainx[0:1] == "/" {
-			u, _ := url.Parse(domainurl)
+			u, _ := url.Parse(strings.TrimSpace(domainurl))
 			loginurl = append(loginurl, u.Scheme+"://"+u.Host+domainx)
 		} else {
 			loginurl = append(loginurl, domainurl+"/"+domainx)
@@ -111,7 +111,7 @@ func getinputurl(domainurl string) (domainurlx []string, inputlist []string) {
 			} else if domainx == "" {
 				loginurl = append(loginurl, domainurl)
 			} else if domainx[0:1] == "/" {
-				u, _ := url.Parse(domainurl)
+				u, _ := url.Parse(strings.TrimSpace(domainurl))
 				loginurl = append(loginurl, u.Scheme+"://"+u.Host+domainx)
 			} else {
 				loginurl = append(loginurl, domainurl+"/"+domainx)

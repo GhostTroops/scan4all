@@ -497,7 +497,7 @@ func xrayNewReverse() (reverse *structs.Reverse) {
 		return
 	}
 
-	u, _ := url.Parse(urlStr)
+	u, _ := url.Parse(strings.TrimSpace(urlStr))
 
 	reverse.Url = requests.ParseUrl(u)
 	reverse.Domain = u.Hostname()

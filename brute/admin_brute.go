@@ -18,7 +18,7 @@ func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl
 		if util.StrContains(req.Body, "md5.js") {
 			ismd5 = true
 		}
-		u, err := url.Parse(req.RequestUrl)
+		u, err := url.Parse(strings.TrimSpace(req.RequestUrl))
 		if err != nil {
 			return "", "", "", false
 		}
@@ -30,7 +30,7 @@ func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl
 		}
 		hreflist := regexp.MustCompile(`location.href=['"](.*?)['"]`).FindStringSubmatch(req.Body)
 		if hreflist != nil {
-			href, _ := url.Parse(hreflist[len(hreflist)-1:][0])
+			href, _ := url.Parse(strings.TrimSpace(hreflist[len(hreflist)-1:][0]))
 			hrefurl := u.ResolveReference(href)
 			req, err = util.HttpRequset(hrefurl.String(), "GET", "", true, nil)
 			if err != nil {
@@ -57,13 +57,13 @@ func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl
 		}
 		domainlist := regexp.MustCompile(`<form.*?action=['"](.*?)['"]`).FindStringSubmatch(req.Body)
 		if domainlist != nil {
-			if action, err := url.Parse(domainlist[len(domainlist)-1:][0]); err == nil {
+			if action, err := url.Parse(strings.TrimSpace(domainlist[len(domainlist)-1:][0])); err == nil {
 				loginurl = u.ResolveReference(action).String()
 			}
 		} else {
 			domainlist2 := regexp.MustCompile(`url.*?:.*?['"](.*?)['"],`).FindStringSubmatch(req.Body)
 			if domainlist2 != nil {
-				if ajax, err := url.Parse(domainlist2[len(domainlist2)-1:][0]); err == nil {
+				if ajax, err := url.Parse(strings.TrimSpace(domainlist2[len(domainlist2)-1:][0])); err == nil {
 					loginurl = u.ResolveReference(ajax).String()
 				}
 			}

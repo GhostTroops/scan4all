@@ -97,7 +97,7 @@ func RemoveURLDefaultPort(rawURL string) string {
 }
 
 func GetInvalidURI(rawURL string) (bool, string) {
-	if _, err := url.Parse(rawURL); err != nil {
+	if _, err := url.Parse(strings.TrimSpace(rawURL)); err != nil {
 		if u, err := urlutil.Parse(rawURL); err == nil {
 			return true, u.RequestURI
 		}

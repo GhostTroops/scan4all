@@ -127,7 +127,7 @@ func executeXrayPoc(oReq *http.Request, target string, poc *xray_structs.Poc) (i
 			return
 		}
 	} else {
-		_, err = url.ParseRequestURI(target)
+		_, err = url.ParseRequestURI(strings.TrimSpace(target))
 		if err != nil {
 			return
 		}

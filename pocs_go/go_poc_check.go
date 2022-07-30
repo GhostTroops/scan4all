@@ -37,7 +37,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 	}
 	var HOST, hostname string
 	var technologies []string
-	if host, err := url.Parse(URL); err == nil {
+	if host, err := url.Parse(strings.TrimSpace(URL)); err == nil {
 		HOST = host.Host
 		hostname = host.Hostname()
 	} else {
@@ -270,14 +270,20 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 func init() {
 	util.RegInitFunc(func() {
 		// 异步启动一个线程处理检测，避免
+		util.Wg.Add(1)
 		go func() {
-			nMax := 240 // 等xxx秒都没有消息进入就退出
+			defer util.Wg.Done()
+			nMax := 120 // 等xxx秒都没有消息进入就退出
 			nCnt := 0
 			for {
 				select {
 				case <-util.Ctx_global.Done():
 					return
-				case x1 := <-util.PocCheck_pipe:
+				case x1, ok := <-util.PocCheck_pipe:
+					if nil == x1 || !ok {
+						log.Println("go_poc_checkout is over")
+						return
+					}
 					nCnt = 0
 					log.Printf("<-lib.PocCheck_pipe: %+v  %s", *x1.Wappalyzertechnologies, x1.URL)
 					util.Wg.Add(1)
@@ -287,14 +293,14 @@ func init() {
 						close(util.PocCheck_pipe)
 						return
 					}
-					if nMax < nCnt {
-						close(util.PocCheck_pipe)
-						return
-					}
 					var f01 float32 = float32(nCnt) / float32(nMax) * float32(100)
 					fmt.Printf(" Asynchronous go PoCs detection task %%%0.2f ....\r", f01)
 					<-time.After(time.Duration(1) * time.Second)
 					nCnt += 1
+					if nMax <= nCnt {
+						close(util.PocCheck_pipe)
+						return
+					}
 				}
 			}
 		}()

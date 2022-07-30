@@ -113,7 +113,7 @@ func assignProxyURL(proxyURL url.URL, options *types.Options) {
 }
 
 func validateProxyURL(proxy string) (url.URL, error) {
-	if url, err := url.Parse(proxy); err == nil && isSupportedProtocol(url.Scheme) {
+	if url, err := url.Parse(strings.TrimSpace(proxy)); err == nil && isSupportedProtocol(url.Scheme) {
 		return *url, nil
 	}
 	return url.URL{}, errors.New("invalid proxy format (It should be http[s]/socks5://[username:password@]host:port)")

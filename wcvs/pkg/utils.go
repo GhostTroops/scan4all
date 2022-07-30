@@ -114,7 +114,7 @@ func setRequest(req *http.Request, doPost bool, cb string, cookie http.Cookie) {
 		newUrl, _ = addCachebusterParameter(req.URL.String(), cb)
 
 		var err error
-		req.URL, err = url.Parse(newUrl)
+		req.URL, err = url.Parse(strings.TrimSpace(newUrl))
 		if err != nil {
 			msg := "Converting " + newUrl + " to URL:" + err.Error() + "\n"
 			Print(msg, Red)
