@@ -1,7 +1,6 @@
 package seeyon
 
 import (
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 )
 
@@ -10,8 +9,7 @@ import (
 func InitDataAssess(u string) bool {
 	if req, err := util.HttpRequset(u+"/yyoa/assess/js/initDataAssess.jsp", "GET", "", false, nil); err == nil {
 		if req.StatusCode == 200 && util.StrContains(req.Body, "personList") {
-			util.GoPocLog(fmt.Sprintf("Found vuln seeyon InitDataAssess|%s\n", u+"/yyoa/assess/js/initDataAssess.jsp"))
-
+			util.SendLog(req.RequestUrl, "seeyon", "Found vuln seeyon InitDataAssess", "")
 			return true
 		}
 	}

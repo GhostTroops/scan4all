@@ -1,7 +1,6 @@
 package seeyon
 
 import (
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 	"strings"
 )
@@ -21,7 +20,7 @@ func BackdoorScan(u string) bool {
 	for _, backurl := range backurls {
 		if req, err := util.HttpRequset(u+backurl, "GET", "", false, nil); err == nil {
 			if req.StatusCode == 200 && (!util.StrContains(req.Body, "error") || strings.Contains(req.Body, "java.lang.NullPointerException")) && !strings.Contains(req.Body, "Burp") {
-				util.GoPocLog(fmt.Sprintf("Found vuln seeyon Backdoor|%s\n", u+backurl))
+				util.SendLog(req.RequestUrl, "backdoor", "Found vuln seeyon Backdoor", "")
 				vuln = true
 			}
 		}

@@ -1,7 +1,6 @@
 package log4j
 
 import (
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/jndi"
 	"net/url"
@@ -59,13 +58,13 @@ func Check(u string, finalURL string) bool {
 		}
 		if jndi.JndiAddress != "" {
 			if jndi.Jndilogchek(randomstr) {
-				util.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
+				util.SendLog(finalURL, "log4j", "Found vuln Log4J JNDI RCE", "")
 				return true
 			}
 		}
 		if util.CeyeApi != "" && util.CeyeDomain != "" {
 			if util.Dnslogchek(randomstr) {
-				util.GoPocLog(fmt.Sprintf("Found vuln Log4J JNDI RCE |%s\n", u))
+				util.SendLog(finalURL, "log4j", "Found vuln Log4J JNDI RCE", "")
 				return true
 			}
 		}

