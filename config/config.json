@@ -96,7 +96,7 @@
   "enableEsSv": false,
   "CheckWeakPassword": true,
   "esthread": 8,
-  "hydrathread": 8,
+  "hydrathread": 64,
   "Fuzzthreads": 32,
   "enableFingerTitleHeaderMd5Hex": false,
   "Cookie": "",
