@@ -293,7 +293,7 @@ func init() {
 					go POCcheck(*x1.Wappalyzertechnologies, x1.URL, x1.FinalURL, x1.Checklog4j)
 				default:
 					if os.Getenv("NoPOC") == "true" {
-						close(util.PocCheck_pipe)
+						//close(util.PocCheck_pipe) // 这行会在 NoPOC该标志开启时，其他进程无法传递过来而出错
 						return
 					}
 					var f01 float32 = float32(nCnt) / float32(nMax) * float32(100)
