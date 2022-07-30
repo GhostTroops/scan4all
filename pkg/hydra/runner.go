@@ -11,19 +11,21 @@ import (
 )
 
 func init() {
-	InitDefaultAuthMap()
-	var a1, a2 []string
-	HydraUser := util.GetVal4File("HydraUser", "")
-	if "" != HydraUser {
-		a1 = strings.Split(HydraUser, "\n")
-	}
+	util.RegInitFunc(func() {
+		InitDefaultAuthMap()
+		var a1, a2 []string
+		HydraUser := util.GetVal4File("HydraUser", "")
+		if "" != HydraUser {
+			a1 = strings.Split(HydraUser, "\n")
+		}
 
-	HydraPass := util.GetVal4File("HydraPass", "")
-	if "" != HydraPass {
-		a2 = strings.Split(HydraPass, "\n")
-	}
-	//加载自定义字典
-	InitCustomAuthMap(a1, a2)
+		HydraPass := util.GetVal4File("HydraPass", "")
+		if "" != HydraPass {
+			a2 = strings.Split(HydraPass, "\n")
+		}
+		//加载自定义字典
+		InitCustomAuthMap(a1, a2)
+	})
 }
 
 // 密码破解

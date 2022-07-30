@@ -9,5 +9,7 @@ import (
 var localFinger string
 
 func init() {
-	localFinger = util.GetVal4File("localFinger", localFinger)
+	util.RegInitFunc(func() {
+		localFinger = util.GetVal4File("localFinger", localFinger)
+	})
 }

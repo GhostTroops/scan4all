@@ -6,26 +6,20 @@ import (
 	"github.com/hktalent/scan4all/lib/api"
 	"github.com/hktalent/scan4all/lib/util"
 	"log"
-	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
 	"runtime"
 	"sync"
-	"time"
 )
 
 //go:embed config/*
 var config embed.FS
 
-func init() {
-	util.Init2(&config)
-	rand.Seed(time.Now().UnixNano())
-}
-
 var Wg sync.WaitGroup
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	util.DoInit(&config)
 	util.Wg = &Wg
 	defer util.CloseAll()
 	szTip := ""

@@ -16,6 +16,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // 字符串包含关系，且大小写不敏感
@@ -160,7 +161,8 @@ func RandStringRunes(n int) string {
 	return string(b)
 }
 
-func Init() {
+// 初始化配置文件信息，这个必须先执行
+func Init2() {
 	pwd, _ := os.Getwd()
 	SzPwd = pwd
 	var ConfigName = "config/config.json"
@@ -281,7 +283,7 @@ func doDir(config *embed.FS, s fs.DirEntry, szPath string) {
 var UserHomeDir string = "./"
 
 // 初始化到开头
-func Init2(config *embed.FS) {
+func Init1(config *embed.FS) {
 	dirname, err := os.UserHomeDir()
 	if nil == err {
 		UserHomeDir = dirname
@@ -305,12 +307,25 @@ func Init2(config *embed.FS) {
 				}
 			}
 		} else {
-			log.Println("Init:", err)
+			log.Println("Init2:", err)
 		}
 	}
-	Init()
-	init5()
+	Init2()
+	init3()
 	log.Println("init config files is over .")
+}
+
+var fnInit []func()
+
+func RegInitFunc(cbk func()) {
+	fnInit = append(fnInit, cbk)
+}
+func DoInit(config *embed.FS) {
+	Init1(config)
+	rand.Seed(time.Now().UnixNano())
+	for _, x := range fnInit {
+		x()
+	}
 }
 
 func RemoveDuplication_map(arr []string) []string {

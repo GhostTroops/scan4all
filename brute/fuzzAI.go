@@ -48,7 +48,7 @@ func init() {
 	sz404Url = util.GetVal4File("404url", sz404Url)
 	page404Title = strings.Split(strings.TrimSpace(fuzz404), "\n")
 	asz404Url = strings.Split(strings.TrimSpace(sz404Url), "\n")
-	data, err := util.Cache1.Get(asz404UrlKey)
+	data, err := util.NewKvDbOp().Get(asz404UrlKey)
 	if nil == err && 0 < len(data) {
 		aT1 := asz404Url
 		if nil != json.Unmarshal(data, &asz404Url) {
