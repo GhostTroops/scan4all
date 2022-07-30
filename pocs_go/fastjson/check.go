@@ -1,7 +1,6 @@
 package fastjson
 
 import (
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/jndi"
 	"net/url"
@@ -23,17 +22,18 @@ func Check(u string, finalURL string) string {
 				} else if util.CeyeApi != "" && util.CeyeDomain != "" {
 					uri = randomstr + "." + util.CeyeDomain
 				}
+
 				_, _ = util.HttpRequset(jsonurl, "POST", strings.Replace(payload, "dnslog-url", uri, -1), false, header)
 			}
 			if jndi.JndiAddress != "" {
 				if jndi.Jndilogchek(randomstr) {
-					util.GoPocLog(fmt.Sprintf("Found vuln FastJson JNDI RCE |%s\n", u))
+					util.SendLog(finalURL, "FastJson-JNDI", "Found Found vuln ", "")
 					return "JNDI RCE"
 				}
 			}
 			if util.CeyeApi != "" && util.CeyeDomain != "" {
 				if util.Dnslogchek(randomstr) {
-					util.GoPocLog(fmt.Sprintf("Found vuln FastJson JNDI RCE |%s\n", u))
+					util.SendLog(finalURL, "FastJson-JNDI", "Found Found vuln ", "")
 					return "JNDI RCE"
 				}
 			}
@@ -42,7 +42,7 @@ func Check(u string, finalURL string) string {
 			for _, payload := range fastjsonEchoPayloads {
 				if req, err := util.HttpRequset(jsonurl, "POST", payload, false, header); err == nil {
 					if util.StrContains(req.Body, "jsonvuln") {
-						util.GoPocLog(fmt.Sprintf("Found vuln FastJson ECHO RCE |%s\n", u))
+						util.SendLog(finalURL, "FastJson-ECHO", "Found Found vuln ", payload)
 						return "ECHO RCE"
 					}
 				}

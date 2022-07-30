@@ -2,7 +2,6 @@ package seeyon
 
 import (
 	"encoding/base64"
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 )
 
@@ -15,7 +14,7 @@ func CNVD_2019_19299(u string) bool {
 		if req.StatusCode == 200 {
 			if req2, err := util.HttpRequset(u+"/seeyon/v.txt", "GET", "", false, nil); err == nil {
 				if req2.StatusCode == 200 && util.StrContains(req2.Body, "vtest") {
-					util.GoPocLog(fmt.Sprintf("Found vuln seeyon CNVD_2019_19299|%s\n", u+"/seeyon/v.txt"))
+					util.SendLog(req.RequestUrl, "CNVD-2019-19299", "Found vuln seeyon", "")
 					return true
 				}
 			}

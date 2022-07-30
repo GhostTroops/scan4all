@@ -2,7 +2,6 @@ package gitlab
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 	"mime/multipart"
 	"net/textproto"
@@ -57,7 +56,7 @@ func upload(u string, cookie string, csrf string) bool {
 	header["X-CSRF-Token"] = csrf
 	if req, err := util.HttpRequset(u+"/uploads/user", "POST", buf.String(), false, header); err == nil {
 		if util.StrContains(req.Body, "Failed to process image") {
-			util.GoPocLog(fmt.Sprintf("Found vuln gitlab CVE_2021_22205|%s\n", u))
+			util.SendLog(req.RequestUrl, "CVE-2021-22205", "Found vuln gitlab ", buf.String())
 			return true
 		}
 	}

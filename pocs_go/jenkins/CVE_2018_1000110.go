@@ -1,7 +1,6 @@
 package jenkins
 
 import (
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 )
 
@@ -10,7 +9,7 @@ func CVE_2018_1000110(u string) bool {
 		if req.Header.Get("X-Jenkins-Session") != "" {
 			if req2, err := util.HttpRequset(u+"/search/?q=a", "GET", "", false, nil); err == nil {
 				if util.StrContains(req2.Body, "Search for 'a'") {
-					util.GoPocLog(fmt.Sprintf("Found vuln Jenkins CVE_2018_1000110|%s\n", u))
+					util.SendLog(req.RequestUrl, "CVE-2018-1000110", "Found vuln Jenkins", "")
 					return true
 				}
 			}

@@ -48,6 +48,7 @@ type SimpleVulResult struct {
 	VulKind string `json:"vulKind"` // 结果分类
 	VulType string `json:"vulType"` // 漏洞类型
 	Payload string `json:"payload"`
+	Msg     string `json:"msg"`
 }
 
 // 一定得有全局得线程等待

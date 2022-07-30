@@ -232,9 +232,9 @@ func getVersion(host string, port int16, payload []byte) (bool, string) {
 
 func CVE_2020_1938(host string) bool {
 	ajpBuffer := makePayload(host, 8009)
-	isVulnerable, version := getVersion(host, 8009, ajpBuffer)
+	isVulnerable, _ := getVersion(host, 8009, ajpBuffer)
 	if isVulnerable {
-		util.GoPocLog(fmt.Sprintf("Found vuln Tomcat CVE_2020_1938 %s:%d Tomcat AJP LFI is vulnerable, Tomcat version: %s\n", host, 8009, version))
+		util.SendLog(host, "CVE-2020-1938", "Found vuln Tomcat", fmt.Sprintf("%v", ajpBuffer))
 		return true
 	}
 	return false

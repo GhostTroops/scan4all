@@ -1,7 +1,6 @@
 package seeyon
 
 import (
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 )
 
@@ -10,7 +9,7 @@ import (
 func ManagementStatus(u string) bool {
 	if req, err := util.HttpRequset(u+"/seeyon/management/index.jsp", "POST", "password=WLCCYBD@SEEYON", false, nil); err == nil {
 		if req.StatusCode == 302 && util.StrContains(req.Location, "status") {
-			util.GoPocLog(fmt.Sprintf("Found vuln seeyon ManagementStatus|pssword:WLCCYBD@SEEYON|%s\n", u+"/seeyon/management/index.jsp"))
+			util.SendLog(req.RequestUrl, "seeyon", "Found vuln seeyon ManagementStatus|pssword:WLCCYBD@SEEYON", "")
 			return true
 		}
 	}
