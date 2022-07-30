@@ -111,6 +111,7 @@ mkdir ~/MyWork/;cd ~/MyWork/;git clone  https://github.com/hktalent/log4j-scan
 ```
 - 智能识别蜜罐，并跳过目标，默认该功能是关闭的，可设置EnableHoneyportDetection=true开启
 - 高度可定制：允许通过config/config.json配置定义自己的字典，或者控制更多细节，包含不限于:nuclei、httpx、naabu等
+- 支持HTTP请求走私漏洞检测: CL-TE、TE-CL、TE-TE
 
 # 工作流程
 
