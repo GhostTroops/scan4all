@@ -3,22 +3,21 @@ package socket
 import (
 	"bufio"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/Smuggling"
 	"net"
-	"strings"
 	"time"
 )
 
 type CheckCbkFuc func(data byte) bool
 
 type CheckTarget struct {
-	Target        string         `json:"target"`
-	Port          int            `json:"port"`
-	ConnState     bool           `json:"connState"`
-	ConnType      string         `json:"connType"`
-	ReadTimeout   int            `json:"readTimeout"`
-	CheckCbkLists []*CheckCbkFuc `json:"checkCbkLists"`
-	Conn          *net.Conn      `json:"conn"`
+	Target        string         `json:"target"`        // 目标
+	Port          int            `json:"port"`          // 端口
+	ConnState     bool           `json:"connState"`     // 连接状态
+	ConnType      string         `json:"connType"`      // 连接类型：tcp
+	ReadTimeout   int            `json:"readTimeout"`   // 读数据超市
+	CheckCbkLists []*CheckCbkFuc `json:"checkCbkLists"` // 回调接口
+	Conn          *net.Conn      `json:"conn"`          // 连接对象
+	MacReadSize   uint32         `json:"macReadSize"`   // 最大允许读取调数据，避免被反制内存攻击，default:200k
 }
 
 // 准备要检测、链接带目标
@@ -29,7 +28,7 @@ func NewCheckTarget(target, SzType string, port, readWriteTimeout int) *CheckTar
 	if 0 >= readWriteTimeout {
 		readWriteTimeout = 20
 	}
-	return &CheckTarget{Target: target, Port: port, ConnType: SzType, ReadTimeout: readWriteTimeout, CheckCbkLists: []*CheckCbkFuc{}}
+	return &CheckTarget{MacReadSize: 200 * 1024 * 1024, Target: target, Port: port, ConnType: SzType, ReadTimeout: readWriteTimeout, CheckCbkLists: []*CheckCbkFuc{}}
 }
 
 // 添加检测函数
@@ -40,16 +39,16 @@ func (r *CheckTarget) AddCheck(fnCbk CheckCbkFuc, aN ...int) *CheckTarget {
 }
 
 // send one payload and close
-func (r *CheckTarget) SendOnePayload(str string) string {
+func (r *CheckTarget) SendOnePayload(str string, nTimes int) string {
 	_, err := r.ConnTarget()
 	if nil == err {
 		defer r.Close()
-		_, err := r.WriteWithFlush(Smuggling.TE_Payload[0])
-		if err == nil {
-			s1 := *r.ReadAll2Str()
-			if "" != s1 {
-				return s1
-			}
+		for i := 0; i < nTimes; i++ {
+			r.WriteWithFlush(str)
+		}
+		s1 := *r.ReadAll2Str()
+		if "" != s1 {
+			return s1
 		}
 	}
 	return ""
@@ -68,19 +67,30 @@ func (r *CheckTarget) GetBufReader() *bufio.Reader {
 	return bufio.NewReader(*r.Conn)
 }
 
-// 读取所有文本
-func (r *CheckTarget) ReadAll2Str() *string {
+func (r *CheckTarget) ReadAll2Bytes() *[]byte {
 	buf := r.GetBufReader()
-	a := []string{}
+	var a []byte
 	data := make([]byte, 1024)
+	var nCnt uint32 = 0
 	n, err := buf.Read(data)
 	for nil == err {
 		if 0 < n {
-			a = append(a, string(data[0:n]))
+			nCnt += uint32(n)
+			a = append(a, data[0:n]...)
+			// limit
+			if nCnt >= r.MacReadSize {
+				break
+			}
 		}
 		n, err = buf.Read(data)
 	}
-	s1 := strings.Join(a, "")
+	return &a
+}
+
+// 读取所有文本
+func (r *CheckTarget) ReadAll2Str() *string {
+	a := r.ReadAll2Bytes()
+	s1 := string(*a)
 	return &s1
 }
 
@@ -91,6 +101,7 @@ func (r *CheckTarget) GetBufWriter() *bufio.Writer {
 // 关闭连接
 func (r *CheckTarget) Close() {
 	if nil != r.Conn && r.ConnState {
+		r.ConnState = false
 		(*r.Conn).Close()
 	}
 }
@@ -107,6 +118,7 @@ func (r *CheckTarget) ConnTarget() (*CheckTarget, error) {
 		defer (*r.Conn).Close()
 		return r, err
 	}
+	// 设置写超时
 	//conn1.SetWriteDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
 	//if err != nil {
 	//	return r, err
