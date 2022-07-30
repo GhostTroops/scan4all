@@ -35,6 +35,9 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 	if nil != util.Wg {
 		defer util.Wg.Done()
 	}
+	if util.TestRepeat(wappalyzertechnologies, URL, finalURL, checklog4j) {
+		return []string{}
+	}
 	var HOST, hostname string
 	var technologies []string
 	if host, err := url.Parse(strings.TrimSpace(URL)); err == nil {
