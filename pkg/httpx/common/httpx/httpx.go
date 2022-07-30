@@ -114,7 +114,7 @@ func New(options *Options) (*HTTPX, error) {
 	}
 
 	if httpx.Options.HTTPProxy != "" {
-		proxyURL, parseErr := url.Parse(httpx.Options.HTTPProxy)
+		proxyURL, parseErr := url.Parse(strings.TrimSpace(httpx.Options.HTTPProxy))
 		if parseErr != nil {
 			return nil, parseErr
 		}

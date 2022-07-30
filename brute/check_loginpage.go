@@ -12,11 +12,11 @@ func CheckLoginPage(inputurl string) bool {
 		cssurl := regexp.MustCompile(`<link[^>]*href=['"](.*?)['"]`).FindAllStringSubmatch(req.Body, -1)
 		for _, v := range cssurl {
 			if strings.Contains(v[1], ".css") {
-				u, err := url.Parse(inputurl)
+				u, err := url.Parse(strings.TrimSpace(inputurl))
 				if err != nil {
 					return false
 				}
-				href, err := url.Parse(v[1])
+				href, err := url.Parse(strings.TrimSpace(v[1]))
 				if err != nil {
 					return false
 				}

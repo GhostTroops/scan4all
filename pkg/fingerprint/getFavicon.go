@@ -28,7 +28,7 @@ func xegexpjs(reg string, resp string) (reslut1 [][]string) {
 func getfavicon(httpbody string, turl string) (hash string, md5 string) {
 	faviconpaths := xegexpjs(`href="(.*?favicon....)"`, httpbody)
 	var faviconpath string
-	u, err := url.Parse(turl)
+	u, err := url.Parse(strings.TrimSpace(turl))
 	if err != nil {
 		panic(err)
 	}
@@ -68,7 +68,7 @@ func Favicohash4key(host, key string) (hash string, md5R string) {
 		timeout := time.Duration(8 * time.Second)
 		var tr *http.Transport
 		if util.HttpProxy != "" {
-			uri, _ := url.Parse(util.HttpProxy)
+			uri, _ := url.Parse(strings.TrimSpace(util.HttpProxy))
 			tr = &http.Transport{
 				MaxIdleConnsPerHost: -1,
 				TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},

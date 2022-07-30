@@ -37,7 +37,7 @@ func HoneyportDetection(host string) bool {
 	if "http" != strings.ToLower(host[0:4]) {
 		host = "http://" + host
 	}
-	oUrl, err := url.Parse(host)
+	oUrl, err := url.Parse(strings.TrimSpace(host))
 	if err != err {
 		return false
 	}

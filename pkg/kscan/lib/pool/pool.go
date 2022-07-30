@@ -3,6 +3,7 @@ package pool
 import (
 	"errors"
 	"fmt"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/kscan/lib/misc"
 	"github.com/hktalent/scan4all/pkg/kscan/lib/smap"
 	"io"
@@ -37,6 +38,14 @@ func NewWorker(f func(interface{}) interface{}) *Worker {
 			return out, err
 		},
 	}
+}
+
+var enablDevDebug bool
+
+func init() {
+	util.RegInitFunc(func() {
+		enablDevDebug = util.GetValAsBool("enablDevDebug")
+	})
 }
 
 //执行worker
@@ -97,6 +106,9 @@ func (p *Pool) work() {
 		//设置工作内容
 		f := NewWorker(p.Function)
 		//开始工作，输出工作结果
+		//if enablDevDebug {
+		fmt.Printf(" hydra: %v\r", param)
+		//}
 		out, err := f.Run(param)
 		//输出工作结果
 		p.Out <- out

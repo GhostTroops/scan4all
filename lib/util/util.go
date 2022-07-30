@@ -41,7 +41,7 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 	var tr *http.Transport
 	var err error
 	if HttpProxy != "" {
-		uri, _ := url.Parse(HttpProxy)
+		uri, _ := url.Parse(strings.TrimSpace(HttpProxy))
 		tr = &http.Transport{
 			MaxIdleConnsPerHost: -1,
 			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
@@ -110,7 +110,7 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 func HttpRequset(urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
 	var tr *http.Transport
 	if HttpProxy != "" {
-		uri, _ := url.Parse(HttpProxy)
+		uri, _ := url.Parse(strings.TrimSpace(HttpProxy))
 		tr = &http.Transport{
 			MaxIdleConnsPerHost: -1,
 			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},

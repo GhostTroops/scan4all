@@ -1221,7 +1221,7 @@ func GetWebsite(requrl string, setStatusCode bool, cacheBuster bool) (WebsiteStr
 		return web, errors.New(msg)
 	}
 
-	weburl, err := url.Parse(requrl)
+	weburl, err := url.Parse(strings.TrimSpace(requrl))
 	if err != nil {
 		msg := fmt.Sprintf("%s: url.Parse: %s", errorString, err.Error())
 		Print(msg+"\n", Red)

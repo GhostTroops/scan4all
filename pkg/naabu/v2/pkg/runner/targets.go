@@ -56,7 +56,7 @@ func (r *Runner) MergeToFile() (string, error) {
 		for _, v := range r.options.Host {
 			if !util.HoneyportDetection(v) {
 				if strings.HasPrefix(v, "https://") || strings.HasPrefix(v, "http://") {
-					if u, err := url.Parse(v); err == nil {
+					if u, err := url.Parse(strings.TrimSpace(v)); err == nil {
 						fmt.Fprintf(tempInput, "%s\n", u.Hostname())
 					}
 				} else {
@@ -135,7 +135,7 @@ func (r *Runner) DoTargets() (bool, error) {
 			continue
 		}
 		if govalidator.IsURL(x) {
-			if x1, err := url.Parse(x); nil == err {
+			if x1, err := url.Parse(strings.TrimSpace(x)); nil == err {
 				if govalidator.IsDNSName(x) {
 					aR = append(aR, r.DoDns2Ips(x1.Hostname())...)
 					a1 := r.DoSsl(x)
@@ -313,7 +313,7 @@ func (r *Runner) AddTarget(target string) error {
 		}
 	} else {
 		if strings.HasPrefix(target, "http://") || strings.HasPrefix(target, "https://") {
-			if u, err := url.Parse(target); err == nil {
+			if u, err := url.Parse(strings.TrimSpace(target)); err == nil {
 				s1 := fmt.Sprintf("%s://%s", u.Scheme, u.Host)
 				Add2Naabubuffer(fmt.Sprintf("%s\n", s1))
 				//Add2Naabubuffer(u.Hostname())
