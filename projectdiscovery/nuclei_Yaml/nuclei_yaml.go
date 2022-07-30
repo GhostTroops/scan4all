@@ -59,7 +59,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 	}
 	////////////////////////////////////*/
 	runner2.ParseOptions(options)
-	if nil != oOpts {
+	if nil != oOpts && 0 < len(*oOpts) {
 		// 指定覆盖
 		data, err := json.Marshal(oOpts)
 		if nil == err && 0 < len(data) {

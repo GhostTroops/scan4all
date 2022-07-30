@@ -99,5 +99,6 @@
   "hydrathread": 8,
   "Fuzzthreads": 32,
   "enableFingerTitleHeaderMd5Hex": false,
+  "Cookie": "",
   "esUrl": "http://127.0.0.1:9200/%s_index/_doc/%s"
 }
