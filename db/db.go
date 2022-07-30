@@ -11,6 +11,15 @@ import (
 var dbCC *gorm.DB
 var DbName = "config/scan4all_db"
 
+// 关闭数据库连接
+func Close() {
+	if nil != dbCC {
+		if db1, err := dbCC.DB(); nil == err {
+			db1.Close()
+		}
+	}
+}
+
 // go - 交叉编译go-sqlite3 https://www.modb.pro/db/329524
 // ./tools/Check_CVE_2020_26134 -config="/Users/51pwn/MyWork/mybugbounty/allDomains.txt"
 // 获取Gorm db连接、操作对象
@@ -28,7 +37,8 @@ func GetDb(dst ...interface{}) *gorm.DB {
 		szDf = s1
 	}
 	log.Println("DbName ", szDf)
-	db, err := gorm.Open(sqlite.Open("file:"+szDf+".db?cache=shared&mode=rwc&_journal_mode=WAL&Synchronous=Off&temp_store=memory&mmap_size=30000000000"), &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
+	xx01 := sqlite.Open("file:" + szDf + ".db?cache=shared&mode=rwc&_journal_mode=WAL&Synchronous=Off&temp_store=memory&mmap_size=30000000000")
+	db, err := gorm.Open(xx01, &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
 	if err == nil {
 		dbCC = db
 		if nil != dst && 0 < len(dst) {
@@ -55,6 +65,7 @@ func Update[T any](mod T, id interface{}) int64 {
 	xxxD := dbCC.Table(GetTableName(mod)).Model(&t1)
 	xxxD.AutoMigrate(t1)
 	rst := xxxD.Where("id = ?", id).Updates(mod)
+	xxxD.Commit()
 	if 0 >= rst.RowsAffected {
 		log.Println(rst.Error)
 	}
@@ -66,10 +77,10 @@ func Create[T any](mod *T) int64 {
 	xxxD := dbCC.Table(GetTableName(*mod)).Model(mod)
 	xxxD.AutoMigrate(mod)
 	rst := xxxD.Create(mod)
+	rst.Commit()
 	if 0 >= rst.RowsAffected {
 		log.Println(rst.Error)
 	}
-	xxxD.Commit()
 	return rst.RowsAffected
 }
 
