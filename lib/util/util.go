@@ -299,4 +299,6 @@ func CloseAll() {
 	if runtime.GOOS == "windows" || GetValAsBool("autoRmCache") {
 		os.RemoveAll(GetVal(CacheName))
 	}
+	//db.dbCC
+	CloseCache()
 }

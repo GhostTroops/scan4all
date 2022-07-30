@@ -21,7 +21,6 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	util.Wg = &Wg
 	util.DoInit(&config)
-	defer util.CloseAll()
 	szTip := ""
 	if util.GetValAsBool("enablDevDebug") {
 		// debug 优化时启用///////////////////////
@@ -35,4 +34,5 @@ func main() {
 	api.StartScan(nil)
 	log.Printf("wait for all threads to end\n%s", szTip)
 	util.Wg.Wait()
+	util.CloseAll()
 }

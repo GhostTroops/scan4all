@@ -27,7 +27,8 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 	defer close(xx)
 	a := strings.Split(strings.TrimSpace(buf.String()), "\n")
 	var aHttp, noHttp []string
-
+	buf.Reset()
+	buf = nil
 	for _, k := range a {
 		if _, _, ok := util.TestIs404(k); ok {
 			aHttp = append(aHttp, k)
