@@ -1,4 +1,4 @@
-package lib
+package util
 
 // 关闭chan
 func CloseChan(c chan struct{}) {

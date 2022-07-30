@@ -9,7 +9,6 @@ import (
 	"math/rand"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
 	"runtime"
 	"sync"
 	"time"
@@ -28,15 +27,7 @@ var Wg sync.WaitGroup
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	util.Wg = &Wg
-	defer func() {
-		util.Cache1.Close()
-		if runtime.GOOS == "windows" || util.GetValAsBool("autoRmCache") {
-			os.RemoveAll(util.GetVal(util.CacheName))
-		}
-		// clear
-		// 程序都结束了，没有必要清理内存了
-		// fingerprint.ClearData()
-	}()
+	defer util.CloseAll()
 	szTip := ""
 	if util.GetValAsBool("enablDevDebug") {
 		// debug 优化时启用///////////////////////
@@ -51,5 +42,5 @@ func main() {
 
 	log.Printf("wait for all threads to end\n%s", szTip)
 	util.Wg.Wait()
-	util.StopAll()
+
 }

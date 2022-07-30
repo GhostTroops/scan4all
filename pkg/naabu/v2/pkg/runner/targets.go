@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"github.com/asaskevich/govalidator"
-	"github.com/hktalent/scan4all/lib"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/hydra"
@@ -55,7 +54,7 @@ func (r *Runner) MergeToFile() (string, error) {
 	// target defined via CLI argument
 	if len(r.options.Host) > 0 {
 		for _, v := range r.options.Host {
-			if !lib.HoneyportDetection(v) {
+			if !util.HoneyportDetection(v) {
 				if strings.HasPrefix(v, "https://") || strings.HasPrefix(v, "http://") {
 					if u, err := url.Parse(v); err == nil {
 						fmt.Fprintf(tempInput, "%s\n", u.Hostname())
@@ -71,12 +70,12 @@ func (r *Runner) MergeToFile() (string, error) {
 
 	// Targets from file
 	if r.options.HostsFile != "" {
-		if lib.EnableHoneyportDetection {
+		if util.EnableHoneyportDetection {
 			data, err := ioutil.ReadFile(r.options.HostsFile)
 			if nil == err {
 				a := strings.Split(strings.TrimSpace(string(data)), "\n")
 				for _, x := range a {
-					if !lib.HoneyportDetection(x) {
+					if !util.HoneyportDetection(x) {
 						tempInput.WriteString(x + "\n")
 					} else {
 						log.Println("Honeypot found, skipped for you：", x)
