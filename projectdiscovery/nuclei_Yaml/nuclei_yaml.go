@@ -15,6 +15,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -24,7 +25,6 @@ var (
 
 // 优化，不是http协议的就不走http，提高效率
 func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, outNuclei chan<- *runner2.Runner) {
-	defer close(xx)
 	a := strings.Split(strings.TrimSpace(buf.String()), "\n")
 	var aHttp, noHttp []string
 	buf.Reset()
@@ -37,6 +37,29 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 		}
 	}
 	var nucleiDone1, nucleiDone2 = make(chan bool), make(chan bool)
+	util.DoSyncFunc(func() {
+		defer func() { xx <- true }()
+		nCnt := 0
+		for {
+			select {
+			case _, ok := <-nucleiDone1:
+				if ok {
+					nCnt++
+				}
+				if 2 <= nCnt {
+					return
+				}
+			case _, ok := <-nucleiDone2:
+				if ok {
+					nCnt++
+				}
+				if 2 <= nCnt {
+					return
+				}
+			default:
+			}
+		}
+	})
 	if 0 < len(aHttp) {
 		buf1 := bytes.Buffer{}
 		buf1.WriteString(strings.Join(aHttp, "\n"))
@@ -46,6 +69,9 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 			"EnableProgressBar": false, // 看进度条
 		}
 		go RunNucleiP(&buf1, nucleiDone1, &m1, outNuclei)
+	} else {
+		nucleiDone1 <- true
+		close(nucleiDone1)
 	}
 	if 0 < len(noHttp) {
 		buf1 := bytes.Buffer{}
@@ -56,26 +82,18 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 			"EnableProgressBar": false, // 看进度条
 		}
 		go RunNucleiP(&buf1, nucleiDone2, &m1, outNuclei)
-	}
-	nCnt := 0
-	for {
-		select {
-		case <-nucleiDone1:
-			nCnt++
-		case <-nucleiDone2:
-			nCnt++
-		default:
-			if 2 <= nCnt {
-				return
-			}
-		}
+	} else {
+		nucleiDone2 <- true
+		close(nucleiDone2)
 	}
 }
+
+var someMapMutex = sync.RWMutex{}
 
 func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, outNuclei chan<- *runner2.Runner) {
 	options := &types.Options{}
 	defer func() {
-		close(xx)
+		xx <- true
 	}()
 	if !util.GetValAsBool("enableNuclei") {
 		outNuclei <- nil
@@ -108,7 +126,9 @@ func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, 
 		}
 	}
 	////////////////////////////////////*/
+	someMapMutex.Lock()
 	runner2.ParseOptions(options)
+	someMapMutex.Unlock()
 	if nil != oOpts && 0 < len(*oOpts) {
 		// 指定覆盖
 		data, err := json.Marshal(oOpts)

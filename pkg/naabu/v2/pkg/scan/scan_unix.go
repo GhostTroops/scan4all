@@ -159,11 +159,13 @@ func TCPReadWorkerPCAPUnix(s *Scanner) {
 
 // CleanupHandlers for all interfaces
 func CleanupHandlersUnix(s *Scanner) {
-	handler := s.handlers.(Handlers)
-	for _, handler := range handler.Active {
-		handler.Close()
-	}
-	for _, inactiveHandler := range handler.Inactive {
-		inactiveHandler.CleanUp()
+	if nil != s.handlers {
+		handler := s.handlers.(Handlers)
+		for _, handler := range handler.Active {
+			handler.Close()
+		}
+		for _, inactiveHandler := range handler.Inactive {
+			inactiveHandler.CleanUp()
+		}
 	}
 }
