@@ -649,11 +649,19 @@ func (r *Runner) RunEnumeration() {
 				protocol = u.Scheme
 			}
 		}
-
+		if util.TestRepeat("httpx", k) {
+			return nil
+		}
 		// 优化：绝对404返回200就跳过当前 port的目标
 		// 绝对404先测试
-		r01, err := util.HttpRequset(k+"/scan4all404", "GET", "", false, nil)
-		if err == nil && nil != r01 && 404 == r01.StatusCode {
+		if _, _, ok := util.TestIs404(k); ok {
+			// 做一次 http
+			util.PocCheck_pipe <- &util.PocCheck{
+				Wappalyzertechnologies: &[]string{"httpCheckSmuggling"},
+				URL:                    k,
+				FinalURL:               k,
+				Checklog4j:             false,
+			}
 			if len(r.options.requestURIs) > 0 {
 				for _, p := range r.options.requestURIs {
 					scanopts := r.scanopts.Clone()
