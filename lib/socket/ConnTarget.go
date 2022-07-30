@@ -35,8 +35,6 @@ type CheckTarget struct {
 func NewCheckTarget(szUrl, SzType string, readWriteTimeout int) *CheckTarget {
 	u, err := url.Parse(szUrl)
 
-	//target, SzType string, port
-
 	if "" == SzType {
 		SzType = "tcp"
 	}
