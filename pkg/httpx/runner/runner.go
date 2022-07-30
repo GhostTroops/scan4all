@@ -1264,6 +1264,13 @@ retry:
 		// 登陆页面检测
 		if brute.CheckLoginPage(finalURL) {
 			technologies = append(technologies, "登录页面")
+			// 做一次 http
+			util.PocCheck_pipe <- util.PocCheck{
+				Wappalyzertechnologies: &[]string{"httpCheckSmuggling"},
+				URL:                    finalURL,
+				FinalURL:               finalURL,
+				Checklog4j:             false,
+			}
 		}
 		// 指纹去重
 		technologies = SliceRemoveDuplicates(technologies)

