@@ -2,9 +2,11 @@ package util
 
 import (
 	"bytes"
+	"crypto/sha1"
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/karlseguin/ccache"
 	"github.com/spf13/viper"
 	"io/fs"
 	"io/ioutil"
@@ -23,6 +25,8 @@ import (
 func StrContains(s1, s2 string) bool {
 	return strings.Contains(strings.ToLower(s1), strings.ToLower(s2))
 }
+
+var noRpt *ccache.Cache
 
 type Config4scanAllModel struct {
 	EsUlr           string `json:"EsUlr"`
@@ -195,6 +199,10 @@ func Init2() {
 	viper.Set("Verbose", false)
 	initEs()
 	EnableHoneyportDetection = GetValAsBool("EnableHoneyportDetection")
+
+	configure := ccache.Configure()
+	configure = configure.MaxSize(5000)
+	noRpt = ccache.New(configure)
 }
 
 var G_Options interface{}
@@ -315,6 +323,63 @@ func Init1(config *embed.FS) {
 	log.Println("init config files is over .")
 }
 
+// 获取 Sha1
+func GetSha1(a ...interface{}) string {
+	h := sha1.New()
+	for _, x := range a {
+		h.Write([]byte(fmt.Sprintf("%v", x)))
+	}
+	bs := h.Sum(nil)
+	return fmt.Sprintf("%x", bs)
+}
+
+var Abs404 = "/scan4all404"
+var defaultInteractionDuration time.Duration = 60 * time.Second
+
+func TestRepeat(a ...interface{}) bool {
+	if nil == noRpt {
+		return false
+	}
+	k := GetSha1(a...)
+	x1 := noRpt.Get(k)
+	if nil == x1 {
+		noRpt.Set(k, true, defaultInteractionDuration)
+		return false
+	}
+	return true
+}
+
+func TestRepeat4Save(key string, a ...interface{}) (interface{}, bool) {
+	if nil == noRpt {
+		return nil, false
+	}
+	x1 := noRpt.Get(key)
+	if nil == x1 {
+		noRpt.Set(key, a, defaultInteractionDuration)
+		return nil, false
+	}
+	return x1.Value(), true
+}
+
+// 绝对404检测
+// 相同 url 本实例中只检测一次
+func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
+	key := "TestIs404" + szUrl
+	x1 := noRpt.Get(key)
+	if nil != x1 {
+		a1 := x1.Value().([]interface{})
+		r01 = a1[0].(*Response)
+		err = a1[1].(error)
+		ok = a1[2].(bool)
+		return r01, err, ok
+	}
+
+	r01, err = HttpRequset(szUrl+Abs404, "GET", "", false, nil)
+	ok = err == nil && nil != r01 && 404 == r01.StatusCode
+	noRpt.Set(key, []interface{}{r01, err, ok}, defaultInteractionDuration)
+	return r01, err, ok
+}
+
 var fnInit []func()
 
 func RegInitFunc(cbk func()) {
@@ -326,6 +391,7 @@ func DoInit(config *embed.FS) {
 	for _, x := range fnInit {
 		x()
 	}
+	fnInit = nil
 }
 
 func RemoveDuplication_map(arr []string) []string {

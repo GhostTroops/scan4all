@@ -22,7 +22,54 @@ var (
 	cfgFile string
 )
 
+// 优化，不是http协议的就不走http，提高效率
 func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, outNuclei chan<- *runner2.Runner) {
+	defer close(xx)
+	a := strings.Split(strings.TrimSpace(buf.String()), "\n")
+	var aHttp, noHttp []string
+
+	for _, k := range a {
+		if _, _, ok := util.TestIs404(k); ok {
+			aHttp = append(aHttp, k)
+		} else {
+			noHttp = append(noHttp, k)
+		}
+	}
+	var nucleiDone1, nucleiDone2 = make(chan bool), make(chan bool)
+	if 0 < len(aHttp) {
+		buf1 := bytes.Buffer{}
+		buf1.WriteString(strings.Join(aHttp, "\n"))
+		m1 := map[string]interface{}{
+			// DNSProtocol,FileProtocol,NetworkProtocol,WorkflowProtocol,SSLProtocol,WebsocketProtocol,WHOISProtocol
+			"Protocols": []int{2, 3, 4, 6, 7, 8, 9},
+		}
+		go RunNucleiP(&buf1, nucleiDone1, &m1, outNuclei)
+	}
+	if 0 < len(noHttp) {
+		buf1 := bytes.Buffer{}
+		buf1.WriteString(strings.Join(noHttp, "\n"))
+		m1 := map[string]interface{}{
+			// DNSProtocol,FileProtocol,NetworkProtocol,WorkflowProtocol,SSLProtocol,WHOISProtocol
+			"Protocols": []int{1, 2, 5, 6, 7},
+		}
+		go RunNucleiP(&buf1, nucleiDone2, &m1, outNuclei)
+	}
+	nCnt := 0
+	for {
+		select {
+		case <-nucleiDone1:
+			nCnt++
+		case <-nucleiDone2:
+			nCnt++
+		default:
+			if 2 <= nCnt {
+				return
+			}
+		}
+	}
+}
+
+func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, outNuclei chan<- *runner2.Runner) {
 	options := &types.Options{}
 	defer func() {
 		close(xx)
@@ -186,7 +233,7 @@ func readConfig(options *types.Options) {
 	//flagSet.FileNormalizedStringSliceVarP(&options.Authors, "author", "a", []string{}, "templates to run based on authors (comma-separated, file)"),
 	//flagSet.FileNormalizedStringSliceVar(&options.Tags, "tags", []string{}, "templates to run based on tags (comma-separated, file)"),
 	//flagSet.FileNormalizedStringSliceVarP(&options.ExcludeTags, "exclude-tags", "etags", []string{}, "templates to exclude based on tags (comma-separated, file)"),
-	//flagSet.FileNormalizedStringSliceVarP(&options.IncludeTags, "include-tags", "itags", []string{}, "tags to be executed even if they are excluded either by default or configuration"), // TODO show default deny list
+	//flagSet.FileNormalizedStringSliceVarP(&options.IncludeTags, "include-tags", "itags", []string{}, "tags to be executed even if they are excluded either by default or configuration"),
 	//flagSet.FileNormalizedStringSliceVarP(&options.IncludeIds, "template-id", "id", []string{}, "templates to run based on template ids (comma-separated, file)"),
 	//flagSet.FileNormalizedStringSliceVarP(&options.ExcludeIds, "exclude-id", "eid", []string{}, "templates to exclude based on template ids (comma-separated, file)"),
 	//flagSet.FileNormalizedOriginalStringSliceVarP(&options.IncludeTemplates, "include-templates", "it", []string{}, "templates to be executed even if they are excluded either by default or configuration"),
