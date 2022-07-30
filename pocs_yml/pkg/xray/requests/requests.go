@@ -85,7 +85,7 @@ func InitHttpClient(ThreadsNum int, DownProxy string, Timeout time.Duration) err
 	}
 
 	if DownProxy != "" {
-		u, err := url.Parse(DownProxy)
+		u, err := url.Parse(strings.TrimSpace(DownProxy))
 		if err != nil {
 			return err
 		}

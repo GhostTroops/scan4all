@@ -8,11 +8,12 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
 func CVE_2020_2883(u string) bool {
-	iphost, err := url.Parse(u)
+	iphost, err := url.Parse(strings.TrimSpace(u))
 	if err != nil {
 		return false
 	}

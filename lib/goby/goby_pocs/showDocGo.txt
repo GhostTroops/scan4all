@@ -137,7 +137,7 @@ func init() {
 							select {
 							case webConsleID := <-waitSessionCh:
 								log.Println("[DEBUG] session created at:", webConsleID)
-								if u, err := url.Parse(webConsleID); err == nil {
+								if u, err := url.Parse(strings.TrimSpace(webConsleID)); err == nil {
 									expResult.Success = true
 									expResult.OutputType = "html"
 									sid := strings.Join(u.Query()["id"], "")

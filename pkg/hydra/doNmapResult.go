@@ -34,7 +34,7 @@ func Init() {
 	one.Do(func() {
 		enableEsSv = util.GetValAsBool("enableEsSv")
 		bCheckWeakPassword = util.GetValAsBool("CheckWeakPassword")
-		log.Println("CheckWeakPassword = ", util.GetVal("CheckWeakPassword"), " bCheckWeakPassword = ", bCheckWeakPassword)
+		//log.Println("CheckWeakPassword = ", util.GetVal("CheckWeakPassword"), " bCheckWeakPassword = ", bCheckWeakPassword)
 	})
 }
 
@@ -85,7 +85,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 				}
 				if os.Getenv("NoPOC") != "true" {
 					if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
-						util.PocCheck_pipe <- util.PocCheck{
+						util.PocCheck_pipe <- &util.PocCheck{
 							Wappalyzertechnologies: &[]string{service},
 							URL:                    szUlr,
 							FinalURL:               szUlr,
@@ -94,7 +94,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 					}
 					// CVE_2018_14847
 					if "8291" == szPort {
-						util.PocCheck_pipe <- util.PocCheck{
+						util.PocCheck_pipe <- &util.PocCheck{
 							Wappalyzertechnologies: &[]string{"RouterOS"},
 							URL:                    szUlr,
 							FinalURL:               szUlr,

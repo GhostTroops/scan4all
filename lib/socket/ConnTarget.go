@@ -33,7 +33,7 @@ type CheckTarget struct {
 // 准备要检测、链接带目标
 // 需要考虑 ssl的情况
 func NewCheckTarget(szUrl, SzType string, readWriteTimeout int) *CheckTarget {
-	u, err := url.Parse(szUrl)
+	u, err := url.Parse(strings.TrimSpace(szUrl))
 
 	if "" == SzType {
 		SzType = "tcp"

@@ -15,6 +15,7 @@ import (
 	"github.com/hktalent/scan4all/pocs_yml"
 	"io"
 	"io/ioutil"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -642,20 +643,28 @@ func (r *Runner) RunEnumeration() {
 
 		protocol := r.options.protocol
 		// attempt to parse url as is
+		k = strings.TrimSpace(k)
 		if u, err := url.Parse(k); err == nil {
 			if r.options.NoFallbackScheme && u.Scheme == httpx.HTTP || u.Scheme == httpx.HTTPS {
 				protocol = u.Scheme
 			}
 		}
 
-		if len(r.options.requestURIs) > 0 {
-			for _, p := range r.options.requestURIs {
-				scanopts := r.scanopts.Clone()
-				scanopts.RequestURI = p
-				r.process(k, &wg, r.hp, protocol, scanopts, output)
+		// 优化：绝对404返回200就跳过当前 port的目标
+		// 绝对404先测试
+		r01, err := util.HttpRequset(k+"/scan4all404", "GET", "", false, nil)
+		if err == nil && nil != r01 && 404 == r01.StatusCode {
+			if len(r.options.requestURIs) > 0 {
+				for _, p := range r.options.requestURIs {
+					scanopts := r.scanopts.Clone()
+					scanopts.RequestURI = p
+					r.process(k, &wg, r.hp, protocol, scanopts, output)
+				}
+			} else {
+				r.process(k, &wg, r.hp, protocol, &r.scanopts, output)
 			}
 		} else {
-			r.process(k, &wg, r.hp, protocol, &r.scanopts, output)
+			log.Println("Performance optimization, absolute 404 detection skip ", k)
 		}
 
 		return nil
@@ -1265,7 +1274,7 @@ retry:
 		if brute.CheckLoginPage(finalURL) {
 			technologies = append(technologies, "登录页面")
 			// 做一次 http
-			util.PocCheck_pipe <- util.PocCheck{
+			util.PocCheck_pipe <- &util.PocCheck{
 				Wappalyzertechnologies: &[]string{"httpCheckSmuggling"},
 				URL:                    finalURL,
 				FinalURL:               finalURL,

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/url"
+	"strings"
 )
 
 //var Naabubuffer bytes.Buffer = bytes.Buffer{}
@@ -10,7 +11,7 @@ import (
 func main9() {
 
 	s := "http://www.ddd.com:990/xxp"
-	if u, err := url.Parse(s); err == nil {
+	if u, err := url.Parse(strings.TrimSpace(s)); err == nil {
 		//s1 := fmt.Sprintf("%s://%s", u.Scheme, u.Host)
 		log.Println(u.Hostname())
 	}

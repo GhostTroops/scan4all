@@ -29,6 +29,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 		close(xx)
 	}()
 	if !util.GetValAsBool("enableNuclei") {
+		outNuclei <- nil
 		return
 	}
 	// json 控制参数
@@ -79,6 +80,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 		gologger.Fatal().Msgf("nucleiRunner Could not create runner: %s\n", err)
 	}
 	if nucleiRunner == nil {
+		outNuclei <- nil
 		return
 	}
 	//data, _ := json.Marshal(options)

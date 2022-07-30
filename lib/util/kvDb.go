@@ -63,7 +63,7 @@ func (r *KvDbOp) Close() {
 func (r *KvDbOp) GetKeyForData(key string) (szRst []byte) {
 	data, err := r.Get(key)
 	if nil != err {
-		log.Println("GetKeyForData ", key, " is err ", err)
+		//log.Println("GetKeyForData ", key, " is err ", err)
 		return []byte{}
 	}
 	return data

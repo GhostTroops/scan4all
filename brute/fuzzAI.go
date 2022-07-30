@@ -44,18 +44,20 @@ var asz404UrlKey = "asz404Url"
 
 // 初始化字典到库中，且防止重复
 func init() {
-	fuzz404 = util.GetVal4File("fuzz404", fuzz404)
-	sz404Url = util.GetVal4File("404url", sz404Url)
-	page404Title = strings.Split(strings.TrimSpace(fuzz404), "\n")
-	asz404Url = strings.Split(strings.TrimSpace(sz404Url), "\n")
-	data, err := util.NewKvDbOp().Get(asz404UrlKey)
-	if nil == err && 0 < len(data) {
-		aT1 := asz404Url
-		if nil != json.Unmarshal(data, &asz404Url) {
-			asz404Url = aT1 // 容错
+	util.RegInitFunc(func() {
+		fuzz404 = util.GetVal4File("fuzz404", fuzz404)
+		sz404Url = util.GetVal4File("404url", sz404Url)
+		page404Title = strings.Split(strings.TrimSpace(fuzz404), "\n")
+		asz404Url = strings.Split(strings.TrimSpace(sz404Url), "\n")
+		data, err := util.NewKvDbOp().Get(asz404UrlKey)
+		if nil == err && 0 < len(data) {
+			aT1 := asz404Url
+			if nil != json.Unmarshal(data, &asz404Url) {
+				asz404Url = aT1 // 容错
+			}
 		}
-	}
-	db.GetDb(&ErrPage{})
+		db.GetDb(&ErrPage{})
+	})
 }
 
 // 智能学习: 非正常页面，并记录到库中永久使用,使用该方法到页面
@@ -69,7 +71,7 @@ func StudyErrPageAI(req *util.Response, page *Page, fingerprintsTag string) {
 		return
 	}
 	util.DoSyncFunc(func() {
-		var data *ErrPage
+		var data = &ErrPage{}
 		body := []byte(req.Body)
 		szHs, szMd5 := fingerprint.GetHahsMd5(body)
 		// 这里后期优化基于其他查询
@@ -127,7 +129,7 @@ func CheckIsErrPageAI(req *util.Response, page *Page) bool {
 				db.Create[ErrPage](data)
 				return true
 			}
-			u01, err := url.Parse(*page.Url)
+			u01, err := url.Parse(strings.TrimSpace(*page.Url))
 			if nil == err && 2 < len(u01.Path) {
 				// 加 404 url判断
 				if pkg.Contains4sub[string](asz404Url, u01.Path) {
