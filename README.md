@@ -121,7 +121,7 @@ mkdir ~/MyWork/;cd ~/MyWork/;git clone https://github.com/hktalent/log4j-scan
 download from
 <a href=https://github.com/hktalent/scan4all/releases>Releases</a>
 ```bash
-go install github.com/hktalent/scan4all@2.6.1
+go install github.com/hktalent/scan4all@2.6.9
 scan4all -h
 ````
 # how to use
