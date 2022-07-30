@@ -47,7 +47,7 @@ func CVE_2020_2883(u string) bool {
 		send, _ := regexp.Match("weblogic", buf)
 		security, _ := regexp.Match("Connection rejected", buf)
 		if send && !security {
-			util.GoPocLog(fmt.Sprintf("Found vuln Weblogic CVE_2020_2883|%s\n", u))
+			util.SendLog(u, "CVE-2020-2883", "Found vuln Weblogic", payload)
 			return true
 		}
 	}

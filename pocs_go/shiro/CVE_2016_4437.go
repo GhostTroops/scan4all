@@ -7,7 +7,6 @@ import (
 	"crypto/rand"
 	_ "embed"
 	"encoding/base64"
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 	uuid "github.com/satori/go.uuid"
 	"io"
@@ -76,13 +75,13 @@ func CVE_2016_4437(u string) (key string) {
 			RememberMe2 := aES_GCM_Encrypt(decodekey, Content) //AES GCM加密
 			if CBClen, err := getkeylen(u, indexlen, RememberMe1); err == nil {
 				if CBClen != indexlen {
-					util.GoPocLog(fmt.Sprintf("Found vuln Shiro CVE_2016_4437| URL: %s CBC-KEY: %s\n", u, key))
+					util.SendLog(u, "CVE-2016-4437", "Found vuln Shiro CBC-KEY", key)
 					return key
 				}
 			}
 			if GCMlen, err := getkeylen(u, indexlen, RememberMe2); err == nil {
 				if GCMlen != indexlen {
-					util.GoPocLog(fmt.Sprintf("Found vuln Shiro CVE_2016_4437| URL: %s GCM-KEY: %s\n", u, key))
+					util.SendLog(u, "CVE-2016-4437", "Found vuln Shiro GCM-KEY", key)
 					return key
 				}
 			}

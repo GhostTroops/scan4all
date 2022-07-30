@@ -2,7 +2,6 @@ package seeyon
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 	"mime/multipart"
 	"net/textproto"
@@ -16,7 +15,7 @@ func SessionUpload(u string) bool {
 	if session := getsession(u); session != "" {
 		if filename := upload(u, session); filename != "" {
 			if unzip(u, filename, session) {
-				util.GoPocLog(fmt.Sprintf("Found vuln seeyon poc SessionUpload|%s\n", u))
+				util.SendLog(u, "seeyon", "Found vuln seeyon poc SessionUpload", "")
 				return true
 			}
 		}

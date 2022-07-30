@@ -163,10 +163,11 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 				has := md5.Sum(data)
 				pass = fmt.Sprintf("%x", has)
 			}
-			if req, err2 := util.HttpRequset(loginurl, "POST", fmt.Sprintf("%s=%s&%s=%s", usernamekey, user, passwordkey, pass), false, nil); err2 == nil {
+			pay := fmt.Sprintf("%s=%s&%s=%s", usernamekey, user, passwordkey, pass)
+			if req, err2 := util.HttpRequset(loginurl, "POST", pay, false, nil); err2 == nil {
 				if falseis401 {
 					if req.StatusCode != 401 {
-						util.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
+						util.SendLog(loginurl, "admin_brute", fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl), pay)
 						return user, pass, loginurl
 					}
 				}
@@ -178,7 +179,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 						sucesstestdata := fmt.Sprintf("%s=%s&%s=Qweasd123zxc", usernamekey, user, passwordkey)
 						if sucesstest, err := util.HttpRequset(loginurl, "POST", sucesstestdata, false, nil); err == nil {
 							if sucesstest.Location != req.Location {
-								util.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
+								util.SendLog(loginurl, "admin_brute", fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl), sucesstestdata)
 								return user, pass, loginurl
 							}
 						}
@@ -200,7 +201,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 						sucesstestdata := fmt.Sprintf("%s=%s&%s=Qweasd123zxc", usernamekey, user, passwordkey)
 						if sucesstest, err := util.HttpRequset(loginurl, "POST", sucesstestdata, false, nil); err == nil {
 							if sucesstest.ContentLength != req.ContentLength {
-								util.BurteLog(fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl))
+								util.SendLog(loginurl, "admin_brute", fmt.Sprintf("Found vuln admin password|%s:%s|%s\n", user, pass, loginurl), sucesstestdata)
 								return user, pass, loginurl
 							}
 						}
