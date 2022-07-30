@@ -361,6 +361,16 @@ func TestRepeat4Save(key string, a ...interface{}) (interface{}, bool) {
 	return x1.Value(), true
 }
 
+// 关闭cache
+func CloseCache() {
+	if nil != noRpt {
+		log.Println("start clear noRpt cahe")
+		noRpt.Clear()
+		noRpt.Stop()
+		noRpt = nil
+	}
+}
+
 // 绝对404检测
 // 相同 url 本实例中只检测一次
 func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
