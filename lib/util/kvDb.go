@@ -41,7 +41,7 @@ func (r *KvDbOp) Init(szDb string) error {
 	opts.LevelSizeMultiplier = 20
 	db, err := badger.Open(opts)
 	if nil != err {
-		log.Println("Init k-v db 不能多个进程同时开启", err)
+		log.Println("Init2 k-v db 不能多个进程同时开启", err)
 		return err
 	}
 	r.DbConn = db
@@ -115,6 +115,7 @@ func (r *KvDbOp) Put(key string, data []byte) {
 }
 
 // 调整初始化顺序
-func init5() {
+// 初始化 kvDb
+func init3() {
 	NewKvDbOp()
 }

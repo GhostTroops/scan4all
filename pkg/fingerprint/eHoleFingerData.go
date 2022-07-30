@@ -9,5 +9,7 @@ import (
 var eHoleFinger string
 
 func init() {
-	eHoleFinger = util.GetVal4File("eHoleFinger", eHoleFinger)
+	util.RegInitFunc(func() {
+		eHoleFinger = util.GetVal4File("eHoleFinger", eHoleFinger)
+	})
 }
