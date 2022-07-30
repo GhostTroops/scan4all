@@ -42,6 +42,14 @@ func Log(v ...any) {
 	log.Println(v...)
 }
 
+// 简单结果
+type SimpleVulResult struct {
+	Url     string `json:"url"`
+	VulKind string `json:"vulKind"` // 结果分类
+	VulType string `json:"vulType"` // 漏洞类型
+	Payload string `json:"payload"`
+}
+
 // 一定得有全局得线程等待
 func SendAnyData(data interface{}, szType ESaveType) {
 	DoSyncFunc(func() {

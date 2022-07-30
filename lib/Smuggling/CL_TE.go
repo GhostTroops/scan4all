@@ -1,12 +1,11 @@
 package Smuggling
 
 import (
-	"github.com/hktalent/scan4all/lib/socket"
 	"strings"
 )
 
 // send tow repeate
-var ClTePayload = []string{`POST / HTTP/1.1
+var ClTePayload = []string{`POST %s HTTP/1.1
 Host: %s
 Connection: keep-alive
 Content-Type: application/x-www-form-urlencoded
@@ -30,16 +29,13 @@ type ClTe struct {
 func (r *ClTe) CheckResponse(body string) bool {
 	return -1 < strings.Index("Unrecognized method GPOST", body)
 }
-
+func (r *ClTe) GetVulType() string {
+	return "CL-TE"
+}
 func (r *ClTe) GetPayloads() *[]string {
 	return &ClTePayload
 }
 
-func (r *ClTe) Check(rc *socket.CheckTarget) {
-	for _, x := range ClTePayload {
-		s := rc.SendOnePayload(x, 2)
-		if r.CheckResponse(s) {
-			break
-		}
-	}
+func (r *ClTe) GetTimes() int {
+	return 2
 }
