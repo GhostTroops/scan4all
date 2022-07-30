@@ -25,7 +25,6 @@ var (
 func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, outNuclei chan<- *runner2.Runner) {
 	options := &types.Options{}
 	defer func() {
-		xx <- true
 		close(xx)
 	}()
 	if !util.GetValAsBool("enableNuclei") {
