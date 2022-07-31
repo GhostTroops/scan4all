@@ -1,4 +1,4 @@
-package db
+package util
 
 import (
 	"gorm.io/driver/sqlite"
@@ -17,6 +17,13 @@ func Close() {
 		if db1, err := dbCC.DB(); nil == err {
 			db1.Close()
 		}
+	}
+}
+
+// 初始化模型
+func InitModle(x ...interface{}) {
+	for _, i := range x {
+		dbCC.Table(GetTableName(i)).Model(&i).AutoMigrate(i)
 	}
 }
 
