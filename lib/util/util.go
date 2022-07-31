@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/corpix/uarand"
 	"github.com/hbakhtiyor/strsim"
-	"github.com/hktalent/scan4all/db"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -300,6 +299,6 @@ func CloseAll() {
 	if runtime.GOOS == "windows" || GetValAsBool("autoRmCache") {
 		os.RemoveAll(GetVal(CacheName))
 	}
-	db.Close()
+	Close()
 	CloseCache()
 }

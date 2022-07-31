@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"github.com/antlabs/strsim"
-	"github.com/hktalent/scan4all/db"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
@@ -56,7 +55,7 @@ func init() {
 				asz404Url = aT1 // 容错
 			}
 		}
-		db.GetDb(&ErrPage{})
+		util.GetDb(&ErrPage{})
 	})
 }
 
@@ -75,7 +74,7 @@ func StudyErrPageAI(req *util.Response, page *Page, fingerprintsTag string) {
 		body := []byte(req.Body)
 		szHs, szMd5 := fingerprint.GetHahsMd5(body)
 		// 这里后期优化基于其他查询
-		r1 := db.GetOne[ErrPage](data, "bodyHash=? and bodyMd5=?", szHs, szMd5)
+		r1 := util.GetOne[ErrPage](data, "bodyHash=? and bodyMd5=?", szHs, szMd5)
 		if nil != r1 {
 			data = r1
 		} else {
@@ -87,7 +86,7 @@ func StudyErrPageAI(req *util.Response, page *Page, fingerprintsTag string) {
 			}
 			// 学些匹配，不重复再记录
 			if bRst, _ := CheckRepeat(data); !bRst {
-				db.Create[ErrPage](data)
+				util.Create[ErrPage](data)
 			}
 		}
 	})
@@ -99,7 +98,7 @@ var fXsdPrecision float64 = 0.96
 // 判断库中是否已经存在
 func CheckRepeat(data *ErrPage) (bool, *ErrPage) {
 	var aRst []ErrPage
-	aRst1 := db.GetSubQueryLists[ErrPage, ErrPage](*data, "", aRst, 10000, 0)
+	aRst1 := util.GetSubQueryLists[ErrPage, ErrPage](*data, "", aRst, 10000, 0)
 	if nil != aRst1 {
 		aRst = *aRst1
 		for _, x := range aRst {
@@ -126,7 +125,7 @@ func CheckIsErrPageAI(req *util.Response, page *Page) bool {
 		for _, x := range page404Title {
 			// 异常页面标题检测成功
 			if 0 < len(data.Title) && (util.StrContains(x, data.Title) || util.StrContains(data.Title, x)) || 0 < len(data.Body) && util.StrContains(data.Body, x) {
-				db.Create[ErrPage](data)
+				util.Create[ErrPage](data)
 				return true
 			}
 			u01, err := url.Parse(strings.TrimSpace(*page.Url))
