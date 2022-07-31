@@ -3,6 +3,7 @@ package socket
 import (
 	"bufio"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 	"net"
@@ -23,11 +24,12 @@ type CheckTarget struct {
 	CheckCbkLists []*CheckCbkFuc `json:"checkCbkLists"` // 回调接口
 	Conn          net.Conn       `json:"conn"`          // 连接对象
 	//ConnTLS       *tls.Conn      `json:"conn"`          // ssl 连接对象
-	MacReadSize uint32 `json:"macReadSize"` // 最大允许读取调数据，避免被反制内存攻击，default:200k
-	HostName    string `json:"hostName"`    // http header host
-	UrlPath     string `json:"urlPath"`     // http中url path
-	UrlRaw      string `json:"urlRaw"`      // full url
-	IsTLS       bool   `json:"isTLS"`       // https
+	MacReadSize      uint32 `json:"macReadSize"` // 最大允许读取调数据，避免被反制内存攻击，default:200k
+	HostName         string `json:"hostName"`    // http header host
+	UrlPath          string `json:"urlPath"`     // http中url path
+	UrlRaw           string `json:"urlRaw"`      // full url
+	IsTLS            bool   `json:"isTLS"`       // https
+	CustomHeadersRaw string `json:"customHeadersRaw"`
 }
 
 // 准备要检测、链接带目标
@@ -57,11 +59,12 @@ func NewCheckTarget(szUrl, SzType string, readWriteTimeout int) *CheckTarget {
 				r11.Port = n
 			}
 		}
-		if "" != u.RawPath {
-			r11.UrlPath = u.RawPath
+		if "" != u.Path {
+			r11.UrlPath = u.Path
 		}
 
 	}
+	r11.CustomHeadersRaw = util.GetCustomHeadersRaw()
 	return r11
 }
 
@@ -76,9 +79,9 @@ func (r *CheckTarget) AddCheck(fnCbk CheckCbkFuc, aN ...int) *CheckTarget {
 func (r *CheckTarget) SendOnePayload(str, szPath, szHost string, nTimes int) string {
 	_, err := r.ConnTarget()
 	defer r.Close()
-	if nil == err {
+	if nil == err && r.ConnState {
 		for i := 0; i < nTimes; i++ {
-			r.WriteWithFlush(fmt.Sprintf(str, szPath, szHost, util.GetCustomHeadersRaw()))
+			r.WriteWithFlush(fmt.Sprintf(str, szPath, szHost, r.CustomHeadersRaw))
 		}
 		s1 := *r.ReadAll2Str()
 		if "" != s1 {
@@ -91,6 +94,10 @@ func (r *CheckTarget) SendOnePayload(str, szPath, szHost string, nTimes int) str
 // 获取操作io
 func (r *CheckTarget) WriteWithFlush(s string) (nn int, err error) {
 	bw := r.GetBufWriter()
+	if nil == bw {
+		return -1, errors.New("WriteWithFlush can not get GetBufWriter")
+	}
+	//log.Printf("Payload: %s\n%s", r.UrlRaw, s)
 	nn, err = bw.Write([]byte(s))
 	bw.Flush()
 	return
@@ -143,9 +150,14 @@ func (r *CheckTarget) Close() {
 	}
 }
 
+func (r *CheckTarget) Log(s string) {
+	//log.Println(s)
+}
+
 // 连接目标
 func (r *CheckTarget) ConnTarget() (*CheckTarget, error) {
 	var err error
+	szErr := fmt.Sprintf("can not connect to: %s", r.UrlRaw)
 	if r.IsTLS {
 		conf := &tls.Config{
 			InsecureSkipVerify: true,
@@ -156,19 +168,22 @@ func (r *CheckTarget) ConnTarget() (*CheckTarget, error) {
 			err = r.Conn.SetReadDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
 			if err != nil {
 				defer r.Close()
+				r.Log(szErr)
 				return r, err
 			}
 			r.ConnState = true
 		}
 	} else {
-		r.Conn, err = net.Dial(r.ConnType, fmt.Sprintf("%s:%d", r.Target, r.Port))
+		r.Conn, err = net.DialTimeout(r.ConnType, fmt.Sprintf("%s:%d", r.Target, r.Port), time.Duration(r.ReadTimeout)*time.Second)
 		if err != nil {
+			r.Log(szErr)
 			return r, err
 		}
 		// 设置读取超时
 		err = r.Conn.SetReadDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
 		if err != nil {
 			defer r.Close()
+			r.Log(szErr)
 			return r, err
 		}
 		// 设置写超时
@@ -176,6 +191,7 @@ func (r *CheckTarget) ConnTarget() (*CheckTarget, error) {
 		//if err != nil {
 		//	return r, err
 		//}
+		//log.Printf("connect ok: %s", r.UrlRaw)
 		r.ConnState = true
 	}
 	return r, nil
