@@ -48,6 +48,8 @@ func GetDb(dst ...interface{}) *gorm.DB {
 	db, err := gorm.Open(xx01, &gorm.Config{Logger: logger.Default.LogMode(logger.Silent)})
 	if err == nil {
 		dbCC = db
+		db1, _ := dbCC.DB()
+		db1.SetMaxOpenConns(1)
 		if nil != dst && 0 < len(dst) {
 			db.AutoMigrate(dst[0])
 		}
