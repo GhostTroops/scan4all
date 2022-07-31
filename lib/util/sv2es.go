@@ -70,6 +70,7 @@ func SendAData[T any](k string, data []T, szType ESaveType) {
 		m2 := make(map[string]interface{})
 		m2[k] = data
 		SendReq(m2, k, szType)
+		log.Printf("%+v\n", data)
 	}
 }
 
