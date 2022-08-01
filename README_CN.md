@@ -205,10 +205,10 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 - 2022-06-07 添加相似度算法来检测 404
 - 2022-06-07 增加http url列表精准扫描参数，根据环境变量UrlPrecise=true开启
 
-# 交流群(微信、QQ)
-| Wechat | Or | QQchat |
-| --- |--- |--- |
-|<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/wcq.JPG>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/qqc.jpg>|
+# 交流群(微信、QQ、Tg)
+| Wechat | Or | QQchat | Or | Tg |
+| --- |--- |--- |--- |--- |
+|<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/wcq.JPG>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/qqc.jpg>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/tg.jpg>|
 
 # Donation
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |
