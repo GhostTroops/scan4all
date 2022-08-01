@@ -293,14 +293,30 @@ func (r *Runner) Close() {
 	if r.projectFile != nil {
 		r.projectFile.Close()
 	}
-	r.hmapInputProvider.Close()
+	if nil != r.hmapInputProvider {
+		r.hmapInputProvider.Close()
+	}
 	protocolinit.Close()
 	if r.pprofServer != nil {
 		_ = r.pprofServer.Shutdown(context.Background())
 	}
-	if r.interactsh != nil {
-		r.interactsh.Close()
+	//if r.interactsh != nil {
+	//	r.interactsh.Close()
+	//}
+	if nil != r.issuesClient {
+		r.issuesClient.Close()
 	}
+	if nil != r.progress {
+		r.progress.Stop()
+	}
+	if nil != r.browser {
+		r.browser.Close()
+		r.browser = nil
+	}
+	if nil != r.pprofServer {
+		r.pprofServer.Close()
+	}
+
 }
 
 // RunEnumeration sets up the input layer for giving input nuclei.
