@@ -110,6 +110,9 @@ func GetCount[T any](mod T, args ...interface{}) int64 {
 // 通用
 // 查询返回T类型、表一条数据
 func GetOne[T any](rst *T, args ...interface{}) *T {
+	if nil == rst {
+		rst = new(T)
+	}
 	xxxD := dbCC.Table(GetTableName(*rst)).Model(rst)
 	xxxD.AutoMigrate(rst)
 	rst1 := xxxD.First(rst, args...)
