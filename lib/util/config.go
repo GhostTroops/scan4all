@@ -389,6 +389,21 @@ func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 	noRpt.Set(key, []interface{}{r01, err, ok}, defaultInteractionDuration)
 	return r01, err, ok
 }
+func TestIs404Page(szUrl string) (page *Page, r01 *Response, err error, ok bool) {
+	r01, err, ok = TestIs404(szUrl)
+	page = &Page{Url: &szUrl}
+	if nil != r01 {
+		page.Is302 = r01.StatusCode == 302
+		page.Is403 = r01.StatusCode == 403
+		page.IsBackUpPage = false
+		page.StatusCode = r01.StatusCode
+		page.Resqonse = r01
+		page.BodyLen = len([]byte(r01.Body))
+		page.BodyStr = &r01.Body
+		page.LocationUrl = &r01.Location
+	}
+	return
+}
 
 var fnInit []func()
 
