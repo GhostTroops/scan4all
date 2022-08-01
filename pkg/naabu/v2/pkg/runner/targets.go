@@ -346,7 +346,7 @@ func (r *Runner) DoDns2Ips(target string) []string {
 	}
 	ips, err := r.resolveFQDN(target)
 	if err != nil {
-		return []string{target}
+		return []string{} // fixed #51
 	}
 	return ips
 }
