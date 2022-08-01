@@ -12,7 +12,7 @@ import (
 // 2、相同url，相同 body.len只做一次匹配
 // 3、支持多地方调用
 // 4、所有异常页面 > 400 > 500都做异常页面fuzz指纹
-func Addfingerprints404(technologies []string, req *util.Response, oPage *Page) []string {
+func Addfingerprints404(technologies []string, req *util.Response, oPage *util.Page) []string {
 	var szKey string
 	if nil != oPage {
 		szKey = fmt.Sprintf("Addfingerprints404:%s_%d", oPage.Url, oPage.BodyLen)
@@ -51,7 +51,7 @@ func Addfingerprints404(technologies []string, req *util.Response, oPage *Page) 
 }
 
 // 正常页面指纹处理
-func Addfingerprintsnormal(payload string, technologies []string, req *util.Response, fuzzPage *Page) []string {
+func Addfingerprintsnormal(payload string, technologies []string, req *util.Response, fuzzPage *util.Page) []string {
 	// StatusCode 200, 301, 302, 401, 500
 	switch payload {
 	case "/manager/html":

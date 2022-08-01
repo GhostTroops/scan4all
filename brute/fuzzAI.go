@@ -65,7 +65,7 @@ func init() {
 //  1、body 学习
 //  2、标题 学习
 //  3、url 去重记录
-func StudyErrPageAI(req *util.Response, page *Page, fingerprintsTag string) {
+func StudyErrPageAI(req *util.Response, page *util.Page, fingerprintsTag string) {
 	if nil == req || nil == page || "" == req.Body {
 		return
 	}
@@ -78,7 +78,7 @@ func StudyErrPageAI(req *util.Response, page *Page, fingerprintsTag string) {
 		if nil != r1 {
 			data = r1
 		} else {
-			data = &ErrPage{Title: *page.title, Body: req.Body, BodyLen: len(body), FingerprintsTag: ""}
+			data = &ErrPage{Title: *page.Title, Body: req.Body, BodyLen: len(body), FingerprintsTag: ""}
 			data.BodyHash = szHs
 			data.BodyMd5 = szMd5
 			if "" != fingerprintsTag {
@@ -114,10 +114,10 @@ func CheckRepeat(data *ErrPage) (bool, *ErrPage) {
 }
 
 // 检测是否为异常页面，包括状态码检测
-func CheckIsErrPageAI(req *util.Response, page *Page) bool {
+func CheckIsErrPageAI(req *util.Response, page *util.Page) bool {
 	body := []byte(req.Body)
 	szHs, szMd5 := fingerprint.GetHahsMd5(body)
-	var data = &ErrPage{Title: *page.title, Body: req.Body, BodyLen: len(body)}
+	var data = &ErrPage{Title: *page.Title, Body: req.Body, BodyLen: len(body)}
 	data.BodyHash = szHs
 	data.BodyMd5 = szMd5
 	bRst, _ := CheckRepeat(data)

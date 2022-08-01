@@ -6,7 +6,6 @@ import (
 	"github.com/antlabs/strsim"
 	"github.com/hktalent/scan4all/lib/util"
 	"log"
-	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
@@ -14,23 +13,6 @@ import (
 	"sync/atomic"
 	"time"
 )
-
-// fuzz请求返回的结果
-// 尽可能使用指针，节约内存开销
-type Page struct {
-	isBackUpPath bool           // 备份、敏感泄露文件检测请求url
-	isBackUpPage bool           // 发现备份、敏感泄露文件
-	title        *string        // 标题
-	locationUrl  *string        // 跳转页面
-	is302        bool           // 是302页面
-	is403        bool           // 403页面
-	Url          *string        // 作为本地永久缓存key，提高执行效率
-	BodyStr      *string        // body = trim() + ToLower
-	BodyLen      int            // body 长度
-	Header       *http.Header   // 基于指针，节约内存空间
-	StatusCode   int            // 状态码
-	Resqonse     *util.Response // 基于指针，节约内存空间
-}
 
 // 备份、敏感文件后缀
 //go:embed dicts/bakSuffix.txt
@@ -65,12 +47,12 @@ func InitGeneral() int {
 }
 
 // 请求url并返回自定义对象
-func reqPage(u string) (*Page, *util.Response, error) {
-	page := &Page{Url: &u}
+func reqPage(u string) (*util.Page, *util.Response, error) {
+	page := &util.Page{Url: &u}
 	var method = "GET"
 	for _, ext := range suffix {
 		if strings.HasSuffix(u, ext) {
-			page.isBackUpPath = true
+			page.IsBackUpPath = true
 			method = "HEAD" // 节约请求时间
 		}
 	}
@@ -84,19 +66,19 @@ func reqPage(u string) (*Page, *util.Response, error) {
 		//if pkg.IntInSlice(req.StatusCode, []int{301, 302, 307, 308}) {
 		// 简单粗暴效率高
 		if 300 <= req.StatusCode && req.StatusCode < 400 {
-			page.is302 = true
+			page.Is302 = true
 		}
 		page.StatusCode = req.StatusCode
 		page.Resqonse = req
 		page.Header = req.Header
 		page.BodyLen = len(req.Body)
-		page.title = Gettitle(req.Body)
-		page.locationUrl = &req.Location
+		page.Title = Gettitle(req.Body)
+		page.LocationUrl = &req.Location
 		//  敏感文件头信息检测
-		page.isBackUpPage = CheckBakPage(req)
+		page.IsBackUpPage = CheckBakPage(req)
 		// https://zh.m.wikipedia.org/zh-hans/HTTP_403
 		// 403 Forbidden 是HTTP协议中的一个HTTP状态码（Status Code）。403状态码意为服务器成功解析请求但是客户端没有访问该资源的权限
-		page.is403 = req.StatusCode == 403
+		page.Is403 = req.StatusCode == 403
 		return page, req, err
 	} else {
 		return page, nil, err
@@ -149,10 +131,10 @@ func init() {
 }
 
 // 绝对404请求文件前缀
-var file_not_support = "file_not_support"
+//var file_not_support = "file_not_support"
 
 // 绝对404请求文件
-var RandStr = file_not_support + "_scan4all"
+//var RandStr = file_not_support + "_scan4all"
 
 // 随机10个字符串
 var RandStr4Cookie = util.RandStringRunes(10)
@@ -168,13 +150,13 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	}
 
 	var (
-		path404               = RandStr // 绝对404页面路径
-		errorTimes   int32    = 0       // 错误计数器，> 20则退出fuzz
-		technologies []string           // 指纹数据
-		path         []string           // 成功页面路径
+		//path404               = RandStr // 绝对404页面路径
+		errorTimes   int32    = 0 // 错误计数器，> 20则退出fuzz
+		technologies []string     // 指纹数据
+		path         []string     // 成功页面路径
 	)
-	url404, url404req, err := reqPage(u + path404)
-	if err == nil {
+	url404, url404req, err, ok := util.TestIs404Page(u) //reqPage(u + path404)
+	if err == nil && ok {
 		go util.CheckHeader(url404req.Header, u)
 		// 跳过当前目标所有的fuzz,后续所有的fuzz都无意义了
 		if 200 == url404.StatusCode || 301 == url404.StatusCode || 302 == url404.StatusCode {
@@ -286,7 +268,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 								StudyErrPageAI(req, fuzzPage, "") // 异常页面学习
 							}
 							// 04-403： 403 by pass
-							if fuzzPage.is403 && !url404.is403 {
+							if fuzzPage.Is403 && !url404.Is403 {
 								a11 := ByPass403(&u, &payload, &wg)
 								// 表示 ByPass403 成功了, 结果、控制台输出点什么？
 								if 0 < len(a11) {
@@ -344,7 +326,7 @@ var reg2 = regexp.MustCompile("(window|self|top)\\.location\\.href\\s*=")
 //  1、状态码跳转：301 代表永久性转移(Permanently Moved)；302 redirect: 302 代表暂时性转移(Temporarily Moved )
 //  2、html刷新跳转
 //  3、js 跳转
-func CheckDirckt(fuzzPage *Page, req *util.Response) bool {
+func CheckDirckt(fuzzPage *util.Page, req *util.Response) bool {
 	if nil == fuzzPage || nil == req {
 		return false
 	}
