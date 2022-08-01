@@ -1324,7 +1324,6 @@ retry:
 				}
 				return nn
 			}
-			util.Wg.Add(1)
 			//通过wFingerprint获取到的指纹进行检测gopoc check
 			poctechnologies1 = pocs_go.POCcheck(technologies, ul, finalURL, false)
 			Vullist = append(Vullist, poctechnologies1...)
@@ -1337,7 +1336,6 @@ retry:
 			filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)
 			// 取差集合
 			filefuzzTechnologies = difference(filefuzzTechnologies, technologies)
-			util.Wg.Add(1)
 			poctechnologies2 = pocs_go.POCcheck(filefuzzTechnologies, ul, finalURL, true) //通过敏感文件扫描获取到的指纹进行检测gopoc check
 			Vullist = append(Vullist, poctechnologies2...)
 			for _, technology := range filefuzzTechnologies {
