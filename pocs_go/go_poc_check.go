@@ -27,14 +27,10 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"time"
 )
 
 // 需优化：相同都目标，相同都检测只做一次
 func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool) []string {
-	if nil != util.Wg {
-		defer util.Wg.Done()
-	}
 	if util.TestRepeat(wappalyzertechnologies, URL, finalURL, checklog4j) {
 		return []string{}
 	}
@@ -271,39 +267,41 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 }
 
 func init() {
+	if os.Getenv("NoPOC") == "true" {
+		//close(util.PocCheck_pipe) // 这行会在 NoPOC该标志开启时，其他进程无法传递过来而出错
+		return
+	}
 	util.RegInitFunc(func() {
 		// 异步启动一个线程处理检测，避免
-		util.Wg.Add(1)
 		go func() {
-			defer util.Wg.Done()
-			nMax := 120 // 等xxx秒都没有消息进入就退出
-			nCnt := 0
+			//nMax := 120 // 等xxx秒都没有消息进入就退出
+			//nCnt := 0
 			for {
 				select {
 				case <-util.Ctx_global.Done():
+					close(util.PocCheck_pipe)
 					return
 				case x1, ok := <-util.PocCheck_pipe:
 					if nil == x1 || !ok {
 						log.Println("go_poc_checkout is over")
 						return
 					}
-					nCnt = 0
+					//nCnt = 0
 					log.Printf("<-lib.PocCheck_pipe: %+v  %s", *x1.Wappalyzertechnologies, x1.URL)
-					util.Wg.Add(1)
-					go POCcheck(*x1.Wappalyzertechnologies, x1.URL, x1.FinalURL, x1.Checklog4j)
+					util.DoSyncFunc(func() {
+						func(x99 *util.PocCheck) {
+							POCcheck(*x99.Wappalyzertechnologies, x99.URL, x99.FinalURL, x99.Checklog4j)
+						}(x1)
+					})
 				default:
-					if os.Getenv("NoPOC") == "true" {
-						//close(util.PocCheck_pipe) // 这行会在 NoPOC该标志开启时，其他进程无法传递过来而出错
-						return
-					}
-					var f01 float32 = float32(nCnt) / float32(nMax) * float32(100)
-					fmt.Printf(" Asynchronous go PoCs detection task %%%0.2f ....\r", f01)
-					<-time.After(time.Duration(1) * time.Second)
-					nCnt += 1
-					if nMax <= nCnt {
-						close(util.PocCheck_pipe)
-						return
-					}
+					//var f01 float32 = float32(nCnt) / float32(nMax) * float32(100)
+					//fmt.Printf(" Asynchronous go PoCs detection task %%%0.2f ....\r", f01)
+					//<-time.After(time.Duration(1) * time.Second)
+					//nCnt += 1
+					//if nMax <= nCnt {
+					//	close(util.PocCheck_pipe)
+					//	return
+					//}
 				}
 			}
 		}()
