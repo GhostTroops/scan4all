@@ -4,11 +4,9 @@ import (
 	"encoding/json"
 	"github.com/dgraph-io/badger"
 	"log"
-	"sync"
 )
 
 var Cache1 *KvDbOp
-var DoOnce sync.Once
 
 // https://colobu.com/2017/10/11/badger-a-performant-k-v-store/
 // https://juejin.cn/post/6844903814571491335
@@ -17,15 +15,16 @@ type KvDbOp struct {
 }
 
 func NewKvDbOp() *KvDbOp {
-	DoOnce.Do(func() {
-		Cache1 = &KvDbOp{}
-		CacheName11 := ".DbCache"
-		s1 := GetVal(CacheName)
-		if "" != s1 {
-			CacheName11 = s1
-		}
-		Cache1.Init(CacheName11)
-	})
+	if nil != Cache1 {
+		return Cache1
+	}
+	Cache1 = &KvDbOp{}
+	CacheName11 := ".DbCache"
+	s1 := GetVal(CacheName)
+	if "" != s1 {
+		CacheName11 = s1
+	}
+	Cache1.Init(CacheName11)
 	return Cache1
 }
 func (r *KvDbOp) SetExpiresAt(ExpiresAt uint64) {
