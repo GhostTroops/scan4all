@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"github.com/asaskevich/govalidator"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
@@ -242,11 +243,15 @@ func (r *Runner) RunEnumeration() error {
 	case r.options.Stream && !r.options.Passive: // stream active
 		r.scanner.State = scan.Scan
 		for cidr := range r.streamChannel {
-			if err := r.scanner.IPRanger.Add(cidr.String()); err != nil {
+			s01 := cidr.String()
+			if govalidator.IsDNSName(s01) {
+
+			}
+			if err := r.scanner.IPRanger.Add(s01); err != nil {
 				gologger.Warning().Msgf("Couldn't track %s in scan results: %s\n", cidr, err)
 			}
 			// 可以优化基于nmap
-			ipStream, _ := mapcidr.IPAddressesAsStream(cidr.String())
+			ipStream, _ := mapcidr.IPAddressesAsStream(s01)
 			for ip := range ipStream {
 				for _, port := range r.scanner.Ports {
 					r.limiter.Take()
