@@ -56,7 +56,9 @@ func (r *KvDbOp) Delete(key string) error {
 }
 
 func (r *KvDbOp) Close() {
-	r.DbConn.Close()
+	if nil != r.DbConn {
+		r.DbConn.Close()
+	}
 }
 
 // https://www.modb.pro/db/87317
