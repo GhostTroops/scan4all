@@ -125,16 +125,14 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 // 处理使用者自己扫描的结果
 func DoNmapWithFile(s string, bf *bytes.Buffer) bool {
 	if strings.HasSuffix(strings.ToLower(s), ".xml") {
-		util.Wg.Add(1)
-		go func() {
-			defer util.Wg.Done()
+		util.DoSyncFunc(func() {
 			b, err := ioutil.ReadFile(s)
 			if nil == err && 0 < len(b) {
 				DoParseXml(string(b), bf)
 			} else {
 				log.Println("DoNmapWithFile: ", err)
 			}
-		}()
+		})
 		return true
 	}
 	return false
