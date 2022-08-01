@@ -94,9 +94,7 @@ var PocCheck_pipe = make(chan *PocCheck, 64)
 //  1、需要认证
 //  2、shiro
 func CheckHeader(header *http.Header, szUrl string) {
-	Wg.Add(1)
-	go func() {
-		defer Wg.Done()
+	DoSyncFunc(func() {
 		if nil != header {
 			a1 := []string{}
 			if v := (*header)["www-Authenticate"]; 0 < len(v) {
@@ -111,5 +109,5 @@ func CheckHeader(header *http.Header, szUrl string) {
 				PocCheck_pipe <- &PocCheck{Wappalyzertechnologies: &a1, URL: szUrl, FinalURL: szUrl, Checklog4j: false}
 			}
 		}
-	}()
+	})
 }
