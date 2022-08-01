@@ -10,9 +10,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"os"
 	"reflect"
-	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -285,9 +283,9 @@ func CloseAll() {
 		Cache1 = nil
 	}
 
-	if runtime.GOOS == "windows" || GetValAsBool("autoRmCache") {
-		os.RemoveAll(GetVal(CacheName))
-	}
+	//if runtime.GOOS == "windows" || GetValAsBool("autoRmCache") {
+	//	os.RemoveAll(GetVal(CacheName))
+	//}
 	Close()
 	CloseCache()
 }
