@@ -89,7 +89,7 @@ func (r *KvDbOp) Get(key string) (szRst []byte, err error) {
 }
 func PutAny[T any](key string, data T) {
 	d, err := json.Marshal(data)
-	if nil == err {
+	if nil == err && nil != Cache1 {
 		Cache1.Put(key, d)
 	}
 }
