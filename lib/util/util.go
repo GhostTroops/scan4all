@@ -18,17 +18,6 @@ import (
 	"time"
 )
 
-// fuzz 响应对象封装
-type Response struct {
-	Status        string
-	StatusCode    int
-	Body          string
-	Header        *http.Header // 不用负责对象，引用，节约内存开销
-	ContentLength int
-	RequestUrl    string
-	Location      string
-}
-
 var (
 	HttpProxy   string // 代理
 	CeyeApi     string // Ceye api
