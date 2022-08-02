@@ -20,7 +20,7 @@
   Code-level optimization, parameter optimization, and individual modules, such as vscan filefuzz, have been rewritten for these integrated projects.
   In principle, do not repeat the wheel, unless there are bugs, problems
 - Cross-platform: based on golang implementation, lightweight, highly customizable, open source, supports Linux, windows, mac os, etc.
-- Support [20] password blasting, support custom dictionary, open by "priorityNmap": true
+- Support [21] password blasting, support custom dictionary, open by "priorityNmap": true
   * RDP
   * SSH
   * rsh-spx
@@ -41,6 +41,7 @@
   * Tomcat
   * Jboss
   * Winrm(wsman)
+  * POP3
 - By default, http password intelligent blasting is enabled, and it will be automatically activated when an HTTP password is required, without manual intervention
 - Detect whether there is nmap in the system, and enable nmap for fast scanning through priorityNmap=true, which is enabled by default, and the optimized nmap parameters are faster than masscan
   Disadvantages of using nmap: Is the network bad, because the traffic network packet is too large, which may lead to incomplete results
