@@ -955,6 +955,9 @@ github.com/sijms/go-ora/v2/network
 github.com/sijms/go-ora/v2/network/security
 github.com/sijms/go-ora/v2/network/security/md4
 github.com/sijms/go-ora/v2/trace
+# github.com/simonnilsson/ask v0.2.0
+## explicit; go 1.15
+github.com/simonnilsson/ask
 # github.com/spaolacci/murmur3 v1.1.0
 ## explicit
 github.com/spaolacci/murmur3

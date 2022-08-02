@@ -34,7 +34,16 @@ func StartScan(oOpts *map[string]interface{}) {
 			log.SetOutput(io.Discard)
 		}
 		// 这里需要解决、优化为非单实例 模式
-		util.G_Options = options
+		util.G_Options = map[string]interface{}{
+			"Output":            options.Output,
+			"JSON":              options.JSON,
+			"Stream":            options.Stream,
+			"Verbose":           options.Verbose,
+			"Silent":            options.Silent,
+			"Debug":             options.Debug,
+			"EnableProgressBar": options.EnableProgressBar, // 开启进度条
+		}
+
 		if runtime.GOOS == "windows" {
 			options.NoColor = true
 		}
