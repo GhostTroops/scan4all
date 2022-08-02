@@ -8,6 +8,7 @@ import (
 	"github.com/hktalent/scan4all/pkg/hydra/mssql"
 	"github.com/hktalent/scan4all/pkg/hydra/mysql"
 	"github.com/hktalent/scan4all/pkg/hydra/oracle"
+	"github.com/hktalent/scan4all/pkg/hydra/pop3"
 	"github.com/hktalent/scan4all/pkg/hydra/postgresql"
 	"github.com/hktalent/scan4all/pkg/hydra/rdp"
 	"github.com/hktalent/scan4all/pkg/hydra/redis"
@@ -111,6 +112,15 @@ func mysqlCracker(i interface{}) interface{} {
 	return nil
 }
 
+func pop3Cracker(i interface{}) interface{} {
+	info := i.(AuthInfo)
+	info.Auth.MakePassword()
+	if ok := pop3.DoPop3(info.IPAddr, info.Auth.Username, info.Auth.Password); ok {
+		info.Status = true
+		return info
+	}
+	return nil
+}
 func mssqlCracker(i interface{}) interface{} {
 	info := i.(AuthInfo)
 	info.Auth.MakePassword()
