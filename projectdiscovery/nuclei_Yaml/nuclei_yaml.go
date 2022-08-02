@@ -68,6 +68,16 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 			"Protocols":         []int{2, 3, 4, 6, 7, 8, 9},
 			"EnableProgressBar": false, // 看进度条
 		}
+		if nil != oOpts && 0 < len(*oOpts) {
+			// 指定覆盖
+			data, err := json.Marshal(oOpts)
+			if nil == err && 0 < len(data) {
+				err := json.Unmarshal(data, &m1)
+				if nil != err {
+					log.Println("oOpts1 err ", err)
+				}
+			}
+		}
 		go RunNucleiP(&buf1, nucleiDone1, &m1, outNuclei)
 	} else {
 		nucleiDone1 <- true
@@ -80,6 +90,16 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 			// DNSProtocol,FileProtocol,NetworkProtocol,WorkflowProtocol,SSLProtocol,WHOISProtocol
 			"Protocols":         []int{1, 2, 5, 6, 7},
 			"EnableProgressBar": false, // 看进度条
+		}
+		if nil != oOpts && 0 < len(*oOpts) {
+			// 指定覆盖
+			data, err := json.Marshal(oOpts)
+			if nil == err && 0 < len(data) {
+				err := json.Unmarshal(data, &m1)
+				if nil != err {
+					log.Println("oOpts2 err ", err)
+				}
+			}
 		}
 		go RunNucleiP(&buf1, nucleiDone2, &m1, outNuclei)
 	} else {
@@ -114,15 +134,9 @@ func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, 
 	options.Stream = false
 	options.EnableProgressBar = true
 	if nil != util.G_Options {
-		x01, ok := util.G_Options.(types.Options)
-		if ok {
-			options.Output = x01.Output
-			options.JSON = x01.JSON
-			options.Stream = x01.Stream
-			options.Verbose = x01.Verbose
-			options.Silent = x01.Silent
-			options.Debug = x01.Debug
-			options.EnableProgressBar = x01.EnableProgressBar // 开启进度条
+		data, err := json.Marshal(util.G_Options)
+		if nil == err {
+			json.Unmarshal(data, options)
 		}
 	}
 	////////////////////////////////////*/

@@ -20,7 +20,7 @@ Vulnerabilities Scan；15000+PoC漏洞扫描；20种应用密码爆破；7000+We
   并对这些集成的项目进行代码级别优化、参数优化，个别模块,如 vscan filefuzz部分进行了重写  
   原则上不重复造轮子，除非存在bug、问题
 - 跨平台：基于golang实现，轻量级、高度可定制、开源，支持Linux、windows、mac os等
-- 支持【20】种密码爆破，支持自定义字典, 通过 "priorityNmap": true 开启 
+- 支持【21】种密码爆破，支持自定义字典, 通过 "priorityNmap": true 开启 
   * RDP
   * SSH
   * rsh-spx
@@ -41,6 +41,7 @@ Vulnerabilities Scan；15000+PoC漏洞扫描；20种应用密码爆破；7000+We
   * Tomcat
   * Jboss
   * Winrm(wsman)
+  * POP3
 - 默认开启http密码智能爆破，需要 HTTP 密码时才会自动启动，无需人工干预
 - 检测系统是否存在 nmap ，存在通过 priorityNmap=true 启用 nmap 进行快速扫描，默认开启，优化过的 nmap 参数比 masscan 快
   使用 nmap 的弊端：网络不好的是否，因为流量网络包过大可能会导致结果不全
