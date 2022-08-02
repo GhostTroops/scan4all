@@ -12,7 +12,16 @@ go build
 1.在运行scan4all之前，你必须先安装libpcap库
 
 ```sh
+# ubuntu、linux
+apt update
+apt install -yy libpcap0.8-dev
 sudo apt install -y libpcap-dev
+# cent os
+yum install -yy glibc-devel.x86_64
+yum install -yy libpcap
+# mac os
+brew install libpcap
+
 ```
 
 2.前往
