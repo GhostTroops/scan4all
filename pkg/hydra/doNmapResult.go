@@ -102,8 +102,9 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 						}
 					}
 				}
-
-				if bCheckWeakPassword && "8728" == szPort && service == "unknown" {
+				if bCheckWeakPassword && "110" == szPort && service == "pop3" {
+					CheckWeakPassword(ip, service, port)
+				} else if bCheckWeakPassword && "8728" == szPort && service == "unknown" {
 					CheckWeakPassword(ip, "router", port)
 				} else if bCheckWeakPassword && ("5985" == szPort || "5986" == szPort) && -1 < strings.Index(service, "microsoft ") {
 					CheckWeakPassword(ip, "winrm", port)

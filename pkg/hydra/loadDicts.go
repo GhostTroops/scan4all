@@ -143,6 +143,7 @@ func init() {
 			Paswd:     util.GetVal4File("ssh_pswd", pswd),
 			DefaultUp: util.GetVal4Filedefault("ssh_default", ssh_default),
 		}
+		md["pop3"] = md["ssh"]
 		md["rsh-spx"] = md["ssh"]
 		md["snmp"] = &PPDict{
 			Username:  util.GetVal4File("snmp_user", snmp_user),
