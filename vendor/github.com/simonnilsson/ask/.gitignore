@@ -1,0 +1,18 @@
+# General
+.vscode
+.DS_Store
+
+# Compiled Executables, Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+*.exe
+*.dll
+*.dylib
+*.wasm
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
