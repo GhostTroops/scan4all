@@ -160,6 +160,12 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 - Integrate spider to find more bugs
 - Semi-automatic fingerprint learning to improve accuracy; specify fingerprint name, configure
 
+# Q & A
+- how use Cookie?
+- libpcap related question
+
+more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</a>
+
 # Changelog
 - 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/issues/2301>#2301</a> 并发多实例的bug
 - 2022-07-20 add web cache vulnerability scanner
