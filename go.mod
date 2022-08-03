@@ -117,7 +117,9 @@ require (
 	github.com/projectdiscovery/nuclei/v2 v2.7.5
 	github.com/projectdiscovery/subfinder/v2 v2.5.2
 	github.com/satori/go.uuid v1.2.0
+	github.com/shirou/gopsutil/v3 v3.22.7
 	github.com/sijms/go-ora/v2 v2.4.25
+	github.com/simonnilsson/ask v0.2.0
 	github.com/spf13/viper v1.12.0
 	github.com/stacktitan/smb v0.0.0-20190531122847-da9a425dceb8
 	github.com/tj/go-update v2.2.5-0.20200519121640-62b4b798fd68+incompatible
@@ -241,8 +243,6 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/segmentio/ksuid v1.0.4 // indirect
-	github.com/shirou/gopsutil/v3 v3.22.6 // indirect
-	github.com/simonnilsson/ask v0.2.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
