@@ -176,10 +176,16 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 ```
 
 # Work Plan
-- 整合 smuggling 实现HTTP smuggling 走私、缓存中毒检测
+- 基于爬虫更多安全信息收集，解决、回答：
+```
+    1、你知道一个url（Target）后端有多少个Server吗？
+       a、不同的端口，可能对应内部不同的内网ip
+       b、不同的上下文，可能对应内部不同的内网ip
+       c、不同的http响应server头，可能对应内部不同的内网ip
+       c、极端的情况下，不同的参数跳转后端不同的server，也就是对应内部不同的内网ip
+```
 - 重构 naabu、httpx的集成方式，解决vscan嵌入代码集成方式，导致无法升级依赖包的弊端
 - 联动 metasploit-framework，在系统已经安装好对前提条件下，配合tmux，并以 macos 环境为最佳实践完成联动
-- 重构 vscan 的代码，目标是直接调用 naabu、httpx 而不是嵌入他们，导致他们的bug难以通过升级包的方式得以解决
 - 整合 更多 fuzzer <!-- gryffin -->,如 联动 sqlmap
 - 整合 chromedp 实现对登陆页面截图，以及对纯js、js架构前端登陆页面进行检测、以及相应爬虫（敏感信息检测、页面爬取）
 - 整合 nmap-go 提高执行效率,动态解析结果流，并融合到当前任务瀑布流中
@@ -189,6 +195,7 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 - 加载osvdb 并驱动执行
 
 # 变更日志
+- 2022-08-03 fixed nuclei Multiple instances cache goroutine leaks PR<a href=https://github.com/projectdiscovery/nuclei/issues/2386>#2386</a>
 - 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/issues/2301>#2301</a> 并发多实例的bug
 - 2022-07-20 add web cache vulnerability scanner
 - 2022-07-19 PR nuclei <a href=https://github.com/projectdiscovery/nuclei/pull/2308>#2308</a> add dsl function: substr aes_cbc
