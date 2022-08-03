@@ -194,6 +194,11 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 - 半自动化指纹学习，提高精准度；指定指纹名称，通过配置
 - 加载osvdb 并驱动执行
 
+# Q & A
+- how use Cookie?
+- libpcap related question
+more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</a>
+
 # 变更日志
 - 2022-08-03 fixed nuclei Multiple instances cache goroutine leaks PR<a href=https://github.com/projectdiscovery/nuclei/issues/2386>#2386</a>
 - 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/issues/2301>#2301</a> 并发多实例的bug
