@@ -83,7 +83,11 @@ func (r *Runner) Httpxrun() error {
 	//var axx1 []*runner2.Runner
 	defer func() { <-nucleiDone }()
 	util.DoSyncFunc(func() {
-		go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone, &opts, xx1)
+		if util.GetValAsBool("enableMultNuclei") {
+			go nuclei_Yaml.RunNucleiP(&httpxrunner.Naabubuffer, nucleiDone, &opts, xx1)
+		} else {
+			go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone, &opts, xx1)
+		}
 	})
 	// 指纹去重复 请求路径
 	if "" != fingerprint.FgDictFile {
