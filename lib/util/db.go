@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm/logger"
 	"log"
 	"os"
+	"strings"
 )
 
 var dbCC *gorm.DB
@@ -42,6 +43,10 @@ func GetDb(dst ...interface{}) *gorm.DB {
 	s1 := os.Getenv("DbName")
 	if "" != s1 {
 		szDf = s1
+	}
+	s1 = szDf[0:strings.LastIndex(szDf, "/")]
+	if "" != s1 {
+		Mkdirs(s1)
 	}
 	log.Println("DbName ", szDf)
 	xx01 := sqlite.Open("file:" + szDf + ".db?cache=shared&mode=rwc&_journal_mode=WAL&Synchronous=Off&temp_store=memory&mmap_size=30000000000")
