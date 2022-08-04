@@ -84,7 +84,7 @@ func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, 
 				}
 			}
 		}
-		go RunNucleiP(&buf1, nucleiDone1, &m1, outNuclei)
+		go RunNuclei(&buf1, nucleiDone1, &m1, outNuclei)
 	} else {
 		nucleiDone1 <- true
 		close(nucleiDone1)
@@ -107,7 +107,7 @@ func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, 
 				}
 			}
 		}
-		go RunNucleiP(&buf1, nucleiDone2, &m1, outNuclei)
+		go RunNuclei(&buf1, nucleiDone2, &m1, outNuclei)
 	} else {
 		nucleiDone2 <- true
 		close(nucleiDone2)
@@ -199,7 +199,7 @@ func readConfig(options *types.Options) {
 
 	options.Authors = []string{}
 	options.Tags = []string{}
-	options.ExcludeTags = []string{}
+	options.ExcludeTags = []string{"fuzz"}
 	options.IncludeTags = []string{}
 	options.IncludeIds = []string{}
 	options.ExcludeIds = []string{}
@@ -267,7 +267,6 @@ func readConfig(options *types.Options) {
 	//	flagSet.BoolVar(&options.TemplateList, "tl", false, "list all available templates"),
 	//	flagSet.StringSliceVarConfigOnly(&options.RemoteTemplateDomainList, "remote-template-domain", []string{"api.nuclei.sh"}, "allowed domain list to load remote templates from"),
 	//)
-
 	//createGroup(flagSet, "filters", "Filtering",
 	//flagSet.FileNormalizedStringSliceVarP(&options.Authors, "author", "a", []string{}, "templates to run based on authors (comma-separated, file)"),
 	//flagSet.FileNormalizedStringSliceVar(&options.Tags, "tags", []string{}, "templates to run based on tags (comma-separated, file)"),
