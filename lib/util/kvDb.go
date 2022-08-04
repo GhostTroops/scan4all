@@ -24,6 +24,7 @@ func NewKvDbOp() *KvDbOp {
 	if "" != s1 {
 		CacheName11 = s1
 	}
+	Mkdirs(CacheName11)
 	Cache1.Init(CacheName11)
 	return Cache1
 }
