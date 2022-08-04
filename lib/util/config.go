@@ -323,6 +323,10 @@ func Init1(config *embed.FS) {
 	log.Println("init config files is over .")
 }
 
+func Mkdirs(s string) {
+	os.MkdirAll(s, os.ModePerm)
+}
+
 // 获取 Sha1
 func GetSha1(a ...interface{}) string {
 	h := sha1.New()
@@ -377,11 +381,16 @@ func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 	key := "TestIs404" + szUrl
 	x1 := noRpt.Get(key)
 	if nil != x1 {
-		a1 := x1.Value().([]interface{})
-		r01 = a1[0].(*Response)
-		err = a1[1].(error)
-		ok = a1[2].(bool)
-		return r01, err, ok
+		if a1, ok := x1.Value().([]interface{}); ok {
+			r01 = a1[0].(*Response)
+			if nil == a1[1] {
+				err = nil
+			} else {
+				err = a1[1].(error)
+			}
+			ok = a1[2].(bool)
+			return r01, err, ok
+		}
 	}
 
 	r01, err = HttpRequset(szUrl+Abs404, "GET", "", false, nil)
@@ -391,13 +400,15 @@ func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 }
 func TestIs404Page(szUrl string) (page *Page, r01 *Response, err error, ok bool) {
 	r01, err, ok = TestIs404(szUrl)
-	page = &Page{Url: &szUrl}
+	page = &Page{Url: &szUrl, Resqonse: r01}
 	if nil != r01 {
+		szTitle := ""
 		page.Is302 = r01.StatusCode == 302
 		page.Is403 = r01.StatusCode == 403
 		page.IsBackUpPage = false
 		page.StatusCode = r01.StatusCode
 		page.Resqonse = r01
+		page.Title = &szTitle
 		page.BodyLen = len([]byte(r01.Body))
 		page.BodyStr = &r01.Body
 		page.LocationUrl = &r01.Location
