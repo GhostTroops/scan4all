@@ -400,38 +400,6 @@ func (r *Runner) RunEnumeration() error {
 		return errors.Wrap(err, "could not load templates from config")
 	}
 	// 确保释放资源，多实例运行优化
-	defer func() {
-		var results *atomic.Bool
-		if r.options.AutomaticScan {
-			if results, err = r.executeSmartWorkflowInput(executerOpts, store, engine); err != nil {
-				return
-			}
-
-		} else {
-			if results, err = r.executeTemplatesInput(store, engine); err != nil {
-				return
-			}
-		}
-
-		if r.interactsh != nil {
-			matched := r.interactsh.Close()
-			if matched {
-				results.CAS(false, true)
-			}
-		}
-		r.progress.Stop()
-
-		if r.issuesClient != nil {
-			r.issuesClient.Close()
-		}
-
-		if !results.Load() {
-			gologger.Info().Msgf("No results found. Better luck next time!")
-		}
-		if r.browser != nil {
-			r.browser.Close()
-		}
-	}()
 	if r.options.Validate {
 		if err := store.ValidateTemplates(); err != nil {
 			return err
@@ -446,7 +414,36 @@ func (r *Runner) RunEnumeration() error {
 	store.Load()
 
 	r.displayExecutionInfo(store)
+	var results *atomic.Bool
+	if r.options.AutomaticScan {
+		if results, err = r.executeSmartWorkflowInput(executerOpts, store, engine); err != nil {
+			return err
+		}
 
+	} else {
+		if results, err = r.executeTemplatesInput(store, engine); err != nil {
+			return err
+		}
+	}
+
+	if r.interactsh != nil {
+		matched := r.interactsh.Close()
+		if matched {
+			results.CAS(false, true)
+		}
+	}
+	r.progress.Stop()
+
+	if r.issuesClient != nil {
+		r.issuesClient.Close()
+	}
+
+	if !results.Load() {
+		gologger.Info().Msgf("No results found. Better luck next time!")
+	}
+	if r.browser != nil {
+		r.browser.Close()
+	}
 	return err
 }
 

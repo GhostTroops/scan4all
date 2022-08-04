@@ -24,7 +24,13 @@ var (
 )
 
 // 优化，不是http协议的就不走http，提高效率
-func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, outNuclei chan<- *runner2.Runner) {
+// 多实例运行还是存在问题，会出现nuclei 挂起的问题
+func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, outNuclei chan<- *runner2.Runner) {
+	if !util.GetValAsBool("enableNuclei") {
+		outNuclei <- nil
+		xx <- true
+		return
+	}
 	a := strings.Split(strings.TrimSpace(buf.String()), "\n")
 	var aHttp, noHttp []string
 	buf.Reset()
@@ -110,15 +116,11 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 
 var someMapMutex = sync.RWMutex{}
 
-func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, outNuclei chan<- *runner2.Runner) {
+func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, outNuclei chan<- *runner2.Runner) {
 	options := &types.Options{}
 	defer func() {
 		xx <- true
 	}()
-	if !util.GetValAsBool("enableNuclei") {
-		outNuclei <- nil
-		return
-	}
 	// json 控制参数
 	options = util.ParseOption[types.Options]("nuclei", options)
 	if err := runner2.ConfigureOptions(); err != nil {
@@ -408,7 +410,7 @@ func readConfig(options *types.Options) {
 	options.UpdateTemplates = false
 	options.TemplatesDirectory = pwd + "/config/nuclei-templates"
 	// 嵌入式集成私人版本nuclei-templates 共3744个YAML POC
-	if "true" == util.GetVal("enablEmbedYaml") {
+	if util.GetValAsBool("enablEmbedYaml") {
 		options.Templates = []string{pwd + "/config/nuclei-templates"}
 		options.NoUpdateTemplates = true
 	} else {
