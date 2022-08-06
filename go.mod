@@ -123,6 +123,7 @@ require (
 	github.com/spf13/viper v1.12.0
 	github.com/stacktitan/smb v0.0.0-20190531122847-da9a425dceb8
 	github.com/tj/go-update v2.2.5-0.20200519121640-62b4b798fd68+incompatible
+	github.com/txthinking/socks5 v0.0.0-20220615051428-39268faee3e6
 	github.com/urfave/cli/v2 v2.10.3
 	go.mongodb.org/mongo-driver v1.9.1
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
@@ -255,7 +256,6 @@ require (
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
 	github.com/trivago/tgo v1.0.7 // indirect
 	github.com/txthinking/runnergroup v0.0.0-20210608031112-152c7c4432bf // indirect
-	github.com/txthinking/socks5 v0.0.0-20220615051428-39268faee3e6 // indirect
 	github.com/txthinking/x v0.0.0-20210326105829-476fab902fbe // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
 	github.com/ulule/deepcopier v0.0.0-20200430083143-45decc6639b6 // indirect
