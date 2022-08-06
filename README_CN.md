@@ -11,7 +11,7 @@
 </p>
 
 # 特性
-Vulnerabilities Scan；15000+PoC漏洞扫描；22种应用弱口令爆破；7000+Web指纹；146种协议90000+规则Port扫描；Fuzz、HW打点、BugBounty神器...
+Vulnerabilities Scan；15000+PoC漏洞扫描；[ 23 ] 种应用弱口令爆破；7000+Web指纹；146种协议90000+规则Port扫描；Fuzz、HW打点、BugBounty神器...
 <h1 align="center">
 <img width="928" alt="image" src="https://user-images.githubusercontent.com/18223385/175768227-098c779b-6c5f-48ee-91b1-c56e3daa9c87.png">
 </h1>
@@ -20,8 +20,9 @@ Vulnerabilities Scan；15000+PoC漏洞扫描；22种应用弱口令爆破；7000
   并对这些集成的项目进行代码级别优化、参数优化，个别模块,如 vscan filefuzz部分进行了重写  
   原则上不重复造轮子，除非存在bug、问题
 - 跨平台：基于golang实现，轻量级、高度可定制、开源，支持Linux、windows、mac os等
-- 支持【22】种密码爆破，支持自定义字典, 通过 "priorityNmap": true 开启 
+- 支持[ 23 ] 种密码爆破，支持自定义字典, 通过 "priorityNmap": true 开启 
   * RDP
+  * VNC
   * SSH
   * Socks5
   * rsh-spx
