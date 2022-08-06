@@ -17,6 +17,10 @@ import (
 func StartScan(oOpts *map[string]interface{}) {
 	util.DoSyncFunc(func() {
 		options := naaburunner.ParseOptions()
+		if options.Update {
+			util.UpdateScan4allVersionToLatest(true)
+			return
+		}
 		//if options.Ports != "" {
 		//	os.Setenv("priorityNmap", "false")
 		//}
