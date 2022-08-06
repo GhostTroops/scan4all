@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"github.com/dgraph-io/badger"
 	"log"
+	"os"
+	"runtime"
 )
 
 var Cache1 *KvDbOp
@@ -23,6 +25,9 @@ func NewKvDbOp() *KvDbOp {
 	s1 := GetVal(CacheName)
 	if "" != s1 {
 		CacheName11 = s1
+	}
+	if runtime.GOOS == "windows" {
+		os.RemoveAll(CacheName11)
 	}
 	Mkdirs(CacheName11)
 	Cache1.Init(CacheName11)
