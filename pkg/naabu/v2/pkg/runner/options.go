@@ -80,13 +80,7 @@ func ParseOptions() *Options {
 	options := &Options{}
 
 	flagSet := goflags.NewFlagSet()
-	flagSet.SetDescription(`scan4all is Integrated subfinder -> naabu(+nmap)
-  => kscan
-  => httpx
-  => xray
-  => ehole
-  => nuclei
-  => vscan`)
+	flagSet.SetDescription(`scan4all is ` + util.Version)
 
 	flagSet.CreateGroup("input", "Input",
 		flagSet.NormalizedStringSliceVarP(&options.Host, "host", "", []string{}, "hosts to scan ports for (comma-separated)"),
