@@ -20,8 +20,9 @@
   Code-level optimization, parameter optimization, and individual modules, such as vscan filefuzz, have been rewritten for these integrated projects.
   In principle, do not repeat the wheel, unless there are bugs, problems
 - Cross-platform: based on golang implementation, lightweight, highly customizable, open source, supports Linux, windows, mac os, etc.
-- Support [22] password blasting, support custom dictionary, open by "priorityNmap": true
+- Support [23] password blasting, support custom dictionary, open by "priorityNmap": true
   * RDP
+  * VNC
   * SSH
   * Socks5
   * rsh-spx
