@@ -84,7 +84,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 					m1[ip] = append(xx09, []string{szPort, service})
 				}
 				if os.Getenv("NoPOC") != "true" {
-					if "socks5" == service {
+					if "socks5" == service || "vnc" == service {
 						CheckWeakPassword(ip, service, port)
 					} else if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
 						util.PocCheck_pipe <- &util.PocCheck{

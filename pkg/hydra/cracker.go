@@ -18,6 +18,7 @@ import (
 	"github.com/hktalent/scan4all/pkg/hydra/socks5"
 	"github.com/hktalent/scan4all/pkg/hydra/ssh"
 	"github.com/hktalent/scan4all/pkg/hydra/telnet"
+	"github.com/hktalent/scan4all/pkg/hydra/vnc"
 	"github.com/hktalent/scan4all/pkg/hydra/winrm"
 	"github.com/hktalent/scan4all/pkg/kscan/core/slog"
 	"github.com/hktalent/scan4all/pkg/kscan/lib/gotelnet"
@@ -62,6 +63,13 @@ func smbCracker(i interface{}) interface{} {
 func Socks5Cracker(i interface{}) interface{} {
 	info := i.(AuthInfo)
 	if ok, _ := socks5.Check(info.IPAddr, info.Auth.Username, info.Auth.Password, info.Port); ok {
+		return info
+	}
+	return nil
+}
+func VncCracker(i interface{}) interface{} {
+	info := i.(AuthInfo)
+	if ok, _ := vnc.Check(info.IPAddr, info.Auth.Username, info.Auth.Password, info.Port); ok {
 		return info
 	}
 	return nil

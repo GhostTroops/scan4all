@@ -145,6 +145,7 @@ func init() {
 		}
 		md["pop3"] = md["ssh"]
 		md["socks5"] = md["ssh"]
+		md["vnc"] = md["ssh"]
 		md["rsh-spx"] = md["ssh"]
 		md["snmp"] = &PPDict{
 			Username:  util.GetVal4File("snmp_user", snmp_user),
