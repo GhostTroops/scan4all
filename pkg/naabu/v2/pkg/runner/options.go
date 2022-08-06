@@ -68,6 +68,8 @@ type Options struct {
 	CeyeApi    string
 	CeyeDomain string
 	NoPOC      bool
+	// 更新
+	Update bool
 }
 
 // OnResultCallback (hostname, ip, ports)
@@ -141,6 +143,7 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Resume, "resume", false, "resume scan using resume.cfg"),
 		flagSet.BoolVar(&options.Stream, "stream", false, "stream mode (disables resume, nmap, verify, retries, shuffling, etc)"),
 		flagSet.BoolVar(&options.Passive, "passive", false, "display passive open ports using shodan internetdb api"),
+		flagSet.BoolVar(&options.Update, "update", false, "update scan4all to latest version"),
 	)
 
 	flagSet.CreateGroup("optimization", "Optimization",
