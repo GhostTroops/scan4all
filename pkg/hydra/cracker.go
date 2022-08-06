@@ -15,6 +15,7 @@ import (
 	"github.com/hktalent/scan4all/pkg/hydra/router"
 	"github.com/hktalent/scan4all/pkg/hydra/smb"
 	"github.com/hktalent/scan4all/pkg/hydra/snmp"
+	"github.com/hktalent/scan4all/pkg/hydra/socks5"
 	"github.com/hktalent/scan4all/pkg/hydra/ssh"
 	"github.com/hktalent/scan4all/pkg/hydra/telnet"
 	"github.com/hktalent/scan4all/pkg/hydra/winrm"
@@ -53,6 +54,14 @@ func smbCracker(i interface{}) interface{} {
 			return nil
 		}
 		info.Status = true
+		return info
+	}
+	return nil
+}
+
+func Socks5Cracker(i interface{}) interface{} {
+	info := i.(AuthInfo)
+	if ok, _ := socks5.Check(info.IPAddr, info.Auth.Username, info.Auth.Password, info.Port); ok {
 		return info
 	}
 	return nil

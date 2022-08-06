@@ -84,16 +84,16 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 					m1[ip] = append(xx09, []string{szPort, service})
 				}
 				if os.Getenv("NoPOC") != "true" {
-					if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
+					if "socks5" == service {
+						CheckWeakPassword(ip, service, port)
+					} else if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
 						util.PocCheck_pipe <- &util.PocCheck{
 							Wappalyzertechnologies: &[]string{service},
 							URL:                    szUlr,
 							FinalURL:               szUlr,
 							Checklog4j:             false,
 						}
-					}
-					// CVE_2018_14847
-					if "8291" == szPort {
+					} else if "8291" == szPort { // CVE_2018_14847
 						util.PocCheck_pipe <- &util.PocCheck{
 							Wappalyzertechnologies: &[]string{"RouterOS"},
 							URL:                    szUlr,
@@ -101,8 +101,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 							Checklog4j:             false,
 						}
 					}
-				}
-				if bCheckWeakPassword && "110" == szPort && service == "pop3" {
+				} else if bCheckWeakPassword && "110" == szPort && service == "pop3" {
 					CheckWeakPassword(ip, service, port)
 				} else if bCheckWeakPassword && "8728" == szPort && service == "unknown" {
 					CheckWeakPassword(ip, "router", port)

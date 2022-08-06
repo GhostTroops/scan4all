@@ -22,7 +22,7 @@ var (
 	CustomAuthMap  *AuthList
 	// rtsp://admin:admin@192.168.0.111:554/0x8b6c42
 	// rtsp: 554, 5554,8554
-	ProtocolList = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,mongod,smb,telnet,snmp,wap-wsp,router,winrm,pop3", ",")
+	ProtocolList = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,mongod,smb,telnet,snmp,wap-wsp,router,winrm,pop3,socks5", ",")
 )
 
 func NewCracker(info *AuthInfo, isAuthUpdate bool, threads int) *Cracker {
@@ -80,6 +80,8 @@ func (c *Cracker) Run() {
 		//若SID未知，则不进行后续暴力破解
 	case "postgresql":
 		c.Pool.Function = postgresqlCracker
+	case "socks5":
+		c.Pool.Function = Socks5Cracker
 	case "ldap", "rsh-spx", "ssh":
 		c.Pool.Function = sshCracker
 	case "telnet":
@@ -98,7 +100,7 @@ func (c *Cracker) Run() {
 		c.Pool.Function = ftpCracker
 	case "snmp":
 		c.Pool.Function = snmpCracker
-	case "wap-wsp":
+	case "wap-wsp": // Elasticsearch
 		c.Pool.Function = elasticCracker
 	//	PORT     STATE SERVICE REASON
 	// 8728/tcp open  unknown syn-ack
