@@ -12,7 +12,7 @@ import (
 	"runtime"
 )
 
-var Version = "2.7.1"
+var Version = "2.7.4"
 var MyName = "scan4all"
 
 // 更新到最新版本

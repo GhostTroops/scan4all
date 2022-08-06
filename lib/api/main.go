@@ -17,6 +17,9 @@ import (
 func StartScan(oOpts *map[string]interface{}) {
 	util.DoSyncFunc(func() {
 		options := naaburunner.ParseOptions()
+		//if options.Ports != "" {
+		//	os.Setenv("priorityNmap", "false")
+		//}
 		// 压入外部参数
 		if nil != oOpts {
 			// 指定覆盖
