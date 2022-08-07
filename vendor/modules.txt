@@ -1347,6 +1347,9 @@ gopkg.in/corvus-ch/zbase32.v1
 # gopkg.in/ini.v1 v1.66.4
 ## explicit
 gopkg.in/ini.v1
+# gopkg.in/irc.v3 v3.1.4
+## explicit; go 1.13
+gopkg.in/irc.v3
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
