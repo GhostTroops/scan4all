@@ -131,6 +131,7 @@ require (
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306
 	google.golang.org/genproto v0.0.0-20220602131408-e326c6e8e9c8
 	google.golang.org/protobuf v1.28.0
+	gopkg.in/irc.v3 v3.1.4
 	gorm.io/driver/sqlite v1.3.6
 	gorm.io/gorm v1.23.8
 )
