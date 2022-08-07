@@ -38,7 +38,7 @@ Vulnerabilities Scan；15000+PoC漏洞扫描；[ 23 ] 种应用弱口令爆破�
   * Snmp
   * Wap-wsp（Elasticsearch）
   * RouterOs
-  * HTTP BasicAuth
+  * HTTP BasicAuth, contains SVN（Apache Subversion） crack
   * Weblogic，同时通过 enableNuclei=true 开启nuclei，支持T3、IIOP等检测
   * Tomcat
   * Jboss
