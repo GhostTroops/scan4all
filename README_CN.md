@@ -214,6 +214,8 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 - 2022-06-24 优化指纹算法；增加工作流程图
 - 2022-06-23 添加参数ParseSSl，控制默认不深度分析SSL中的DNS信息，默认不对SSL中dns进行扫描；优化：nmap未自动加.exe的bug；优化windows下缓存文件未优化体积的bug
 - 2022-06-22 集成 N 种协议弱口令检测、密码爆破：ftp、mongodb、mssql、mysql、oracle、postgresql、rdp、redis、smb、ssh、telnet，同时优化支持外挂密码字典
+- 2022-06-21 决然做scan4all
+<!--
 - 2022-06-20 集成Subfinder，域名爆破，启动参数导出EnableSubfinder=true，注意启动后很慢； ssl证书中域名信息的自动深度钻取
   允许通过 config/config.json 配置定义自己的字典，或设置相关开关
 - 2022-06-17 优化一个域名多个IP的情况，所有IP都会被端口扫描，然后按照后续的扫描流程
@@ -221,6 +223,7 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 - 2022-06-10 完成核的整合，当然包括核模板的整合
 - 2022-06-07 添加相似度算法来检测 404
 - 2022-06-07 增加http url列表精准扫描参数，根据环境变量UrlPrecise=true开启
+-->
 
 # 交流群(微信、QQ、Tg)
 | Wechat | Or | QQchat | Or | Tg |
