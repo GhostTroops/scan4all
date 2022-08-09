@@ -191,6 +191,10 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 | --- |--- |--- |--- |--- |
 |<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/wcq.JPG>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/qqc.jpg>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/tg.jpg>|
 
+
+## 💖Star
+[![Stargazers over time](https://starchart.cc/hktalent/scan4all.svg)](https://starchart.cc/hktalent/scan4all)
+
 # Donation
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |
 | --- | --- | --- | --- | --- |
