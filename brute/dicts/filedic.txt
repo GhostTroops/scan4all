@@ -1,3 +1,4 @@
+/fs/var/run/secrets/kubernetes.io/serviceaccount/token
 !.htaccess
 !.htpasswd
 ".t.jsp
