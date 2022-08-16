@@ -21,7 +21,7 @@ type Smuggling interface {
 	GetVulType() string
 }
 
-var payload = []Smuggling{NewClCl(), NewCLTE(), NewTECL(), NewTETE(), NewErr()}
+var payload = []Smuggling{NewClCl(), NewCLTE(), NewCLTE2(), NewTECL(), NewTETE(), NewErr()}
 
 //var payload = []Smuggling{NewErr()}
 
