@@ -606,7 +606,7 @@ func (s *UsersService) ListGPGKeys(options ...RequestOptionFunc) ([]*GPGKey, *Re
 //
 // GitLab API docs: https://docs.gitlab.com/ce/api/users.html#get-a-specific-gpg-key
 func (s *UsersService) GetGPGKey(key int, options ...RequestOptionFunc) (*GPGKey, *Response, error) {
-	u := fmt.Sprintf("users/gpg_keys/%d", key)
+	u := fmt.Sprintf("user/gpg_keys/%d", key)
 
 	req, err := s.client.NewRequest(http.MethodGet, u, nil, options)
 	if err != nil {
@@ -651,7 +651,7 @@ func (s *UsersService) AddGPGKey(opt *AddGPGKeyOptions, options ...RequestOption
 //
 // GitLab API docs: https://docs.gitlab.com/ce/api/users.html#delete-a-gpg-key
 func (s *UsersService) DeleteGPGKey(key int, options ...RequestOptionFunc) (*Response, error) {
-	u := fmt.Sprintf("users/gpg_keys/%d", key)
+	u := fmt.Sprintf("user/gpg_keys/%d", key)
 
 	req, err := s.client.NewRequest(http.MethodDelete, u, nil, options)
 	if err != nil {
@@ -706,10 +706,10 @@ func (s *UsersService) GetGPGKeyForUser(user, key int, options ...RequestOptionF
 //
 // GitLab API docs:
 // https://docs.gitlab.com/ce/api/users.html#add-a-gpg-key-for-a-given-user
-func (s *UsersService) AddGPGKeyForUser(user int, options ...RequestOptionFunc) (*GPGKey, *Response, error) {
+func (s *UsersService) AddGPGKeyForUser(user int, opt *AddGPGKeyOptions, options ...RequestOptionFunc) (*GPGKey, *Response, error) {
 	u := fmt.Sprintf("users/%d/gpg_keys", user)
 
-	req, err := s.client.NewRequest(http.MethodPost, u, nil, options)
+	req, err := s.client.NewRequest(http.MethodPost, u, opt, options)
 	if err != nil {
 		return nil, nil, err
 	}

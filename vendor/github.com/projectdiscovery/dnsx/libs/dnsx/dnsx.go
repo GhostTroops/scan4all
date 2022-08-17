@@ -51,6 +51,7 @@ func New(options Options) (*DNSX, error) {
 	}
 
 	dnsClient := retryabledns.NewWithOptions(retryablednsOptions)
+	dnsClient.TCPFallback = true
 
 	return &DNSX{dnsClient: dnsClient, Options: &options}, nil
 }

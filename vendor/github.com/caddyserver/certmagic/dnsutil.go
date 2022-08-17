@@ -133,7 +133,9 @@ func dnsQuery(fqdn string, rtype uint16, nameservers []string, recursive bool) (
 func createDNSMsg(fqdn string, rtype uint16, recursive bool) *dns.Msg {
 	m := new(dns.Msg)
 	m.SetQuestion(fqdn, rtype)
-	m.SetEdns0(4096, false)
+
+	// See: https://caddy.community/t/hard-time-getting-a-response-on-a-dns-01-challenge/15721/16
+	m.SetEdns0(1232, false)
 	if !recursive {
 		m.RecursionDesired = false
 	}

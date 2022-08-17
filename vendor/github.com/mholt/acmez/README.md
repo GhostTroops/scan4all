@@ -32,14 +32,33 @@ In other words, the `acmez` package is **porcelain** while the `acme` package is
 - Utility functions for solving challenges
 - Helpers for RFC 8737 (tls-alpn-01 challenge)
 
-The `acmez` package is "bring-your-own-solver." It provides helper utilities for http-01, dns-01, and tls-alpn-01 challenges, but does not actually solve them for you. You must write an implementation of `acmez.Solver` in order to get certificates. How this is done depends on the environment in which you're using this code.
-
-This is not a command line utility either. The goal is to not add more external tooling to already-complex infrastructure: ACME and TLS should be built-in to servers rather than tacked on as an afterthought.
-
 
 ## Examples
 
-See the `examples` folder for tutorials on how to use either package.
+See the [`examples` folder](https://github.com/mholt/acmez/tree/master/examples) for tutorials on how to use either package. **Most users should follow the [porcelain guide](https://github.com/mholt/acmez/blob/master/examples/porcelain/main.go).**
+
+
+## Challenge solvers
+
+The `acmez` package is "bring-your-own-solver." It provides helper utilities for http-01, dns-01, and tls-alpn-01 challenges, but does not actually solve them for you. You must write or use an implementation of [`acmez.Solver`](https://pkg.go.dev/github.com/mholt/acmez#Solver) in order to get certificates. How this is done depends on your environment/situation.
+
+However, you can find [a general-purpose dns-01 solver in CertMagic](https://pkg.go.dev/github.com/caddyserver/certmagic#DNS01Solver), which uses [libdns](https://github.com/libdns) packages to integrate with numerous DNS providers. You can use it like this:
+
+```go
+// minimal example using Cloudflare
+solver := &certmagic.DNS01Solver{
+	DNSProvider: &cloudflare.Provider{APIToken: "topsecret"},
+}
+client := acmez.Client{
+	ChallengeSolvers: map[string]acmez.Solver{
+		acme.ChallengeTypeDNS01: solver,
+	},
+	// ...
+}
+```
+
+If you're implementing a tls-alpn-01 solver, the `acmez` package can help. It has the constant [`ACMETLS1Protocol`](https://pkg.go.dev/github.com/mholt/acmez#pkg-constants) which you can use to identify challenge handshakes by inspecting the ClientHello's ALPN extension. Simply complete the handshake using a certificate from the [`acmez.TLSALPN01ChallengeCert()`](https://pkg.go.dev/github.com/mholt/acmez#TLSALPN01ChallengeCert) function to solve the challenge.
+
 
 
 ## History
