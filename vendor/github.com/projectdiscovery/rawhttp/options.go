@@ -3,6 +3,7 @@ package rawhttp
 import (
 	"time"
 
+	"github.com/projectdiscovery/fastdialer/fastdialer"
 	"github.com/projectdiscovery/rawhttp/client"
 )
 
@@ -19,6 +20,7 @@ type Options struct {
 	Proxy                  string
 	ProxyDialTimeout       time.Duration
 	SNI                    string
+	FastDialer             *fastdialer.Dialer
 }
 
 // DefaultOptions is the default configuration options for the client

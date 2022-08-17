@@ -1,0 +1,3 @@
+[submodule "testcases"]
+	path = testcases
+	url = https://github.com/go-irc/irc-parser-tests/

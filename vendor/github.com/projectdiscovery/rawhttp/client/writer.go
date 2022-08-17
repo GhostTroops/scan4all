@@ -68,7 +68,7 @@ func (w *writer) WriteHeader(key, value string) error {
 	}
 	var err error
 	if value != "" {
-		_, err = fmt.Fprintf(w, "%s:%s\r\n", key, value)
+		_, err = fmt.Fprintf(w, "%s: %s\r\n", key, value)
 	} else {
 		_, err = fmt.Fprintf(w, "%s\r\n", key)
 	}

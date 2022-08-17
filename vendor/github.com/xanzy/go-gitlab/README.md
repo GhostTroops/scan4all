@@ -75,6 +75,7 @@ to add new and/or missing endpoints. Currently, the following services are suppo
 - [x] Project Members
 - [x] Project Milestones
 - [x] Project Snippets
+- [x] Project Vulnerabilities
 - [x] Project-Level Variables
 - [x] Projects (including setting Webhooks)
 - [x] Protected Branches

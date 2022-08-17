@@ -2,13 +2,16 @@ package certmagic
 
 import (
 	"context"
+	"crypto/tls"
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/mholt/acmez"
@@ -112,6 +115,18 @@ type ACMEIssuer struct {
 
 	config     *Config
 	httpClient *http.Client
+
+	// Some fields are changed on-the-fly during
+	// certificate management. For example, the
+	// email might be implicitly discovered if not
+	// explicitly configured, and agreement might
+	// happen during the flow. Changing the exported
+	// fields field is racey (issue #195) so we
+	// control unexported fields that we can
+	// synchronize properly.
+	email  string
+	agreed bool
+	mu     *sync.Mutex // protects the above grouped fields
 }
 
 // NewACMEIssuer constructs a valid ACMEIssuer based on a template
@@ -181,7 +196,43 @@ func NewACMEIssuer(cfg *Config, template ACMEIssuer) *ACMEIssuer {
 	if template.Logger == nil {
 		template.Logger = DefaultACME.Logger
 	}
+
 	template.config = cfg
+	template.mu = new(sync.Mutex)
+
+	// set up the dialer and transport / HTTP client
+	dialer := &net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 2 * time.Minute,
+	}
+	if template.Resolver != "" {
+		dialer.Resolver = &net.Resolver{
+			PreferGo: true,
+			Dial: func(ctx context.Context, network, _ string) (net.Conn, error) {
+				return (&net.Dialer{
+					Timeout: 15 * time.Second,
+				}).DialContext(ctx, network, template.Resolver)
+			},
+		}
+	}
+	transport := &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		DialContext:           dialer.DialContext,
+		TLSHandshakeTimeout:   30 * time.Second, // increase to 30s requested in #175
+		ResponseHeaderTimeout: 30 * time.Second, // increase to 30s requested in #175
+		ExpectContinueTimeout: 2 * time.Second,
+		ForceAttemptHTTP2:     true,
+	}
+	if template.TrustedRoots != nil {
+		transport.TLSClientConfig = &tls.Config{
+			RootCAs: template.TrustedRoots,
+		}
+	}
+	template.httpClient = &http.Client{
+		Transport: transport,
+		Timeout:   HTTPTimeout,
+	}
+
 	return &template
 }
 
@@ -213,6 +264,18 @@ func (*ACMEIssuer) issuerKey(ca string) string {
 	return key
 }
 
+func (iss *ACMEIssuer) getEmail() string {
+	iss.mu.Lock()
+	defer iss.mu.Unlock()
+	return iss.email
+}
+
+func (iss *ACMEIssuer) isAgreed() bool {
+	iss.mu.Lock()
+	defer iss.mu.Unlock()
+	return iss.agreed
+}
+
 // PreCheck performs a few simple checks before obtaining or
 // renewing a certificate with ACME, and returns whether this
 // batch is eligible for certificates if using Let's Encrypt.
@@ -226,7 +289,7 @@ func (am *ACMEIssuer) PreCheck(ctx context.Context, names []string, interactive 
 			}
 		}
 	}
-	return am.getEmail(ctx, interactive)
+	return am.setEmail(ctx, interactive)
 }
 
 // Issue implements the Issuer interface. It obtains a certificate for the given csr using

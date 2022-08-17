@@ -2,6 +2,7 @@ package httputil
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httputil"
 )
@@ -44,4 +45,12 @@ func DumpResponseHeadersAndRaw(resp *http.Response) (headers, fullresp []byte, e
 	}
 	fullresp, err = httputil.DumpResponse(resp, true)
 	return
+}
+
+// DrainResponseBody drains and closes the response body
+func DrainResponseBody(resp *http.Response) {
+	if resp.Body != http.NoBody && resp.Body != nil {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}
 }

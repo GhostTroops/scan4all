@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"time"
@@ -155,11 +154,7 @@ func (el *Element) Interactable() (pt *proto.Point, err error) {
 
 	shape, err := el.Shape()
 	if err != nil {
-		// such as when css is "display: none"
-		if errors.Is(err, cdp.ErrNoContentQuads) {
-			err = &ErrInvisibleShape{el}
-		}
-		return
+		return nil, err
 	}
 
 	pt = shape.OnePointInside()
@@ -373,12 +368,7 @@ func (el *Element) Property(name string) (gson.JSON, error) {
 
 // SetFiles of the current file input element
 func (el *Element) SetFiles(paths []string) error {
-	absPaths := []string{}
-	for _, p := range paths {
-		absPath, err := filepath.Abs(p)
-		utils.E(err)
-		absPaths = append(absPaths, absPath)
-	}
+	absPaths := utils.AbsolutePaths(paths)
 
 	defer el.tryTrace(TraceTypeInput, fmt.Sprintf("set files: %v", absPaths))()
 	el.page.browser.trySlowmotion()
