@@ -341,7 +341,7 @@ func (cfg *Config) reloadManagedCertificate(ctx context.Context, oldCert Certifi
 // as a quick sanity check, looks like it could be the subject
 // of a certificate. Requirements are:
 // - must not be empty
-// - must not start or end with a dot (RFC 1034)
+// - must not start or end with a dot (RFC 1034; RFC 6066 section 3)
 // - must not contain common accidental special characters
 func SubjectQualifiesForCert(subj string) bool {
 	// must not be empty

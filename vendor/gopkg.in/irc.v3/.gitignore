@@ -1,0 +1,6 @@
+*.cover
+*.test
+*.out
+
+# As this is a library, we ignore go.sum
+go.sum

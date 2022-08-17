@@ -328,18 +328,26 @@ func (s *GroupMembersService) EditGroupMember(gid interface{}, user int, opt *Ed
 	return gm, resp, err
 }
 
+// RemoveGroupMemberOptions represents the available options to remove a group member.
+//
+// GitLab API docs: https://docs.gitlab.com/ee/api/members.html#remove-a-member-from-a-group-or-project
+type RemoveGroupMemberOptions struct {
+	SkipSubresources  *bool `url:"skip_subresources,omitempty" json:"skip_subresources,omitempty"`
+	UnassignIssuables *bool `url:"unassign_issuables,omitempty" json:"unassign_issuables,omitempty"`
+}
+
 // RemoveGroupMember removes user from user team.
 //
 // GitLab API docs:
 // https://docs.gitlab.com/ce/api/members.html#remove-a-member-from-a-group-or-project
-func (s *GroupMembersService) RemoveGroupMember(gid interface{}, user int, options ...RequestOptionFunc) (*Response, error) {
+func (s *GroupMembersService) RemoveGroupMember(gid interface{}, user int, opt *RemoveGroupMemberOptions, options ...RequestOptionFunc) (*Response, error) {
 	group, err := parseID(gid)
 	if err != nil {
 		return nil, err
 	}
 	u := fmt.Sprintf("groups/%s/members/%d", PathEscape(group), user)
 
-	req, err := s.client.NewRequest(http.MethodDelete, u, nil, options)
+	req, err := s.client.NewRequest(http.MethodDelete, u, opt, options)
 	if err != nil {
 		return nil, err
 	}

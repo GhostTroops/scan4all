@@ -48,10 +48,11 @@ type Job struct {
 	ID                int        `json:"id"`
 	Name              string     `json:"name"`
 	Pipeline          struct {
-		ID     int    `json:"id"`
-		Ref    string `json:"ref"`
-		Sha    string `json:"sha"`
-		Status string `json:"status"`
+		ID        int    `json:"id"`
+		ProjectID int    `json:"project_id"`
+		Ref       string `json:"ref"`
+		Sha       string `json:"sha"`
+		Status    string `json:"status"`
 	} `json:"pipeline"`
 	Ref       string `json:"ref"`
 	Artifacts []struct {

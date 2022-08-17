@@ -151,7 +151,7 @@ func DumpRequestRaw(method, url, uripath string, headers map[string][]string, bo
 
 	for _, header := range req.Headers {
 		if header.Value != "" {
-			b.WriteString(fmt.Sprintf("%s:%s"+client.NewLine, header.Key, header.Value))
+			b.WriteString(fmt.Sprintf("%s: %s"+client.NewLine, header.Key, header.Value))
 		} else {
 			b.WriteString(fmt.Sprintf("%s"+client.NewLine, header.Key))
 		}

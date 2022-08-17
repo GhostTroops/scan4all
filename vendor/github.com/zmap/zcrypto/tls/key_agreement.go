@@ -458,44 +458,44 @@ func (ka *signedKeyAgreement) verifyParameters(config *Config, clientHello *clie
 	case signatureECDSA:
 		augECDSA, ok := cert.PublicKey.(*x509.AugmentedECDSA)
 		if !ok {
-			return nil, errors.New("ECDHE ECDSA: could not covert cert.PublicKey to x509.AugmentedECDSA")
+			return digest, errors.New("ECDHE ECDSA: could not covert cert.PublicKey to x509.AugmentedECDSA")
 		}
 		pubKey := augECDSA.Pub
 		ecdsaSig := new(ecdsaSignature)
 		if _, err := asn1.Unmarshal(sig, ecdsaSig); err != nil {
-			return nil, err
+			return digest, err
 		}
 		if ecdsaSig.R.Sign() <= 0 || ecdsaSig.S.Sign() <= 0 {
-			return nil, errors.New("ECDSA signature contained zero or negative values")
+			return digest, errors.New("ECDSA signature contained zero or negative values")
 		}
 		if !ecdsa.Verify(pubKey, digest, ecdsaSig.R, ecdsaSig.S) {
-			return nil, errors.New("ECDSA verification failure")
+			return digest, errors.New("ECDSA verification failure")
 		}
 	case signatureRSA:
 		pubKey, ok := cert.PublicKey.(*rsa.PublicKey)
 		if !ok {
-			return nil, errors.New("ECDHE RSA requires a RSA server public key")
+			return digest, errors.New("ECDHE RSA requires a RSA server public key")
 		}
 		if err := rsa.VerifyPKCS1v15(pubKey, hashFunc, digest, sig); err != nil {
-			return nil, err
+			return digest, err
 		}
 	case signatureDSA:
 		pubKey, ok := cert.PublicKey.(*dsa.PublicKey)
 		if !ok {
-			return nil, errors.New("DSS ciphers require a DSA server public key")
+			return digest, errors.New("DSS ciphers require a DSA server public key")
 		}
 		dsaSig := new(dsaSignature)
 		if _, err := asn1.Unmarshal(sig, dsaSig); err != nil {
-			return nil, err
+			return digest, err
 		}
 		if dsaSig.R.Sign() <= 0 || dsaSig.S.Sign() <= 0 {
-			return nil, errors.New("DSA signature contained zero or negative values")
+			return digest, errors.New("DSA signature contained zero or negative values")
 		}
 		if !dsa.Verify(pubKey, digest, dsaSig.R, dsaSig.S) {
-			return nil, errors.New("DSA verification failure")
+			return digest, errors.New("DSA verification failure")
 		}
 	default:
-		return nil, errors.New("unknown ECDHE signature algorithm")
+		return digest, errors.New("unknown ECDHE signature algorithm")
 	}
 	ka.valid = true
 	return digest, nil
