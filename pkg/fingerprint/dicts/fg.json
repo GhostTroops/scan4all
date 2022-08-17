@@ -159,7 +159,7 @@
             {
                 "idMethod": 11515,
                 "idPart": 11522,
-                "pattern": "(\\.action|\\.do)",
+                "pattern": "\\.(action|do)\\b",
                 "url": "/"
             }
         ],
