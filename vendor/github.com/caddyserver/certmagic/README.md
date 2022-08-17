@@ -445,7 +445,7 @@ By default, CertMagic stores assets on the local file system in `$HOME/.local/sh
 
 The notion of a "cluster" or "fleet" of instances that may be serving the same site and sharing certificates, etc, is tied to storage. Simply, any instances that use the same storage facilities are considered part of the cluster. So if you deploy 100 instances of CertMagic behind a load balancer, they are all part of the same cluster if they share the same storage configuration. Sharing storage could be mounting a shared folder, or implementing some other distributed storage system such as a database server or KV store.
 
-The easiest way to change the storage being used is to set `certmagic.DefaultStorage` to a value that satisfies the [Storage interface](https://pkg.go.dev/github.com/caddyserver/certmagic?tab=doc#Storage). Keep in mind that a valid `Storage` must be able to implement some operations atomically in order to provide locking and synchronization.
+The easiest way to change the storage being used is to set `certmagic.Default.Storage` to a value that satisfies the [Storage interface](https://pkg.go.dev/github.com/caddyserver/certmagic?tab=doc#Storage). Keep in mind that a valid `Storage` must be able to implement some operations atomically in order to provide locking and synchronization.
 
 If you write a Storage implementation, please add it to the [project wiki](https://github.com/caddyserver/certmagic/wiki/Storage-Implementations) so people can find it!
 
@@ -454,7 +454,7 @@ If you write a Storage implementation, please add it to the [project wiki](https
 
 All of the certificates in use are de-duplicated and cached in memory for optimal performance at handshake-time. This cache must be backed by persistent storage as described above.
 
-Most applications will not need to interact with certificate caches directly. Usually, the closest you will come is to set the package-wide `certmagic.DefaultStorage` variable (before attempting to create any Configs). However, if your use case requires using different storage facilities for different Configs (that's highly unlikely and NOT recommended! Even Caddy doesn't get that crazy), you will need to call `certmagic.NewCache()` and pass in the storage you want to use, then get new `Config` structs with `certmagic.NewWithCache()` and pass in the cache.
+Most applications will not need to interact with certificate caches directly. Usually, the closest you will come is to set the package-wide `certmagic.Default.Storage` variable (before attempting to create any Configs) which defines how the cache is persisted. However, if your use case requires using different storage facilities for different Configs (that's highly unlikely and NOT recommended! Even Caddy doesn't get that crazy), you will need to call `certmagic.NewCache()` and pass in the storage you want to use, then get new `Config` structs with `certmagic.NewWithCache()` and pass in the cache.
 
 Again, if you're needing to do this, you've probably over-complicated your application design.
 

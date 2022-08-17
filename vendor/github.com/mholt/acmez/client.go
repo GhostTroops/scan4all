@@ -21,9 +21,9 @@
 // implementing solvers and using the certificates. It DOES NOT manage
 // certificates, it only gets them from the ACME server.
 //
-// NOTE: This package's main function is to get a certificate, not manage it.
-// Most users will want to *manage* certificates over the lifetime of a
-// long-running program such as a HTTPS or TLS server, and should use CertMagic
+// NOTE: This package's primary purpose is to get a certificate, not manage it.
+// Most users actually want to *manage* certificates over the lifetime of
+// long-running programs such as HTTPS or TLS servers, and should use CertMagic
 // instead: https://github.com/caddyserver/certmagic.
 package acmez
 
@@ -60,9 +60,6 @@ type Client struct {
 
 	// Map of solvers keyed by name of the challenge type.
 	ChallengeSolvers map[string]Solver
-
-	// An optional logger. Default: no logs
-	Logger *zap.Logger
 }
 
 // ObtainCertificateUsingCSR obtains all resulting certificate chains using the given CSR, which
@@ -71,7 +68,7 @@ type Client struct {
 // x509.ParseCertificateRequest on the output). The Subject CommonName is NOT considered.
 //
 // It implements every single part of the ACME flow described in RFC 8555 §7.1 with the exception
-// of "Create account" because this method signature does not have a way to return the udpated
+// of "Create account" because this method signature does not have a way to return the updated
 // account object. The account's status MUST be "valid" in order to succeed.
 //
 // As far as SANs go, this method currently only supports DNSNames and IPAddresses on the csr.
@@ -407,6 +404,11 @@ func (c *Client) presentForNextChallenge(ctx context.Context, authz *authzState)
 
 func (c *Client) initiateCurrentChallenge(ctx context.Context, authz *authzState) error {
 	if authz.Status != acme.StatusPending {
+		if c.Logger != nil {
+			c.Logger.Debug("skipping challenge initiation because authorization is not pending",
+				zap.String("identifier", authz.IdentifierValue()),
+				zap.String("authz_status", authz.Status))
+		}
 		return nil
 	}
 
@@ -416,7 +418,17 @@ func (c *Client) initiateCurrentChallenge(ctx context.Context, authz *authzState
 	// that's probably OK, since we can't finalize the order until the slow
 	// challenges are done too)
 	if waiter, ok := authz.currentSolver.(Waiter); ok {
+		if c.Logger != nil {
+			c.Logger.Debug("waiting for solver before continuing",
+				zap.String("identifier", authz.IdentifierValue()),
+				zap.String("challenge_type", authz.currentChallenge.Type))
+		}
 		err := waiter.Wait(ctx, authz.currentChallenge)
+		if c.Logger != nil {
+			c.Logger.Debug("done waiting for solver",
+				zap.String("identifier", authz.IdentifierValue()),
+				zap.String("challenge_type", authz.currentChallenge.Type))
+		}
 		if err != nil {
 			return fmt.Errorf("waiting for solver %T to be ready: %w", authz.currentSolver, err)
 		}
@@ -499,7 +511,7 @@ func (c *Client) pollAuthorization(ctx context.Context, account acme.Account, au
 			c.Logger.Error("cleaning up solver",
 				zap.String("identifier", authz.IdentifierValue()),
 				zap.String("challenge_type", authz.currentChallenge.Type),
-				zap.Error(err))
+				zap.Error(cleanupErr))
 		}
 		authz.currentSolver = nil // avoid cleaning it up again later
 	}
@@ -531,6 +543,13 @@ func (c *Client) pollAuthorization(ctx context.Context, account acme.Account, au
 		}
 		return fmt.Errorf("[%s] %w", authz.Authorization.IdentifierValue(), err)
 	}
+
+	if c.Logger != nil {
+		c.Logger.Info("authorization finalized",
+			zap.String("identifier", authz.IdentifierValue()),
+			zap.String("authz_status", authz.Status))
+	}
+
 	return nil
 }
 

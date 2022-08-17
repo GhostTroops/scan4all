@@ -73,7 +73,7 @@ func (r *Request) Write(w *bufio.Writer) error {
 	for _, h := range r.Headers {
 		var err error
 		if h.Value != "" {
-			_, err = fmt.Fprintf(w, "%s:%s\r\n", h.Key, h.Value)
+			_, err = fmt.Fprintf(w, "%s: %s\r\n", h.Key, h.Value)
 		} else {
 			_, err = fmt.Fprintf(w, "%s\r\n", h.Key)
 		}

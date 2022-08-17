@@ -111,6 +111,7 @@ func (s *InvitesService) ListPendingProjectInvitations(pid interface{}, opt *Lis
 type InvitesOptions struct {
 	ID          interface{}       `url:"id,omitempty" json:"id,omitempty"`
 	Email       *string           `url:"email,omitempty" json:"email,omitempty"`
+	UserID      interface{}       `url:"user_id,omitempty" json:"user_id,omitempty"`
 	AccessLevel *AccessLevelValue `url:"access_level,omitempty" json:"access_level,omitempty"`
 	ExpiresAt   *ISOTime          `url:"expires_at,omitempty" json:"expires_at,omitempty"`
 }

@@ -132,6 +132,127 @@ func main() {
 }
 ```
 
+## commandline
+
+Download as binary from: https://github.com/klauspost/cpuid/releases
+
+Install from source:
+
+`go install github.com/klauspost/cpuid/v2/cmd/cpuid@latest`
+
+### Example
+
+```
+λ cpuid
+Name: AMD Ryzen 9 3950X 16-Core Processor
+Vendor String: AuthenticAMD
+Vendor ID: AMD
+PhysicalCores: 16
+Threads Per Core: 2
+Logical Cores: 32
+CPU Family 23 Model: 113
+Features: ADX,AESNI,AVX,AVX2,BMI1,BMI2,CLMUL,CLZERO,CMOV,CMPXCHG8,CPBOOST,CX16,F16C,FMA3,FXSR,FXSROPT,HTT,HYPERVISOR,LAHF,LZCNT,MCAOVERFLOW,MMX,MMXEXT,MOVBE,NX,OSXSAVE,POPCNT,RDRAND,RDSEED,RDTSCP,SCE,SHA,SSE,SSE2,SSE3,SSE4,SSE42,SSE4A,SSSE3,SUCCOR,X87,XSAVE
+Microarchitecture level: 3
+Cacheline bytes: 64
+L1 Instruction Cache: 32768 bytes
+L1 Data Cache: 32768 bytes
+L2 Cache: 524288 bytes
+L3 Cache: 16777216 bytes
+
+```
+### JSON Output:
+
+```
+λ cpuid --json
+{
+  "BrandName": "AMD Ryzen 9 3950X 16-Core Processor",
+  "VendorID": 2,
+  "VendorString": "AuthenticAMD",
+  "PhysicalCores": 16,
+  "ThreadsPerCore": 2,
+  "LogicalCores": 32,
+  "Family": 23,
+  "Model": 113,
+  "CacheLine": 64,
+  "Hz": 0,
+  "BoostFreq": 0,
+  "Cache": {
+    "L1I": 32768,
+    "L1D": 32768,
+    "L2": 524288,
+    "L3": 16777216
+  },
+  "SGX": {
+    "Available": false,
+    "LaunchControl": false,
+    "SGX1Supported": false,
+    "SGX2Supported": false,
+    "MaxEnclaveSizeNot64": 0,
+    "MaxEnclaveSize64": 0,
+    "EPCSections": null
+  },
+  "Features": [
+    "ADX",
+    "AESNI",
+    "AVX",
+    "AVX2",
+    "BMI1",
+    "BMI2",
+    "CLMUL",
+    "CLZERO",
+    "CMOV",
+    "CMPXCHG8",
+    "CPBOOST",
+    "CX16",
+    "F16C",
+    "FMA3",
+    "FXSR",
+    "FXSROPT",
+    "HTT",
+    "HYPERVISOR",
+    "LAHF",
+    "LZCNT",
+    "MCAOVERFLOW",
+    "MMX",
+    "MMXEXT",
+    "MOVBE",
+    "NX",
+    "OSXSAVE",
+    "POPCNT",
+    "RDRAND",
+    "RDSEED",
+    "RDTSCP",
+    "SCE",
+    "SHA",
+    "SSE",
+    "SSE2",
+    "SSE3",
+    "SSE4",
+    "SSE42",
+    "SSE4A",
+    "SSSE3",
+    "SUCCOR",
+    "X87",
+    "XSAVE"
+  ],
+  "X64Level": 3
+}
+```
+
+### Check CPU microarch level
+
+```
+λ cpuid --check-level=3
+2022/03/18 17:04:40 AMD Ryzen 9 3950X 16-Core Processor
+2022/03/18 17:04:40 Microarchitecture level 3 is supported. Max level is 3.
+Exit Code 0
+
+λ cpuid --check-level=4
+2022/03/18 17:06:18 AMD Ryzen 9 3950X 16-Core Processor
+2022/03/18 17:06:18 Microarchitecture level 4 not supported. Max level is 3.
+Exit Code 1
+```
+
 # license
 
 This code is published under an MIT license. See LICENSE file for more information.

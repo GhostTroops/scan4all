@@ -1,0 +1,15 @@
+linters:
+  enable-all: true
+  disable:
+    - gochecknoglobals
+    - gomnd
+    # TODO: re-enable these
+    - errcheck
+    - funlen
+    # TODO: maybe re-enable these
+    - godox
+    - wsl
+
+linters-settings:
+  govet:
+    check-shadowing: true

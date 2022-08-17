@@ -2,36 +2,28 @@ package chaos
 
 import (
 	"bufio"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"time"
+	"strings"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/pkg/errors"
+	pdhttputil "github.com/projectdiscovery/httputil"
+	"github.com/projectdiscovery/retryablehttp-go"
 )
 
 // Client is a client for making requests to chaos API
 type Client struct {
 	apiKey     string
-	httpClient *http.Client
+	httpClient *retryablehttp.Client
 }
 
 // New creates a new client for chaos API communication
 func New(apiKey string) *Client {
-	httpclient := &http.Client{
-		Transport: &http.Transport{
-			MaxIdleConnsPerHost: 100,
-			MaxIdleConns:        100,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
-		Timeout: time.Duration(600) * time.Second, // 10 minutes - uploads may take long
-	}
+	httpclient := retryablehttp.NewClient(retryablehttp.DefaultOptionsSingle)
 	return &Client{httpClient: httpclient, apiKey: apiKey}
 }
 
@@ -47,7 +39,7 @@ type GetStatisticsResponse struct {
 
 // GetStatistics returns the statistics for a given domain.
 func (c *Client) GetStatistics(req *GetStatisticsRequest) (*GetStatisticsResponse, error) {
-	request, err := http.NewRequest("GET", fmt.Sprintf("https://dns.projectdiscovery.io/dns/%s", req.Domain), nil)
+	request, err := retryablehttp.NewRequest(http.MethodGet, fmt.Sprintf("https://dns.projectdiscovery.io/dns/%s", req.Domain), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create request.")
 	}
@@ -63,14 +55,17 @@ func (c *Client) GetStatistics(req *GetStatisticsRequest) (*GetStatisticsRespons
 		if err != nil {
 			return nil, errors.Wrap(err, "could not read response.")
 		}
-		return nil, fmt.Errorf("Invalid status code received: %d - %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("invalid status code received: %d - %s", resp.StatusCode, string(body))
 	}
+
+	defer pdhttputil.DrainResponseBody(resp)
 
 	response := GetStatisticsResponse{}
 	err = jsoniter.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not unmarshal results.")
 	}
+
 	return &response, nil
 }
 
@@ -93,7 +88,7 @@ func (c *Client) GetSubdomains(req *SubdomainsRequest) chan *Result {
 	go func(results chan *Result) {
 		defer close(results)
 
-		request, err := http.NewRequest("GET", fmt.Sprintf("https://dns.projectdiscovery.io/dns/%s/subdomains", req.Domain), nil)
+		request, err := retryablehttp.NewRequest(http.MethodGet, fmt.Sprintf("https://dns.projectdiscovery.io/dns/%s/subdomains", req.Domain), nil)
 		if err != nil {
 			results <- &Result{Error: errors.Wrap(err, "could not create request.")}
 			return
@@ -112,7 +107,8 @@ func (c *Client) GetSubdomains(req *SubdomainsRequest) chan *Result {
 				results <- &Result{Error: errors.Wrap(err, "could not read response.")}
 				return
 			}
-			results <- &Result{Error: fmt.Errorf("Invalid status code received: %d - %s", resp.StatusCode, string(body))}
+			pdhttputil.DrainResponseBody(resp)
+			results <- &Result{Error: fmt.Errorf("invalid status code received: %d - %s", resp.StatusCode, string(body))}
 			return
 		}
 
@@ -120,23 +116,41 @@ func (c *Client) GetSubdomains(req *SubdomainsRequest) chan *Result {
 		case "json":
 			results <- &Result{Reader: &resp.Body}
 		default:
+			defer pdhttputil.DrainResponseBody(resp)
 			d := json.NewDecoder(resp.Body)
-			d.Token()
-			// first 4 token should be skipped
-			skip := 0
+			if !checkToken(d, "{") {
+				return
+			}
+			if !checkToken(d, "domain") {
+				return
+			}
+			if !checkToken(d, req.Domain) {
+				return
+			}
+			if !checkToken(d, "subdomains") {
+				return
+			}
+			if !checkToken(d, "[") {
+				return
+			}
+
 			for d.More() {
-				token, _ := d.Token()
-				skip++
-				if skip <= 4 {
-					continue
+				// process all the tokens within the list
+				token, err := d.Token()
+				if token == nil || err != nil {
+					break
 				}
 				results <- &Result{Subdomain: fmt.Sprintf("%s", token)}
 			}
-			d.Token()
 		}
 	}(results)
 
 	return results
+}
+
+func checkToken(d *json.Decoder, value string) bool {
+	token, err := d.Token()
+	return strings.EqualFold(fmt.Sprint(token), value) && err == nil
 }
 
 type BBQData struct {
@@ -167,7 +181,7 @@ func (c *Client) GetBBQSubdomains(req *SubdomainsRequest) chan *BBQResult {
 	go func(results chan *BBQResult) {
 		defer close(results)
 
-		request, err := http.NewRequest("GET", fmt.Sprintf("https://dns.projectdiscovery.io/dns/%s/public-recon-data", req.Domain), nil)
+		request, err := retryablehttp.NewRequest(http.MethodGet, fmt.Sprintf("https://dns.projectdiscovery.io/dns/%s/public-recon-data", req.Domain), nil)
 		if err != nil {
 			results <- &BBQResult{Error: errors.Wrap(err, "could not create request.")}
 			return
@@ -186,7 +200,8 @@ func (c *Client) GetBBQSubdomains(req *SubdomainsRequest) chan *BBQResult {
 				results <- &BBQResult{Error: errors.Wrap(err, "could not read response.")}
 				return
 			}
-			results <- &BBQResult{Error: fmt.Errorf("Invalid status code received: %d - %s", resp.StatusCode, string(body))}
+			pdhttputil.DrainResponseBody(resp)
+			results <- &BBQResult{Error: fmt.Errorf("invalid status code received: %d - %s", resp.StatusCode, string(body))}
 			return
 		}
 
@@ -194,8 +209,9 @@ func (c *Client) GetBBQSubdomains(req *SubdomainsRequest) chan *BBQResult {
 		case "json":
 			results <- &BBQResult{Reader: &resp.Body}
 		default:
+			defer pdhttputil.DrainResponseBody(resp)
 			scanner := bufio.NewScanner(resp.Body)
-			const maxCapacity = 1024*1024  
+			const maxCapacity = 1024 * 1024
 			buf := make([]byte, maxCapacity)
 			scanner.Buffer(buf, maxCapacity)
 			for scanner.Scan() {
@@ -218,7 +234,7 @@ type PutSubdomainsResponse struct{}
 
 // PutSubdomains uploads the subdomains to Chaos API.
 func (c *Client) PutSubdomains(req *PutSubdomainsRequest) (*PutSubdomainsResponse, error) {
-	request, err := http.NewRequest("POST", "https://dns.projectdiscovery.io/dns/add", req.Contents)
+	request, err := retryablehttp.NewRequest(http.MethodPost, "https://dns.projectdiscovery.io/dns/add", req.Contents)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not create request.")
 	}
@@ -235,8 +251,8 @@ func (c *Client) PutSubdomains(req *PutSubdomainsRequest) (*PutSubdomainsRespons
 		if err != nil {
 			return nil, errors.Wrap(err, "could not read response.")
 		}
-		return nil, fmt.Errorf("Invalid status code received: %d - %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("invalid status code received: %d - %s", resp.StatusCode, string(body))
 	}
-	io.Copy(ioutil.Discard, resp.Body)
+	_, _ = io.Copy(ioutil.Discard, resp.Body)
 	return &PutSubdomainsResponse{}, nil
 }

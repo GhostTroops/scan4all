@@ -1,6 +1,9 @@
 package sliceutil
 
-import "math/rand"
+import (
+	"math/rand"
+	"strconv"
+)
 
 // PruneEmptyStrings from the slice
 func PruneEmptyStrings(v []string) []string {
@@ -64,4 +67,17 @@ func ContainsItems(s1 []string, s2 []string) bool {
 		}
 	}
 	return true
+}
+
+// ToInt converts a slice of strings to a slice of ints
+func ToInt(s []string) ([]int, error) {
+	var ns []int
+	for _, ss := range s {
+		n, err := strconv.Atoi(ss)
+		if err != nil {
+			return nil, err
+		}
+		ns = append(ns, n)
+	}
+	return ns, nil
 }

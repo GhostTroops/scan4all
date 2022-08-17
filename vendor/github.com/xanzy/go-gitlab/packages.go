@@ -224,3 +224,22 @@ func (s *PackagesService) DeleteProjectPackage(pid interface{}, pkg int, options
 
 	return s.client.Do(req, nil)
 }
+
+// DeletePackageFile deletes a file in project package
+//
+// GitLab API docs:
+// https://docs.gitlab.com/ee/api/packages.html#delete-a-package-file
+func (s *PackagesService) DeletePackageFile(pid interface{}, pkg, file int, options ...RequestOptionFunc) (*Response, error) {
+	project, err := parseID(pid)
+	if err != nil {
+		return nil, err
+	}
+	u := fmt.Sprintf("projects/%s/packages/%d/package_files/%d", PathEscape(project), pkg, file)
+
+	req, err := s.client.NewRequest(http.MethodDelete, u, nil, options)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.client.Do(req, nil)
+}
