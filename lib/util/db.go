@@ -125,7 +125,7 @@ func GetOne[T any](rst *T, args ...interface{}) *T {
 	if nil == rst {
 		rst = new(T)
 	}
-	xxxD := dbCC.Table(GetTableName(*rst)).Model(rst)
+	xxxD := dbCC.Table(GetTableName(rst)).Model(rst)
 	xxxD.AutoMigrate(rst)
 	rst1 := xxxD.First(rst, args...)
 	if 0 == rst1.RowsAffected && nil != rst1.Error {
