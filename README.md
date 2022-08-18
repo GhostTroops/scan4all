@@ -60,7 +60,10 @@
 noScan=true ./scan4all -l list.txt -v
 # nmap result default noScan=true 
 ./scan4all -l nmapRssuilt.xml -v
-````
+```
+
+<img src="/static/nmap.gif" width="400">
+
 - Fast 15000+ POC detection capabilities, PoCs include: 
   * nuclei POC
   ## Nuclei Templates Top 10 statistics
