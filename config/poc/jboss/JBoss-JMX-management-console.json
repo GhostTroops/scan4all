@@ -1,0 +1,33 @@
+{
+    "Name": "JBoss JMX management console",
+    "Description": "JBoss JMX management console",
+    "Product": "jboss",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36","Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},
+        "Uri":"/jmx-console/",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+            {
+                "Operation": "contains",
+                "Key":"",
+                "Value": "JBoss JMX Management Console - localhost.localdomain (127.0.0.1)"
+            }, 
+            {
+                "Operation": "code",
+                "Key":"",
+                "Value": "200"
+            }
+
+        ]
+        },
+        "Next_decide":""
+                }
+]}

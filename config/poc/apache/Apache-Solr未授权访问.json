@@ -1,0 +1,48 @@
+{
+    "Name": "Apache-Solr未授权访问",
+    "Description": "Apache-Solr未授权访问",
+    "Product": "apache",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/solr/",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "Core Admin"
+                }, {
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "Apache SOLR"
+                    },{
+                        "Operation": "contains", 
+                        "Key":"",
+                        "Value": "Solr Admin"
+                        },{
+                            "Operation": "contains", 
+                            "Key":"",
+                            "Value": "app_config.core_admin_path ="
+                            },{
+                                "Operation": "contains", 
+                                "Key":"",
+                                "Value": "<div id=\"core-menu\">"
+                                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

