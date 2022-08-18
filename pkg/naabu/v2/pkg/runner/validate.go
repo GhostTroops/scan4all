@@ -27,7 +27,7 @@ func (options *Options) validateOptions() error {
 	// Check if Host, list of domains, or stdin info was provided.
 	// If none was provided, then return.
 	//options.Host = []string{"http://192.168.0.111:8000"}
-	if options.Host == nil && options.HostsFile == "" && !options.Stdin && len(flag.Args()) == 0 {
+	if !options.Update && options.Host == nil && options.HostsFile == "" && !options.Stdin && len(flag.Args()) == 0 {
 		return errNoInputList
 	}
 
