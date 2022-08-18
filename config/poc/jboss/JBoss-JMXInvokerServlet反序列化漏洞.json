@@ -1,0 +1,38 @@
+{
+    "Name": "JBoss JMXInvokerServlet 反序列化漏洞",
+    "Description": "JBoss JMXInvokerServlet 反序列化漏洞",
+    "Product": "jboss",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8","Accept-Encoding":"gzip,deflate,br"},
+        "Uri":"/invoker/JMXInvokerServlet",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+            {
+                "Operation": "contains",
+                "Key":"",
+                "Value": "org.jboss.invocation.MarshalledValue"
+            }, {
+                "Operation": "contains",
+                "Key":"",
+                "Value": "org.apache.catalina.core.StandardWrapperValvet"
+            },
+            {
+                "Operation": "code",
+                "Key":"",
+                "Value": "200"
+            }
+
+        ]
+        },
+        "Next_decide":""
+                }
+]}

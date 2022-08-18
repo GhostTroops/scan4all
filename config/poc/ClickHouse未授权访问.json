@@ -1,0 +1,39 @@
+{
+    "Name": "ClickHouse未授权访问",
+    "Description": "ClickHouse数据库未授权访问查询",
+    "Product": "ClickHouse",
+    "author": "chumeng",
+    "Request":[
+                {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/?query=SHOW%20tables%20from%20system",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+            {
+                "Operation": "contains",
+                "Key":"",
+                "Value": "zeros_mt"
+            },
+            {
+                "Operation": "contains",
+                "Key":"",
+                "Value": "aggregate_function_combinators"
+            },
+            {
+                "Operation": "code",
+                "Key":"",
+                "Value": "200"
+            }
+
+
+        ]
+        },
+        "Next_decide":""
+                }
+]}

