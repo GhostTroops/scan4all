@@ -61,6 +61,7 @@ noScan=true  ./scan4all -l list.txt  -v
 ```bash
 ./scan4all -l nmapScanResults.xml  -v
 ```
+<img src="/static/nmap.gif" width="400">
 - 快速 15000+ POC 检测功能，PoCs包含：
   * nuclei POC
   ## Nuclei Templates Top 10 statistics
