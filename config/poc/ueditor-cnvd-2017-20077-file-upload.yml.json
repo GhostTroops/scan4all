@@ -1,0 +1,32 @@
+{
+    "Name": "ueditor-cnvd-2017-20077-file-upload.yml",
+    "Description": "ueditor-cnvd-2017-20077-file-upload.yml",
+    "Product": "ueditor",
+    "author": "chumeng",
+    "Request":[
+                {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36","Accept-Encoding":"deflate"},
+        "Uri":"/ueditor/net/controller.ashx?action=catchimage&encode=utf-8",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "没有指定抓取源"
+                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":""
+                }
+]}

@@ -75,7 +75,7 @@ func GetDb(dst ...interface{}) *gorm.DB {
 // 获取T类型mod表名
 func GetTableName[T any](mod T) string {
 	stmt := &gorm.Statement{DB: dbCC}
-	stmt.Parse(&mod)
+	stmt.Parse(GetPointVal(mod))
 	return stmt.Schema.Table
 }
 

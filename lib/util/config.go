@@ -14,6 +14,7 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
@@ -44,6 +45,23 @@ var (
 	EnableSubfinder = "EnableSubfinder"
 )
 
+// 判断对象是否为struct
+func IsStruct(i interface{}) bool {
+	return reflect.ValueOf(i).Type().Kind() == reflect.Struct
+}
+
+func GetPointVal(i interface{}) interface{} {
+	if IsPointed(i) {
+		return i
+	} else {
+		return &i
+	}
+}
+
+func IsPointed(i interface{}) bool {
+	return reflect.Indirect(reflect.ValueOf(i)).Kind() == reflect.Ptr
+}
+
 // 优先使用配置文件中的配置，否则从环境变量中读取
 func GetVal(key string) string {
 	key1 := os.Getenv(key)
@@ -55,6 +73,15 @@ func GetVal(key string) string {
 		return strings.TrimSpace(fmt.Sprintf("%v", s))
 	}
 	return ""
+}
+
+// 获取interface
+func GetAsAny(key string) interface{} {
+	key1 := strings.ToLower(key)
+	if s, ok := mData[key1]; ok {
+		return s
+	}
+	return nil
 }
 func GetValByDefault(key, dftvl string) string {
 	s := GetVal(key)

