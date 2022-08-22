@@ -1258,7 +1258,7 @@ retry:
 		for match := range matches {
 			technologies = append(technologies, match)
 		}
-		matchlocals := fingerprint.FingerScan(resp.Headers, resp.Data, title, ul, strconv.Itoa(resp.StatusCode))
+		matchlocals, _ := fingerprint.FingerScan(resp.Headers, resp.Data, title, ul, strconv.Itoa(resp.StatusCode))
 
 		for _, matchlocal := range matchlocals {
 			technologies = append(technologies, matchlocal)
