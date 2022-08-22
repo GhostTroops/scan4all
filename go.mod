@@ -77,6 +77,7 @@ require github.com/spaolacci/murmur3 v1.1.0
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
+	github.com/Qianlitp/crawlergo v0.4.3
 	github.com/RumbleDiscovery/jarm-go v0.0.6
 	github.com/Ullaakut/nmap v2.0.2+incompatible
 	github.com/ammario/ipisp/v2 v2.0.0
@@ -120,6 +121,7 @@ require (
 	github.com/shirou/gopsutil/v3 v3.22.7
 	github.com/sijms/go-ora/v2 v2.4.25
 	github.com/simonnilsson/ask v0.2.0
+	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/viper v1.12.0
 	github.com/stacktitan/smb v0.0.0-20190531122847-da9a425dceb8
 	github.com/tj/go-update v2.2.5-0.20200519121640-62b4b798fd68+incompatible
@@ -160,6 +162,7 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
@@ -178,6 +181,7 @@ require (
 	github.com/gobwas/pool v0.2.1 // indirect
 	github.com/gobwas/ws v1.1.0 // indirect
 	github.com/gofrs/uuid v4.2.0+incompatible // indirect
+	github.com/gogf/gf v1.16.6 // indirect
 	github.com/golang-jwt/jwt/v4 v4.3.0 // indirect
 	github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
@@ -232,6 +236,7 @@ require (
 	github.com/nwaples/rardecode v1.1.2 // indirect
 	github.com/openrdap/rdap v0.9.1-0.20191017185644-af93e7ef17b7 // indirect
 	github.com/owenrumney/go-sarif/v2 v2.1.2 // indirect
+	github.com/panjf2000/ants/v2 v2.2.2 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.1 // indirect
