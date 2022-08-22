@@ -19,7 +19,7 @@ Vulnerabilities Scan；15000+PoC漏洞扫描；[ 23 ] 种应用弱口令爆破�
 - 什么是scan4all：集成 vscan、nuclei、ksubdomain、subfinder等，充分自动化、智能化 
   并对这些集成的项目进行代码级别优化、参数优化，个别模块,如 vscan filefuzz部分进行了重写  
   原则上不重复造轮子，除非存在bug、问题
-- 跨平台：基于golang实现，轻量级、高度可定制、开源，支持Linux、windows、mac os等
+- 跨平台：基于golang实现，轻量级、高度可定制、开源，支持Linux、windows、mac os等(go tool dist list)46种不同芯片架构、14种操作系统
 - 支持[ 23 ] 种密码爆破，支持自定义字典, 通过 "priorityNmap": true 开启 
   * RDP
   * VNC
