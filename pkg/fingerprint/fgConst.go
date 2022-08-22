@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"github.com/hktalent/scan4all/lib/util"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -39,6 +40,8 @@ var FgType map[int]string = map[int]string{
 
 //go:embed dicts/fg.json
 var FgData string
+
+// 指纹  {id：指纹数据对象}
 var FGDataMap []map[string]interface{}
 
 func Get4K(m *map[string]interface{}, k string) string {
@@ -57,11 +60,11 @@ func MergeReqUrl() {
 	LoadWebfingerprintEhole()
 	x1 := GetWebfingerprintEhole()
 	// 测试的时候下面代码才打开
-	//if "true" == pkg.GetValByDefault("MyDebug", "false") {
-	//	x1.Fingerprint = []*Fingerprint{}
-	//	localFinger = "{}"
-	//	log.Println("MyDebug")
-	//}
+	if "true" == util.GetValByDefault("MyDebug", "false") {
+		x1.Fingerprint = []*Fingerprint{}
+		localFinger = "{}"
+		log.Println("MyDebug")
+	}
 
 	// 不重复的URL
 	var urls = []string{}
@@ -134,6 +137,13 @@ func DelTmpFgFile() {
 // 这里可以动态加载远程的url指纹数据到 FgData
 func init() {
 	json.Unmarshal([]byte(FgData), &FGDataMap)
+	var aN []map[string]interface{}
+	for _, x := range FGDataMap {
+		if bD, ok := x["delete"]; ok && false == bD.(bool) {
+			aN = append(aN, x)
+		}
+	}
+	FGDataMap = aN
 	MergeReqUrl()
 	var err error
 	tempInput1, err = ioutil.TempFile("", "dict-in-*")

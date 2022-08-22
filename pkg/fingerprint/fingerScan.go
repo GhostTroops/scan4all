@@ -3,6 +3,7 @@ package fingerprint
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 	"log"
 	"net/url"
@@ -50,7 +51,7 @@ var MUrl *sync.Map = new(sync.Map)
 // 图标每个目标只识别一次
 var Mfavhash *sync.Map = new(sync.Map)
 
-//  一个url到底和多少组件id关联
+// 一个url到底和多少组件id关联
 var MFid *sync.Map = new(sync.Map)
 
 // 清除数据
@@ -149,10 +150,10 @@ func CaseMethod(szUrl, method, bodyString, favhash, md5Body, hexBody string, fin
 var enableFingerTitleHeaderMd5Hex = util.GetValAsBool("enableFingerTitleHeaderMd5Hex")
 
 // 相同的url、组件（产品），>=2 个指纹命中，那么该组件的其他指纹匹配将跳过
-func FingerScan(headers map[string][]string, body []byte, title string, url string, status_code string) []string {
+func FingerScan(headers map[string][]string, body []byte, title string, url string, status_code string) ([]string, []string) {
 	if nil == body || 0 == len(body) {
 		//log.Println(url, " 存在异常，body为nil")
-		return []string{}
+		return []string{}, nil
 	}
 	//log.Println("FgDictFile = ", FgDictFile)
 	bodyString := string(body)
@@ -174,8 +175,10 @@ func FingerScan(headers map[string][]string, body []byte, title string, url stri
 	}
 
 	var cms []string
+	var fgIds []string
 	for _, x1 := range []*Packjson{EholeFinpx, LocalFinpx} {
 		for _, finp := range x1.Fingerprint {
+			n1 := len(cms)
 			if finp.UrlPath == "" || strings.HasSuffix(url, finp.UrlPath) {
 				//if -1 < strings.Index(url, "/favicon.ico") && finp.Cms == "SpringBoot" {
 				//	log.Println(url)
@@ -195,7 +198,14 @@ func FingerScan(headers map[string][]string, body []byte, title string, url stri
 					}
 				}
 			}
+			// 找到指纹
+			if len(cms) > n1 {
+				fgIds = append(fgIds, fmt.Sprintf("%v", finp.Id))
+				log.Printf("%d\n", finp.Id)
+				n1 = len(cms)
+			}
 		}
+
 	}
-	return cms
+	return cms, fgIds
 }
