@@ -420,7 +420,7 @@ func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 		}
 	}
 
-	r01, err = HttpRequset(szUrl+Abs404, "GET", "", false, nil)
+	r01, err = HttpRequset(szUrl+Abs404, "GET", "", false, map[string]string{"Connection": "close"})
 	ok = err == nil && nil != r01 && 404 == r01.StatusCode
 	noRpt.Set(key, []interface{}{r01, err, ok}, defaultInteractionDuration)
 	return r01, err, ok

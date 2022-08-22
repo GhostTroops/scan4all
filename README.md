@@ -38,7 +38,7 @@
   * Snmp
   * Wap-wsp (Elasticsearch)
   * RouterOs
-  * HTTP BasicAuth, contains SVN（Apache Subversion） crack
+  * HTTP BasicAuth(Authorization), contains Webdav、SVN（Apache Subversion） crack
   * Weblogic, enable nuclei through enableNuclei=true at the same time, support T3, IIOP and other detection
   * Tomcat
   * Jboss
