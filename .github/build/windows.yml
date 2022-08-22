@@ -21,7 +21,7 @@ builds:
       - windows
     goarch:
       - amd64
-      - arm64
+#      - arm64
 
 archives:
 - format: zip
