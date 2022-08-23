@@ -168,6 +168,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 		outNuclei <- nil
 		return
 	}
+	defer nucleiRunner.Close()
 	//data, _ := json.Marshal(options)
 	//log.Printf("%+v", string(data))
 	outNuclei <- nucleiRunner
@@ -178,7 +179,6 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 			gologger.Fatal().Msgf("Could not run nuclei: %s\n", err)
 		}
 	}
-	nucleiRunner.Close()
 }
 func readConfig(options *types.Options) {
 	pwd, _ := os.Getwd()
