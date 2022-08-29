@@ -1596,6 +1596,7 @@
 /access-log.1
 /access.1
 /access.log
+/accounts.sql
 /activeMQ/
 /activemq
 /activity
@@ -1747,6 +1748,7 @@
 /axis2/
 /axis2/axis2-admin/login
 /b.php
+/back.sql
 /back.tar.bz2
 /backup
 /backup.7z
@@ -1759,6 +1761,7 @@
 /backup.tar.gz
 /backup.tgz
 /backup.zip
+/backups.sql
 /bbs
 /bbs.tar
 /bbs.tar.gz
@@ -1792,6 +1795,7 @@
 /checkLogin.do
 /classes.war
 /cleanup.log
+/clients.sql
 /cloudstore/config/mysql.xml
 /cm.php
 /code.tar.gz
@@ -1851,6 +1855,7 @@
 /cri
 /css.asp
 /customers.log
+/customers.sgl
 /dama.asp
 /dama.aspx
 /dama.jsp
@@ -1877,8 +1882,10 @@
 /database.log
 /database.properties
 /database.rar
+/database.sgl
 /database.sql
 /database.sql.gz
+/database.sqlite
 /database.tar.bz2
 /database.tar.gz
 /database.tgz
@@ -1906,7 +1913,10 @@
 /db.yaml
 /db.yml
 /db.zip
+/db_backup.sql
 /dbaccess.log
+/dbase.sql
+/dbdump.sql
 /dbeaver-data-sources.xml
 /debug
 /debug.log
@@ -2156,6 +2166,7 @@
 /monitoring
 /mw-config/
 /myadmin/login.php
+/mysql.sql
 /nacos/
 /nagios
 /nginx.conf
@@ -2324,6 +2335,7 @@
 /sql.html
 /sql.log
 /sql.rar
+/sql.sql
 /sql.tar.bz2
 /sql.tar.gz
 /sql.tgz
@@ -2367,6 +2379,7 @@
 /temp.7z
 /temp.gz
 /temp.rar
+/temp.sql
 /temp.tar.bz2
 /temp.tar.gz
 /temp.tgz
@@ -2473,6 +2486,7 @@
 /uploads/dump.sql
 /user-login.html
 /users.log
+/users.sql
 /users/sign_in
 /v1/health/service/consul
 /v1/swagger

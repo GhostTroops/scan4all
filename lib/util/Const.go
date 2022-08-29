@@ -25,6 +25,15 @@ var DeleteMe = regexp.MustCompile("rememberMe=deleteMe")
 // 自定义http 头
 var CustomHeaders []string
 
+/*
+X-Forwarded-Host: 127.0.0.1
+X-Forwarded-For: 127.0.0.1
+X-Originating-IP: 127.0.0.1
+X-Remote-IP: 127.0.0.1
+X-Remote-Addr: 127.0.0.1
+X-Client-IP: 127.0.0.1
+X-Host: 127.0.0.1
+*/
 // 获取 自定义头信息等raw模式
 func GetCustomHeadersRaw() string {
 	if 0 < len(CustomHeaders) {
@@ -91,8 +100,9 @@ type PocCheck struct {
 var PocCheck_pipe = make(chan *PocCheck, 64)
 
 // 头信息同一检查，并调用合适到go poc进一步爆破、检测
-//  1、需要认证
-//  2、shiro
+//
+//	1、需要认证
+//	2、shiro
 func CheckHeader(header *http.Header, szUrl string) {
 	DoSyncFunc(func() {
 		if nil != header {
