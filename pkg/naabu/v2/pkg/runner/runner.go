@@ -79,7 +79,7 @@ func (r *Runner) Httpxrun() error {
 		var a []string
 		a = append(a, httpxoptions.CustomHeaders...)
 		opts["CustomHeaders"] = a
-		util.CustomHeaders = a
+		util.CustomHeaders = append(util.CustomHeaders, a...)
 	}
 	//var axx1 []*runner2.Runner
 	defer func() { <-nucleiDone }()
