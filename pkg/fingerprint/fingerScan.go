@@ -35,6 +35,14 @@ func mapToJson(param map[string][]string) string {
 	return dataString
 }
 
+func headerToString(param map[string][]string) string {
+	var a []string
+	for k, v := range param {
+		a = append(a, k+": "+strings.Join(v, ";"))
+	}
+	return strings.Join(a, "\n")
+}
+
 // 合并所有指纹需要请求的链接，也就是合并所有请求，相同的只请求一次
 // 会多次调用，所以需要cache中间结果
 func PreprocessingFingerScan(url string) []string {
@@ -82,8 +90,8 @@ func SvUrl2Id(szUrl string, finp *Fingerprint, rMz string) {
 
 func CaseMethod(szUrl, method, bodyString, favhash, md5Body, hexBody string, finp *Fingerprint) []string {
 	cms := []string{}
-	if 0 == len(finp.Keyword) {
-		log.Printf("%+v", finp)
+	if !strings.HasSuffix(szUrl, finp.UrlPath) || 0 == len(finp.Keyword) {
+		//log.Printf("%+v", finp)
 		return cms
 	}
 	u01, _ := url.Parse(strings.TrimSpace(szUrl))
@@ -157,7 +165,7 @@ func FingerScan(headers map[string][]string, body []byte, title string, url stri
 	}
 	//log.Println("FgDictFile = ", FgDictFile)
 	bodyString := string(body)
-	headersjson := mapToJson(headers)
+	headersjson := mapToJson(headers) + "\n" + headerToString(headers)
 	favhash, _ := getfavicon(bodyString, url)
 
 	md5Body := FavicohashMd5(0, nil, body, nil)
