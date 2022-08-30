@@ -8,8 +8,9 @@ import (
 
 func iskeyword(str string, keyword []string, KeywordMathOr bool) (x bool, rstr string) {
 	x = true
+	str = strings.ToLower(str)
 	for _, k := range keyword {
-		if strings.Contains(strings.ToLower(str), strings.ToLower(k)) {
+		if strings.Contains(str, strings.ToLower(k)) {
 			x = x && true
 			rstr = k
 			if KeywordMathOr {
