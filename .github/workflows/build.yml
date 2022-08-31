@@ -29,6 +29,15 @@ jobs:
 
   build-linux:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - arch: armv6
+            distro: jessie
+          - arch: armv7
+              distro: ubuntu_latest
+          - arch: aarch64
+            distro: ubuntu_latest
     steps:
       - name: Code checkout
         uses: actions/checkout@v2
