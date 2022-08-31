@@ -26,7 +26,7 @@ jobs:
           args: release -f .github/build/mac.yml --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+  # https://github.com/marketplace/actions/run-on-architecture#supported-platforms
   build-linux:
     runs-on: ubuntu-latest
     strategy:
