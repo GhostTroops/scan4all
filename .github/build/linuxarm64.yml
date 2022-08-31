@@ -15,7 +15,7 @@ builds:
     goos:
       - linux
     goarch:
-      - amd64
+      - arm64
 archives:
 - format: zip
 
