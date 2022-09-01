@@ -12012,6 +12012,11 @@
   },{
     "cms": "thinkcmf",
     "method": "keyword",
+    "location": "header",
+    "keyword": ["ThinkCMF"]
+  },{
+    "cms": "thinkcmf",
+    "method": "keyword",
     "location": "body",
     "keyword": ["made by <a href=\"http://www.thinkcmf.com\" target=\"_blank\">thinkcmf</a>"]
   },{
