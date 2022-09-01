@@ -46,6 +46,10 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 	for tech := range wappalyzertechnologies {
 		caseStr := strings.ToLower(wappalyzertechnologies[tech])
 		switch caseStr {
+		case "ZookeeperUnauthority":
+			if apache.ZookeeperUnauthority(finalURL) {
+				technologies = append(technologies, fmt.Sprintf("ZookeeperUnauthority %s", finalURL))
+			}
 		case "httpCheckSmuggling":
 			Smuggling.DoCheckSmuggling(finalURL, "")
 		case "RouterOS":
