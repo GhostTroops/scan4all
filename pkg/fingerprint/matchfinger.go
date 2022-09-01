@@ -14,6 +14,7 @@ func iskeyword(str string, keyword []string, KeywordMathOr bool) (x bool, rstr s
 			x = x && true
 			rstr = k
 			if KeywordMathOr {
+				x = true
 				break
 			}
 		} else {
@@ -37,6 +38,7 @@ func isregular(str string, keyword []string, KeywordMathOr bool) (x bool, rstr s
 			x = x && true
 			rstr = k
 			if KeywordMathOr {
+				x = true
 				break
 			}
 		} else {
