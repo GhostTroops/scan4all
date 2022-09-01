@@ -90,11 +90,12 @@ func SvUrl2Id(szUrl string, finp *Fingerprint, rMz string) {
 
 func CaseMethod(szUrl, method, bodyString, favhash, md5Body, hexBody string, finp *Fingerprint) []string {
 	cms := []string{}
-	if !strings.HasSuffix(szUrl, finp.UrlPath) || 0 == len(finp.Keyword) {
+	u01, _ := url.Parse(strings.TrimSpace(szUrl))
+	if u01.Path != finp.UrlPath || 0 == len(finp.Keyword) {
 		//log.Printf("%+v", finp)
 		return cms
 	}
-	u01, _ := url.Parse(strings.TrimSpace(szUrl))
+
 	if _, ok := Mfavhash.Load(u01.Host + favhash); ok {
 		return cms
 	}
