@@ -100,13 +100,23 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 							FinalURL:               szUlr,
 							Checklog4j:             false,
 						}
+					} else if bCheckWeakPassword && "110" == szPort && service == "pop3" {
+						CheckWeakPassword(ip, service, port)
+					} else if "2181" == szPort {
+						util.PocCheck_pipe <- &util.PocCheck{
+							Wappalyzertechnologies: &[]string{"ZookeeperUnauthority"},
+							URL:                    szUlr,
+							FinalURL:               szUlr,
+							Checklog4j:             false,
+						}
 					}
-				} else if bCheckWeakPassword && "110" == szPort && service == "pop3" {
-					CheckWeakPassword(ip, service, port)
-				} else if bCheckWeakPassword && "8728" == szPort && service == "unknown" {
-					CheckWeakPassword(ip, "router", port)
-				} else if bCheckWeakPassword && ("5985" == szPort || "5986" == szPort) && -1 < strings.Index(service, "microsoft ") {
-					CheckWeakPassword(ip, "winrm", port)
+				}
+				if bCheckWeakPassword {
+					if "8728" == szPort && service == "unknown" {
+						CheckWeakPassword(ip, "router", port)
+					} else if ("5985" == szPort || "5986" == szPort) && -1 < strings.Index(service, "microsoft ") {
+						CheckWeakPassword(ip, "winrm", port)
+					}
 				}
 
 				log.Printf("%s\t%d\t%s\n", ip, port, service)
