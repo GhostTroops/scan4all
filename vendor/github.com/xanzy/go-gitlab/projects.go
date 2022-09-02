@@ -121,7 +121,7 @@ type Project struct {
 		GroupName        string `json:"group_name"`
 		GroupAccessLevel int    `json:"group_access_level"`
 	} `json:"shared_with_groups"`
-	Statistics                               *ProjectStatistics `json:"statistics"`
+	Statistics                               *Statistics        `json:"statistics"`
 	Links                                    *Links             `json:"_links,omitempty"`
 	CIConfigPath                             string             `json:"ci_config_path"`
 	CIDefaultGitDepth                        int                `json:"ci_default_git_depth"`
@@ -230,12 +230,6 @@ type ProjectNamespace struct {
 	WebURL    string `json:"web_url"`
 }
 
-// ProjectStatistics represents a statistics record for a project.
-type ProjectStatistics struct {
-	StorageStatistics
-	CommitCount int `json:"commit_count"`
-}
-
 // Repository represents a repository.
 type Repository struct {
 	Name              string          `json:"name"`
@@ -254,12 +248,18 @@ type Repository struct {
 	HTTPURL           string          `json:"http_url"`
 }
 
-// StorageStatistics represents a statistics record for a group or project.
-type StorageStatistics struct {
-	StorageSize      int64 `json:"storage_size"`
-	RepositorySize   int64 `json:"repository_size"`
-	LfsObjectsSize   int64 `json:"lfs_objects_size"`
-	JobArtifactsSize int64 `json:"job_artifacts_size"`
+// Statistics represents a statistics record for a group or project.
+type Statistics struct {
+	CommitCount           int64 `json:"commit_count"`
+	StorageSize           int64 `json:"storage_size"`
+	RepositorySize        int64 `json:"repository_size"`
+	WikiSize              int64 `json:"wiki_size"`
+	LFSObjectsSize        int64 `json:"lfs_objects_size"`
+	JobArtifactsSize      int64 `json:"job_artifacts_size"`
+	PipelineArtifactsSize int64 `json:"pipeline_artifacts_size"`
+	PackagesSize          int64 `json:"packages_size"`
+	SnippetsSize          int64 `json:"snippets_size"`
+	UploadsSize           int64 `json:"uploads_size"`
 }
 
 func (s Project) String() string {

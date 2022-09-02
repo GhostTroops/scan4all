@@ -172,9 +172,11 @@ func (r *Runner) DoTargets() (bool, error) {
 	a = nil
 	aR = util.RemoveDuplication_map(aR)
 	//log.Printf("DoTargets:: %+v", aR)
-	err = ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
-	if nil != err {
-		log.Println("ioutil.WriteFile(r.targetsFile err: ", err)
+	if "" != r.targetsFile {
+		err = ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
+		if nil != err {
+			log.Println("ioutil.WriteFile(r.targetsFile err: ", err)
+		}
 	}
 	// 有nmap那么就直接调用nmap了
 	bRw := false
@@ -208,7 +210,9 @@ func (r *Runner) DoTargets() (bool, error) {
 					util.TmpFile[string(util.Naabu)] = []*os.File{tempInput1}
 					hydra.DoNmapRst(&Naabubuffer)
 					defer r.Close()
-					ioutil.WriteFile(r.targetsFile, []byte(""), os.ModePerm)
+					if "" != r.targetsFile {
+						ioutil.WriteFile(r.targetsFile, []byte(""), os.ModePerm)
+					}
 					log.Println("do namp over naabu ")
 					return true, nil
 					//} else {
@@ -226,7 +230,7 @@ func (r *Runner) DoTargets() (bool, error) {
 	} else {
 		log.Println(" pkg.CheckHvNmap() false")
 	}
-	if bRw {
+	if bRw && "" != r.targetsFile {
 		ioutil.WriteFile(r.targetsFile, []byte(strings.Join(aR, "\n")), os.ModePerm)
 	}
 	return false, nil
