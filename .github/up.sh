@@ -25,7 +25,7 @@ go vet
 #cat ./pkg/fingerprint/dicts/eHoleFinger.json|jq ".fingerprint[].cms"|wc -l
 #cat ./pkg/fingerprint/dicts/localFinger.json|jq ".fingerprint[].cms"|wc -l
 #cat ./pkg/fingerprint/dicts/fg.json|jq ".[].kind"|wc -l
-git add config/nuclei-templates pocs_yml/ymlFiles
+git add config/nuclei-templates pocs_yml/ymlFiles vendor
 git add vendor
 git status
 go build
