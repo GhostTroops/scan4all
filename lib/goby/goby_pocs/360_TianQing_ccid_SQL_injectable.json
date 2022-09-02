@@ -1,23 +1,17 @@
 {
       "Name": "360 TianQing ccid SQL injectable",
       "Level": "2",
-      "Tags": [
-            "sqli"
-      ],
+      "Tags": [],
       "GobyQuery": "app=\"360-TianQing\"",
-      "Description": "",
+      "Description": "The attacker can get the server permission by injecting SQL into the upload Trojan",
       "Product": "360 TianQing",
-      "Homepage": "https://360.net/product-center/Endpoint-Security/management-system",
-      "Author": "",
-      "Impact": "The attacker can get the server permission by injecting SQL into the upload Trojan.",
-      "Recommendation": "update",
-      "References": [],
-      "HasExp": true,
-      "ExpParams": null,
-      "ExpTips": {
-            "Type": "",
-            "Content": ""
-      },
+      "Homepage": "htp://360.cn",
+      "Author": "PeiQi",
+      "Impact": "<p>The attacker can get the server permission by injecting SQL into the upload Trojan<br></p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
       "ScanSteps": [
             "AND",
             {
@@ -25,7 +19,7 @@
                         "method": "GET",
                         "uri": "/api/dp/rptsvcsyncpoint?ccid=1",
                         "follow_redirect": true,
-                        "header": null,
+                        "header": {},
                         "data_type": "text",
                         "data": ""
                   },
@@ -66,43 +60,6 @@
                   "SetVariable": []
             }
       ],
-      "ExploitSteps": [
-            "AND",
-            {
-                  "Request": {
-                        "method": "GET",
-                        "uri": "/test.php",
-                        "follow_redirect": true,
-                        "header": null,
-                        "data_type": "text",
-                        "data": "",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$code",
-                                    "operation": "==",
-                                    "value": "200",
-                                    "bz": ""
-                              },
-                              {
-                                    "type": "item",
-                                    "variable": "$body",
-                                    "operation": "contains",
-                                    "value": "test",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
-            }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-04-09 08:51:50",
+      "GobyVersion": "1.8.255"
 }

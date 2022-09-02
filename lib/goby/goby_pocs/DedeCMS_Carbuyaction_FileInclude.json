@@ -5,16 +5,16 @@
             "FileInclude"
       ],
       "GobyQuery": "app=\"DedeCMS\"",
-      "Description": "Dream Weaving (DedeCMS) Official Website- Content Management System- Shanghai Zhuozhuo Network Technology Co., Ltd.",
+      "Description": "DedeCMS Carbuyaction.php页面存在本地文件包含漏洞",
       "Product": "DedeCMS",
       "Homepage": "http://www.dedecms.com/",
-      "Author": "",
-      "Impact": "DedeCMS Carbuyaction.php has a local file inclusion vulnerability.",
+      "Author": "aetkrad",
+      "Impact": "",
       "Recommendation": "",
       "References": [
             "https://www.cnblogs.com/milantgh/p/3615986.html"
       ],
-      "HasExp": true,
+      "HasExp": false,
       "ExpParams": null,
       "ExpTips": {
             "Type": "",
@@ -88,43 +88,6 @@
                   ]
             }
       ],
-      "ExploitSteps": [
-            "AND",
-            {
-                  "Request": {
-                        "method": "GET",
-                        "uri": "/test.php",
-                        "follow_redirect": true,
-                        "header": null,
-                        "data_type": "text",
-                        "data": "",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$code",
-                                    "operation": "==",
-                                    "value": "200",
-                                    "bz": ""
-                              },
-                              {
-                                    "type": "item",
-                                    "variable": "$body",
-                                    "operation": "contains",
-                                    "value": "test",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
-            }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-11-13 14:18:50",
+      "GobyVersion": "1.8.302"
 }

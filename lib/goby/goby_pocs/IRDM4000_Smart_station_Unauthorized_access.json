@@ -1,18 +1,18 @@
 {
       "Name": "IRDM4000 Smart station Unauthorized access",
       "Level": "2",
-      "Tags": [
-            "unauthorized access"
-      ],
+      "Tags": [],
       "GobyQuery": "body=\"iRDM4000智慧站房在线监管\"",
-      "Description": "IRDM4000 Smart station",
+      "Description": "IRDM4000 unauthorized access vulnerability of userId=0",
       "Product": "IRDM4000 Smart station",
-      "Homepage": "http://www.houtian-hb.com/",
-      "Author": "",
-      "Impact": "IRDM4000 unauthorized access vulnerability of userId=0",
+      "Homepage": "http://www.houtian-hb.com",
+      "Author": "gobysec@gmail.com",
+      "Impact": "",
       "Recommendation": "",
-      "References": [],
-      "HasExp": false,
+      "References": [
+            "https://gobies.org/"
+      ],
+      "HasExp": true,
       "ExpParams": null,
       "ExpTips": {
             "Type": "",
@@ -64,6 +64,43 @@
                   ]
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/test.php",
+                        "follow_redirect": true,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "test",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "PostTime": "2021-10-26 10:55:38",
+      "GobyVersion": "1.9.304"
 }

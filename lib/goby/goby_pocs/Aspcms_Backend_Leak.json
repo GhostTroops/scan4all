@@ -5,11 +5,11 @@
             "infoleak"
       ],
       "GobyQuery": "app=\"ASPCMS\"",
-      "Description": "aspCMS is a module based ASP Content Management System (CMS).",
+      "Description": "aspcms /plug/oem/AspCms_OEMFun.asp leak backend url",
       "Product": "ASPCMS",
-      "Homepage": "",
-      "Author": "",
-      "Impact": "aspcms /plug/oem/AspCms_OEMFun.asp leak backend url.",
+      "Homepage": "https://gobies.org/",
+      "Author": "aetkrad",
+      "Impact": "<p>leak backend url<br></p>",
       "Recommendation": "",
       "References": [],
       "HasExp": true,
@@ -126,6 +126,6 @@
                   ]
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-11-02 20:50:45",
+      "GobyVersion": "1.8.302"
 }

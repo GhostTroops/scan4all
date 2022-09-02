@@ -2,22 +2,18 @@
       "Name": "RuoYi Druid Unauthorized access",
       "Level": "0",
       "Tags": [
-            "infoleak"
+            "Disclosure of Sensitive Information"
       ],
       "GobyQuery": "app=\"ruoyi-System\"",
-      "Description": "RuoYi",
+      "Description": "If Druid is used in the management system, anonymous access is enabled by default, resulting in unauthorized access to sensitive information",
       "Product": "RuoYi",
       "Homepage": "https://gitee.com/y_project/RuoYi-Vue",
-      "Author": "",
-      "Impact": "If Druid is used in the management system, anonymous access is enabled by default, resulting in unauthorized access to sensitive information.",
-      "Recommendation": "",
-      "References": [],
-      "HasExp": true,
-      "ExpParams": null,
-      "ExpTips": {
-            "Type": "",
-            "Content": ""
-      },
+      "Author": "PeiQi",
+      "Impact": "<p>&nbsp;resulting in unauthorized access to sensitive information<br></p>",
+      "Recommandation": "",
+      "References": [
+            "http://wiki.peiqi.tech"
+      ],
       "ScanSteps": [
             "AND",
             {
@@ -25,7 +21,7 @@
                         "method": "GET",
                         "uri": "/prod-api/druid/index.html",
                         "follow_redirect": false,
-                        "header": null,
+                        "header": {},
                         "data_type": "text",
                         "data": ""
                   },
@@ -59,43 +55,6 @@
                   "SetVariable": []
             }
       ],
-      "ExploitSteps": [
-            "AND",
-            {
-                  "Request": {
-                        "method": "GET",
-                        "uri": "/test.php",
-                        "follow_redirect": true,
-                        "header": null,
-                        "data_type": "text",
-                        "data": "",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$code",
-                                    "operation": "==",
-                                    "value": "200",
-                                    "bz": ""
-                              },
-                              {
-                                    "type": "item",
-                                    "variable": "$body",
-                                    "operation": "contains",
-                                    "value": "test",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
-            }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-04-20 23:13:54",
+      "GobyVersion": "1.8.258"
 }

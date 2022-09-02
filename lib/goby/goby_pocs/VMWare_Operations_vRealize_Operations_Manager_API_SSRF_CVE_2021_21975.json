@@ -4,23 +4,16 @@
       "Tags": [
             "SSRF"
       ],
-      "GobyQuery": "app=\"Apache-Web-Server\" && title=\"vRealize Operations Manager\"",
-      "Description": "vRealize Operations Enable self-driving IT Operations Management across private, hybrid and multi-cloud environments with a unified operations platform that delivers continuous performance, capacity and cost optimization, intelligent remediation and integrated compliance through AI/ML and predictive analytics.",
+      "GobyQuery": "app=\"Apache-Web-Server\" && title==\"vRealize Operations Manager\"",
+      "Description": "malicious attackers who access the vrealize Operations Manager API through the network can perform server-side request forgery attack to steal management credentials.",
       "Product": "VMWare Operations vRealize Operations",
-      "Homepage": "https://www.vmware.com/products/vrealize-operations.html",
-      "Author": "",
-      "Impact": "Server Side Request Forgery in vRealize Operations Manager API (CVE-2021-21975) prior to 8.4 may allow a malicious actor with network access to the vRealize Operations Manager API can perform a Server Side Request Forgery attack to steal administrative credentials.",
-      "Recommendation": "",
+      "Homepage": "https://www.vmware.com/cn/products/vrealize-operations.html",
+      "Author": "PeiQi",
+      "Impact": "<p>&nbsp;can perform server-side request forgery attack to steal management credentials.<br></p>",
+      "Recommandation": "<p>undefined</p>",
       "References": [
-            "https://nvd.nist.gov/vuln/detail/CVE-2021-21975",
-            "https://www.vmware.com/security/advisories/VMSA-2021-0004.html"
+            "http://wiki.peiqi.tech"
       ],
-      "HasExp": true,
-      "ExpParams": null,
-      "ExpTips": {
-            "Type": "",
-            "Content": ""
-      },
       "ScanSteps": [
             "AND",
             {
@@ -71,7 +64,7 @@
                   "SetVariable": []
             }
       ],
-      "ExploitSteps": [
+	  "ExploitSteps": [
             "AND",
             {
                   "Request": {
@@ -118,9 +111,11 @@
                               }
                         ]
                   },
-                  "SetVariable": []
+                  "SetVariable": [
+					"output|lastbody"
+				  ]
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-04-07 23:45:28",
+      "GobyVersion": "1.8.255"
 }

