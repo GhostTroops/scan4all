@@ -52,7 +52,7 @@ type Group struct {
 	FileTemplateProjectID   int                        `json:"file_template_project_id"`
 	ParentID                int                        `json:"parent_id"`
 	Projects                []*Project                 `json:"projects"`
-	Statistics              *StorageStatistics         `json:"statistics"`
+	Statistics              *Statistics                `json:"statistics"`
 	CustomAttributes        []*CustomAttribute         `json:"custom_attributes"`
 	ShareWithGroupLock      bool                       `json:"share_with_group_lock"`
 	RequireTwoFactorAuth    bool                       `json:"require_two_factor_authentication"`
@@ -75,6 +75,7 @@ type Group struct {
 	LDAPCN                         string           `json:"ldap_cn"`
 	LDAPAccess                     AccessLevelValue `json:"ldap_access"`
 	LDAPGroupLinks                 []*LDAPGroupLink `json:"ldap_group_links"`
+	SAMLGroupLinks                 []*SAMLGroupLink `json:"saml_group_links"`
 	SharedRunnersMinutesLimit      int              `json:"shared_runners_minutes_limit"`
 	ExtraSharedRunnersMinutesLimit int              `json:"extra_shared_runners_minutes_limit"`
 	PreventForkingOutsideGroup     bool             `json:"prevent_forking_outside_group"`
@@ -98,6 +99,14 @@ type LDAPGroupLink struct {
 	Filter      string           `json:"filter"`
 	GroupAccess AccessLevelValue `json:"group_access"`
 	Provider    string           `json:"provider"`
+}
+
+// SAMLGroupLink represents a GitLab SAML group link.
+//
+// GitLab API docs: https://docs.gitlab.com/ce/api/groups.html#saml-group-links
+type SAMLGroupLink struct {
+	Name        string           `json:"name"`
+	AccessLevel AccessLevelValue `json:"access_level"`
 }
 
 // ListGroupsOptions represents the available ListGroups() options.
@@ -735,6 +744,113 @@ func (s *GroupsService) DeleteGroupLDAPLinkForProvider(gid interface{}, provider
 		PathEscape(provider),
 		PathEscape(cn),
 	)
+
+	req, err := s.client.NewRequest(http.MethodDelete, u, nil, options)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.client.Do(req, nil)
+}
+
+// ListGroupSAMLLinks lists the group's SAML links. Available only for users who
+// can edit groups.
+//
+// GitLab API docs:
+// https://docs.gitlab.com/ee/api/groups.html#list-saml-group-links
+func (s *GroupsService) ListGroupSAMLLinks(gid interface{}, options ...RequestOptionFunc) ([]*SAMLGroupLink, *Response, error) {
+	group, err := parseID(gid)
+	if err != nil {
+		return nil, nil, err
+	}
+	u := fmt.Sprintf("groups/%s/saml_group_links", PathEscape(group))
+
+	req, err := s.client.NewRequest(http.MethodGet, u, nil, options)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var gl []*SAMLGroupLink
+	resp, err := s.client.Do(req, &gl)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return gl, resp, nil
+}
+
+// GetGroupSAMLLink get a specific group SAML link. Available only for users who
+// can edit groups.
+//
+// GitLab API docs:
+// https://docs.gitlab.com/ee/api/groups.html#get-saml-group-link
+func (s *GroupsService) GetGroupSAMLLink(gid interface{}, samlGroupName string, options ...RequestOptionFunc) (*SAMLGroupLink, *Response, error) {
+	group, err := parseID(gid)
+	if err != nil {
+		return nil, nil, err
+	}
+	u := fmt.Sprintf("groups/%s/saml_group_links/%s", PathEscape(group), PathEscape(samlGroupName))
+
+	req, err := s.client.NewRequest(http.MethodGet, u, nil, options)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	gl := new(SAMLGroupLink)
+	resp, err := s.client.Do(req, &gl)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return gl, resp, nil
+}
+
+// AddGroupSAMLLinkOptions represents the available AddGroupSAMLLink() options.
+//
+// GitLab API docs:
+// https://docs.gitlab.com/ee/api/groups.html#add-saml-group-link
+type AddGroupSAMLLinkOptions struct {
+	SAMLGroupName *string           `url:"saml_group_name,omitempty" json:"saml_group_name,omitempty"`
+	AccessLevel   *AccessLevelValue `url:"access_level,omitempty" json:"access_level,omitempty"`
+}
+
+// AddGroupSAMLLink creates a new group SAML link. Available only for users who
+// can edit groups.
+//
+// GitLab API docs:
+// https://docs.gitlab.com/ee/api/groups.html#add-saml-group-link
+func (s *GroupsService) AddGroupSAMLLink(gid interface{}, opt *AddGroupSAMLLinkOptions, options ...RequestOptionFunc) (*SAMLGroupLink, *Response, error) {
+	group, err := parseID(gid)
+	if err != nil {
+		return nil, nil, err
+	}
+	u := fmt.Sprintf("groups/%s/saml_group_links", PathEscape(group))
+
+	req, err := s.client.NewRequest(http.MethodPost, u, opt, options)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	gl := new(SAMLGroupLink)
+	resp, err := s.client.Do(req, &gl)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return gl, resp, err
+}
+
+// DeleteGroupSAMLLink deletes a group SAML link. Available only for users who
+// can edit groups.
+//
+// GitLab API docs:
+// https://docs.gitlab.com/ee/api/groups.html#delete-saml-group-link
+func (s *GroupsService) DeleteGroupSAMLLink(gid interface{}, samlGroupName string, options ...RequestOptionFunc) (*Response, error) {
+	group, err := parseID(gid)
+	if err != nil {
+		return nil, err
+	}
+	u := fmt.Sprintf("groups/%s/saml_group_links/%s", PathEscape(group), PathEscape(samlGroupName))
 
 	req, err := s.client.NewRequest(http.MethodDelete, u, nil, options)
 	if err != nil {

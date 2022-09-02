@@ -110,8 +110,10 @@ func DoFullScreenshot(url, path string) bool {
 	}
 
 	// 保存文件
-	if err := ioutil.WriteFile(path, buf, 0644); err != nil {
-		return false
+	if "" != path {
+		if err := ioutil.WriteFile(path, buf, 0644); err != nil {
+			return false
+		}
 	}
 
 	return true
