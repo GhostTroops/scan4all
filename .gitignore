@@ -11,7 +11,6 @@ release
 .DbCache
 scan4all_linux
 .DS_Store
-projectdiscovery/nuclei_Yaml/nuclei_yaml
 
 # Test binary, built with `go test -c`
 *.test
@@ -20,6 +19,5 @@ projectdiscovery/nuclei_Yaml/nuclei_yaml
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
 
 dist/
