@@ -4,12 +4,12 @@
       "Tags": [
             "defaultaccount"
       ],
-      "GobyQuery": "title=\"Konga\" || body=\"window.konga_version\"",
-      "Description": "Konga offers the tools you need to manage your Kong cluster with ease.",
+      "GobyQuery": "(title==\"Konga\" | body=\"window.konga_version\")",
+      "Description": "Konga JWT默认key为oursecret，可伪造任意用户权限。",
       "Product": "Konga",
       "Homepage": "https://github.com/pantsel/konga",
-      "Author": "",
-      "Impact": "The default key of Konga JWT is oursecret, which can forge arbitrary user permissions.",
+      "Author": "aetkrad",
+      "Impact": "",
       "Recommendation": "",
       "References": [
             "https://mp.weixin.qq.com/s/8guU2hT3wE2puEztdGqZQg"
@@ -112,6 +112,6 @@
                   ]
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-12-03 18:50:39",
+      "GobyVersion": "1.9.310"
 }

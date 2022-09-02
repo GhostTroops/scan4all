@@ -1,20 +1,20 @@
 {
       "Name": "Docker Registry API Unauth",
-      "Level": "1",
+      "Level": "2",
       "Tags": [
             "unauth"
       ],
       "GobyQuery": "header=\"registry/2.0\"",
-      "Description": "Docker is a set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.",
+      "Description": "Docker Registry API 存在未授权访问漏洞，黑客可通过API下载docker images，导致敏感信息泄露。",
       "Product": "Docker Registry",
       "Homepage": "https://docs.docker.com/registry/",
-      "Author": "",
-      "Impact": "There is an unauthorized access vulnerability in the Docker Registry API. Docker images can be downloaded through the API, resulting in the disclosure of sensitive information.",
+      "Author": "aetkrad",
+      "Impact": "",
       "Recommendation": "",
       "References": [
             "https://www.freeaihub.com/post/6085.html"
       ],
-      "HasExp": true,
+      "HasExp": false,
       "ExpParams": null,
       "ExpTips": {
             "Type": "",
@@ -98,43 +98,6 @@
                   ]
             }
       ],
-      "ExploitSteps": [
-            "AND",
-            {
-                  "Request": {
-                        "method": "GET",
-                        "uri": "/test.php",
-                        "follow_redirect": true,
-                        "header": null,
-                        "data_type": "text",
-                        "data": "",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$code",
-                                    "operation": "==",
-                                    "value": "200",
-                                    "bz": ""
-                              },
-                              {
-                                    "type": "item",
-                                    "variable": "$body",
-                                    "operation": "contains",
-                                    "value": "test",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
-            }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-11-27 14:21:33",
+      "GobyVersion": "1.9.310"
 }

@@ -5,16 +5,16 @@
             "overwrite"
       ],
       "GobyQuery": "app=\"fanruansem-FineReport\"",
-      "Description": "FineReport is an web reporting tool.",
-      "Product": "fanruan-FineReport",
+      "Description": "由于在初始化svg文件时，未对传入的参数做限制，导致可以对已存在的文件覆盖写入数据，从而通过将木马写入jsp文件中获取服务器权限",
+      "Product": "帆软-FineReport",
       "Homepage": "https://www.fanruan.com/",
-      "Author": "",
-      "Impact": "Since there is no restriction on the incoming parameters when initializing the svg file, data can be overwritten to the existing file, so that the server permission can be obtained by writing the Trojan into the jsp file.",
+      "Author": "aetkrad",
+      "Impact": "",
       "Recommendation": "",
       "References": [
             "https://github.com/NHPT/WebReportV9Exp/blob/main/WebReport_Exp.py"
       ],
-      "HasExp": true,
+      "HasExp": false,
       "ExpParams": null,
       "ExpTips": {
             "Type": "",
@@ -88,43 +88,6 @@
                   ]
             }
       ],
-      "ExploitSteps": [
-            "AND",
-            {
-                  "Request": {
-                        "method": "GET",
-                        "uri": "/test.php",
-                        "follow_redirect": true,
-                        "header": null,
-                        "data_type": "text",
-                        "data": "",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$code",
-                                    "operation": "==",
-                                    "value": "200",
-                                    "bz": ""
-                              },
-                              {
-                                    "type": "item",
-                                    "variable": "$body",
-                                    "operation": "contains",
-                                    "value": "test",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
-            }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-12-08 11:22:44",
+      "GobyVersion": "1.9.310"
 }

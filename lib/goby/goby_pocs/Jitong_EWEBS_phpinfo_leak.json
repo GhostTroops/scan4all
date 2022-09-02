@@ -1,23 +1,17 @@
 {
-      "Name": "Jitong EWEBS phpinfo leak",
-      "Level": "0",
-      "Tags": [
-            "infoleak"
-      ],
+      "Name": "极通EWEBSphpinfo泄露",
+      "Level": "3",
+      "Tags": [],
       "GobyQuery": "body=\"极通软件\"",
       "Description": "",
-      "Product": "Jitong EWEBS",
-      "Homepage": "http://www.n-soft.com.cn/",
-      "Author": "",
-      "Impact": "Jitong EWEBS phpinfo leak",
-      "Recommendation": "",
-      "References": [],
-      "HasExp": true,
-      "ExpParams": null,
-      "ExpTips": {
-            "Type": "",
-            "Content": ""
-      },
+      "Product": "",
+      "Homepage": "https://gobies.org/",
+      "Author": "gobysec@gmail.com",
+      "Impact": "",
+      "Recommandation": "",
+      "References": [
+            "https://gobies.org/"
+      ],
       "ScanSteps": [
             "AND",
             {
@@ -25,7 +19,7 @@
                         "method": "GET",
                         "uri": "/testweb.php",
                         "follow_redirect": false,
-                        "header": null,
+                        "header": {},
                         "data_type": "text",
                         "data": ""
                   },
@@ -45,34 +39,6 @@
                   "SetVariable": []
             }
       ],
-      "ExploitSteps": [
-            "AND",
-            {
-                  "Request": {
-                        "method": "GET",
-                        "uri": "/testweb.php",
-                        "follow_redirect": false,
-                        "header": null,
-                        "data_type": "text",
-                        "data": "",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$body",
-                                    "operation": "contains",
-                                    "value": "PHP Version",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": []
-            }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-06-17 21:19:12",
+      "GobyVersion": "1.8.268"
 }

@@ -1,25 +1,19 @@
 {
-      "Name": "Fahuo100 SQL Injection CNVD-2021-30193",
-      "Level": "2",
+      "Name": "fahuo100_sql_injection_CNVD_2021_30193",
+      "Level": "3",
       "Tags": [
             "SQL Injection"
       ],
       "GobyQuery": "header=\"Cache-Control: no-store, no-cache\"",
-      "Description": "Fahuo100 virtual goods automatic delivery system is a powerful virtual goods automatic delivery system/article paid reading system.",
-      "Product": "Fahuo100",
+      "Description": "发货100 M_id参数存在SQL注入漏洞， 攻击者通过漏洞可以获取数据库敏感信息",
+      "Product": "发货100",
       "Homepage": "https://www.fahuo100.cn/",
-      "Author": "",
-      "Impact": "Fahuo100 M_id SQL Injection",
-      "Recommendation": "",
+      "Author": "gobysec@gmail.com",
+      "Impact": "",
+      "Recommandation": "<p>undefined</p>",
       "References": [
-            "https://www.cnvd.org.cn/flaw/show/CNVD-2021-30193"
+            "https://gobies.org/"
       ],
-      "HasExp": false,
-      "ExpParams": null,
-      "ExpTips": {
-            "Type": "",
-            "Content": ""
-      },
       "ScanSteps": [
             "AND",
             {
@@ -27,7 +21,7 @@
                         "method": "GET",
                         "uri": "/?M_id=1'&type=product",
                         "follow_redirect": true,
-                        "header": null,
+                        "header": {},
                         "data_type": "text",
                         "data": ""
                   },
@@ -54,6 +48,6 @@
                   "SetVariable": []
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-06-03 22:27:28",
+      "GobyVersion": "1.8.268"
 }

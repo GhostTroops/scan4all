@@ -1,15 +1,15 @@
 {
-      "Name": "Fastmeeting Arbitrary File Read",
+      "Name": "好视通云会议存在任意文件读取漏洞",
       "Level": "2",
       "Tags": [
             "fileread"
       ],
       "GobyQuery": "body=\"深圳银澎云计算有限公司\"",
-      "Description": "hst",
-      "Product": "hst",
+      "Description": "好视通云会议存在任意文件读取漏洞",
+      "Product": "好视通云会议",
       "Homepage": "https://www.hst.com/",
-      "Author": "",
-      "Impact": "Fastmeeting Arbitrary File Read",
+      "Author": "aetkrad",
+      "Impact": "",
       "Recommendation": "",
       "References": [
             "https://mp.weixin.qq.com/s/fMNE1PF5n81O1BpoDRlYkA"
@@ -100,6 +100,6 @@
                   ]
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-12-11 14:50:39",
+      "GobyVersion": "1.9.310"
 }

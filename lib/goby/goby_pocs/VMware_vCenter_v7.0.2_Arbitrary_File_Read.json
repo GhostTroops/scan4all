@@ -8,7 +8,7 @@
       "Description": "VMware vCenter Server is advanced server management software that provides a centralized platform for controlling your VMware vSphere environments, allowing you to automate and deliver a virtual infrastructure across the hybrid cloud with confidence.",
       "Product": "VMware-vCenter",
       "Homepage": "https://www.vmware.com/products/vcenter-server.html",
-      "Author": "",
+      "Author": "aetkrad",
       "Impact": "",
       "Recommendation": "",
       "References": [
@@ -100,6 +100,6 @@
                   ]
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-12-02 18:50:55",
+      "GobyVersion": "1.9.310"
 }

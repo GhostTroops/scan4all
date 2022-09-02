@@ -4,20 +4,17 @@
       "Tags": [
             "rce"
       ],
-      "GobyQuery": "app=\"YAPI\" || title==\"YApi-高效、易用、功能强大的可视化接口管理平台\" || title==\"YApi Pro-高效、易用、功能强大的可视化接口管理平台\"",
-      "Description": "YApi is an efficient, easy-to-use and powerful visual interface management platform.",
+      "GobyQuery": "(app=\"YAPI\" | title==\"YApi-高效、易用、功能强大的可视化接口管理平台\" | title==\"YApi Pro-高效、易用、功能强大的可视化接口管理平台\")",
+      "Description": "YAPI是由去哪儿网移动架构组(简称YMFE，一群由FE、iOS和Android工程师共同组成的最具想象力、创造力和影响力的大前端团队)开发的可视化接口管理工具，是一个可本地部署的、打通前后端及QA的接口管理平台。YAPI发布在公网且开发注册，会导致攻击者注册后执行任意命令。",
       "Product": "YAPI",
       "Homepage": "https://github.com/YMFE/yapi",
-      "Author": "",
-      "Impact": "A vulnerability in Yapi allows remote unauthenticated attackers to cause the product to execute arbitrary code.",
+      "Author": "aetkrad",
+      "Impact": "",
       "Recommendation": "",
       "References": [
-            "https://www.secpulse.com/archives/162502.html",
-            "https://gist.github.com/pikpikcu/0145fb71203c8a3ad5c67b8aab47165b",
-            "https://twitter.com/sec715/status/1415484190561161216",
             "https://mp.weixin.qq.com/s/zobag3-fIl_0vrc8BrnRjg"
       ],
-      "HasExp": true,
+      "HasExp": false,
       "ExpParams": null,
       "ExpTips": {
             "Type": "",
@@ -67,43 +64,6 @@
                   ]
             }
       ],
-      "ExploitSteps": [
-            "AND",
-            {
-                  "Request": {
-                        "method": "GET",
-                        "uri": "/test.php",
-                        "follow_redirect": true,
-                        "header": null,
-                        "data_type": "text",
-                        "data": "",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$code",
-                                    "operation": "==",
-                                    "value": "200",
-                                    "bz": ""
-                              },
-                              {
-                                    "type": "item",
-                                    "variable": "$body",
-                                    "operation": "contains",
-                                    "value": "test",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
-            }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-12-01 20:34:40",
+      "GobyVersion": "1.9.310"
 }

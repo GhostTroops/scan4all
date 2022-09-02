@@ -1,18 +1,18 @@
 {
       "Name": "Apache Airflow Unauthorized",
-      "Level": "2",
+      "Level": "3",
       "Tags": [
             "Unauthorized"
       ],
       "GobyQuery": "app=\"APACHE-Airflow\"",
-      "Description": "Airflow is a platform created by the community to programmatically author, schedule and monitor workflows.",
+      "Description": "remote attacker to gain unauthorized access to a targeted system",
       "Product": "APACHE-Airflow",
       "Homepage": "https://airflow.apache.org/",
-      "Author": "",
-      "Impact": "Acunetix determined that it was possible to access Airflow Web interface without authentication. Airflow is designed to be accessed by trusted clients inside trusted environments. It's not recommended to have it publicly accessible.",
-      "Recommendation": "Restrict public access and upgrade to the latest version of Airflow.",
+      "Author": "aetkrad",
+      "Impact": "<p>This allowed unauthenticated users to hit that endpoint to add/modify Airflow variables used in DAGs<br></p>",
+      "Recommendation": "",
       "References": [],
-      "HasExp": true,
+      "HasExp": false,
       "ExpParams": null,
       "ExpTips": {
             "Type": "",
@@ -62,43 +62,6 @@
                   ]
             }
       ],
-      "ExploitSteps": [
-            "AND",
-            {
-                  "Request": {
-                        "method": "GET",
-                        "uri": "/test.php",
-                        "follow_redirect": true,
-                        "header": null,
-                        "data_type": "text",
-                        "data": "",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$code",
-                                    "operation": "==",
-                                    "value": "200",
-                                    "bz": ""
-                              },
-                              {
-                                    "type": "item",
-                                    "variable": "$body",
-                                    "operation": "contains",
-                                    "value": "test",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
-            }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-10-31 15:32:53",
+      "GobyVersion": "1.8.302"
 }

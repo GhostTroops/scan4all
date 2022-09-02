@@ -4,17 +4,17 @@
       "Tags": [
             "sqli"
       ],
-      "GobyQuery": "app=\"Discuz\" || body=\"Powered by Discuz!\"",
-      "Description": "Discuz! is Internet forum software written in PHP and developed by Comsenz Technology Co., Ltd. It supports MySQL and PostgreSQL databases.",
-      "Product": "Discuz!",
+      "GobyQuery": "(app=\"Discuz\" | body=\"Powered by Discuz!\")",
+      "Description": "discuz7.2论坛存在sql注入漏洞",
+      "Product": "Discuz",
       "Homepage": "https://www.discuz.net/",
-      "Author": "",
-      "Impact": "Discuz7.2 has sql injection vulnerability.",
+      "Author": "aetkrad",
+      "Impact": "",
       "Recommendation": "",
       "References": [
             "https://blog.csdn.net/weixin_40709439/article/details/82780606"
       ],
-      "HasExp": true,
+      "HasExp": false,
       "ExpParams": null,
       "ExpTips": {
             "Type": "",
@@ -64,43 +64,6 @@
                   ]
             }
       ],
-      "ExploitSteps": [
-            "AND",
-            {
-                  "Request": {
-                        "method": "GET",
-                        "uri": "/test.php",
-                        "follow_redirect": true,
-                        "header": null,
-                        "data_type": "text",
-                        "data": "",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$code",
-                                    "operation": "==",
-                                    "value": "200",
-                                    "bz": ""
-                              },
-                              {
-                                    "type": "item",
-                                    "variable": "$body",
-                                    "operation": "contains",
-                                    "value": "test",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
-            }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-11-16 17:48:16",
+      "GobyVersion": "1.8.302"
 }
