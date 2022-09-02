@@ -4,17 +4,17 @@
       "Tags": [
             "rce"
       ],
-      "GobyQuery": "app=\"Discuz\" || body=\"Powered by Discuz!\"",
-      "Description": "Discuz! is Internet forum software written in PHP and developed by Comsenz Technology Co., Ltd. It supports MySQL and PostgreSQL databases.",
-      "Product": "Discuz!",
+      "GobyQuery": "(app=\"Discuz\" | body=\"Powered by Discuz!\")",
+      "Description": "由于php5.3.x版本里php.ini的设置里request_order默认值为GP，导致$_REQUEST中不再包含$_COOKIE，我们通过在Cookie中传入$GLOBALS来覆盖全局变量，造成代码执行漏洞。",
+      "Product": "discuz",
       "Homepage": "https://www.discuz.net/",
-      "Author": "",
-      "Impact": "Since the default value of request_order in the php.ini setting in php5.3.x version is GP, $_COOKIE is no longer included in $_REQUEST. We overwrite the global variable by passing in $GLOBALS in the cookie, resulting in a code execution vulnerability.",
+      "Author": "aetkrad",
+      "Impact": "",
       "Recommendation": "",
       "References": [
             "https://github.com/vulhub/vulhub/tree/master/discuz/wooyun-2010-080723"
       ],
-      "HasExp": true,
+      "HasExp": false,
       "ExpParams": null,
       "ExpTips": {
             "Type": "",
@@ -66,43 +66,6 @@
                   ]
             }
       ],
-      "ExploitSteps": [
-            "AND",
-            {
-                  "Request": {
-                        "method": "GET",
-                        "uri": "/test.php",
-                        "follow_redirect": true,
-                        "header": null,
-                        "data_type": "text",
-                        "data": "",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$code",
-                                    "operation": "==",
-                                    "value": "200",
-                                    "bz": ""
-                              },
-                              {
-                                    "type": "item",
-                                    "variable": "$body",
-                                    "operation": "contains",
-                                    "value": "test",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
-            }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-11-17 13:57:54",
+      "GobyVersion": "1.8.302"
 }

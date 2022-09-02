@@ -1,32 +1,26 @@
 {
-      "Name": "H3C IMC RCE",
+      "Name": "H3C IMC远程命令执行",
       "Level": "3",
-      "Tags": [
-            "rce"
-      ],
+      "Tags": [],
       "GobyQuery": "product=\"H3C-iMC\"",
-      "Description": "H3C IMC",
-      "Product": "H3C IMC",
+      "Description": "",
+      "Product": "H3C iMC 智能管理中心平台",
       "Homepage": "http://www.h3c.com/cn/Products___Technology/Products/H3C_Soft/IT_Business/Resource/iMC_Flat",
-      "Author": "",
-      "Impact": "A vulnerability in H3C IMC allows remote unauthenticated attackers to cause the remote web application to execute arbitrary commands via the 'dynamiccontent.properties.xhtml' endpoint.",
-      "Recommendation": "",
+      "Author": "ying",
+      "Impact": "",
+      "Recommandation": "",
       "References": [
-            "https://mp.weixin.qq.com/s/BP9_H3lpluqIwL5OMIJlIw",
             "https://www.t00ls.net/articles-60979.html"
       ],
-      "HasExp": true,
-      "ExpParams": [
-            {
-                  "Name": "Cmd",
-                  "Type": "input",
-                  "Value": "whoami"
-            }
-      ],
-      "ExpTips": {
-            "Type": "",
-            "Content": ""
-      },
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "Cmd",
+			"type": "input",
+			"value": "whoami",
+			"show": ""
+		}
+	  ],
       "ScanSteps": [
             "AND",
             {
@@ -63,8 +57,8 @@
                   },
                   "SetVariable": []
             }
-      ],
-      "ExploitSteps": [
+		],
+		"ExploitSteps": [
             "AND",
             {
                   "Request": {
@@ -99,10 +93,10 @@
                         ]
                   },
                   "SetVariable": [
-                        "output|lastbody|undefined|undefined"
-                  ]
+					"output|lastbody"
+				  ]
             }
-      ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+		],
+      "PostTime": "2021-05-28 10:06:39",
+      "GobyVersion": "1.8.268"
 }

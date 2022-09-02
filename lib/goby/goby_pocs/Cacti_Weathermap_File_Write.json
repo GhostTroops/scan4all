@@ -4,12 +4,12 @@
       "Tags": [
             "getshell"
       ],
-      "GobyQuery": "app=\"cacti-监控系统\" || title=\"Login to Cacti\" || app=\"Cactiez\"",
-      "Description": "Cacti provides a robust and extensible operational monitoring and fault management framework for users around the world. Is also a complete network graphing solution designed to harness the power of RRDTool's data storage and graphing functionality.",
-      "Product": "cacti",
+      "GobyQuery": "(app=\"cacti-监控系统\"|title=\"Login to Cacti\"|app=\"Cactiez\")",
+      "Description": "allows remote attackers to upload and execute arbitrary files",
+      "Product": "cacti-监控系统",
       "Homepage": "https://www.cacti.net/",
-      "Author": "",
-      "Impact": "Remote attacker can use to replace web application files with malicious code and perform remote code execution on the system.",
+      "Author": "aetkrad",
+      "Impact": "<p>Remote attacker can use to replace web application files with malicious code and perform remote code execution on the system.<br></p>",
       "Recommendation": "",
       "References": [],
       "HasExp": true,
@@ -121,6 +121,6 @@
                   ]
             }
       ],
-      "PostTime": "0000-00-00 00:00:00",
-      "GobyVersion": "0.0.0"
+      "PostTime": "2021-11-05 13:30:24",
+      "GobyVersion": "1.8.302"
 }
