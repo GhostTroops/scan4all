@@ -202,7 +202,7 @@ func (p *parser) parse() (*Node, error) {
 			// First, normalize the cache...
 			cached := strings.ToUpper(string(p.reader.Cache()))
 			nodeType := TextNode
-			if strings.HasPrefix(cached, "<![CDATA[") {
+			if strings.HasPrefix(cached, "<![CDATA[") || strings.HasPrefix(cached, "![CDATA[") {
 				nodeType = CharDataNode
 			}
 

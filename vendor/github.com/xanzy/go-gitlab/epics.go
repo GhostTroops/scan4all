@@ -211,6 +211,7 @@ func (s *EpicsService) CreateEpic(gid interface{}, opt *CreateEpicOptions, optio
 // GitLab API docs: https://docs.gitlab.com/ee/api/epics.html#update-epic
 type UpdateEpicOptions struct {
 	Title            *string  `url:"title,omitempty" json:"title,omitempty"`
+	Confidential     *bool    `url:"confidential,omitempty" json:"confidential,omitempty"`
 	Description      *string  `url:"description,omitempty" json:"description,omitempty"`
 	Labels           *Labels  `url:"labels,comma,omitempty" json:"labels,omitempty"`
 	StartDateIsFixed *bool    `url:"start_date_is_fixed,omitempty" json:"start_date_is_fixed,omitempty"`

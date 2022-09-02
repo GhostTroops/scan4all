@@ -147,7 +147,7 @@ func init() {
 	MergeReqUrl()
 	var err error
 	tempInput1, err = ioutil.TempFile("", "dict-in-*")
-	if nil == err {
+	if nil == err && "" != tempInput1.Name() {
 		ioutil.WriteFile(tempInput1.Name(), []byte(strings.Join(FgUrls, "\n")), 0644)
 		FgDictFile = tempInput1.Name()
 	} else {

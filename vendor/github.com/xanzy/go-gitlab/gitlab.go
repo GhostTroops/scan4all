@@ -115,6 +115,7 @@ type Client struct {
 	CustomAttribute         *CustomAttributesService
 	DeployKeys              *DeployKeysService
 	DeployTokens            *DeployTokensService
+	DeploymentMergeRequests *DeploymentMergeRequestsService
 	Deployments             *DeploymentsService
 	Discussions             *DiscussionsService
 	Environments            *EnvironmentsService
@@ -310,13 +311,14 @@ func newClient(options ...ClientOptionFunc) (*Client, error) {
 	c.Boards = &IssueBoardsService{client: c}
 	c.Branches = &BranchesService{client: c}
 	c.BroadcastMessage = &BroadcastMessagesService{client: c}
-	c.ClusterAgents = &ClusterAgentsService{client: c}
 	c.CIYMLTemplate = &CIYMLTemplatesService{client: c}
+	c.ClusterAgents = &ClusterAgentsService{client: c}
 	c.Commits = &CommitsService{client: c}
 	c.ContainerRegistry = &ContainerRegistryService{client: c}
 	c.CustomAttribute = &CustomAttributesService{client: c}
 	c.DeployKeys = &DeployKeysService{client: c}
 	c.DeployTokens = &DeployTokensService{client: c}
+	c.DeploymentMergeRequests = &DeploymentMergeRequestsService{client: c}
 	c.Deployments = &DeploymentsService{client: c}
 	c.Discussions = &DiscussionsService{client: c}
 	c.Environments = &EnvironmentsService{client: c}
@@ -369,8 +371,8 @@ func newClient(options ...ClientOptionFunc) (*Client, error) {
 	c.PipelineTriggers = &PipelineTriggersService{client: c}
 	c.Pipelines = &PipelinesService{client: c}
 	c.PlanLimits = &PlanLimitsService{client: c}
-	c.ProjectBadges = &ProjectBadgesService{client: c}
 	c.ProjectAccessTokens = &ProjectAccessTokensService{client: c}
+	c.ProjectBadges = &ProjectBadgesService{client: c}
 	c.ProjectCluster = &ProjectClustersService{client: c}
 	c.ProjectImportExport = &ProjectImportExportService{client: c}
 	c.ProjectIterations = &ProjectIterationsService{client: c}

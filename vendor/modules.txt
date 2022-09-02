@@ -78,13 +78,13 @@ github.com/andres-erbsen/clock
 # github.com/andybalholm/cascadia v1.3.1
 ## explicit; go 1.16
 github.com/andybalholm/cascadia
-# github.com/andygrunwald/go-jira v1.15.1
+# github.com/andygrunwald/go-jira v1.16.0
 ## explicit; go 1.15
 github.com/andygrunwald/go-jira
 # github.com/antchfx/htmlquery v1.2.5
 ## explicit; go 1.14
 github.com/antchfx/htmlquery
-# github.com/antchfx/xmlquery v1.3.11
+# github.com/antchfx/xmlquery v1.3.12
 ## explicit; go 1.14
 github.com/antchfx/xmlquery
 # github.com/antchfx/xpath v1.2.1
@@ -103,7 +103,7 @@ github.com/apex/log
 # github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 ## explicit; go 1.13
 github.com/asaskevich/govalidator
-# github.com/aws/aws-sdk-go v1.44.77
+# github.com/aws/aws-sdk-go v1.44.83
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -345,8 +345,8 @@ github.com/gogf/gf/errors/gerror
 github.com/gogf/gf/internal/command
 github.com/gogf/gf/internal/empty
 github.com/gogf/gf/internal/utils
-# github.com/golang-jwt/jwt/v4 v4.3.0
-## explicit; go 1.15
+# github.com/golang-jwt/jwt/v4 v4.4.2
+## explicit; go 1.16
 github.com/golang-jwt/jwt/v4
 # github.com/golang-sql/civil v0.0.0-20190719163853-cb61b32ac6fe
 ## explicit
@@ -789,7 +789,7 @@ github.com/projectdiscovery/networkpolicy
 # github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220726130814-981d44a34f84
 ## explicit; go 1.16
 github.com/projectdiscovery/nuclei-updatecheck-api/client
-# github.com/projectdiscovery/nuclei/v2 v2.7.6
+# github.com/projectdiscovery/nuclei/v2 v2.7.7
 ## explicit; go 1.17
 github.com/projectdiscovery/nuclei/v2/internal/colorizer
 github.com/projectdiscovery/nuclei/v2/pkg/catalog
@@ -830,6 +830,7 @@ github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/randomip
 github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/replacer
 github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/tostring
 github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/utils/excludematchers
+github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/utils/vardump
 github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/variables
 github.com/projectdiscovery/nuclei/v2/pkg/protocols/dns
 github.com/projectdiscovery/nuclei/v2/pkg/protocols/dns/dnsclientpool
@@ -886,7 +887,7 @@ github.com/projectdiscovery/retryablehttp-go
 # github.com/projectdiscovery/sliceutil v0.0.0-20220625085859-c3a4ecb669f4
 ## explicit; go 1.16
 github.com/projectdiscovery/sliceutil
-# github.com/projectdiscovery/stringsutil v0.0.0-20220712170325-48c50c332cb4
+# github.com/projectdiscovery/stringsutil v0.0.0-20220612082425-0037ce9f89f3
 ## explicit; go 1.16
 github.com/projectdiscovery/stringsutil
 # github.com/projectdiscovery/subfinder/v2 v2.5.2
@@ -941,7 +942,7 @@ github.com/projectdiscovery/uncover/uncover/agent/shodanidb
 # github.com/projectdiscovery/urlutil v0.0.0-20210805190935-3d83726391c1
 ## explicit; go 1.16
 github.com/projectdiscovery/urlutil
-# github.com/projectdiscovery/wappalyzergo v0.0.55
+# github.com/projectdiscovery/wappalyzergo v0.0.57
 ## explicit; go 1.16
 github.com/projectdiscovery/wappalyzergo
 # github.com/projectdiscovery/yamldoc-go v1.0.3-0.20211126104922-00d2c6bb43b6
@@ -1099,7 +1100,7 @@ github.com/valyala/fasttemplate
 # github.com/weppos/publicsuffix-go v0.20.0
 ## explicit; go 1.11
 github.com/weppos/publicsuffix-go/publicsuffix
-# github.com/xanzy/go-gitlab v0.72.0
+# github.com/xanzy/go-gitlab v0.73.1
 ## explicit; go 1.18
 github.com/xanzy/go-gitlab
 # github.com/xdg-go/pbkdf2 v1.0.0
@@ -1235,7 +1236,7 @@ golang.org/x/crypto/ssh/terminal
 # golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
 ## explicit; go 1.17
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20220812174116-3211cb980234
+# golang.org/x/net v0.0.0-20220826154423-83b083e8dc8b
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context
