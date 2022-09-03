@@ -75,8 +75,6 @@ type Options struct {
 // OnResultCallback (hostname, ip, ports)
 type OnResultCallback func(string, string, []int)
 
-const Version = `2.0.7`
-
 // ParseOptions parses the command line flags provided by a user
 func ParseOptions() *Options {
 	options := &Options{}
@@ -183,7 +181,7 @@ func ParseOptions() *Options {
 	//showBanner()
 
 	if options.Version {
-		gologger.Info().Msgf("Current Version: %s\n", Version)
+		gologger.Info().Msgf("Current Version: %s\n", util.Version)
 		os.Exit(0)
 	}
 

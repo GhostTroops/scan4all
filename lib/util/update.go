@@ -11,7 +11,8 @@ import (
 	"runtime"
 )
 
-var Version = "999.9.9"
+const Version = `2.7.9`
+
 var MyName = "scan4all"
 
 // 更新到最新版本
