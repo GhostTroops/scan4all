@@ -60,7 +60,7 @@ func MergeReqUrl() {
 	LoadWebfingerprintEhole()
 	x1 := GetWebfingerprintEhole()
 	// 测试的时候下面代码才打开
-	if "true" == util.GetValByDefault("MyDebug", "false") {
+	if true || "true" == util.GetValByDefault("MyDebug", "false") {
 		x1.Fingerprint = []*Fingerprint{}
 		localFinger = "{}"
 		log.Println("MyDebug")
@@ -87,6 +87,9 @@ func MergeReqUrl() {
 			y := y1.(map[string]interface{})
 			// url 去重复 start
 			szUrl := Get4K(&y, "url")
+			if szUrl == "/" || szUrl == "/favicon.ico" {
+				continue
+			}
 			//log.Println("[", szUrl, "]")
 			if _, ok := oUrl[szUrl]; !ok {
 				oUrl[szUrl] = struct{}{}
@@ -123,7 +126,7 @@ func MergeReqUrl() {
 	if nil == err {
 		eHoleFinger = string(data)
 	}
-	FgUrls = urls
+	FgUrls = append([]string{"/", "/favicon.ico"}, urls...)
 }
 
 var FgDictFile string
@@ -136,10 +139,11 @@ func DelTmpFgFile() {
 
 // 这里可以动态加载远程的url指纹数据到 FgData
 func init() {
+	FgData = util.GetVal4File("FgData", FgData)
 	json.Unmarshal([]byte(FgData), &FGDataMap)
 	var aN []map[string]interface{}
 	for _, x := range FGDataMap {
-		if bD, ok := x["delete"]; ok && false == bD.(bool) {
+		if bD, ok := x["delete"]; !ok || false == bD.(bool) {
 			aN = append(aN, x)
 		}
 	}
@@ -147,7 +151,7 @@ func init() {
 	MergeReqUrl()
 	var err error
 	tempInput1, err = ioutil.TempFile("", "dict-in-*")
-	if nil == err && "" != tempInput1.Name() {
+	if nil == err {
 		ioutil.WriteFile(tempInput1.Name(), []byte(strings.Join(FgUrls, "\n")), 0644)
 		FgDictFile = tempInput1.Name()
 	} else {
