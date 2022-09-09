@@ -91,7 +91,7 @@ func SvUrl2Id(szUrl string, finp *Fingerprint, rMz string) {
 func CaseMethod(szUrl, method, bodyString, favhash, md5Body, hexBody string, finp *Fingerprint) []string {
 	cms := []string{}
 	u01, _ := url.Parse(strings.TrimSpace(szUrl))
-	if u01.Path != finp.UrlPath || 0 == len(finp.Keyword) {
+	if 0 == len(finp.Keyword) {
 		//log.Printf("%+v", finp)
 		return cms
 	}
@@ -158,16 +158,24 @@ func CaseMethod(szUrl, method, bodyString, favhash, md5Body, hexBody string, fin
 
 var enableFingerTitleHeaderMd5Hex = util.GetValAsBool("enableFingerTitleHeaderMd5Hex")
 
+func CheckHoneyport(a []string) (bool, []string) {
+	bRst := util.EnableHoneyportDetection && 10 < len(a)
+	if bRst {
+		a = []string{}
+	}
+	return bRst, a
+}
+
 // 相同的url、组件（产品），>=2 个指纹命中，那么该组件的其他指纹匹配将跳过
-func FingerScan(headers map[string][]string, body []byte, title string, url string, status_code string) ([]string, []string) {
+func FingerScan(headers map[string][]string, body []byte, title string, szUrl string, status_code string) ([]string, []string) {
 	if nil == body || 0 == len(body) {
-		//log.Println(url, " 存在异常，body为nil")
+		//log.Println(szUrl, " 存在异常，body为nil")
 		return []string{}, nil
 	}
 	//log.Println("FgDictFile = ", FgDictFile)
 	bodyString := string(body)
 	headersjson := mapToJson(headers) + "\n" + headerToString(headers)
-	favhash, _ := getfavicon(bodyString, url)
+	favhash, _ := getfavicon(bodyString, szUrl)
 
 	md5Body := FavicohashMd5(0, nil, body, nil)
 	hexBody := hex.EncodeToString(body)
@@ -185,25 +193,35 @@ func FingerScan(headers map[string][]string, body []byte, title string, url stri
 
 	var cms []string
 	var fgIds []string
+	u01, _ := url.Parse(strings.TrimSpace(szUrl))
 	for _, x1 := range []*Packjson{EholeFinpx, LocalFinpx} {
 		for _, finp := range x1.Fingerprint {
+			// 移到循环体最前，提高效率, finp.Id > 0 兼容自家的指纹,非自家的继续走
+			if finp.Id > 0 && u01.Path != finp.UrlPath {
+				continue
+			}
 			n1 := len(cms)
-			if finp.UrlPath == "" || strings.HasSuffix(url, finp.UrlPath) {
-				//if -1 < strings.Index(url, "/favicon.ico") && finp.Cms == "SpringBoot" {
-				//	log.Println(url)
+			// 蜜罐检测、放弃（丢弃）结果
+			if ok, a := CheckHoneyport(cms); ok {
+				cms = a
+				break
+			}
+			if finp.UrlPath == "" || strings.HasSuffix(szUrl, finp.UrlPath) {
+				//if -1 < strings.Index(szUrl, "/favicon.ico") && finp.Cms == "SpringBoot" {
+				//	log.Println(szUrl)
 				//}
 				if finp.Location == "all" {
-					cms = append(cms, CaseMethod(url, finp.Method, headersjson+bodyString, favhash, md5Body, hexBody, finp)...)
+					cms = append(cms, CaseMethod(szUrl, finp.Method, headersjson+bodyString, favhash, md5Body, hexBody, finp)...)
 				} else if finp.Location == "body" { // 识别区域；body
-					cms = append(cms, CaseMethod(url, finp.Method, bodyString, favhash, md5Body, hexBody, finp)...)
+					cms = append(cms, CaseMethod(szUrl, finp.Method, bodyString, favhash, md5Body, hexBody, finp)...)
 				} else if finp.Location == "header" { // 识别区域：header
-					cms = append(cms, CaseMethod(url, finp.Method, headersjson, favhash, md5Header, hexHeader, finp)...)
+					cms = append(cms, CaseMethod(szUrl, finp.Method, headersjson, favhash, md5Header, hexHeader, finp)...)
 				} else if finp.Location == "title" { // 识别区域： title
-					cms = append(cms, CaseMethod(url, finp.Method, title, favhash, md5Title, hexTitle, finp)...)
+					cms = append(cms, CaseMethod(szUrl, finp.Method, title, favhash, md5Title, hexTitle, finp)...)
 				} else if finp.Location == "status_code" { // 识别区域：status_code
 					if ok, rMz := iskeyword(status_code, finp.Keyword, finp.KeywordMathOr); ok {
 						cms = append(cms, finp.Cms)
-						SvUrl2Id(url, finp, rMz)
+						SvUrl2Id(szUrl, finp, rMz)
 					}
 				}
 			}

