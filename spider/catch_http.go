@@ -80,12 +80,31 @@ func GenerateUUID() string {
 	return uuid.NewV4().String()
 }
 
-/*执行截图*/
+/*
+执行截图
+--remote-debugging-port=9222
+参考：https://github.com/chromedp/chromedp/issues/1131
+
+chromedp.Evaluate(js, &height), 返回最后一行js语句的结果
+*/
 func DoFullScreenshot(url, path string) bool {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
-		chromedp.Flag("headless", true),
+		chromedp.NoDefaultBrowserCheck,
+		chromedp.Flag("headless", false),
 		chromedp.Flag("ignore-certificate-errors", true),
+		chromedp.Flag("disable-web-security", true),
+		chromedp.Flag("disable-extensions", true), //开启插件支持
+		chromedp.Flag("disable-default-apps", true),
+		chromedp.Flag("disable-gpu", true), //开启 gpu 渲染
+		chromedp.Flag("hide-scrollbars", true),
+		chromedp.Flag("mute-audio", true),
+		chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("no-default-browser-check", true),
+		chromedp.NoFirstRun, //设置网站不是首次运行
 		chromedp.WindowSize(MaxWidth, MinHeight),
+		chromedp.Flag("blink-settings", "imagesEnabled=true"),
+		chromedp.Flag("enable-automation", false),
+		chromedp.UserAgent("Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36"),
 	)
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	defer cancel()
