@@ -13,8 +13,7 @@ type ExpJsons struct {
 	Description string `json:"Description"`
 	Product     string `json:"Product"`
 	Author      string `json:"author"`
-
-	Request []struct {
+	Request     []struct {
 		Method           string            `json:"Method"`
 		Header           map[string]string `json:"Header"`
 		Uri              string            `json:"Uri"`
