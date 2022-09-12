@@ -387,6 +387,9 @@ func (r *Runner) compareAndWriteTemplates(zipReader *zip.Reader) (*templateUpdat
 }
 
 func writeUnZippedTemplateFile(templateAbsolutePath string, zipTemplateFile *zip.File) (string, error) {
+	if "" == templateAbsolutePath {
+		return "", fmt.Errorf("templateAbsolutePath not is nil")
+	}
 	templateFile, err := os.OpenFile(templateAbsolutePath, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return "", fmt.Errorf("could not create template file: %w", err)

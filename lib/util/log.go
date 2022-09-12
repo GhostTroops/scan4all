@@ -2,12 +2,14 @@ package util
 
 import (
 	"fmt"
-	"github.com/projectdiscovery/gologger"
+	"log"
 	"os"
 	"strings"
 )
 
 var NoColor bool
+
+// out filename
 var Output = ""
 
 //// 调用方法名作为插件名
@@ -30,17 +32,19 @@ func SendLog(szUrl, szVulType, Msg, Payload string) {
 		Msg:     strings.TrimSpace(Msg) + " " + szVulType,
 	}
 	SendAnyData(v, Scan4all)
-	writeoutput(fmt.Sprintf("%+v", v))
+	writeoutput(v)
 }
 
-func writeoutput(log string) {
-	if "" == Output {
+func writeoutput(v interface{}) {
+	if 1 > len(Output) {
 		return
 	}
+	szLog := fmt.Sprintf("%+v", v)
 	f, err := os.OpenFile(Output, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
-		gologger.Fatal().Msgf("Could not create output fiale '%s': %s\n", Output, err)
+		log.Printf("Could not create output fiale '%s': %s\n", Output, err)
+		return
 	}
 	defer f.Close() //nolint
-	f.WriteString(log)
+	f.WriteString(szLog)
 }
