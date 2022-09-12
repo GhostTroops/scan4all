@@ -1696,7 +1696,7 @@
 /api/payment?id=
 /api/prod/services
 /api/proxy
-/api/proxy?szUrl=
+/api/proxy?url=
 /api/saved_objects/_find?type=index-pattern&per_page=100
 /api/search
 /api/sessions
@@ -7517,7 +7517,7 @@ go
 go.%EXT%
 google
 google-services.json
-gotoURL.asp?szUrl=google.com&id=43569
+gotoURL.asp?url=google.com&id=43569
 grabbed.html
 gradle-app.setting
 gradle/
@@ -9644,7 +9644,7 @@ plugins/
 plugins/editors/fckeditor
 plugins/fckeditor
 plugins/servlet/gadgets/makeRequest
-plugins/servlet/gadgets/makeRequest?szUrl=https://google.com
+plugins/servlet/gadgets/makeRequest?url=https://google.com
 plugins/servlet/oauth/users/icon
 plugins/sfSWFUploadPlugin/web/sfSWFUploadPlugin/swf/swfupload.swf
 plugins/sfSWFUploadPlugin/web/sfSWFUploadPlugin/swf/swfupload_f9.swf
@@ -11135,8 +11135,8 @@ ur-admin
 ur-admin.php
 ur-admin/
 uri
-szUrl
-szUrl.jsp
+url
+url.jsp
 us
 usage
 usage/
@@ -11566,7 +11566,7 @@ wp-content/plugins/count-per-day/js/yc/d00.php
 wp-content/plugins/disqus-comment-system/disqus.php
 wp-content/plugins/google-sitemap-generator/sitemap-core.php
 wp-content/plugins/hello.php
-wp-content/plugins/jrss-widget/proxy.php?szUrl=
+wp-content/plugins/jrss-widget/proxy.php?url=
 wp-content/plugins/super-forms/
 wp-content/plugins/wp-publication-archive/includes/openfile.php?file=
 wp-content/plugins/wpengine-snapshot/snapshots/

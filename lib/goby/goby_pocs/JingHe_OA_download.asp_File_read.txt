@@ -8,7 +8,7 @@ import (
 	"git.gobies.org/goby/httpclient"
 	"strings"
 	"regexp"
-	"net/szUrl"
+	"net/url"
 )
 
 func init() {
