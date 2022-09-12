@@ -97,7 +97,7 @@ config/nuclei_esConfig.yaml
   "httpx": {}   // httpx 配置,
   "enableEsSv": true,        // 开启结果send 到es
   "esthread": 8 // 结果写入Elasticsearch的线程数,
-  "esUrl": "http://127.0.0.1:9200/%s_index/_doc/%s" // Elasticsearch szUrl
+  "esUrl": "http://127.0.0.1:9200/%s_index/_doc/%s" // Elasticsearch url
 }
 ```
 
@@ -118,6 +118,6 @@ http://127.0.0.1:9200/naabu_index/_doc/_search
 http://127.0.0.1:9200/vscan_index/_doc/_search
 http://127.0.0.1:9200/hydra_index/_doc/_search
 http://127.0.0.1:9200/httpx_index/_doc/_search
-http://127.0.0.1:9200/httpx_index/_doc/_search?q=szUrl:in%20%221.28.15.18%22
+http://127.0.0.1:9200/httpx_index/_doc/_search?q=url:in%20%221.28.15.18%22
 
 ```

@@ -75,7 +75,7 @@ func init() {
 		goutils.GetFileName(),
 		expJson,
 		func(exp *jsonvul.JsonVul, u *httpclient.FixUrl, ss *scanconfig.SingleScanConfig) bool {
-		    uri := "/public/index.php?s=/index/qrcode/download/szUrl/L2V0Yy9wYXNzd2Q="
+		    uri := "/public/index.php?s=/index/qrcode/download/url/L2V0Yy9wYXNzd2Q="
 			cfg := httpclient.NewGetRequestConfig(uri)
 			cfg.VerifyTls = false
 			cfg.FollowRedirect = false
@@ -89,7 +89,7 @@ func init() {
 		    file := ss.Params["File"].(string)
 		    strbytes := []byte(file)
             encoded := base64.StdEncoding.EncodeToString(strbytes)
-		    uri := "/public/index.php?s=/index/qrcode/download/szUrl/" + encoded
+		    uri := "/public/index.php?s=/index/qrcode/download/url/" + encoded
 			cfg := httpclient.NewGetRequestConfig(uri)
 			cfg.VerifyTls = false
 			cfg.FollowRedirect = false
