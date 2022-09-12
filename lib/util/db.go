@@ -52,11 +52,11 @@ func GetDb(dst ...interface{}) *gorm.DB {
 	log.Println("DbName ", szDf)
 	xx01 := sqlite.Open("file:" + szDf + ".db?cache=shared&mode=rwc&_journal_mode=WAL&Synchronous=Off&temp_store=memory&mmap_size=30000000000")
 	db, err := gorm.Open(xx01, &gorm.Config{PrepareStmt: true, Logger: logger.Default.LogMode(logger.Silent)})
-	if err == nil {
+	if err == nil { // no error
 		db1, _ := db.DB()
 		if err := db1.Ping(); nil == err {
 			dbCC = db
-			db1.SetConnMaxLifetime(time.Minute * 3)
+			db1.SetConnMaxLifetime(time.Minute * 60)
 			db1.SetMaxIdleConns(GetValAsInt("MaxIdleConns", 100))
 			db1.SetMaxOpenConns(GetValAsInt("MaxOpenConns", 200))
 			if nil != dst && 0 < len(dst) {
