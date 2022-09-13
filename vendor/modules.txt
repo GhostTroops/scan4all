@@ -217,12 +217,16 @@ github.com/chromedp/chromedp/kb
 # github.com/chromedp/sysutil v1.0.0
 ## explicit; go 1.15
 github.com/chromedp/sysutil
+# github.com/cilium/ebpf v0.7.0
+## explicit; go 1.16
 # github.com/cnf/structhash v0.0.0-20201127153200-e1b16c1ebc08
 ## explicit
 github.com/cnf/structhash
 # github.com/corpix/uarand v0.2.0
 ## explicit; go 1.17
 github.com/corpix/uarand
+# github.com/cosiner/argv v0.1.0
+## explicit; go 1.13
 # github.com/cpuguy83/go-md2man/v2 v2.0.2
 ## explicit; go 1.11
 github.com/cpuguy83/go-md2man/v2/md2man
@@ -239,6 +243,8 @@ github.com/denisenkom/go-mssqldb/internal/cp
 github.com/denisenkom/go-mssqldb/internal/decimal
 github.com/denisenkom/go-mssqldb/internal/querytext
 github.com/denisenkom/go-mssqldb/msdsn
+# github.com/derekparker/trie v0.0.0-20200317170641-1fdf38b7b0e9
+## explicit
 # github.com/dgraph-io/badger v1.6.2
 ## explicit; go 1.12
 github.com/dgraph-io/badger
@@ -281,6 +287,10 @@ github.com/fatih/structs
 # github.com/fsnotify/fsnotify v1.5.4
 ## explicit; go 1.16
 github.com/fsnotify/fsnotify
+# github.com/go-delve/delve v1.9.1
+## explicit; go 1.16
+# github.com/go-delve/liner v1.2.3-0.20220127212407-d32d89dd2a5d
+## explicit
 # github.com/go-ole/go-ole v1.2.6
 ## explicit; go 1.12
 github.com/go-ole/go-ole
@@ -385,6 +395,8 @@ github.com/google/cel-go/interpreter
 github.com/google/cel-go/interpreter/functions
 github.com/google/cel-go/parser
 github.com/google/cel-go/parser/gen
+# github.com/google/go-dap v0.6.0
+## explicit; go 1.13
 # github.com/google/go-github v17.0.0+incompatible
 ## explicit
 github.com/google/go-github/github
@@ -478,6 +490,8 @@ github.com/icodeface/tls/internal/x/crypto/curve25519
 github.com/icodeface/tls/internal/x/crypto/hkdf
 github.com/icodeface/tls/internal/x/crypto/internal/chacha20
 github.com/icodeface/tls/internal/x/crypto/poly1305
+# github.com/inconshreveable/mousetrap v1.0.0
+## explicit
 # github.com/itchyny/gojq v0.12.8
 ## explicit; go 1.16
 github.com/itchyny/gojq
@@ -1006,6 +1020,8 @@ github.com/spf13/afero/mem
 # github.com/spf13/cast v1.5.0
 ## explicit; go 1.18
 github.com/spf13/cast
+# github.com/spf13/cobra v1.1.3
+## explicit; go 1.12
 # github.com/spf13/jwalterweatherman v1.1.0
 ## explicit
 github.com/spf13/jwalterweatherman
@@ -1192,6 +1208,8 @@ go.mongodb.org/mongo-driver/x/mongo/driver/session
 go.mongodb.org/mongo-driver/x/mongo/driver/topology
 go.mongodb.org/mongo-driver/x/mongo/driver/uuid
 go.mongodb.org/mongo-driver/x/mongo/driver/wiremessage
+# go.starlark.net v0.0.0-20220816155156-cfacd8902214
+## explicit; go 1.13
 # go.uber.org/atomic v1.10.0
 ## explicit; go 1.18
 go.uber.org/atomic
@@ -1214,6 +1232,8 @@ go.uber.org/zap/zapcore
 goftp.io/server/v2
 goftp.io/server/v2/driver/file
 goftp.io/server/v2/ratelimit
+# golang.org/x/arch v0.0.0-20190927153633-4e8777c89be4
+## explicit; go 1.11
 # golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
 ## explicit; go 1.17
 golang.org/x/crypto/blowfish
