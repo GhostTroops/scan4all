@@ -139,24 +139,24 @@ func DelTmpFgFile() {
 
 // 这里可以动态加载远程的url指纹数据到 FgData
 func init() {
-	FgData = util.GetVal4File("FgData", FgData)
-	json.Unmarshal([]byte(FgData), &FGDataMap)
-	var aN []map[string]interface{}
-	for _, x := range FGDataMap {
-		if bD, ok := x["delete"]; !ok || false == bD.(bool) {
-			aN = append(aN, x)
+	util.RegInitFunc(func() {
+		FgData = util.GetVal4File("FgData", FgData)
+		json.Unmarshal([]byte(FgData), &FGDataMap)
+		var aN []map[string]interface{}
+		for _, x := range FGDataMap {
+			if bD, ok := x["delete"]; !ok || false == bD.(bool) {
+				aN = append(aN, x)
+			}
 		}
-	}
-	FGDataMap = aN
-	MergeReqUrl()
-	var err error
-	tempInput1, err = ioutil.TempFile("", "dict-in-*")
-	if nil == err {
-		ioutil.WriteFile(tempInput1.Name(), []byte(strings.Join(FgUrls, "\n")), 0644)
-		FgDictFile = tempInput1.Name()
-	} else {
-
-	}
+		FGDataMap = aN
+		MergeReqUrl()
+		var err error
+		tempInput1, err = ioutil.TempFile("", "dict-in-*")
+		if nil == err {
+			ioutil.WriteFile(tempInput1.Name(), []byte(strings.Join(FgUrls, "\n")), 0644)
+			FgDictFile = tempInput1.Name()
+		}
+	})
 }
 
 func FavicohashMd5(StatusCode int, header http.Header, body []byte, err error) string {
