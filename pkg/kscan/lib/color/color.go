@@ -2,9 +2,7 @@ package color
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
 	"math/rand"
-	"runtime"
 	"strconv"
 	"strings"
 )
@@ -43,20 +41,8 @@ var (
 
 //mod = 0 则为不输出颜色;
 //mod = 1 则依据ANSI转义序列输出颜色体系;
-func Init(b bool) bool {
-	if b == true {
-		mod = 0
-		return true
-	}
-	if runtime.GOOS != "windows" {
-		mod = 1
-		return false
-	}
-	if !util.GetValAsBool("kscan_COLOR") {
-		return false
-	}
+func init() {
 	mod = 0
-	return true
 }
 
 func convANSI(s string, color int, background int, format []int) string {

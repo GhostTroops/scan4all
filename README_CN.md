@@ -205,6 +205,7 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</a>
 
 # 变更日志
+- 2022-07-28 为 nuclei 添加 substr、 aes_cbc DSL 函数<a href="https://github.com/projectdiscovery/nuclei/releases/tag/v2.7.7">nuclei v2.7.7</a>
 - 2022-08-03 fixed nuclei Multiple instances cache goroutine leaks PR<a href=https://github.com/projectdiscovery/nuclei/issues/2386>#2386</a>
 - 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/issues/2301>#2301</a> 并发多实例的bug
 - 2022-07-20 add web cache vulnerability scanner

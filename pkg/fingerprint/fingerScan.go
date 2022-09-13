@@ -51,10 +51,7 @@ func PreprocessingFingerScan(url string) []string {
 }
 
 // 相同url、cms命中两次就不再匹配
-var Max_Count = 2
-
-// 识别期间命中率控制、提高效率
-var MUrl *sync.Map = new(sync.Map)
+var Max_Count = 10
 
 // 图标每个目标只识别一次
 var Mfavhash *sync.Map = new(sync.Map)
@@ -65,7 +62,6 @@ var MFid *sync.Map = new(sync.Map)
 // 清除数据
 func ClearData() {
 	Mfavhash = nil
-	MUrl = nil
 	EholeFinpx = nil
 	LocalFinpx = nil
 	DelTmpFgFile()
@@ -98,16 +94,6 @@ func CaseMethod(szUrl, method, bodyString, favhash, md5Body, hexBody string, fin
 
 	if _, ok := Mfavhash.Load(u01.Host + favhash); ok {
 		return cms
-	}
-	szKey := szUrl + finp.Cms + favhash
-	if v, ok := MUrl.Load(szKey); ok {
-		n1 := v.(int)
-		if Max_Count <= v.(int) {
-			return cms
-		}
-		MUrl.Store(szKey, n1+1)
-	} else {
-		MUrl.Store(szKey, 1)
 	}
 
 	switch method {
@@ -201,11 +187,6 @@ func FingerScan(headers map[string][]string, body []byte, title string, szUrl st
 				continue
 			}
 			n1 := len(cms)
-			// 蜜罐检测、放弃（丢弃）结果
-			if ok, a := CheckHoneyport(cms); ok {
-				cms = a
-				break
-			}
 			if finp.UrlPath == "" || strings.HasSuffix(szUrl, finp.UrlPath) {
 				//if -1 < strings.Index(szUrl, "/favicon.ico") && finp.Cms == "SpringBoot" {
 				//	log.Println(szUrl)
@@ -230,6 +211,14 @@ func FingerScan(headers map[string][]string, body []byte, title string, szUrl st
 				fgIds = append(fgIds, fmt.Sprintf("%v", finp.Id))
 				log.Printf("%d\n", finp.Id)
 				n1 = len(cms)
+			}
+			// 蜜罐检测、放弃（丢弃）结果
+			if ok, a := CheckHoneyport(cms); ok {
+				cms = a
+				break
+			}
+			if len(cms) >= Max_Count {
+				break
 			}
 		}
 
