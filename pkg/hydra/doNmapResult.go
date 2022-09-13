@@ -11,7 +11,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 // 弱口令检测
@@ -28,10 +27,9 @@ func CheckWeakPassword(ip, service string, port int) {
 
 // 开启了es
 var enableEsSv, bCheckWeakPassword bool = false, true
-var one sync.Once
 
-func Init() {
-	one.Do(func() {
+func init() {
+	util.RegInitFunc(func() {
 		enableEsSv = util.GetValAsBool("enableEsSv")
 		bCheckWeakPassword = util.GetValAsBool("CheckWeakPassword")
 		//log.Println("CheckWeakPassword = ", util.GetVal("CheckWeakPassword"), " bCheckWeakPassword = ", bCheckWeakPassword)
@@ -48,7 +46,6 @@ func GetAttr(att []xmlquery.Attr, name string) string {
 }
 
 func DoParseXml(s string, bf *bytes.Buffer) {
-	Init()
 	doc, err := xmlquery.Parse(strings.NewReader(s))
 	if err != nil {
 		log.Println("DoParseXml： ", err)
