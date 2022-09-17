@@ -30,7 +30,8 @@ import (
 
 // 需优化：相同都目标，相同都检测只做一次
 func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool) []string {
-	if util.TestRepeat(wappalyzertechnologies, URL, finalURL, checklog4j) {
+	u01, _ := url.Parse(finalURL)
+	if util.TestRepeat(wappalyzertechnologies, u01.Host, u01.Host, checklog4j) {
 		return []string{}
 	}
 	var HOST, hostname string
@@ -72,7 +73,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 		case "msrpc":
 			a, err := ms.CheckDCom(hostname)
 			if nil != err && 0 < len(a) {
-				technologies = append(technologies, fmt.Sprintf("microsoft port 135 Dcom :%s", hostname))
+				technologies = append(technologies, fmt.Sprintf("microsoft port 135 Dcom Oxid:%s", hostname))
 			}
 		case "microsoft-ds":
 			key, err := ms.SmbGhostScan(hostname)

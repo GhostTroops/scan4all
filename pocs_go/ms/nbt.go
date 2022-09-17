@@ -133,6 +133,7 @@ func processAddress(i <-chan string, o chan<- ScanResult) {
 	wi.Done()
 }
 
+// 内网 ip 检测
 // 调用入口
 func Info(target string) {
 	limiter = rate.NewLimiter(rate.Limit(*ppsrate), *ppsrate*3)

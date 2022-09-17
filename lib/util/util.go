@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/corpix/uarand"
 	"github.com/hbakhtiyor/strsim"
+	"github.com/karlseguin/ccache"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/http/cookiejar"
@@ -27,39 +29,13 @@ var (
 
 // http密码爆破
 func HttpRequsetBasic(username string, password string, urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
-	var tr *http.Transport
+	client := GetClient(urlstring)
 	var err error
-	if HttpProxy != "" {
-		uri, _ := url.Parse(strings.TrimSpace(HttpProxy))
-		tr = &http.Transport{
-			MaxIdleConnsPerHost: -1,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
-			DisableKeepAlives:   true,
-			Proxy:               http.ProxyURL(uri),
-			IdleConnTimeout:     15 * time.Second,
-		}
-	} else {
-		tr = &http.Transport{
-			MaxIdleConnsPerHost: -1,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
-			DisableKeepAlives:   true,
-			IdleConnTimeout:     15 * time.Second,
-		}
-	}
-
-	client := &http.Client{
-		Timeout:   time.Duration(10) * time.Second,
-		Transport: tr,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		}}
 	if isredirect {
 		jar, _ := cookiejar.New(nil)
-		client = &http.Client{
-			Timeout:   time.Duration(10) * time.Second,
-			Transport: tr,
-			Jar:       jar,
-		}
+		client.Jar = jar
+	} else {
+		client.Jar = nil
 	}
 	req, err := http.NewRequest(strings.ToUpper(method), urlstring, strings.NewReader(postdata))
 	if err != nil {
@@ -92,41 +68,104 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 	return &Response{resp.Status, resp.StatusCode, reqbody, &resp.Header, len(reqbody), resp.Request.URL.String(), location}, nil
 }
 
+// client缓存
+var clientHttpCc *ccache.Cache
+
+func InitCHcc() {
+	if nil == clientHttpCc {
+		configure := ccache.Configure()
+		configure = configure.MaxSize(10000)
+		clientHttpCc = ccache.New(configure)
+	}
+}
+
+func init() {
+	RegInitFunc(func() {
+		InitCHcc()
+	})
+}
+
+var mUrls = make(map[string]string)
+
+func GetClient4Cc(szUrl string) *http.Client {
+	InitCHcc()
+	oU, err := url.Parse(szUrl)
+	if nil == err {
+		if o := clientHttpCc.Get(oU.Host); nil != o {
+			if v, ok := o.Value().(*http.Client); ok {
+				return v
+			}
+		}
+	} else {
+		log.Println("GetClient4Cc url.Parse is err ", err, szUrl)
+	}
+	return nil
+}
+func GetClient(szUrl string) *http.Client {
+	oU, err := url.Parse(szUrl)
+	if nil != err {
+		log.Printf("GetClient url:%s url.Parse err:%v\n", szUrl, err)
+		return nil
+	}
+	client := GetClient4Cc(szUrl)
+	if nil != client {
+		return client
+	}
+	var tr *http.Transport
+	tr = &http.Transport{
+		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS10},
+		DisableKeepAlives:     false,
+		MaxIdleConns:          300,
+		IdleConnTimeout:       180,
+		TLSHandshakeTimeout:   60,
+		ExpectContinueTimeout: 30,
+		MaxIdleConnsPerHost:   100,
+	}
+	if HttpProxy != "" {
+		uri, _ := url.Parse(strings.TrimSpace(HttpProxy))
+		tr.Proxy = http.ProxyURL(uri)
+	}
+
+	client = &http.Client{
+		Timeout:   time.Duration(20) * time.Second,
+		Transport: tr,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		}}
+	mUrls[oU.Host] = ""
+	clientHttpCc.Set(oU.Host, client, defaultInteractionDuration)
+	return client
+}
+
+func CloseHttpClient(szUrl string) {
+	oU, _ := url.Parse(szUrl)
+	client := GetClient4Cc(szUrl)
+	if nil != client {
+		client.CloseIdleConnections()
+	}
+	clientHttpCc.Delete(oU.Host)
+}
+func CloseAllHttpClient() {
+	for k, _ := range mUrls {
+		CloseHttpClient("http://" + k)
+	}
+}
+
 // 需要考虑缓存
 //  1、缓解网络不好的情况
 //  2、缓存有效期为当天
 //  3、缓存命中需和请求的数据完全匹配
 func HttpRequset(urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
-	var tr *http.Transport
-	if HttpProxy != "" {
-		uri, _ := url.Parse(strings.TrimSpace(HttpProxy))
-		tr = &http.Transport{
-			MaxIdleConnsPerHost: -1,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
-			DisableKeepAlives:   true,
-			Proxy:               http.ProxyURL(uri),
-		}
-	} else {
-		tr = &http.Transport{
-			MaxIdleConnsPerHost: -1,
-			TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
-			DisableKeepAlives:   true,
-		}
+	client := GetClient(urlstring)
+	if nil == client {
+		log.Printf("client is nil, url [%s]\n", urlstring)
+		return nil, nil
 	}
-
-	client := &http.Client{
-		Timeout:   time.Duration(10) * time.Second,
-		Transport: tr,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		}}
 	if isredirect {
 		jar, _ := cookiejar.New(nil)
-		client = &http.Client{
-			Timeout:   time.Duration(10) * time.Second,
-			Transport: tr,
-			Jar:       jar,
-		}
+		client.Jar = jar
+	} else {
+		client.Jar = nil
 	}
 	req, err := http.NewRequest(strings.ToUpper(method), urlstring, strings.NewReader(postdata))
 	if err != nil {
@@ -140,13 +179,15 @@ func HttpRequset(urlstring string, method string, postdata string, isredirect bo
 		req.Header[v] = []string{k}
 	}
 	resp, err := client.Do(req)
+	if nil != resp {
+		defer resp.Body.Close()
+	}
 	if err != nil {
 		//防止空指针
 		return &Response{"999", 999, "", nil, 0, "", ""}, err
 	}
 	var location string
 	var reqbody string
-	defer resp.Body.Close()
 	if body, err := ioutil.ReadAll(resp.Body); err == nil {
 		reqbody = string(body)
 	}

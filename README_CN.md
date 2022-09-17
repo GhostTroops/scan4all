@@ -33,12 +33,12 @@ Vulnerabilities Scan；15000+PoC漏洞扫描；[ 23 ] 种应用弱口令爆破�
   * Redis
   * FTP
   * Mongodb
-  * SMB,同时检测 MS17-010（CVE-2017-0143、CVE-2017-0144、CVE-2017-0145、CVE-2017-0146、CVE-2017-0147、CVE-2017-0148）、SmbGhost（CVE-2020-0796）
+  * SMB,同时检测 MS17-010（CVE-2017-0143、CVE-2017-0144、CVE-2017-0145、CVE-2017-0146、CVE-2017-0147、CVE-2017-0148）、SmbGhost（CVE-2020-0796）、DCOM(msrpc, port 135, Oxid Scan)
   * Telnet
   * Snmp
   * Wap-wsp（Elasticsearch）
   * RouterOs
-  * HTTP  BasicAuth(Authorization), contains Webdav、SVN（Apache Subversion） crack
+  * HTTP  BasicAuth(HttpBasic,Authorization), contains Webdav、SVN（Apache Subversion） crack
   * Weblogic，同时通过 enableNuclei=true 开启nuclei，支持T3、IIOP等检测
   * Tomcat
   * Jboss
@@ -242,8 +242,3 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |
 | --- | --- | --- | --- | --- |
 |<img src=https://github.com/hktalent/myhktools/blob/master/md/wc.png>|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/zfb.png>|[paypal](https://www.paypal.me/pwned2019) **miracletalent@gmail.com**|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/BTC.png>|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/BCH.jpg>|
-
-<!--
-使用最新的次要或补丁版本（并添加-t以升级测试依赖项）
-go get -t -v -u ./...
--->

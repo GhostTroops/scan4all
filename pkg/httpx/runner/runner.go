@@ -1333,6 +1333,7 @@ retry:
 			}
 			// 敏感文件fuzz扫描
 			filePaths, filefuzzTechnologies = brute.FileFuzz(ul, resp.StatusCode, resp.ContentLength, resp.Raw)
+			gologger.Debug().Msgf("%s fuzz\n%+v\n", ul, filePaths)
 			filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)
 			// 取差集合
 			filefuzzTechnologies = difference(filefuzzTechnologies, technologies)
