@@ -1,6 +1,9 @@
 package goby
 
-import "embed"
+import (
+	"embed"
+	"fmt"
+)
 
 //go:embed goby_pocs
 var GobyPocs embed.FS
@@ -8,7 +11,8 @@ var GobyPocs embed.FS
 // 驱动 Goby PoCs
 func DoGobyGocks(szUrl string) {
 	for poc := range LoadPocs(GobyPocs) {
-		if "" != poc {
+		szPoc := fmt.Sprintf("%v", poc)
+		if "" != szPoc {
 		}
 	}
 }

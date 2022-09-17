@@ -99,7 +99,7 @@ func (s *httpSolver) serve(ctx context.Context, si *solverInfo) {
 }
 
 // CleanUp cleans up the HTTP server if it is the last one to finish.
-func (s *httpSolver) CleanUp(ctx context.Context, _ acme.Challenge) error {
+func (s *httpSolver) CleanUp(_ context.Context, _ acme.Challenge) error {
 	solversMu.Lock()
 	defer solversMu.Unlock()
 	si := getSolverInfo(s.address)
@@ -220,7 +220,7 @@ func (*tlsALPNSolver) handleConn(conn net.Conn) {
 
 // CleanUp removes the challenge certificate from the cache, and if
 // it is the last one to finish, stops the TLS server.
-func (s *tlsALPNSolver) CleanUp(ctx context.Context, chal acme.Challenge) error {
+func (s *tlsALPNSolver) CleanUp(_ context.Context, chal acme.Challenge) error {
 	solversMu.Lock()
 	defer solversMu.Unlock()
 	si := getSolverInfo(s.address)
@@ -234,7 +234,6 @@ func (s *tlsALPNSolver) CleanUp(ctx context.Context, chal acme.Challenge) error 
 		}
 		delete(solvers, s.address)
 	}
-
 	return nil
 }
 
@@ -357,7 +356,7 @@ func (s *DNS01Solver) Wait(ctx context.Context, challenge acme.Challenge) error 
 	// timings
 	timeout := s.PropagationTimeout
 	if timeout == 0 {
-		timeout = 2 * time.Minute
+		timeout = defaultDNSPropagationTimeout
 	}
 	const interval = 2 * time.Second
 
@@ -386,7 +385,12 @@ func (s *DNS01Solver) Wait(ctx context.Context, challenge acme.Challenge) error 
 }
 
 // CleanUp deletes the DNS TXT record created in Present().
-func (s *DNS01Solver) CleanUp(ctx context.Context, challenge acme.Challenge) error {
+//
+// We ignore the context because cleanup is often/likely performed after
+// a context cancellation, and properly-implemented DNS providers should
+// honor cancellation, which would result in cleanup being aborted.
+// Cleanup must always occur.
+func (s *DNS01Solver) CleanUp(_ context.Context, challenge acme.Challenge) error {
 	dnsName := challenge.DNS01TXTRecordName()
 	if s.OverrideDomain != "" {
 		dnsName = s.OverrideDomain
@@ -402,7 +406,17 @@ func (s *DNS01Solver) CleanUp(ctx context.Context, challenge acme.Challenge) err
 		return err
 	}
 
-	// clean up the record
+	// clean up the record - use a different context though, since
+	// one common reason cleanup is performed is because a context
+	// was canceled, and if so, any HTTP requests by this provider
+	// should fail if the provider is properly implemented
+	// (see issue #200)
+	timeout := s.PropagationTimeout
+	if timeout <= 0 {
+		timeout = defaultDNSPropagationTimeout
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
 	_, err = s.DNSProvider.DeleteRecords(ctx, memory.dnsZone, []libdns.Record{memory.rec})
 	if err != nil {
 		return fmt.Errorf("deleting temporary record for name %q in zone %q: %w", memory.dnsName, memory.dnsZone, err)
@@ -410,6 +424,8 @@ func (s *DNS01Solver) CleanUp(ctx context.Context, challenge acme.Challenge) err
 
 	return nil
 }
+
+const defaultDNSPropagationTimeout = 2 * time.Minute
 
 type dnsPresentMemory struct {
 	dnsZone string
@@ -680,7 +696,7 @@ var (
 // data that can make it easier or more efficient to solve.
 type Challenge struct {
 	acme.Challenge
-	data interface{}
+	data any
 }
 
 // challengeKey returns the map key for a given challenge; it is the identifier

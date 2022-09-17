@@ -445,7 +445,7 @@ func (un *evalUnary) Eval(ctx Activation) ref.Val {
 	}
 	// If the implementation is bound and the argument value has the right traits required to
 	// invoke it, then call the implementation.
-	if un.impl != nil && (un.trait == 0 || argVal.Type().HasTrait(un.trait)) {
+	if un.impl != nil && (un.trait == 0 || (!strict && types.IsUnknownOrError(argVal)) || argVal.Type().HasTrait(un.trait)) {
 		return un.impl(argVal)
 	}
 	// Otherwise, if the argument is a ReceiverType attempt to invoke the receiver method on the
@@ -511,7 +511,7 @@ func (bin *evalBinary) Eval(ctx Activation) ref.Val {
 	}
 	// If the implementation is bound and the argument value has the right traits required to
 	// invoke it, then call the implementation.
-	if bin.impl != nil && (bin.trait == 0 || lVal.Type().HasTrait(bin.trait)) {
+	if bin.impl != nil && (bin.trait == 0 || (!strict && types.IsUnknownOrError(lVal)) || lVal.Type().HasTrait(bin.trait)) {
 		return bin.impl(lVal, rVal)
 	}
 	// Otherwise, if the argument is a ReceiverType attempt to invoke the receiver method on the
@@ -582,7 +582,7 @@ func (fn *evalVarArgs) Eval(ctx Activation) ref.Val {
 	// If the implementation is bound and the argument value has the right traits required to
 	// invoke it, then call the implementation.
 	arg0 := argVals[0]
-	if fn.impl != nil && (fn.trait == 0 || arg0.Type().HasTrait(fn.trait)) {
+	if fn.impl != nil && (fn.trait == 0 || (!strict && types.IsUnknownOrError(arg0)) || arg0.Type().HasTrait(fn.trait)) {
 		return fn.impl(argVals...)
 	}
 	// Otherwise, if the argument is a ReceiverType attempt to invoke the receiver method on the
@@ -835,7 +835,9 @@ func (fold *evalFold) Eval(ctx Activation) ref.Val {
 	varActivationPool.Put(accuCtx)
 	// Convert a mutable list to an immutable one, if the comprehension has generated a list as a result.
 	if !types.IsUnknownOrError(res) && buildingList {
-		res = res.(traits.MutableLister).ToImmutableList()
+		if _, ok := res.(traits.MutableLister); ok {
+			res = res.(traits.MutableLister).ToImmutableList()
+		}
 	}
 	return res
 }

@@ -50,12 +50,12 @@ func (c *Client) GetStatistics(req *GetStatisticsRequest) (*GetStatisticsRespons
 		return nil, errors.Wrap(err, "could not make request.")
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, errors.Wrap(err, "could not read response.")
 		}
-		return nil, fmt.Errorf("invalid status code received: %d - %s", resp.StatusCode, string(body))
+		return nil, InvalidStatusCodeError{StatusCode: resp.StatusCode, Message: body}
 	}
 
 	defer pdhttputil.DrainResponseBody(resp)
@@ -101,14 +101,14 @@ func (c *Client) GetSubdomains(req *SubdomainsRequest) chan *Result {
 			return
 		}
 
-		if resp.StatusCode != 200 {
+		if resp.StatusCode != http.StatusOK {
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				results <- &Result{Error: errors.Wrap(err, "could not read response.")}
 				return
 			}
 			pdhttputil.DrainResponseBody(resp)
-			results <- &Result{Error: fmt.Errorf("invalid status code received: %d - %s", resp.StatusCode, string(body))}
+			results <- &Result{Error: InvalidStatusCodeError{StatusCode: resp.StatusCode, Message: body}}
 			return
 		}
 
@@ -194,14 +194,14 @@ func (c *Client) GetBBQSubdomains(req *SubdomainsRequest) chan *BBQResult {
 			return
 		}
 
-		if resp.StatusCode != 200 {
+		if resp.StatusCode != http.StatusOK {
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				results <- &BBQResult{Error: errors.Wrap(err, "could not read response.")}
 				return
 			}
 			pdhttputil.DrainResponseBody(resp)
-			results <- &BBQResult{Error: fmt.Errorf("invalid status code received: %d - %s", resp.StatusCode, string(body))}
+			results <- &BBQResult{Error: InvalidStatusCodeError{StatusCode: resp.StatusCode, Message: body}}
 			return
 		}
 
@@ -246,13 +246,22 @@ func (c *Client) PutSubdomains(req *PutSubdomainsRequest) (*PutSubdomainsRespons
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return nil, errors.Wrap(err, "could not read response.")
 		}
-		return nil, fmt.Errorf("invalid status code received: %d - %s", resp.StatusCode, string(body))
+		return nil, InvalidStatusCodeError{StatusCode: resp.StatusCode, Message: body}
 	}
 	_, _ = io.Copy(ioutil.Discard, resp.Body)
 	return &PutSubdomainsResponse{}, nil
+}
+
+type InvalidStatusCodeError struct {
+	StatusCode int
+	Message    []byte
+}
+
+func (e InvalidStatusCodeError) Error() string {
+	return fmt.Sprintf("invalid status code received: %d - %s", e.StatusCode, e.Message)
 }

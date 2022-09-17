@@ -182,7 +182,9 @@ func NewOracleNetworkCBCEncrypter(key, iv []byte) (*OracleNetworkCBCCryptor, err
 	if err != nil {
 		return nil, err
 	}
-
+	if iv == nil {
+		iv = make([]byte, 16)
+	}
 	output := &OracleNetworkCBCCryptor{blk: blk, iv: iv}
 	return output, nil
 }

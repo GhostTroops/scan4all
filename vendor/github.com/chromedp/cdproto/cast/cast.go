@@ -76,7 +76,8 @@ type SetSinkToUseParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Cast#method-setSinkToUse
 //
 // parameters:
-//   sinkName
+//
+//	sinkName
 func SetSinkToUse(sinkName string) *SetSinkToUseParams {
 	return &SetSinkToUseParams{
 		SinkName: sinkName,
@@ -98,7 +99,8 @@ type StartDesktopMirroringParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Cast#method-startDesktopMirroring
 //
 // parameters:
-//   sinkName
+//
+//	sinkName
 func StartDesktopMirroring(sinkName string) *StartDesktopMirroringParams {
 	return &StartDesktopMirroringParams{
 		SinkName: sinkName,
@@ -120,7 +122,8 @@ type StartTabMirroringParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Cast#method-startTabMirroring
 //
 // parameters:
-//   sinkName
+//
+//	sinkName
 func StartTabMirroring(sinkName string) *StartTabMirroringParams {
 	return &StartTabMirroringParams{
 		SinkName: sinkName,
@@ -142,7 +145,8 @@ type StopCastingParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Cast#method-stopCasting
 //
 // parameters:
-//   sinkName
+//
+//	sinkName
 func StopCasting(sinkName string) *StopCastingParams {
 	return &StopCastingParams{
 		SinkName: sinkName,

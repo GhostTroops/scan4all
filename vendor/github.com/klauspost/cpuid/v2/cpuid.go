@@ -159,7 +159,6 @@ const (
 	RDTSCP                              // RDTSCP Instruction
 	RTM                                 // Restricted Transactional Memory
 	RTM_ALWAYS_ABORT                    // Indicates that the loaded microcode is forcing RTM abort.
-	SCE                                 // SYSENTER and SYSEXIT instructions
 	SERIALIZE                           // Serialize Instruction Execution
 	SEV                                 // AMD Secure Encrypted Virtualization supported
 	SEV_64BIT                           // AMD SEV guest execution only allowed from a 64-bit host
@@ -190,7 +189,10 @@ const (
 	SVMNP                               // AMD SVM nested paging
 	SVMPF                               // SVM pause intercept filter. Indicates support for the pause intercept filter
 	SVMPFT                              // SVM PAUSE filter threshold. Indicates support for the PAUSE filter cycle count threshold
+	SYSCALL                             // System-Call Extension (SCE): SYSCALL and SYSRET instructions.
+	SYSEE                               // SYSENTER and SYSEXIT instructions
 	TBM                                 // AMD Trailing Bit Manipulation
+	TOPEXT                              // TopologyExtensions: topology extensions support. Indicates support for CPUID Fn8000_001D_EAX_x[N:0]-CPUID Fn8000_001E_EDX.
 	TME                                 // Intel Total Memory Encryption. The following MSRs are supported: IA32_TME_CAPABILITY, IA32_TME_ACTIVATE, IA32_TME_EXCLUDE_MASK, and IA32_TME_EXCLUDE_BASE.
 	TSCRATEMSR                          // MSR based TSC rate control. Indicates support for MSR TSC ratio MSRC000_0104
 	TSXLDTRK                            // Intel TSX Suspend Load Address Tracking
@@ -253,6 +255,7 @@ type CPUInfo struct {
 	LogicalCores   int     // Number of physical cores times threads that can run on each core through the use of hyperthreading. Will be 0 if undetectable.
 	Family         int     // CPU family number
 	Model          int     // CPU model number
+	Stepping       int     // CPU stepping info
 	CacheLine      int     // Cache line size in bytes. Will be 0 if undetectable.
 	Hz             int64   // Clock speed, if known, 0 otherwise. Will attempt to contain base clock speed.
 	BoostFreq      int64   // Max clock speed, if known, 0 otherwise
@@ -359,11 +362,21 @@ func (c CPUInfo) Has(id FeatureID) bool {
 	return c.featureSet.inSet(id)
 }
 
+// AnyOf returns whether the CPU supports one or more of the requested features.
+func (c CPUInfo) AnyOf(ids ...FeatureID) bool {
+	for _, id := range ids {
+		if c.featureSet.inSet(id) {
+			return true
+		}
+	}
+	return false
+}
+
 // https://en.wikipedia.org/wiki/X86-64#Microarchitecture_levels
-var level1Features = flagSetWith(CMOV, CMPXCHG8, X87, FXSR, MMX, SCE, SSE, SSE2)
-var level2Features = flagSetWith(CMOV, CMPXCHG8, X87, FXSR, MMX, SCE, SSE, SSE2, CX16, LAHF, POPCNT, SSE3, SSE4, SSE42, SSSE3)
-var level3Features = flagSetWith(CMOV, CMPXCHG8, X87, FXSR, MMX, SCE, SSE, SSE2, CX16, LAHF, POPCNT, SSE3, SSE4, SSE42, SSSE3, AVX, AVX2, BMI1, BMI2, F16C, FMA3, LZCNT, MOVBE, OSXSAVE)
-var level4Features = flagSetWith(CMOV, CMPXCHG8, X87, FXSR, MMX, SCE, SSE, SSE2, CX16, LAHF, POPCNT, SSE3, SSE4, SSE42, SSSE3, AVX, AVX2, BMI1, BMI2, F16C, FMA3, LZCNT, MOVBE, OSXSAVE, AVX512F, AVX512BW, AVX512CD, AVX512DQ, AVX512VL)
+var level1Features = flagSetWith(CMOV, CMPXCHG8, X87, FXSR, MMX, SYSCALL, SSE, SSE2)
+var level2Features = flagSetWith(CMOV, CMPXCHG8, X87, FXSR, MMX, SYSCALL, SSE, SSE2, CX16, LAHF, POPCNT, SSE3, SSE4, SSE42, SSSE3)
+var level3Features = flagSetWith(CMOV, CMPXCHG8, X87, FXSR, MMX, SYSCALL, SSE, SSE2, CX16, LAHF, POPCNT, SSE3, SSE4, SSE42, SSSE3, AVX, AVX2, BMI1, BMI2, F16C, FMA3, LZCNT, MOVBE, OSXSAVE)
+var level4Features = flagSetWith(CMOV, CMPXCHG8, X87, FXSR, MMX, SYSCALL, SSE, SSE2, CX16, LAHF, POPCNT, SSE3, SSE4, SSE42, SSSE3, AVX, AVX2, BMI1, BMI2, F16C, FMA3, LZCNT, MOVBE, OSXSAVE, AVX512F, AVX512BW, AVX512CD, AVX512DQ, AVX512VL)
 
 // X64Level returns the microarchitecture level detected on the CPU.
 // If features are lacking or non x64 mode, 0 is returned.
@@ -677,7 +690,7 @@ func threadsPerCore() int {
 		if vend == AMD {
 			// Workaround for AMD returning 0, assume 2 if >= Zen 2
 			// It will be more correct than not.
-			fam, _ := familyModel()
+			fam, _, _ := familyModel()
 			_, _, _, d := cpuid(1)
 			if (d&(1<<28)) != 0 && fam >= 23 {
 				return 2
@@ -715,14 +728,27 @@ func logicalCores() int {
 	}
 }
 
-func familyModel() (int, int) {
+func familyModel() (family, model, stepping int) {
 	if maxFunctionID() < 0x1 {
-		return 0, 0
+		return 0, 0, 0
 	}
 	eax, _, _, _ := cpuid(1)
-	family := ((eax >> 8) & 0xf) + ((eax >> 20) & 0xff)
-	model := ((eax >> 4) & 0xf) + ((eax >> 12) & 0xf0)
-	return int(family), int(model)
+	// If BaseFamily[3:0] is less than Fh then ExtendedFamily[7:0] is reserved and Family is equal to BaseFamily[3:0].
+	family = int((eax >> 8) & 0xf)
+	extFam := family == 0x6 // Intel is 0x6, needs extended model.
+	if family == 0xf {
+		// Add ExtFamily
+		family += int((eax >> 20) & 0xff)
+		extFam = true
+	}
+	// If BaseFamily[3:0] is less than 0Fh then ExtendedModel[3:0] is reserved and Model is equal to BaseModel[3:0].
+	model = int((eax >> 4) & 0xf)
+	if extFam {
+		// Add ExtModel
+		model += int((eax >> 12) & 0xf0)
+	}
+	stepping = int(eax & 0xf)
+	return family, model, stepping
 }
 
 func physicalCores() int {
@@ -857,7 +883,7 @@ func (c *CPUInfo) cacheSize() {
 		c.Cache.L2 = int(((ecx >> 16) & 0xFFFF) * 1024)
 
 		// CPUID Fn8000_001D_EAX_x[N:0] Cache Properties
-		if maxExtendedFunction() < 0x8000001D {
+		if maxExtendedFunction() < 0x8000001D || !c.Has(TOPEXT) {
 			return
 		}
 
@@ -974,14 +1000,13 @@ func support() flagSet {
 	if mfi < 0x1 {
 		return fs
 	}
-	family, model := familyModel()
+	family, model, _ := familyModel()
 
 	_, _, c, d := cpuid(1)
 	fs.setIf((d&(1<<0)) != 0, X87)
 	fs.setIf((d&(1<<8)) != 0, CMPXCHG8)
-	fs.setIf((d&(1<<11)) != 0, SCE)
+	fs.setIf((d&(1<<11)) != 0, SYSEE)
 	fs.setIf((d&(1<<15)) != 0, CMOV)
-	fs.setIf((d&(1<<22)) != 0, MMXEXT)
 	fs.setIf((d&(1<<23)) != 0, MMX)
 	fs.setIf((d&(1<<24)) != 0, FXSR)
 	fs.setIf((d&(1<<25)) != 0, FXSROPT)
@@ -989,9 +1014,9 @@ func support() flagSet {
 	fs.setIf((d&(1<<26)) != 0, SSE2)
 	fs.setIf((c&1) != 0, SSE3)
 	fs.setIf((c&(1<<5)) != 0, VMX)
-	fs.setIf((c&0x00000200) != 0, SSSE3)
-	fs.setIf((c&0x00080000) != 0, SSE4)
-	fs.setIf((c&0x00100000) != 0, SSE42)
+	fs.setIf((c&(1<<9)) != 0, SSSE3)
+	fs.setIf((c&(1<<19)) != 0, SSE4)
+	fs.setIf((c&(1<<20)) != 0, SSE42)
 	fs.setIf((c&(1<<25)) != 0, AESNI)
 	fs.setIf((c&(1<<1)) != 0, CLMUL)
 	fs.setIf(c&(1<<22) != 0, MOVBE)
@@ -1156,20 +1181,24 @@ func support() flagSet {
 		fs.setIf((c&(1<<2)) != 0, SVM)
 		fs.setIf((c&(1<<6)) != 0, SSE4A)
 		fs.setIf((c&(1<<10)) != 0, IBS)
+		fs.setIf((c&(1<<22)) != 0, TOPEXT)
 
 		// EDX
-		fs.setIf((d&(1<<31)) != 0, AMD3DNOW)
-		fs.setIf((d&(1<<30)) != 0, AMD3DNOWEXT)
-		fs.setIf((d&(1<<23)) != 0, MMX)
-		fs.setIf((d&(1<<22)) != 0, MMXEXT)
+		fs.setIf(d&(1<<11) != 0, SYSCALL)
 		fs.setIf(d&(1<<20) != 0, NX)
+		fs.setIf(d&(1<<22) != 0, MMXEXT)
+		fs.setIf(d&(1<<23) != 0, MMX)
+		fs.setIf(d&(1<<24) != 0, FXSR)
+		fs.setIf(d&(1<<25) != 0, FXSROPT)
 		fs.setIf(d&(1<<27) != 0, RDTSCP)
+		fs.setIf(d&(1<<30) != 0, AMD3DNOWEXT)
+		fs.setIf(d&(1<<31) != 0, AMD3DNOW)
 
 		/* XOP and FMA4 use the AVX instruction coding scheme, so they can't be
 		 * used unless the OS has AVX support. */
 		if fs.inSet(AVX) {
-			fs.setIf((c&0x00000800) != 0, XOP)
-			fs.setIf((c&0x00010000) != 0, FMA4)
+			fs.setIf((c&(1<<11)) != 0, XOP)
+			fs.setIf((c&(1<<16)) != 0, FMA4)
 		}
 
 	}

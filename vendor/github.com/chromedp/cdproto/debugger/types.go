@@ -100,6 +100,14 @@ type BreakLocation struct {
 	Type         BreakLocationType `json:"type,omitempty"`
 }
 
+// WasmDisassemblyChunk [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-WasmDisassemblyChunk
+type WasmDisassemblyChunk struct {
+	Lines           []string `json:"lines"`           // The next chunk of disassembled lines.
+	BytecodeOffsets []int64  `json:"bytecodeOffsets"` // The bytecode offsets describing the start of each line.
+}
+
 // ScriptLanguage enum of possible script languages.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#type-ScriptLanguage

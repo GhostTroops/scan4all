@@ -9,6 +9,7 @@ package operation
 import (
 	"context"
 	"errors"
+	"time"
 
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo/description"
@@ -35,6 +36,7 @@ type ListCollections struct {
 	result                driver.CursorResponse
 	batchSize             *int32
 	serverAPI             *driver.ServerAPIOptions
+	timeout               *time.Duration
 }
 
 // NewListCollections constructs and returns a new ListCollections.
@@ -85,6 +87,7 @@ func (lc *ListCollections) Execute(ctx context.Context) error {
 		Selector:          lc.selector,
 		Legacy:            driver.LegacyListCollections,
 		ServerAPI:         lc.serverAPI,
+		Timeout:           lc.timeout,
 	}.Execute(ctx, nil)
 
 }
@@ -201,7 +204,7 @@ func (lc *ListCollections) Deployment(deployment driver.Deployment) *ListCollect
 	return lc
 }
 
-// ReadPreference set the read prefernce used with this operation.
+// ReadPreference set the read preference used with this operation.
 func (lc *ListCollections) ReadPreference(readPreference *readpref.ReadPref) *ListCollections {
 	if lc == nil {
 		lc = new(ListCollections)
@@ -249,5 +252,15 @@ func (lc *ListCollections) ServerAPI(serverAPI *driver.ServerAPIOptions) *ListCo
 	}
 
 	lc.serverAPI = serverAPI
+	return lc
+}
+
+// Timeout sets the timeout for this operation.
+func (lc *ListCollections) Timeout(timeout *time.Duration) *ListCollections {
+	if lc == nil {
+		lc = new(ListCollections)
+	}
+
+	lc.timeout = timeout
 	return lc
 }

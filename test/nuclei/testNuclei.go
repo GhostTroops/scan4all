@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
+	runner2 "github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
 	"github.com/projectdiscovery/nuclei/v2/pkg/model/types/severity"
 	nucleiType "github.com/projectdiscovery/nuclei/v2/pkg/templates/types"
 	_ "net/http/pprof"
@@ -25,7 +26,8 @@ nuclei -duc -u http://192.168.10.31:8888 -t "http://127.0.0.1:8088/goSwaggerAPI.
 func DoNuclei(buf *bytes.Buffer, wg *sync.WaitGroup, oOpts *map[string]interface{}) {
 	defer wg.Done()
 	xx := make(chan bool)
-	go nuclei_Yaml.RunNuclei(buf, xx, oOpts)
+	outNuclei := make(chan *runner2.Runner, 2)
+	go nuclei_Yaml.RunNuclei(buf, xx, oOpts, outNuclei)
 	<-xx
 }
 

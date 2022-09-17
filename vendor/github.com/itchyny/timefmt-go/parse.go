@@ -158,14 +158,14 @@ func parse(source, format string, loc, base *time.Location) (t time.Time, err er
 				hour, min, sec = t.Clock()
 				month = int(mon)
 			case 'f':
-				var msec, k, d int
-				if msec, k, err = parseNumber(source, j, 6, 'f'); err != nil {
+				var usec, k, d int
+				if usec, k, err = parseNumber(source, j, 6, 'f'); err != nil {
 					return
 				}
-				nsec = msec * 1000
 				for j, d = k, k-j; d < 6; d++ {
-					nsec *= 10
+					usec *= 10
 				}
+				nsec = usec * 1000
 			case 'Z':
 				k := j
 				for ; k < l; k++ {

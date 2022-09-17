@@ -118,7 +118,7 @@ func NewFieldDescription(fieldDesc protoreflect.FieldDescriptor) *FieldDescripti
 	switch fieldDesc.Kind() {
 	case protoreflect.EnumKind:
 		reflectType = reflectTypeOf(protoreflect.EnumNumber(0))
-	case protoreflect.MessageKind:
+	case protoreflect.GroupKind, protoreflect.MessageKind:
 		zeroMsg = dynamicpb.NewMessage(fieldDesc.Message())
 		reflectType = reflectTypeOf(zeroMsg)
 	default:
@@ -267,7 +267,8 @@ func (fd *FieldDescription) IsMap() bool {
 
 // IsMessage returns true if the field is of message type.
 func (fd *FieldDescription) IsMessage() bool {
-	return fd.desc.Kind() == protoreflect.MessageKind
+	kind := fd.desc.Kind()
+	return kind == protoreflect.MessageKind || kind == protoreflect.GroupKind
 }
 
 // IsOneof returns true if the field is declared within a oneof block.
@@ -316,7 +317,7 @@ func (fd *FieldDescription) Zero() proto.Message {
 }
 
 func (fd *FieldDescription) typeDefToType() *exprpb.Type {
-	if fd.desc.Kind() == protoreflect.MessageKind {
+	if fd.desc.Kind() == protoreflect.MessageKind || fd.desc.Kind() == protoreflect.GroupKind {
 		msgType := string(fd.desc.Message().FullName())
 		if wk, found := CheckedWellKnowns[msgType]; found {
 			return wk

@@ -214,14 +214,15 @@ type Style struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#type-CSSProperty
 type Property struct {
-	Name      string       `json:"name"`                // The property name.
-	Value     string       `json:"value"`               // The property value.
-	Important bool         `json:"important,omitempty"` // Whether the property has "!important" annotation (implies false if absent).
-	Implicit  bool         `json:"implicit,omitempty"`  // Whether the property is implicit (implies false if absent).
-	Text      string       `json:"text,omitempty"`      // The full property text as specified in the style.
-	ParsedOk  bool         `json:"parsedOk,omitempty"`  // Whether the property is understood by the browser (implies true if absent).
-	Disabled  bool         `json:"disabled,omitempty"`  // Whether the property is disabled by the user (present for source-based properties only).
-	Range     *SourceRange `json:"range,omitempty"`     // The entire property range in the enclosing style declaration (if available).
+	Name               string       `json:"name"`                         // The property name.
+	Value              string       `json:"value"`                        // The property value.
+	Important          bool         `json:"important,omitempty"`          // Whether the property has "!important" annotation (implies false if absent).
+	Implicit           bool         `json:"implicit,omitempty"`           // Whether the property is implicit (implies false if absent).
+	Text               string       `json:"text,omitempty"`               // The full property text as specified in the style.
+	ParsedOk           bool         `json:"parsedOk,omitempty"`           // Whether the property is understood by the browser (implies true if absent).
+	Disabled           bool         `json:"disabled,omitempty"`           // Whether the property is disabled by the user (present for source-based properties only).
+	Range              *SourceRange `json:"range,omitempty"`              // The entire property range in the enclosing style declaration (if available).
+	LonghandProperties []*Property  `json:"longhandProperties,omitempty"` // Parsed longhand components of this property if it is a shorthand. This field will be empty if the given property is not a shorthand.
 }
 
 // Media CSS media rule descriptor.

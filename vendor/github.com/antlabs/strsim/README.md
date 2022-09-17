@@ -6,6 +6,19 @@ strsim是golang实现的字符串相识度库，后端集成多种算法，主�
 
 ## 构架
 ![strsim.png](https://github.com/guonaihong/images/blob/master/strsim/strsim.png?raw=true)
+
+
+
+## 使用方式
+
+```go
+go get -u github.com/antlabs/strsim
+```
+
+
+
+
+
 ## 功能
 * 可以忽略空白字符
 * 可以大小写
@@ -13,7 +26,10 @@ strsim是golang实现的字符串相识度库，后端集成多种算法，主�
     * 莱文斯坦-编辑距离(Levenshtein)
     * Hamming
     * Dice's coefficient
-    * Jaro
+    * Jaro 
+    * JaroWinkler 
+    * Cosine 
+    * Simhash
 
 ## 内容
 - [比较两个字符串相识度](#比较两个字符串相识度)
@@ -24,6 +40,9 @@ strsim是golang实现的字符串相识度库，后端集成多种算法，主�
     - [选择Dice's coefficient](#选择Dice's-coefficient)
     - [选择jaro](#选择jaro)
     - [选择Hamming](#选择Hamming)
+    - [选择JaroWinkler](#选择JaroWinkler)
+    - [选择Cosine](#选择Cosine)
+    - [选择Simhash](#选择Simhash)
 ## 比较两个字符串相识度
 ```go
 strsim.Compare("中国人", "中")
@@ -54,7 +73,26 @@ strsim.Compare("abc", "ab", strsim.DiceCoefficient())
 ```go
 strsim.Compare("abc", "ab", strsim.Jaro())
 ```
+### 选择JaroWinkler 
+
+```go
+strsim.Compare("abc", "ab", strsim.JaroWinkler())
+```
+
 ### 选择Hamming
 ```go
 strsim.Compare("abc", "ab", strsim.Hamming())
 ```
+
+### 选择Cosine
+
+```go
+strsim.Compare("abc", "ab", strsim.Cosine())
+```
+
+### 选择Simhash
+
+```go
+strsim.Compare("abc", "ab", strsim.Simhash())
+```
+

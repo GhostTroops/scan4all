@@ -17,14 +17,23 @@ package mongocrypt
 import "C"
 import (
 	"errors"
+	"fmt"
 	"unsafe"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/mongocrypt/options"
 )
 
 type MongoCrypt struct {
 	wrapped *C.mongocrypt_t
+}
+
+// Version returns the version string for the loaded libmongocrypt, or an empty string
+// if libmongocrypt was not loaded.
+func Version() string {
+	str := C.GoString(C.mongocrypt_version(nil))
+	return str
 }
 
 // NewMongoCrypt constructs a new MongoCrypt instance configured using the provided MongoCryptOptions.
@@ -45,11 +54,33 @@ func NewMongoCrypt(opts *options.MongoCryptOptions) (*MongoCrypt, error) {
 	if err := crypt.setLocalSchemaMap(opts.LocalSchemaMap); err != nil {
 		return nil, err
 	}
+	if err := crypt.setEncryptedFieldsMap(opts.EncryptedFieldsMap); err != nil {
+		return nil, err
+	}
+
+	if opts.BypassQueryAnalysis {
+		C.mongocrypt_setopt_bypass_query_analysis(wrapped)
+	}
+
+	// If loading the crypt_shared library isn't disabled, set the default library search path "$SYSTEM"
+	// and set a library override path if one was provided.
+	if !opts.CryptSharedLibDisabled {
+		systemStr := C.CString("$SYSTEM")
+		defer C.free(unsafe.Pointer(systemStr))
+		C.mongocrypt_setopt_append_crypt_shared_lib_search_path(crypt.wrapped, systemStr)
+
+		if opts.CryptSharedLibOverridePath != "" {
+			cryptSharedLibOverridePathStr := C.CString(opts.CryptSharedLibOverridePath)
+			defer C.free(unsafe.Pointer(cryptSharedLibOverridePathStr))
+			C.mongocrypt_setopt_set_crypt_shared_lib_path_override(crypt.wrapped, cryptSharedLibOverridePathStr)
+		}
+	}
 
 	// initialize handle
 	if !C.mongocrypt_init(crypt.wrapped) {
 		return nil, crypt.createErrorFromStatus()
 	}
+
 	return crypt, nil
 }
 
@@ -109,6 +140,34 @@ func setAltName(ctx *Context, altName string) error {
 	return nil
 }
 
+func setKeyMaterial(ctx *Context, keyMaterial []byte) error {
+	// Create document {"keyMaterial": keyMaterial} using the generic binary sybtype 0x00.
+	idx, doc := bsoncore.AppendDocumentStart(nil)
+	doc = bsoncore.AppendBinaryElement(doc, "keyMaterial", 0x00, keyMaterial)
+	doc, err := bsoncore.AppendDocumentEnd(doc, idx)
+	if err != nil {
+		return err
+	}
+
+	keyMaterialBinary := newBinaryFromBytes(doc)
+	defer keyMaterialBinary.close()
+
+	if ok := C.mongocrypt_ctx_setopt_key_material(ctx.wrapped, keyMaterialBinary.wrapped); !ok {
+		return ctx.createErrorFromStatus()
+	}
+	return nil
+}
+
+func rewrapDataKey(ctx *Context, filter []byte) error {
+	filterBinary := newBinaryFromBytes(filter)
+	defer filterBinary.close()
+
+	if ok := C.mongocrypt_ctx_rewrap_many_datakey_init(ctx.wrapped, filterBinary.wrapped); !ok {
+		return ctx.createErrorFromStatus()
+	}
+	return nil
+}
+
 // CreateDataKeyContext creates a Context to use for creating a data key.
 func (m *MongoCrypt) CreateDataKeyContext(kmsProvider string, opts *options.DataKeyOptions) (*Context, error) {
 	ctx := newContext(C.mongocrypt_ctx_new(m.wrapped))
@@ -142,11 +201,22 @@ func (m *MongoCrypt) CreateDataKeyContext(kmsProvider string, opts *options.Data
 		}
 	}
 
+	if opts.KeyMaterial != nil {
+		if err := setKeyMaterial(ctx, opts.KeyMaterial); err != nil {
+			return nil, err
+		}
+	}
+
 	if ok := C.mongocrypt_ctx_datakey_init(ctx.wrapped); !ok {
 		return nil, ctx.createErrorFromStatus()
 	}
 	return ctx, nil
 }
+
+const (
+	IndexTypeUnindexed = 1
+	IndexTypeIndexed   = 2
+)
 
 // CreateExplicitEncryptionContext creates a Context to use for explicit encryption.
 func (m *MongoCrypt) CreateExplicitEncryptionContext(doc bsoncore.Document, opts *options.ExplicitEncryptionOptions) (*Context, error) {
@@ -172,8 +242,23 @@ func (m *MongoCrypt) CreateExplicitEncryptionContext(doc bsoncore.Document, opts
 
 	algoStr := C.CString(opts.Algorithm)
 	defer C.free(unsafe.Pointer(algoStr))
+
 	if ok := C.mongocrypt_ctx_setopt_algorithm(ctx.wrapped, algoStr, -1); !ok {
 		return nil, ctx.createErrorFromStatus()
+	}
+
+	if opts.QueryType != "" {
+		queryStr := C.CString(opts.QueryType)
+		defer C.free(unsafe.Pointer(queryStr))
+		if ok := C.mongocrypt_ctx_setopt_query_type(ctx.wrapped, queryStr, -1); !ok {
+			return nil, ctx.createErrorFromStatus()
+		}
+	}
+
+	if opts.ContentionFactor != nil {
+		if ok := C.mongocrypt_ctx_setopt_contention_factor(ctx.wrapped, C.int64_t(*opts.ContentionFactor)); !ok {
+			return nil, ctx.createErrorFromStatus()
+		}
 	}
 
 	docBinary := newBinaryFromBytes(doc)
@@ -201,9 +286,64 @@ func (m *MongoCrypt) CreateExplicitDecryptionContext(doc bsoncore.Document) (*Co
 	return ctx, nil
 }
 
+// CryptSharedLibVersion returns the version number for the loaded crypt_shared library, or 0 if the
+// crypt_shared library was not loaded.
+func (m *MongoCrypt) CryptSharedLibVersion() uint64 {
+	return uint64(C.mongocrypt_crypt_shared_lib_version(m.wrapped))
+}
+
+// CryptSharedLibVersionString returns the version string for the loaded crypt_shared library, or an
+// empty string if the crypt_shared library was not loaded.
+func (m *MongoCrypt) CryptSharedLibVersionString() string {
+	// Pass in a pointer for "len", but ignore the value because C.GoString can determine the string
+	// length without it.
+	len := C.uint(0)
+	str := C.GoString(C.mongocrypt_crypt_shared_lib_version_string(m.wrapped, &len))
+	return str
+}
+
 // Close cleans up any resources associated with the given MongoCrypt instance.
 func (m *MongoCrypt) Close() {
 	C.mongocrypt_destroy(m.wrapped)
+}
+
+// RewrapDataKeyContext create a Context to use for rewrapping a data key.
+func (m *MongoCrypt) RewrapDataKeyContext(filter []byte, opts *options.RewrapManyDataKeyOptions) (*Context, error) {
+	const masterKey = "masterKey"
+	const providerKey = "provider"
+
+	ctx := newContext(C.mongocrypt_ctx_new(m.wrapped))
+	if ctx.wrapped == nil {
+		return nil, m.createErrorFromStatus()
+	}
+
+	if opts.Provider != nil {
+		// If a provider has been specified, create an encryption key document for creating a data key or for rewrapping
+		// datakeys. If a new provider is not specified, then the filter portion of this logic returns the data as it
+		// exists in the collection.
+		idx, mongocryptDoc := bsoncore.AppendDocumentStart(nil)
+		mongocryptDoc = bsoncore.AppendStringElement(mongocryptDoc, providerKey, *opts.Provider)
+
+		if opts.MasterKey != nil {
+			mongocryptDoc = opts.MasterKey[:len(opts.MasterKey)-1]
+			mongocryptDoc = bsoncore.AppendStringElement(mongocryptDoc, providerKey, *opts.Provider)
+		}
+
+		mongocryptDoc, err := bsoncore.AppendDocumentEnd(mongocryptDoc, idx)
+		if err != nil {
+			return nil, err
+		}
+
+		mongocryptBinary := newBinaryFromBytes(mongocryptDoc)
+		defer mongocryptBinary.close()
+
+		// Add new masterKey to the mongocrypt context.
+		if ok := C.mongocrypt_ctx_setopt_key_encryption_key(ctx.wrapped, mongocryptBinary.wrapped); !ok {
+			return nil, ctx.createErrorFromStatus()
+		}
+	}
+
+	return ctx, rewrapDataKey(ctx, filter)
 }
 
 func (m *MongoCrypt) setProviderOptions(kmsProviders bsoncore.Document) error {
@@ -223,16 +363,36 @@ func (m *MongoCrypt) setLocalSchemaMap(schemaMap map[string]bsoncore.Document) e
 	}
 
 	// convert schema map to BSON document
-	midx, mdoc := bsoncore.AppendDocumentStart(nil)
-	for key, doc := range schemaMap {
-		mdoc = bsoncore.AppendDocumentElement(mdoc, key, doc)
+	schemaMapBSON, err := bson.Marshal(schemaMap)
+	if err != nil {
+		return fmt.Errorf("error marshalling SchemaMap: %v", err)
 	}
-	mdoc, _ = bsoncore.AppendDocumentEnd(mdoc, midx)
 
-	schemaMapBinary := newBinaryFromBytes(mdoc)
+	schemaMapBinary := newBinaryFromBytes(schemaMapBSON)
 	defer schemaMapBinary.close()
 
 	if ok := C.mongocrypt_setopt_schema_map(m.wrapped, schemaMapBinary.wrapped); !ok {
+		return m.createErrorFromStatus()
+	}
+	return nil
+}
+
+// setEncryptedFieldsMap sets the encryptedfields map in mongocrypt.
+func (m *MongoCrypt) setEncryptedFieldsMap(encryptedfieldsMap map[string]bsoncore.Document) error {
+	if len(encryptedfieldsMap) == 0 {
+		return nil
+	}
+
+	// convert encryptedfields map to BSON document
+	encryptedfieldsMapBSON, err := bson.Marshal(encryptedfieldsMap)
+	if err != nil {
+		return fmt.Errorf("error marshalling EncryptedFieldsMap: %v", err)
+	}
+
+	encryptedfieldsMapBinary := newBinaryFromBytes(encryptedfieldsMapBSON)
+	defer encryptedfieldsMapBinary.close()
+
+	if ok := C.mongocrypt_setopt_encrypted_field_config_map(m.wrapped, encryptedfieldsMapBinary.wrapped); !ok {
 		return m.createErrorFromStatus()
 	}
 	return nil

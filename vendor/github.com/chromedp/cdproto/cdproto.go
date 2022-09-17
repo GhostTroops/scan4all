@@ -270,6 +270,8 @@ const (
 	CommandDebuggerEvaluateOnCallFrame                     = debugger.CommandEvaluateOnCallFrame
 	CommandDebuggerGetPossibleBreakpoints                  = debugger.CommandGetPossibleBreakpoints
 	CommandDebuggerGetScriptSource                         = debugger.CommandGetScriptSource
+	CommandDebuggerDisassembleWasmModule                   = debugger.CommandDisassembleWasmModule
+	CommandDebuggerNextWasmDisassemblyChunk                = debugger.CommandNextWasmDisassemblyChunk
 	CommandDebuggerGetStackTrace                           = debugger.CommandGetStackTrace
 	CommandDebuggerPause                                   = debugger.CommandPause
 	CommandDebuggerRemoveBreakpoint                        = debugger.CommandRemoveBreakpoint
@@ -653,6 +655,7 @@ const (
 	EventServiceWorkerWorkerVersionUpdated                 = "ServiceWorker.workerVersionUpdated"
 	CommandStorageGetStorageKeyForFrame                    = storage.CommandGetStorageKeyForFrame
 	CommandStorageClearDataForOrigin                       = storage.CommandClearDataForOrigin
+	CommandStorageClearDataForStorageKey                   = storage.CommandClearDataForStorageKey
 	CommandStorageGetCookies                               = storage.CommandGetCookies
 	CommandStorageSetCookies                               = storage.CommandSetCookies
 	CommandStorageClearCookies                             = storage.CommandClearCookies
@@ -660,8 +663,10 @@ const (
 	CommandStorageOverrideQuotaForOrigin                   = storage.CommandOverrideQuotaForOrigin
 	CommandStorageTrackCacheStorageForOrigin               = storage.CommandTrackCacheStorageForOrigin
 	CommandStorageTrackIndexedDBForOrigin                  = storage.CommandTrackIndexedDBForOrigin
+	CommandStorageTrackIndexedDBForStorageKey              = storage.CommandTrackIndexedDBForStorageKey
 	CommandStorageUntrackCacheStorageForOrigin             = storage.CommandUntrackCacheStorageForOrigin
 	CommandStorageUntrackIndexedDBForOrigin                = storage.CommandUntrackIndexedDBForOrigin
+	CommandStorageUntrackIndexedDBForStorageKey            = storage.CommandUntrackIndexedDBForStorageKey
 	CommandStorageGetTrustTokens                           = storage.CommandGetTrustTokens
 	CommandStorageClearTrustTokens                         = storage.CommandClearTrustTokens
 	CommandStorageGetInterestGroupDetails                  = storage.CommandGetInterestGroupDetails
@@ -1347,6 +1352,12 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 
 	case CommandDebuggerGetScriptSource:
 		v = new(debugger.GetScriptSourceReturns)
+
+	case CommandDebuggerDisassembleWasmModule:
+		v = new(debugger.DisassembleWasmModuleReturns)
+
+	case CommandDebuggerNextWasmDisassemblyChunk:
+		v = new(debugger.NextWasmDisassemblyChunkReturns)
 
 	case CommandDebuggerGetStackTrace:
 		v = new(debugger.GetStackTraceReturns)
@@ -2497,6 +2508,9 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 	case CommandStorageClearDataForOrigin:
 		return emptyVal, nil
 
+	case CommandStorageClearDataForStorageKey:
+		return emptyVal, nil
+
 	case CommandStorageGetCookies:
 		v = new(storage.GetCookiesReturns)
 
@@ -2518,10 +2532,16 @@ func UnmarshalMessage(msg *Message) (interface{}, error) {
 	case CommandStorageTrackIndexedDBForOrigin:
 		return emptyVal, nil
 
+	case CommandStorageTrackIndexedDBForStorageKey:
+		return emptyVal, nil
+
 	case CommandStorageUntrackCacheStorageForOrigin:
 		return emptyVal, nil
 
 	case CommandStorageUntrackIndexedDBForOrigin:
+		return emptyVal, nil
+
+	case CommandStorageUntrackIndexedDBForStorageKey:
 		return emptyVal, nil
 
 	case CommandStorageGetTrustTokens:

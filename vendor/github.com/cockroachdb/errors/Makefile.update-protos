@@ -1,0 +1,47 @@
+# This makefile can be used to-regenerate the protobuf files.
+#
+# Prerequisites:
+#   "protoc" from https://github.com/protocolbuffers/protobuf
+#   go get github.com/cockroachdb/protoc-gen-gogoroach
+#   go get github.com/gogo/protobuf/types
+#   go get github.com/gogo/protobuf/protoc-gen-gogo
+#
+# Note: as of 2020-11-01, it is not (yet) possible to use gogoproto
+# v1.3.x to generate .pb.go files so that they are compatible with
+# CockroachDB. This is because CockroachDB hardcodes gogoproto at
+# version v1.2, and thus does not provide v1.3's
+# proto.GoGoProtoPackageIsVersion3.
+#
+# For details, see https://github.com/cockroachdb/cockroach/issues/56378
+#
+# Until this is resolved, the "go get" commands above are not
+# adequate; instead:
+#
+# 1. set the PATH env var to point to CockroachDB's `bin`
+#    sub-directory (after a successful CockroachDB build), where a
+#    suitable version of protoc-gen-gogoroach is provided.
+#
+# 2. run `make -f Makefile.update-protos` with this PATH active.
+
+PROTOS := $(wildcard errorspb/*.proto)
+GO_SOURCES = $(PROTOS:.proto=.pb.go)
+
+SED = sed
+SED_INPLACE := $(shell $(SED) --version 2>&1 | grep -q GNU && echo -i || echo "-i ''")
+
+all: $(PROTOS)
+	protoc \
+	   -I$$GOPATH/src/ \
+	   -I$$GOPATH/src/github.com \
+	   -I$$GOPATH/src/github.com/gogo/protobuf \
+	   -I$$GOPATH/src/github.com/gogo/protobuf/protobuf \
+	  --gogoroach_out=Mgoogle/protobuf/any.proto=github.com/gogo/protobuf/types,plugins=grpc,import_prefix=:. \
+	  $(PROTOS:%=$(GOPATH)/src/github.com/cockroachdb/errors/%)
+	mv -f github.com/cockroachdb/errors/errorspb/*.pb.go errorspb/
+	$(SED) $(SED_INPLACE) -E \
+		-e '/import _ /d' \
+		-e 's!import (fmt|math) "github.com/(fmt|math)"! !g' \
+		-e 's!github.com/((bytes|encoding/binary|errors|fmt|io|math|github\.com|(google\.)?golang\.org)([^a-z]|$$))!\1!g' \
+		-e 's!golang.org/x/net/context!context!g' \
+		$(GO_SOURCES)
+	gofmt -s -w $(GO_SOURCES)

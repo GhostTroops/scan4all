@@ -56,7 +56,16 @@ type Config struct {
 	// to subscribe to certain things happening
 	// internally by this config; invocations are
 	// synchronous, so make them return quickly!
-	OnEvent func(event string, data interface{})
+	// Functions should honor context cancellation.
+	//
+	// An error should only be returned to advise
+	// the emitter to abort or cancel an upcoming
+	// event. Some events, especially those that have
+	// already happened, cannot be aborted. For example,
+	// cert_obtaining can be canceled, but
+	// cert_obtained cannot. Emitters may choose to
+	// ignore returned errors.
+	OnEvent func(ctx context.Context, event string, data map[string]any) error
 
 	// DefaultServerName specifies a server name
 	// to use when choosing a certificate if the
@@ -498,8 +507,15 @@ func (cfg *Config) obtainCert(ctx context.Context, name string, interactive bool
 			return nil
 		}
 
-		// if storage has a private key already, use it; otherwise,
-		// we'll generate our own
+		if log != nil {
+			log.Info("obtaining certificate", zap.String("identifier", name))
+		}
+
+		if err := cfg.emit(ctx, "cert_obtaining", map[string]any{"identifier": name}); err != nil {
+			return fmt.Errorf("obtaining certificate aborted by event handler: %w", err)
+		}
+
+		// if storage has a private key already, use it; otherwise we'll generate our own
 		privKey, privKeyPEM, issuers, err := cfg.reusePrivateKey(ctx, name)
 		if err != nil {
 			return err
@@ -523,7 +539,10 @@ func (cfg *Config) obtainCert(ctx context.Context, name string, interactive bool
 		// try to obtain from each issuer until we succeed
 		var issuedCert *IssuedCertificate
 		var issuerUsed Issuer
+		var issuerKeys []string
 		for i, issuer := range issuers {
+			issuerKeys = append(issuerKeys, issuer.IssuerKey())
+
 			if log != nil {
 				log.Debug(fmt.Sprintf("trying issuer %d/%d", i+1, len(cfg.Issuers)),
 					zap.String("issuer", issuer.IssuerKey()))
@@ -557,6 +576,13 @@ func (cfg *Config) obtainCert(ctx context.Context, name string, interactive bool
 			}
 		}
 		if err != nil {
+			cfg.emit(ctx, "cert_failed", map[string]any{
+				"renewal":    false,
+				"identifier": name,
+				"issuers":    issuerKeys,
+				"error":      err,
+			})
+
 			// only the error from the last issuer will be returned, but we logged the others
 			return fmt.Errorf("[%s] Obtain: %w", name, err)
 		}
@@ -573,15 +599,16 @@ func (cfg *Config) obtainCert(ctx context.Context, name string, interactive bool
 			return fmt.Errorf("[%s] Obtain: saving assets: %v", name, err)
 		}
 
-		cfg.emit("cert_obtained", CertificateEventData{
-			Name:       name,
-			IssuerKey:  issuerUsed.IssuerKey(),
-			StorageKey: certRes.NamesKey(),
-		})
-
 		if log != nil {
 			log.Info("certificate obtained successfully", zap.String("identifier", name))
 		}
+
+		cfg.emit(ctx, "cert_obtained", map[string]any{
+			"renewal":     false,
+			"identifier":  name,
+			"issuers":     issuerUsed.IssuerKey(),
+			"storage_key": certRes.NamesKey(),
+		})
 
 		return nil
 	}
@@ -736,6 +763,16 @@ func (cfg *Config) renewCert(ctx context.Context, name string, force, interactiv
 				zap.Duration("remaining", timeLeft))
 		}
 
+		if err := cfg.emit(ctx, "cert_obtaining", map[string]any{
+			"renewal":    true,
+			"identifier": name,
+			"forced":     force,
+			"remaining":  timeLeft,
+			"issuer":     certRes.issuerKey, // previous/current issuer
+		}); err != nil {
+			return fmt.Errorf("renewing certificate aborted by event handler: %w", err)
+		}
+
 		privateKey, err := PEMDecodePrivateKey(certRes.PrivateKeyPEM)
 		if err != nil {
 			return err
@@ -777,6 +814,15 @@ func (cfg *Config) renewCert(ctx context.Context, name string, force, interactiv
 			}
 		}
 		if err != nil {
+			cfg.emit(ctx, "cert_failed", map[string]any{
+				"renewal":     true,
+				"identifier":  name,
+				"remaining":   timeLeft,
+				"issuer":      issuerUsed.IssuerKey(),
+				"storage_key": certRes.NamesKey(),
+				"error":       err,
+			})
+
 			// only the error from the last issuer will be returned, but we logged the others
 			return fmt.Errorf("[%s] Renew: %w", name, err)
 		}
@@ -793,15 +839,17 @@ func (cfg *Config) renewCert(ctx context.Context, name string, force, interactiv
 			return fmt.Errorf("[%s] Renew: saving assets: %v", name, err)
 		}
 
-		cfg.emit("cert_renewed", CertificateEventData{
-			Name:       name,
-			IssuerKey:  issuerUsed.IssuerKey(),
-			StorageKey: certRes.NamesKey(),
-		})
-
 		if log != nil {
 			log.Info("certificate renewed successfully", zap.String("identifier", name))
 		}
+
+		cfg.emit(ctx, "cert_obtained", map[string]any{
+			"renewal":     true,
+			"remaining":   timeLeft,
+			"identifier":  name,
+			"issuer":      issuerUsed.IssuerKey(),
+			"storage_key": certRes.NamesKey(),
+		})
 
 		return nil
 	}
@@ -875,12 +923,6 @@ func (cfg *Config) RevokeCert(ctx context.Context, domain string, reason int, in
 		if err != nil {
 			return fmt.Errorf("issuer %d (%s): %v", i, issuerKey, err)
 		}
-
-		cfg.emit("cert_revoked", CertificateEventData{
-			Name:       domain,
-			IssuerKey:  issuerKey,
-			StorageKey: certRes.NamesKey(),
-		})
 
 		err = cfg.deleteSiteAssets(ctx, issuerKey, domain)
 		if err != nil {
@@ -1065,16 +1107,16 @@ func (cfg *Config) managedCertNeedsRenewal(certRes CertificateResource) (time.Du
 	if err != nil {
 		return 0, true
 	}
-	remaining := time.Until(certChain[0].NotAfter)
-	needsRenew := currentlyInRenewalWindow(certChain[0].NotBefore, certChain[0].NotAfter, cfg.RenewalWindowRatio)
+	remaining := time.Until(expiresAt(certChain[0]))
+	needsRenew := currentlyInRenewalWindow(certChain[0].NotBefore, expiresAt(certChain[0]), cfg.RenewalWindowRatio)
 	return remaining, needsRenew
 }
 
-func (cfg *Config) emit(eventName string, data interface{}) {
+func (cfg *Config) emit(ctx context.Context, eventName string, data map[string]any) error {
 	if cfg.OnEvent == nil {
-		return
+		return nil
 	}
-	cfg.OnEvent(eventName, data)
+	return cfg.OnEvent(ctx, eventName, data)
 }
 
 func loggerNamed(l *zap.Logger, name string) *zap.Logger {
@@ -1103,20 +1145,6 @@ type OCSPConfig struct {
 	// embedded in certificates. Mapping to an empty
 	// URL will disable OCSP from that responder.
 	ResponderOverrides map[string]string
-}
-
-// CertificateEventData contains contextual information for
-// an obtained, renewed or revoked certificate.
-// EXPERIMENTAL: subject to change.
-type CertificateEventData struct {
-	// Domain or subject name of the certificate.
-	Name string
-
-	// Storage key for the issuer used for this certificate.
-	IssuerKey string
-
-	// Location in storage at which the certificate could be found.
-	StorageKey string
 }
 
 // certIssueLockOp is the name of the operation used

@@ -412,6 +412,15 @@ func (conn *Connection) OpenWithContext(ctx context.Context) error {
 		conn.session.TTCVersion = conn.tcpNego.ServerCompileTimeCaps[7]
 	}
 	tracer.Print("TTC Version: ", conn.session.TTCVersion)
+	if len(conn.tcpNego.ServerRuntimeCaps) > 6 && conn.tcpNego.ServerRuntimeCaps[6]&4 == 4 {
+		converters.MAX_LEN_VARCHAR2 = 0x7FFF
+		converters.MAX_LEN_NVARCHAR2 = 0x7FFF
+		converters.MAX_LEN_RAW = 0x7FFF
+	} else {
+		converters.MAX_LEN_VARCHAR2 = 0xFA0
+		converters.MAX_LEN_NVARCHAR2 = 0xFA0
+		converters.MAX_LEN_RAW = 0xFA0
+	}
 	//this.m_b32kTypeSupported = this.m_dtyNeg.m_b32kTypeSupported;
 	//this.m_bSupportSessionStateOps = this.m_dtyNeg.m_bSupportSessionStateOps;
 	//this.m_marshallingEngine.m_bServerUsingBigSCN = this.m_serverCompiletimeCapabilities[7] >= (byte) 8;

@@ -62,7 +62,8 @@ type GetBestEffortCoverageReturns struct {
 // Do executes Profiler.getBestEffortCoverage against the provided context.
 //
 // returns:
-//   result - Coverage data for the current isolate.
+//
+//	result - Coverage data for the current isolate.
 func (p *GetBestEffortCoverageParams) Do(ctx context.Context) (result []*ScriptCoverage, err error) {
 	// execute
 	var res GetBestEffortCoverageReturns
@@ -86,7 +87,8 @@ type SetSamplingIntervalParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Profiler#method-setSamplingInterval
 //
 // parameters:
-//   interval - New sampling interval in microseconds.
+//
+//	interval - New sampling interval in microseconds.
 func SetSamplingInterval(interval int64) *SetSamplingIntervalParams {
 	return &SetSamplingIntervalParams{
 		Interval: interval,
@@ -161,7 +163,8 @@ type StartPreciseCoverageReturns struct {
 // Do executes Profiler.startPreciseCoverage against the provided context.
 //
 // returns:
-//   timestamp - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
+//
+//	timestamp - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
 func (p *StartPreciseCoverageParams) Do(ctx context.Context) (timestamp float64, err error) {
 	// execute
 	var res StartPreciseCoverageReturns
@@ -206,7 +209,8 @@ type StopReturns struct {
 // Do executes Profiler.stop against the provided context.
 //
 // returns:
-//   profile - Recorded profile.
+//
+//	profile - Recorded profile.
 func (p *StopParams) Do(ctx context.Context) (profile *Profile, err error) {
 	// execute
 	var res StopReturns
@@ -274,8 +278,9 @@ type TakePreciseCoverageReturns struct {
 // Do executes Profiler.takePreciseCoverage against the provided context.
 //
 // returns:
-//   result - Coverage data for the current isolate.
-//   timestamp - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
+//
+//	result - Coverage data for the current isolate.
+//	timestamp - Monotonically increasing time (in seconds) when the coverage update was taken in the backend.
 func (p *TakePreciseCoverageParams) Do(ctx context.Context) (result []*ScriptCoverage, timestamp float64, err error) {
 	// execute
 	var res TakePreciseCoverageReturns
@@ -305,7 +310,8 @@ type TakeTypeProfileReturns struct {
 // Do executes Profiler.takeTypeProfile against the provided context.
 //
 // returns:
-//   result - Type profile for all scripts since startTypeProfile() was turned on.
+//
+//	result - Type profile for all scripts since startTypeProfile() was turned on.
 func (p *TakeTypeProfileParams) Do(ctx context.Context) (result []*ScriptTypeProfile, err error) {
 	// execute
 	var res TakeTypeProfileReturns

@@ -41,6 +41,27 @@ type Info struct {
 	BrowserContextID cdp.BrowserContextID `json:"browserContextId,omitempty"`
 }
 
+// FilterEntry a filter used by target query/discovery/auto-attach
+// operations.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Target#type-FilterEntry
+type FilterEntry struct {
+	Exclude bool   `json:"exclude,omitempty"` // If set, causes exclusion of mathcing targets from the list.
+	Type    string `json:"type,omitempty"`    // If not present, matches any type.
+}
+
+// Filter the entries in TargetFilter are matched sequentially against
+// targets and the first entry that matches determines if the target is included
+// or not, depending on the value of exclude field in the entry. If filter is
+// not specified, the one assumed is [{type: "browser", exclude: true}, {type:
+// "tab", exclude: true}, {}] (i.e. include everything but browser and tab).
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Target#type-TargetFilter
+type Filter []struct {
+	Exclude bool   `json:"exclude,omitempty"` // If set, causes exclusion of mathcing targets from the list.
+	Type    string `json:"type,omitempty"`    // If not present, matches any type.
+}
+
 // RemoteLocation [no description].
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Target#type-RemoteLocation

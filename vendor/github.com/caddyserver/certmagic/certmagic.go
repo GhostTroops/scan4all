@@ -405,7 +405,7 @@ type IssuedCertificate struct {
 
 	// Any extra information to serialize alongside the
 	// certificate in storage.
-	Metadata interface{}
+	Metadata any
 }
 
 // CertificateResource associates a certificate with its private
@@ -425,7 +425,7 @@ type CertificateResource struct {
 
 	// Any extra information associated with the certificate,
 	// usually provided by the issuer implementation.
-	IssuerData interface{} `json:"issuer_data,omitempty"`
+	IssuerData any `json:"issuer_data,omitempty"`
 
 	// The unique string identifying the issuer of the
 	// certificate; internally useful for storage access.

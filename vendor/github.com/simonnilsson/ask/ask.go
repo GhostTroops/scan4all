@@ -12,6 +12,8 @@ import (
 )
 
 var tokenMatcher = regexp.MustCompile("([^[]+)?(?:\\[(\\d+)])?")
+var mapType = reflect.TypeOf(map[string]interface{}{})
+var sliceType = reflect.TypeOf([]interface{}{})
 
 // Answer holds result of call to For, use one of its methods to extract a value.
 type Answer struct {
@@ -32,20 +34,27 @@ func For(source interface{}, path string) *Answer {
 		if len(match) == 3 {
 
 			if match[1] != "" {
-				m, ok := current.(map[string]interface{})
-				if !ok {
+				val := reflect.ValueOf(current)
+				if val.IsValid() && val.CanConvert(mapType) {
+					current = val.Convert(mapType).Interface().(map[string]interface{})[match[1]]
+				} else {
 					return &Answer{}
 				}
-				current = m[match[1]]
 			}
 
 			if match[2] != "" {
-				index, _ := strconv.Atoi(match[2])
-				a, ok := current.([]interface{})
-				if !ok || index < 0 || len(a) <= index {
+				val := reflect.ValueOf(current)
+				if val.IsValid() && val.CanConvert(sliceType) {
+					s := val.Convert(sliceType).Interface().([]interface{})
+					index, _ := strconv.Atoi(match[2])
+					if index >= 0 && index < len(s) {
+						current = s[index]
+					} else {
+						return &Answer{}
+					}
+				} else {
 					return &Answer{}
 				}
-				current = a[index]
 			}
 
 		}
@@ -74,9 +83,9 @@ func (a *Answer) Value() interface{} {
 // The first return value is the result, and the second indicates if the operation was successful.
 // If not successful the first return value will be set to the d parameter.
 func (a *Answer) Slice(d []interface{}) ([]interface{}, bool) {
-	res, ok := a.value.([]interface{})
-	if ok {
-		return res, ok
+	val := reflect.ValueOf(a.value)
+	if val.IsValid() && val.CanConvert(sliceType) {
+		return val.Convert(sliceType).Interface().([]interface{}), true
 	}
 	return d, false
 }
@@ -85,9 +94,9 @@ func (a *Answer) Slice(d []interface{}) ([]interface{}, bool) {
 // The first return value is the result, and the second indicates if the operation was successful.
 // If not successful the first return value will be set to the d parameter.
 func (a *Answer) Map(d map[string]interface{}) (map[string]interface{}, bool) {
-	res, ok := a.value.(map[string]interface{})
-	if ok {
-		return res, ok
+	val := reflect.ValueOf(a.value)
+	if val.IsValid() && val.CanConvert(mapType) {
+		return val.Convert(mapType).Interface().(map[string]interface{}), true
 	}
 	return d, false
 }

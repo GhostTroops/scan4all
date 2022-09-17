@@ -27,6 +27,7 @@ type EventCacheStorageListUpdated struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#event-indexedDBContentUpdated
 type EventIndexedDBContentUpdated struct {
 	Origin          string `json:"origin"`          // Origin to update.
+	StorageKey      string `json:"storageKey"`      // Storage key to update.
 	DatabaseName    string `json:"databaseName"`    // Database to update.
 	ObjectStoreName string `json:"objectStoreName"` // ObjectStore to update.
 }
@@ -36,7 +37,8 @@ type EventIndexedDBContentUpdated struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#event-indexedDBListUpdated
 type EventIndexedDBListUpdated struct {
-	Origin string `json:"origin"` // Origin to update.
+	Origin     string `json:"origin"`     // Origin to update.
+	StorageKey string `json:"storageKey"` // Storage key to update.
 }
 
 // EventInterestGroupAccessed one of the interest groups was accessed by the

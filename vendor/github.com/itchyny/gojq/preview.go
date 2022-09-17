@@ -3,8 +3,8 @@ package gojq
 import "unicode/utf8"
 
 // Preview returns the preview string of v. The preview string is basically the
-// same as the jq-flavored JSON encoding returned by Marshal, but is truncated
-// by 30 bytes, and more efficient than truncating the result of Marshal.
+// same as the jq-flavored JSON encoding returned by [Marshal], but is truncated
+// by 30 bytes, and more efficient than truncating the result of [Marshal].
 //
 // This method is used by error messages of built-in operators and functions,
 // and accepts only limited types (nil, bool, int, float64, *big.Int, string,
