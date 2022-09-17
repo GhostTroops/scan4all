@@ -3,6 +3,7 @@ package brute
 import (
 	"context"
 	_ "embed"
+	"fmt"
 	"github.com/antlabs/strsim"
 	"github.com/hktalent/scan4all/lib/util"
 	"log"
@@ -11,7 +12,6 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
-	"time"
 )
 
 // 备份、敏感文件后缀
@@ -148,7 +148,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	if nil == err {
 		u = u01.Scheme + "://" + u01.Host + "/"
 	}
-
+	//log.Println("start file fuzz", u)
 	var (
 		//path404               = RandStr // 绝对404页面路径
 		errorTimes   int32    = 0 // 错误计数器，> 20则退出fuzz
@@ -188,7 +188,8 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		close(async_data)
 		close(async_technologies)
 	}()
-	log.Printf("start fuzz: %s for", u)
+	//log.Printf("start fuzz: %s for", u)
+	nStop := 400
 	go func() {
 		for {
 			select {
@@ -196,14 +197,14 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 				return
 			case x1 := <-async_data:
 				path = append(path, x1...)
-				if len(path) > 40 {
+				if len(path) > nStop {
 					stop() //发停止指令
 					atomic.AddInt32(&errorTimes, 21)
 				}
 			case x2 := <-async_technologies:
 				technologies = append(technologies, x2...)
 			default:
-				<-time.After(time.Duration(100) * time.Millisecond)
+				// <-time.After(time.Duration(100) * time.Millisecond)
 			}
 		}
 	}()
@@ -217,10 +218,12 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		ch <- struct{}{}
 		wg.Add(1)
 		go func(payload string) {
+			payload = strings.TrimSpace(payload)
 			defer func() {
 				wg.Done() // 控制所有线程结束
 				<-ch      // 并发控制
 			}()
+			log.Printf("start file fuzz %s%s \r", u, payload)
 			for {
 				select {
 				case _, ok := <-ch:
@@ -246,8 +249,9 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 					if strings.HasPrefix(payload, "/") && endP {
 						szUrl = u + payload[1:]
 					}
-					log.Printf("start fuzz: %s", szUrl)
-					if fuzzPage, req, err := reqPage(szUrl); err == nil && 0 < len(req.Body) {
+					log.Printf("start fuzz: [%s]", szUrl)
+					if fuzzPage, req, err := reqPage(szUrl); err == nil && nil != req && 0 < len(req.Body) {
+						log.Printf("%d : %s \n", req.StatusCode, szUrl)
 						go util.CheckHeader(req.Header, u)
 						// 02-状态码和req1相同，且与req1相似度>9.5，关闭所有fuzz
 						fXsd := strsim.Compare(url404req.Body, req.Body)
@@ -302,6 +306,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 							async_technologies <- technologies1
 						}
 					} else { // 这里应该元子操作
+						fmt.Printf("%s is err %v\n", szUrl, err)
 						atomic.AddInt32(&errorTimes, 1)
 					}
 					return
