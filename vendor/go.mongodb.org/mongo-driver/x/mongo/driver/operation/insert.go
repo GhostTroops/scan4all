@@ -10,7 +10,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
@@ -22,6 +24,7 @@ import (
 // Insert performs an insert operation.
 type Insert struct {
 	bypassDocumentValidation *bool
+	comment                  bsoncore.Value
 	documents                []bsoncore.Document
 	ordered                  *bool
 	session                  *session.Client
@@ -36,6 +39,7 @@ type Insert struct {
 	retry                    *driver.RetryMode
 	result                   InsertResult
 	serverAPI                *driver.ServerAPIOptions
+	timeout                  *time.Duration
 }
 
 // InsertResult represents an insert result returned by the server.
@@ -105,6 +109,7 @@ func (i *Insert) Execute(ctx context.Context) error {
 		Selector:          i.selector,
 		WriteConcern:      i.writeConcern,
 		ServerAPI:         i.serverAPI,
+		Timeout:           i.timeout,
 	}.Execute(ctx, nil)
 
 }
@@ -113,6 +118,9 @@ func (i *Insert) command(dst []byte, desc description.SelectedServer) ([]byte, e
 	dst = bsoncore.AppendStringElement(dst, "insert", i.collection)
 	if i.bypassDocumentValidation != nil && (desc.WireVersion != nil && desc.WireVersion.Includes(4)) {
 		dst = bsoncore.AppendBooleanElement(dst, "bypassDocumentValidation", *i.bypassDocumentValidation)
+	}
+	if i.comment.Type != bsontype.Type(0) {
+		dst = bsoncore.AppendValueElement(dst, "comment", i.comment)
 	}
 	if i.ordered != nil {
 		dst = bsoncore.AppendBooleanElement(dst, "ordered", *i.ordered)
@@ -128,6 +136,16 @@ func (i *Insert) BypassDocumentValidation(bypassDocumentValidation bool) *Insert
 	}
 
 	i.bypassDocumentValidation = &bypassDocumentValidation
+	return i
+}
+
+// Comment sets a value to help trace an operation.
+func (i *Insert) Comment(comment bsoncore.Value) *Insert {
+	if i == nil {
+		i = new(Insert)
+	}
+
+	i.comment = comment
 	return i
 }
 
@@ -261,5 +279,15 @@ func (i *Insert) ServerAPI(serverAPI *driver.ServerAPIOptions) *Insert {
 	}
 
 	i.serverAPI = serverAPI
+	return i
+}
+
+// Timeout sets the timeout for this operation.
+func (i *Insert) Timeout(timeout *time.Duration) *Insert {
+	if i == nil {
+		i = new(Insert)
+	}
+
+	i.timeout = timeout
 	return i
 }

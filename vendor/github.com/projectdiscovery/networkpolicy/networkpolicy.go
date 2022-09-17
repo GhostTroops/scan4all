@@ -187,7 +187,7 @@ func (r NetworkPolicy) Validate(host string) bool {
 			break
 		}
 	}
-	if r.AllowRules != nil {
+	if len(r.AllowRules) > 0 {
 		for _, r := range r.AllowRules {
 			if r.MatchString(host) {
 				isInAllowedList = true

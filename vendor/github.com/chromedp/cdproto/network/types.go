@@ -35,6 +35,7 @@ const (
 	ResourceTypeTextTrack          ResourceType = "TextTrack"
 	ResourceTypeXHR                ResourceType = "XHR"
 	ResourceTypeFetch              ResourceType = "Fetch"
+	ResourceTypePrefetch           ResourceType = "Prefetch"
 	ResourceTypeEventSource        ResourceType = "EventSource"
 	ResourceTypeWebSocket          ResourceType = "WebSocket"
 	ResourceTypeManifest           ResourceType = "Manifest"
@@ -76,6 +77,8 @@ func (t *ResourceType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = ResourceTypeXHR
 	case ResourceTypeFetch:
 		*t = ResourceTypeFetch
+	case ResourceTypePrefetch:
+		*t = ResourceTypePrefetch
 	case ResourceTypeEventSource:
 		*t = ResourceTypeEventSource
 	case ResourceTypeWebSocket:
@@ -542,19 +545,21 @@ type SignedCertificateTimestamp struct {
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Network#type-SecurityDetails
 type SecurityDetails struct {
-	Protocol                          string                            `json:"protocol"`                          // Protocol name (e.g. "TLS 1.2" or "QUIC").
-	KeyExchange                       string                            `json:"keyExchange"`                       // Key Exchange used by the connection, or the empty string if not applicable.
-	KeyExchangeGroup                  string                            `json:"keyExchangeGroup,omitempty"`        // (EC)DH group used by the connection, if applicable.
-	Cipher                            string                            `json:"cipher"`                            // Cipher name.
-	Mac                               string                            `json:"mac,omitempty"`                     // TLS MAC. Note that AEAD ciphers do not have separate MACs.
-	CertificateID                     security.CertificateID            `json:"certificateId"`                     // Certificate ID value.
-	SubjectName                       string                            `json:"subjectName"`                       // Certificate subject name.
-	SanList                           []string                          `json:"sanList"`                           // Subject Alternative Name (SAN) DNS names and IP addresses.
-	Issuer                            string                            `json:"issuer"`                            // Name of the issuing CA.
-	ValidFrom                         *cdp.TimeSinceEpoch               `json:"validFrom"`                         // Certificate valid from date.
-	ValidTo                           *cdp.TimeSinceEpoch               `json:"validTo"`                           // Certificate valid to (expiration) date
-	SignedCertificateTimestampList    []*SignedCertificateTimestamp     `json:"signedCertificateTimestampList"`    // List of signed certificate timestamps (SCTs).
-	CertificateTransparencyCompliance CertificateTransparencyCompliance `json:"certificateTransparencyCompliance"` // Whether the request complied with Certificate Transparency policy
+	Protocol                          string                            `json:"protocol"`                           // Protocol name (e.g. "TLS 1.2" or "QUIC").
+	KeyExchange                       string                            `json:"keyExchange"`                        // Key Exchange used by the connection, or the empty string if not applicable.
+	KeyExchangeGroup                  string                            `json:"keyExchangeGroup,omitempty"`         // (EC)DH group used by the connection, if applicable.
+	Cipher                            string                            `json:"cipher"`                             // Cipher name.
+	Mac                               string                            `json:"mac,omitempty"`                      // TLS MAC. Note that AEAD ciphers do not have separate MACs.
+	CertificateID                     security.CertificateID            `json:"certificateId"`                      // Certificate ID value.
+	SubjectName                       string                            `json:"subjectName"`                        // Certificate subject name.
+	SanList                           []string                          `json:"sanList"`                            // Subject Alternative Name (SAN) DNS names and IP addresses.
+	Issuer                            string                            `json:"issuer"`                             // Name of the issuing CA.
+	ValidFrom                         *cdp.TimeSinceEpoch               `json:"validFrom"`                          // Certificate valid from date.
+	ValidTo                           *cdp.TimeSinceEpoch               `json:"validTo"`                            // Certificate valid to (expiration) date
+	SignedCertificateTimestampList    []*SignedCertificateTimestamp     `json:"signedCertificateTimestampList"`     // List of signed certificate timestamps (SCTs).
+	CertificateTransparencyCompliance CertificateTransparencyCompliance `json:"certificateTransparencyCompliance"`  // Whether the request complied with Certificate Transparency policy
+	ServerSignatureAlgorithm          int64                             `json:"serverSignatureAlgorithm,omitempty"` // The signature algorithm used by the server in the TLS server signature, represented as a TLS SignatureScheme code point. Omitted if not applicable or not known.
+	EncryptedClientHello              bool                              `json:"encryptedClientHello"`               // Whether the connection used Encrypted ClientHello
 }
 
 // CertificateTransparencyCompliance whether the request complied with

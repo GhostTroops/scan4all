@@ -445,6 +445,7 @@ type Node struct {
 	Ignored          bool              `json:"ignored"`                    // Whether this node is ignored for accessibility
 	IgnoredReasons   []*Property       `json:"ignoredReasons,omitempty"`   // Collection of reasons why this node is hidden.
 	Role             *Value            `json:"role,omitempty"`             // This Node's role, whether explicit or implicit.
+	ChromeRole       *Value            `json:"chromeRole,omitempty"`       // This Node's Chrome raw role.
 	Name             *Value            `json:"name,omitempty"`             // The accessible name for this Node.
 	Description      *Value            `json:"description,omitempty"`      // The accessible description for this Node.
 	Value            *Value            `json:"value,omitempty"`            // The value for this Node.

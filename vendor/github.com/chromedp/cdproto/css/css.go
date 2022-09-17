@@ -35,9 +35,10 @@ type AddRuleParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-addRule
 //
 // parameters:
-//   styleSheetID - The css style sheet identifier where a new rule should be inserted.
-//   ruleText - The text of a new rule.
-//   location - Text position of a new rule in the target style sheet.
+//
+//	styleSheetID - The css style sheet identifier where a new rule should be inserted.
+//	ruleText - The text of a new rule.
+//	location - Text position of a new rule in the target style sheet.
 func AddRule(styleSheetID StyleSheetID, ruleText string, location *SourceRange) *AddRuleParams {
 	return &AddRuleParams{
 		StyleSheetID: styleSheetID,
@@ -54,7 +55,8 @@ type AddRuleReturns struct {
 // Do executes CSS.addRule against the provided context.
 //
 // returns:
-//   rule - The newly created rule.
+//
+//	rule - The newly created rule.
 func (p *AddRuleParams) Do(ctx context.Context) (rule *Rule, err error) {
 	// execute
 	var res AddRuleReturns
@@ -76,7 +78,8 @@ type CollectClassNamesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-collectClassNames
 //
 // parameters:
-//   styleSheetID
+//
+//	styleSheetID
 func CollectClassNames(styleSheetID StyleSheetID) *CollectClassNamesParams {
 	return &CollectClassNamesParams{
 		StyleSheetID: styleSheetID,
@@ -91,7 +94,8 @@ type CollectClassNamesReturns struct {
 // Do executes CSS.collectClassNames against the provided context.
 //
 // returns:
-//   classNames - Class name list.
+//
+//	classNames - Class name list.
 func (p *CollectClassNamesParams) Do(ctx context.Context) (classNames []string, err error) {
 	// execute
 	var res CollectClassNamesReturns
@@ -115,7 +119,8 @@ type CreateStyleSheetParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-createStyleSheet
 //
 // parameters:
-//   frameID - Identifier of the frame where "via-inspector" stylesheet should be created.
+//
+//	frameID - Identifier of the frame where "via-inspector" stylesheet should be created.
 func CreateStyleSheet(frameID cdp.FrameID) *CreateStyleSheetParams {
 	return &CreateStyleSheetParams{
 		FrameID: frameID,
@@ -130,7 +135,8 @@ type CreateStyleSheetReturns struct {
 // Do executes CSS.createStyleSheet against the provided context.
 //
 // returns:
-//   styleSheetID - Identifier of the created "via-inspector" stylesheet.
+//
+//	styleSheetID - Identifier of the created "via-inspector" stylesheet.
 func (p *CreateStyleSheetParams) Do(ctx context.Context) (styleSheetID StyleSheetID, err error) {
 	// execute
 	var res CreateStyleSheetReturns
@@ -189,8 +195,9 @@ type ForcePseudoStateParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-forcePseudoState
 //
 // parameters:
-//   nodeID - The element id for which to force the pseudo state.
-//   forcedPseudoClasses - Element pseudo classes to force when computing the element's style.
+//
+//	nodeID - The element id for which to force the pseudo state.
+//	forcedPseudoClasses - Element pseudo classes to force when computing the element's style.
 func ForcePseudoState(nodeID cdp.NodeID, forcedPseudoClasses []string) *ForcePseudoStateParams {
 	return &ForcePseudoStateParams{
 		NodeID:              nodeID,
@@ -213,7 +220,8 @@ type GetBackgroundColorsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-getBackgroundColors
 //
 // parameters:
-//   nodeID - Id of the node to get background colors for.
+//
+//	nodeID - Id of the node to get background colors for.
 func GetBackgroundColors(nodeID cdp.NodeID) *GetBackgroundColorsParams {
 	return &GetBackgroundColorsParams{
 		NodeID: nodeID,
@@ -230,9 +238,10 @@ type GetBackgroundColorsReturns struct {
 // Do executes CSS.getBackgroundColors against the provided context.
 //
 // returns:
-//   backgroundColors - The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load).
-//   computedFontSize - The computed font size for this node, as a CSS computed value string (e.g. '12px').
-//   computedFontWeight - The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or '100').
+//
+//	backgroundColors - The range of background colors behind this element, if it contains any visible text. If no visible text is present, this will be undefined. In the case of a flat background color, this will consist of simply that color. In the case of a gradient, this will consist of each of the color stops. For anything more complicated, this will be an empty array. Images will be ignored (as if the image had failed to load).
+//	computedFontSize - The computed font size for this node, as a CSS computed value string (e.g. '12px').
+//	computedFontWeight - The computed font weight for this node, as a CSS computed value string (e.g. 'normal' or '100').
 func (p *GetBackgroundColorsParams) Do(ctx context.Context) (backgroundColors []string, computedFontSize string, computedFontWeight string, err error) {
 	// execute
 	var res GetBackgroundColorsReturns
@@ -256,7 +265,8 @@ type GetComputedStyleForNodeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-getComputedStyleForNode
 //
 // parameters:
-//   nodeID
+//
+//	nodeID
 func GetComputedStyleForNode(nodeID cdp.NodeID) *GetComputedStyleForNodeParams {
 	return &GetComputedStyleForNodeParams{
 		NodeID: nodeID,
@@ -271,7 +281,8 @@ type GetComputedStyleForNodeReturns struct {
 // Do executes CSS.getComputedStyleForNode against the provided context.
 //
 // returns:
-//   computedStyle - Computed style for the specified DOM node.
+//
+//	computedStyle - Computed style for the specified DOM node.
 func (p *GetComputedStyleForNodeParams) Do(ctx context.Context) (computedStyle []*ComputedStyleProperty, err error) {
 	// execute
 	var res GetComputedStyleForNodeReturns
@@ -297,7 +308,8 @@ type GetInlineStylesForNodeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-getInlineStylesForNode
 //
 // parameters:
-//   nodeID
+//
+//	nodeID
 func GetInlineStylesForNode(nodeID cdp.NodeID) *GetInlineStylesForNodeParams {
 	return &GetInlineStylesForNodeParams{
 		NodeID: nodeID,
@@ -313,8 +325,9 @@ type GetInlineStylesForNodeReturns struct {
 // Do executes CSS.getInlineStylesForNode against the provided context.
 //
 // returns:
-//   inlineStyle - Inline style for the specified DOM node.
-//   attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%").
+//
+//	inlineStyle - Inline style for the specified DOM node.
+//	attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%").
 func (p *GetInlineStylesForNodeParams) Do(ctx context.Context) (inlineStyle *Style, attributesStyle *Style, err error) {
 	// execute
 	var res GetInlineStylesForNodeReturns
@@ -338,7 +351,8 @@ type GetMatchedStylesForNodeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-getMatchedStylesForNode
 //
 // parameters:
-//   nodeID
+//
+//	nodeID
 func GetMatchedStylesForNode(nodeID cdp.NodeID) *GetMatchedStylesForNodeParams {
 	return &GetMatchedStylesForNodeParams{
 		NodeID: nodeID,
@@ -354,27 +368,30 @@ type GetMatchedStylesForNodeReturns struct {
 	Inherited               []*InheritedStyleEntry           `json:"inherited,omitempty"`               // A chain of inherited styles (from the immediate node parent up to the DOM tree root).
 	InheritedPseudoElements []*InheritedPseudoElementMatches `json:"inheritedPseudoElements,omitempty"` // A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root).
 	CSSKeyframesRules       []*KeyframesRule                 `json:"cssKeyframesRules,omitempty"`       // A list of CSS keyframed animations matching this node.
+	ParentLayoutNodeID      cdp.NodeID                       `json:"parentLayoutNodeId,omitempty"`      // Id of the first parent element that does not have display: contents.
 }
 
 // Do executes CSS.getMatchedStylesForNode against the provided context.
 //
 // returns:
-//   inlineStyle - Inline style for the specified DOM node.
-//   attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%").
-//   matchedCSSRules - CSS rules matching this node, from all applicable stylesheets.
-//   pseudoElements - Pseudo style matches for this node.
-//   inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root).
-//   inheritedPseudoElements - A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root).
-//   cssKeyframesRules - A list of CSS keyframed animations matching this node.
-func (p *GetMatchedStylesForNodeParams) Do(ctx context.Context) (inlineStyle *Style, attributesStyle *Style, matchedCSSRules []*RuleMatch, pseudoElements []*PseudoElementMatches, inherited []*InheritedStyleEntry, inheritedPseudoElements []*InheritedPseudoElementMatches, cssKeyframesRules []*KeyframesRule, err error) {
+//
+//	inlineStyle - Inline style for the specified DOM node.
+//	attributesStyle - Attribute-defined element style (e.g. resulting from "width=20 height=100%").
+//	matchedCSSRules - CSS rules matching this node, from all applicable stylesheets.
+//	pseudoElements - Pseudo style matches for this node.
+//	inherited - A chain of inherited styles (from the immediate node parent up to the DOM tree root).
+//	inheritedPseudoElements - A chain of inherited pseudo element styles (from the immediate node parent up to the DOM tree root).
+//	cssKeyframesRules - A list of CSS keyframed animations matching this node.
+//	parentLayoutNodeID - Id of the first parent element that does not have display: contents.
+func (p *GetMatchedStylesForNodeParams) Do(ctx context.Context) (inlineStyle *Style, attributesStyle *Style, matchedCSSRules []*RuleMatch, pseudoElements []*PseudoElementMatches, inherited []*InheritedStyleEntry, inheritedPseudoElements []*InheritedPseudoElementMatches, cssKeyframesRules []*KeyframesRule, parentLayoutNodeID cdp.NodeID, err error) {
 	// execute
 	var res GetMatchedStylesForNodeReturns
 	err = cdp.Execute(ctx, CommandGetMatchedStylesForNode, p, &res)
 	if err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, err
+		return nil, nil, nil, nil, nil, nil, nil, 0, err
 	}
 
-	return res.InlineStyle, res.AttributesStyle, res.MatchedCSSRules, res.PseudoElements, res.Inherited, res.InheritedPseudoElements, res.CSSKeyframesRules, nil
+	return res.InlineStyle, res.AttributesStyle, res.MatchedCSSRules, res.PseudoElements, res.Inherited, res.InheritedPseudoElements, res.CSSKeyframesRules, res.ParentLayoutNodeID, nil
 }
 
 // GetMediaQueriesParams returns all media queries parsed by the rendering
@@ -396,7 +413,8 @@ type GetMediaQueriesReturns struct {
 // Do executes CSS.getMediaQueries against the provided context.
 //
 // returns:
-//   medias
+//
+//	medias
 func (p *GetMediaQueriesParams) Do(ctx context.Context) (medias []*Media, err error) {
 	// execute
 	var res GetMediaQueriesReturns
@@ -420,7 +438,8 @@ type GetPlatformFontsForNodeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-getPlatformFontsForNode
 //
 // parameters:
-//   nodeID
+//
+//	nodeID
 func GetPlatformFontsForNode(nodeID cdp.NodeID) *GetPlatformFontsForNodeParams {
 	return &GetPlatformFontsForNodeParams{
 		NodeID: nodeID,
@@ -435,7 +454,8 @@ type GetPlatformFontsForNodeReturns struct {
 // Do executes CSS.getPlatformFontsForNode against the provided context.
 //
 // returns:
-//   fonts - Usage statistics for every employed platform font.
+//
+//	fonts - Usage statistics for every employed platform font.
 func (p *GetPlatformFontsForNodeParams) Do(ctx context.Context) (fonts []*PlatformFontUsage, err error) {
 	// execute
 	var res GetPlatformFontsForNodeReturns
@@ -458,7 +478,8 @@ type GetStyleSheetTextParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-getStyleSheetText
 //
 // parameters:
-//   styleSheetID
+//
+//	styleSheetID
 func GetStyleSheetText(styleSheetID StyleSheetID) *GetStyleSheetTextParams {
 	return &GetStyleSheetTextParams{
 		StyleSheetID: styleSheetID,
@@ -473,7 +494,8 @@ type GetStyleSheetTextReturns struct {
 // Do executes CSS.getStyleSheetText against the provided context.
 //
 // returns:
-//   text - The stylesheet text.
+//
+//	text - The stylesheet text.
 func (p *GetStyleSheetTextParams) Do(ctx context.Context) (text string, err error) {
 	// execute
 	var res GetStyleSheetTextReturns
@@ -503,7 +525,8 @@ type GetLayersForNodeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-getLayersForNode
 //
 // parameters:
-//   nodeID
+//
+//	nodeID
 func GetLayersForNode(nodeID cdp.NodeID) *GetLayersForNodeParams {
 	return &GetLayersForNodeParams{
 		NodeID: nodeID,
@@ -518,7 +541,8 @@ type GetLayersForNodeReturns struct {
 // Do executes CSS.getLayersForNode against the provided context.
 //
 // returns:
-//   rootLayer
+//
+//	rootLayer
 func (p *GetLayersForNodeParams) Do(ctx context.Context) (rootLayer *LayerData, err error) {
 	// execute
 	var res GetLayersForNodeReturns
@@ -554,7 +578,8 @@ type TrackComputedStyleUpdatesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-trackComputedStyleUpdates
 //
 // parameters:
-//   propertiesToTrack
+//
+//	propertiesToTrack
 func TrackComputedStyleUpdates(propertiesToTrack []*ComputedStyleProperty) *TrackComputedStyleUpdatesParams {
 	return &TrackComputedStyleUpdatesParams{
 		PropertiesToTrack: propertiesToTrack,
@@ -585,7 +610,8 @@ type TakeComputedStyleUpdatesReturns struct {
 // Do executes CSS.takeComputedStyleUpdates against the provided context.
 //
 // returns:
-//   nodeIDs - The list of node Ids that have their tracked computed styles updated
+//
+//	nodeIDs - The list of node Ids that have their tracked computed styles updated
 func (p *TakeComputedStyleUpdatesParams) Do(ctx context.Context) (nodeIDs []cdp.NodeID, err error) {
 	// execute
 	var res TakeComputedStyleUpdatesReturns
@@ -611,9 +637,10 @@ type SetEffectivePropertyValueForNodeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setEffectivePropertyValueForNode
 //
 // parameters:
-//   nodeID - The element id for which to set property.
-//   propertyName
-//   value
+//
+//	nodeID - The element id for which to set property.
+//	propertyName
+//	value
 func SetEffectivePropertyValueForNode(nodeID cdp.NodeID, propertyName string, value string) *SetEffectivePropertyValueForNodeParams {
 	return &SetEffectivePropertyValueForNodeParams{
 		NodeID:       nodeID,
@@ -639,9 +666,10 @@ type SetKeyframeKeyParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setKeyframeKey
 //
 // parameters:
-//   styleSheetID
-//   range
-//   keyText
+//
+//	styleSheetID
+//	range
+//	keyText
 func SetKeyframeKey(styleSheetID StyleSheetID, rangeVal *SourceRange, keyText string) *SetKeyframeKeyParams {
 	return &SetKeyframeKeyParams{
 		StyleSheetID: styleSheetID,
@@ -658,7 +686,8 @@ type SetKeyframeKeyReturns struct {
 // Do executes CSS.setKeyframeKey against the provided context.
 //
 // returns:
-//   keyText - The resulting key text after modification.
+//
+//	keyText - The resulting key text after modification.
 func (p *SetKeyframeKeyParams) Do(ctx context.Context) (keyText *Value, err error) {
 	// execute
 	var res SetKeyframeKeyReturns
@@ -682,9 +711,10 @@ type SetMediaTextParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setMediaText
 //
 // parameters:
-//   styleSheetID
-//   range
-//   text
+//
+//	styleSheetID
+//	range
+//	text
 func SetMediaText(styleSheetID StyleSheetID, rangeVal *SourceRange, text string) *SetMediaTextParams {
 	return &SetMediaTextParams{
 		StyleSheetID: styleSheetID,
@@ -701,7 +731,8 @@ type SetMediaTextReturns struct {
 // Do executes CSS.setMediaText against the provided context.
 //
 // returns:
-//   media - The resulting CSS media rule after modification.
+//
+//	media - The resulting CSS media rule after modification.
 func (p *SetMediaTextParams) Do(ctx context.Context) (media *Media, err error) {
 	// execute
 	var res SetMediaTextReturns
@@ -725,9 +756,10 @@ type SetContainerQueryTextParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setContainerQueryText
 //
 // parameters:
-//   styleSheetID
-//   range
-//   text
+//
+//	styleSheetID
+//	range
+//	text
 func SetContainerQueryText(styleSheetID StyleSheetID, rangeVal *SourceRange, text string) *SetContainerQueryTextParams {
 	return &SetContainerQueryTextParams{
 		StyleSheetID: styleSheetID,
@@ -744,7 +776,8 @@ type SetContainerQueryTextReturns struct {
 // Do executes CSS.setContainerQueryText against the provided context.
 //
 // returns:
-//   containerQuery - The resulting CSS container query rule after modification.
+//
+//	containerQuery - The resulting CSS container query rule after modification.
 func (p *SetContainerQueryTextParams) Do(ctx context.Context) (containerQuery *ContainerQuery, err error) {
 	// execute
 	var res SetContainerQueryTextReturns
@@ -768,9 +801,10 @@ type SetSupportsTextParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setSupportsText
 //
 // parameters:
-//   styleSheetID
-//   range
-//   text
+//
+//	styleSheetID
+//	range
+//	text
 func SetSupportsText(styleSheetID StyleSheetID, rangeVal *SourceRange, text string) *SetSupportsTextParams {
 	return &SetSupportsTextParams{
 		StyleSheetID: styleSheetID,
@@ -787,7 +821,8 @@ type SetSupportsTextReturns struct {
 // Do executes CSS.setSupportsText against the provided context.
 //
 // returns:
-//   supports - The resulting CSS Supports rule after modification.
+//
+//	supports - The resulting CSS Supports rule after modification.
 func (p *SetSupportsTextParams) Do(ctx context.Context) (supports *Supports, err error) {
 	// execute
 	var res SetSupportsTextReturns
@@ -811,9 +846,10 @@ type SetScopeTextParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setScopeText
 //
 // parameters:
-//   styleSheetID
-//   range
-//   text
+//
+//	styleSheetID
+//	range
+//	text
 func SetScopeText(styleSheetID StyleSheetID, rangeVal *SourceRange, text string) *SetScopeTextParams {
 	return &SetScopeTextParams{
 		StyleSheetID: styleSheetID,
@@ -830,7 +866,8 @@ type SetScopeTextReturns struct {
 // Do executes CSS.setScopeText against the provided context.
 //
 // returns:
-//   scope - The resulting CSS Scope rule after modification.
+//
+//	scope - The resulting CSS Scope rule after modification.
 func (p *SetScopeTextParams) Do(ctx context.Context) (scope *Scope, err error) {
 	// execute
 	var res SetScopeTextReturns
@@ -854,9 +891,10 @@ type SetRuleSelectorParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setRuleSelector
 //
 // parameters:
-//   styleSheetID
-//   range
-//   selector
+//
+//	styleSheetID
+//	range
+//	selector
 func SetRuleSelector(styleSheetID StyleSheetID, rangeVal *SourceRange, selector string) *SetRuleSelectorParams {
 	return &SetRuleSelectorParams{
 		StyleSheetID: styleSheetID,
@@ -873,7 +911,8 @@ type SetRuleSelectorReturns struct {
 // Do executes CSS.setRuleSelector against the provided context.
 //
 // returns:
-//   selectorList - The resulting selector list after modification.
+//
+//	selectorList - The resulting selector list after modification.
 func (p *SetRuleSelectorParams) Do(ctx context.Context) (selectorList *SelectorList, err error) {
 	// execute
 	var res SetRuleSelectorReturns
@@ -896,8 +935,9 @@ type SetStyleSheetTextParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setStyleSheetText
 //
 // parameters:
-//   styleSheetID
-//   text
+//
+//	styleSheetID
+//	text
 func SetStyleSheetText(styleSheetID StyleSheetID, text string) *SetStyleSheetTextParams {
 	return &SetStyleSheetTextParams{
 		StyleSheetID: styleSheetID,
@@ -913,7 +953,8 @@ type SetStyleSheetTextReturns struct {
 // Do executes CSS.setStyleSheetText against the provided context.
 //
 // returns:
-//   sourceMapURL - URL of source map associated with script (if any).
+//
+//	sourceMapURL - URL of source map associated with script (if any).
 func (p *SetStyleSheetTextParams) Do(ctx context.Context) (sourceMapURL string, err error) {
 	// execute
 	var res SetStyleSheetTextReturns
@@ -937,7 +978,8 @@ type SetStyleTextsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setStyleTexts
 //
 // parameters:
-//   edits
+//
+//	edits
 func SetStyleTexts(edits []*StyleDeclarationEdit) *SetStyleTextsParams {
 	return &SetStyleTextsParams{
 		Edits: edits,
@@ -952,7 +994,8 @@ type SetStyleTextsReturns struct {
 // Do executes CSS.setStyleTexts against the provided context.
 //
 // returns:
-//   styles - The resulting styles after modification.
+//
+//	styles - The resulting styles after modification.
 func (p *SetStyleTextsParams) Do(ctx context.Context) (styles []*Style, err error) {
 	// execute
 	var res SetStyleTextsReturns
@@ -1001,7 +1044,8 @@ type StopRuleUsageTrackingReturns struct {
 // Do executes CSS.stopRuleUsageTracking against the provided context.
 //
 // returns:
-//   ruleUsage
+//
+//	ruleUsage
 func (p *StopRuleUsageTrackingParams) Do(ctx context.Context) (ruleUsage []*RuleUsage, err error) {
 	// execute
 	var res StopRuleUsageTrackingReturns
@@ -1034,8 +1078,9 @@ type TakeCoverageDeltaReturns struct {
 // Do executes CSS.takeCoverageDelta against the provided context.
 //
 // returns:
-//   coverage
-//   timestamp - Monotonically increasing time, in seconds.
+//
+//	coverage
+//	timestamp - Monotonically increasing time, in seconds.
 func (p *TakeCoverageDeltaParams) Do(ctx context.Context) (coverage []*RuleUsage, timestamp float64, err error) {
 	// execute
 	var res TakeCoverageDeltaReturns
@@ -1059,7 +1104,8 @@ type SetLocalFontsEnabledParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/CSS#method-setLocalFontsEnabled
 //
 // parameters:
-//   enabled - Whether rendering of local fonts is enabled.
+//
+//	enabled - Whether rendering of local fonts is enabled.
 func SetLocalFontsEnabled(enabled bool) *SetLocalFontsEnabledParams {
 	return &SetLocalFontsEnabledParams{
 		Enabled: enabled,

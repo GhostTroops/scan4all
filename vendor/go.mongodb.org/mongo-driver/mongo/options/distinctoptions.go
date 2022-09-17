@@ -15,8 +15,16 @@ type DistinctOptions struct {
 	// default value is nil, which means the default collation of the collection will be used.
 	Collation *Collation
 
+	// A string or document that will be included in server logs, profiling logs, and currentOp queries to help trace
+	// the operation. The default value is nil, which means that no comment will be included in the logs.
+	Comment interface{}
+
 	// The maximum amount of time that the query can run on the server. The default value is nil, meaning that there
 	// is no time limit for query execution.
+	//
+	// NOTE(benjirewis): MaxTime will be deprecated in a future release. The more general Timeout option may be
+	// used in its place to control the amount of time that a single operation can run before returning an error.
+	// MaxTime is ignored if Timeout is set on the client.
 	MaxTime *time.Duration
 }
 
@@ -31,7 +39,17 @@ func (do *DistinctOptions) SetCollation(c *Collation) *DistinctOptions {
 	return do
 }
 
+// SetComment sets the value for the Comment field.
+func (do *DistinctOptions) SetComment(comment interface{}) *DistinctOptions {
+	do.Comment = comment
+	return do
+}
+
 // SetMaxTime sets the value for the MaxTime field.
+//
+// NOTE(benjirewis): MaxTime will be deprecated in a future release. The more general Timeout
+// option may be used in its place to control the amount of time that a single operation can
+// run before returning an error. MaxTime is ignored if Timeout is set on the client.
 func (do *DistinctOptions) SetMaxTime(d time.Duration) *DistinctOptions {
 	do.MaxTime = &d
 	return do
@@ -47,6 +65,9 @@ func MergeDistinctOptions(opts ...*DistinctOptions) *DistinctOptions {
 		}
 		if do.Collation != nil {
 			distinctOpts.Collation = do.Collation
+		}
+		if do.Comment != nil {
+			distinctOpts.Comment = do.Comment
 		}
 		if do.MaxTime != nil {
 			distinctOpts.MaxTime = do.MaxTime

@@ -1,0 +1,61 @@
+language: go
+
+branches:
+  only:
+  - master
+  - /^crl-release-\d+\.\d+$/
+
+install:
+  - go get -v golang.org/x/lint/golint
+
+cache:
+  directories:
+    - $(go env GOCACHE)
+    - $(go env GOPATH)/pkg/mod
+
+matrix:
+  include:
+    - name: "go1.14.x-linux"
+      go: 1.14.x
+      os: linux
+      script: make test
+    - name: "go1.15.x-linux"
+      go: 1.15.x
+      os: linux
+      script: make test generate
+    - name: "go1.16.x-linux"
+      go: 1.16.x
+      os: linux
+      script: make test generate
+    - name: "go1.16.x-linux-race"
+      go: 1.16.x
+      os: linux
+      script: make testrace TAGS=
+    - name: "go1.16.x-linux-no-invariants"
+      go: 1.16.x
+      os: linux
+      script: make test TAGS=
+    - name: "go1.16.x-linux-no-cgo"
+      go: 1.16.x
+      os: linux
+      script: CGO_ENABLED=0 make test TAGS=
+    - name: "go1.16.x-darwin"
+      go: 1.16.x
+      os: osx
+      script: make test
+    - name: "go1.16.x-windows"
+      go: 1.16.x
+      os: windows
+      script: go test ./...
+    - name: "go1.16.x-freebsd"
+      go: 1.16.x
+      os: linux
+      # NB: "env: GOOS=freebsd" does not have the desired effect.
+      script: GOOS=freebsd go build -v ./...
+
+notifications:
+  email:
+    recipients:
+      - peter@cockroachlabs.com
+    on_success: never
+    on_failure: always

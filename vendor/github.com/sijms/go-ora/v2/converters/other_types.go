@@ -12,19 +12,46 @@ SELECT dump(cast(xxx as binary_yyy) FROM dual;
 */
 
 func ConvertBinaryFloat(bytes []byte) float32 {
-	u := binary.BigEndian.Uint32(bytes)
-	if u > (1 << 31) {
-		return -math.Float32frombits(u)
+	if bytes[0]&128 != 0 {
+		bytes[0] = bytes[0] & 127
+	} else {
+		bytes[0] = ^bytes[0]
+		bytes[1] = ^bytes[1]
+		bytes[2] = ^bytes[2]
+		bytes[3] = ^bytes[3]
 	}
-	return math.Float32frombits(^u)
+	u := binary.BigEndian.Uint32(bytes)
+	return math.Float32frombits(u)
+	//if u > (1 << 31) {
+	//	return -math.Float32frombits(u)
+	//}
+	//return math.Float32frombits(^u)
 }
 
 func ConvertBinaryDouble(bytes []byte) float64 {
-	u := binary.BigEndian.Uint64(bytes)
-	if u > (1 << 63) {
-		return -math.Float64frombits(u)
+	if bytes[0]&128 != 0 {
+		bytes[0] = bytes[0] & 127
+	} else {
+		bytes[0] = ^bytes[0]
+		bytes[1] = ^bytes[1]
+		bytes[2] = ^bytes[2]
+		bytes[3] = ^bytes[3]
+		bytes[4] = ^bytes[4]
+		bytes[5] = ^bytes[5]
+		bytes[6] = ^bytes[6]
+		bytes[7] = ^bytes[7]
 	}
-	return math.Float64frombits(^u)
+	u := binary.BigEndian.Uint64(bytes)
+	return math.Float64frombits(u)
+	//if neg {
+	//	out = -out
+	//}
+	//return out
+	//if u > (1 << 63) {
+	//	out = -out
+	//}
+	//return math.Float64frombits(u)
+	//return math.Float64frombits(^u)
 }
 
 /*

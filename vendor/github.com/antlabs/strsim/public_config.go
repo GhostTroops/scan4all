@@ -4,6 +4,7 @@ type option struct {
 	ignore int  //
 	ascii  bool // 设置选用ascii还是utf8方式执行算法
 	cmp    func(s1, s2 string) float64
+	base64 bool // 设置是否使用base64算法
 }
 
 // 调用Option接口设置option
@@ -44,5 +45,12 @@ func IgnoreSpace() OptionFunc {
 func UseASCII() OptionFunc {
 	return OptionFunc(func(o *option) {
 		o.ascii = true
+	})
+}
+
+// UseBase64 使用base64编码
+func UseBase64() OptionFunc {
+	return OptionFunc(func(o *option) {
+		o.base64 = true
 	})
 }

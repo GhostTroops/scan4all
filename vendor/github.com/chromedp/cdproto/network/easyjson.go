@@ -2307,6 +2307,10 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoNetwork20(in *jlexer.Lexer, o
 			}
 		case "certificateTransparencyCompliance":
 			(out.CertificateTransparencyCompliance).UnmarshalEasyJSON(in)
+		case "serverSignatureAlgorithm":
+			out.ServerSignatureAlgorithm = int64(in.Int64())
+		case "encryptedClientHello":
+			out.EncryptedClientHello = bool(in.Bool())
 		default:
 			in.SkipRecursive()
 		}
@@ -2419,6 +2423,16 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoNetwork20(out *jwriter.Writer
 		const prefix string = ",\"certificateTransparencyCompliance\":"
 		out.RawString(prefix)
 		(in.CertificateTransparencyCompliance).MarshalEasyJSON(out)
+	}
+	if in.ServerSignatureAlgorithm != 0 {
+		const prefix string = ",\"serverSignatureAlgorithm\":"
+		out.RawString(prefix)
+		out.Int64(int64(in.ServerSignatureAlgorithm))
+	}
+	{
+		const prefix string = ",\"encryptedClientHello\":"
+		out.RawString(prefix)
+		out.Bool(bool(in.EncryptedClientHello))
 	}
 	out.RawByte('}')
 }

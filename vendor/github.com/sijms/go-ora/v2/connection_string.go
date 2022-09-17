@@ -428,7 +428,18 @@ func (connStr *ConnectionString) validate() error {
 
 	// get client info
 	var idx int
-	temp, _ := user.Current()
+	var temp *user.User
+	if userName := os.Getenv("USER"); len(userName) > 0 {
+		temp = &user.User{
+			Uid:      "",
+			Gid:      "",
+			Username: userName,
+			Name:     userName,
+			HomeDir:  "",
+		}
+	} else {
+		temp, _ = user.Current()
+	}
 	if temp != nil {
 		idx = strings.Index(temp.Username, "\\")
 		if idx >= 0 {

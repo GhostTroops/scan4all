@@ -62,7 +62,8 @@ type GetHighlightObjectForTestParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-getHighlightObjectForTest
 //
 // parameters:
-//   nodeID - Id of the node to get highlight object for.
+//
+//	nodeID - Id of the node to get highlight object for.
 func GetHighlightObjectForTest(nodeID cdp.NodeID) *GetHighlightObjectForTestParams {
 	return &GetHighlightObjectForTestParams{
 		NodeID: nodeID,
@@ -102,7 +103,8 @@ type GetHighlightObjectForTestReturns struct {
 // Do executes Overlay.getHighlightObjectForTest against the provided context.
 //
 // returns:
-//   highlight - Highlight data for the node.
+//
+//	highlight - Highlight data for the node.
 func (p *GetHighlightObjectForTestParams) Do(ctx context.Context) (highlight easyjson.RawMessage, err error) {
 	// execute
 	var res GetHighlightObjectForTestReturns
@@ -124,7 +126,8 @@ type GetGridHighlightObjectsForTestParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-getGridHighlightObjectsForTest
 //
 // parameters:
-//   nodeIDs - Ids of the node to get highlight object for.
+//
+//	nodeIDs - Ids of the node to get highlight object for.
 func GetGridHighlightObjectsForTest(nodeIDs []cdp.NodeID) *GetGridHighlightObjectsForTestParams {
 	return &GetGridHighlightObjectsForTestParams{
 		NodeIDs: nodeIDs,
@@ -139,7 +142,8 @@ type GetGridHighlightObjectsForTestReturns struct {
 // Do executes Overlay.getGridHighlightObjectsForTest against the provided context.
 //
 // returns:
-//   highlights - Grid Highlight data for the node ids provided.
+//
+//	highlights - Grid Highlight data for the node ids provided.
 func (p *GetGridHighlightObjectsForTestParams) Do(ctx context.Context) (highlights easyjson.RawMessage, err error) {
 	// execute
 	var res GetGridHighlightObjectsForTestReturns
@@ -162,7 +166,8 @@ type GetSourceOrderHighlightObjectForTestParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-getSourceOrderHighlightObjectForTest
 //
 // parameters:
-//   nodeID - Id of the node to highlight.
+//
+//	nodeID - Id of the node to highlight.
 func GetSourceOrderHighlightObjectForTest(nodeID cdp.NodeID) *GetSourceOrderHighlightObjectForTestParams {
 	return &GetSourceOrderHighlightObjectForTestParams{
 		NodeID: nodeID,
@@ -177,7 +182,8 @@ type GetSourceOrderHighlightObjectForTestReturns struct {
 // Do executes Overlay.getSourceOrderHighlightObjectForTest against the provided context.
 //
 // returns:
-//   highlight - Source order highlight data for the node id provided.
+//
+//	highlight - Source order highlight data for the node id provided.
 func (p *GetSourceOrderHighlightObjectForTestParams) Do(ctx context.Context) (highlight easyjson.RawMessage, err error) {
 	// execute
 	var res GetSourceOrderHighlightObjectForTestReturns
@@ -220,7 +226,8 @@ type HighlightNodeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-highlightNode
 //
 // parameters:
-//   highlightConfig - A descriptor for the highlight appearance.
+//
+//	highlightConfig - A descriptor for the highlight appearance.
 func HighlightNode(highlightConfig *HighlightConfig) *HighlightNodeParams {
 	return &HighlightNodeParams{
 		HighlightConfig: highlightConfig,
@@ -270,7 +277,8 @@ type HighlightQuadParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-highlightQuad
 //
 // parameters:
-//   quad - Quad to highlight
+//
+//	quad - Quad to highlight
 func HighlightQuad(quad dom.Quad) *HighlightQuadParams {
 	return &HighlightQuadParams{
 		Quad: quad,
@@ -311,10 +319,11 @@ type HighlightRectParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-highlightRect
 //
 // parameters:
-//   x - X coordinate
-//   y - Y coordinate
-//   width - Rectangle width
-//   height - Rectangle height
+//
+//	x - X coordinate
+//	y - Y coordinate
+//	width - Rectangle width
+//	height - Rectangle height
 func HighlightRect(x int64, y int64, width int64, height int64) *HighlightRectParams {
 	return &HighlightRectParams{
 		X:      x,
@@ -358,7 +367,8 @@ type HighlightSourceOrderParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-highlightSourceOrder
 //
 // parameters:
-//   sourceOrderConfig - A descriptor for the appearance of the overlay drawing.
+//
+//	sourceOrderConfig - A descriptor for the appearance of the overlay drawing.
 func HighlightSourceOrder(sourceOrderConfig *SourceOrderConfig) *HighlightSourceOrderParams {
 	return &HighlightSourceOrderParams{
 		SourceOrderConfig: sourceOrderConfig,
@@ -403,7 +413,8 @@ type SetInspectModeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setInspectMode
 //
 // parameters:
-//   mode - Set an inspection mode.
+//
+//	mode - Set an inspection mode.
 func SetInspectMode(mode InspectMode) *SetInspectModeParams {
 	return &SetInspectModeParams{
 		Mode: mode,
@@ -434,7 +445,8 @@ type SetShowAdHighlightsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowAdHighlights
 //
 // parameters:
-//   show - True for showing ad highlights
+//
+//	show - True for showing ad highlights
 func SetShowAdHighlights(show bool) *SetShowAdHighlightsParams {
 	return &SetShowAdHighlightsParams{
 		Show: show,
@@ -483,7 +495,8 @@ type SetShowDebugBordersParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowDebugBorders
 //
 // parameters:
-//   show - True for showing debug borders
+//
+//	show - True for showing debug borders
 func SetShowDebugBorders(show bool) *SetShowDebugBordersParams {
 	return &SetShowDebugBordersParams{
 		Show: show,
@@ -505,7 +518,8 @@ type SetShowFPSCounterParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowFPSCounter
 //
 // parameters:
-//   show - True for showing the FPS counter
+//
+//	show - True for showing the FPS counter
 func SetShowFPSCounter(show bool) *SetShowFPSCounterParams {
 	return &SetShowFPSCounterParams{
 		Show: show,
@@ -528,7 +542,8 @@ type SetShowGridOverlaysParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowGridOverlays
 //
 // parameters:
-//   gridNodeHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
+//
+//	gridNodeHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
 func SetShowGridOverlays(gridNodeHighlightConfigs []*GridNodeHighlightConfig) *SetShowGridOverlaysParams {
 	return &SetShowGridOverlaysParams{
 		GridNodeHighlightConfigs: gridNodeHighlightConfigs,
@@ -550,7 +565,8 @@ type SetShowFlexOverlaysParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowFlexOverlays
 //
 // parameters:
-//   flexNodeHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
+//
+//	flexNodeHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
 func SetShowFlexOverlays(flexNodeHighlightConfigs []*FlexNodeHighlightConfig) *SetShowFlexOverlaysParams {
 	return &SetShowFlexOverlaysParams{
 		FlexNodeHighlightConfigs: flexNodeHighlightConfigs,
@@ -572,7 +588,8 @@ type SetShowScrollSnapOverlaysParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowScrollSnapOverlays
 //
 // parameters:
-//   scrollSnapHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
+//
+//	scrollSnapHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
 func SetShowScrollSnapOverlays(scrollSnapHighlightConfigs []*ScrollSnapHighlightConfig) *SetShowScrollSnapOverlaysParams {
 	return &SetShowScrollSnapOverlaysParams{
 		ScrollSnapHighlightConfigs: scrollSnapHighlightConfigs,
@@ -594,7 +611,8 @@ type SetShowContainerQueryOverlaysParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowContainerQueryOverlays
 //
 // parameters:
-//   containerQueryHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
+//
+//	containerQueryHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
 func SetShowContainerQueryOverlays(containerQueryHighlightConfigs []*ContainerQueryHighlightConfig) *SetShowContainerQueryOverlaysParams {
 	return &SetShowContainerQueryOverlaysParams{
 		ContainerQueryHighlightConfigs: containerQueryHighlightConfigs,
@@ -616,7 +634,8 @@ type SetShowPaintRectsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowPaintRects
 //
 // parameters:
-//   result - True for showing paint rectangles
+//
+//	result - True for showing paint rectangles
 func SetShowPaintRects(result bool) *SetShowPaintRectsParams {
 	return &SetShowPaintRectsParams{
 		Result: result,
@@ -640,7 +659,8 @@ type SetShowLayoutShiftRegionsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowLayoutShiftRegions
 //
 // parameters:
-//   result - True for showing layout shift regions
+//
+//	result - True for showing layout shift regions
 func SetShowLayoutShiftRegions(result bool) *SetShowLayoutShiftRegionsParams {
 	return &SetShowLayoutShiftRegionsParams{
 		Result: result,
@@ -664,7 +684,8 @@ type SetShowScrollBottleneckRectsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowScrollBottleneckRects
 //
 // parameters:
-//   show - True for showing scroll bottleneck rects
+//
+//	show - True for showing scroll bottleneck rects
 func SetShowScrollBottleneckRects(show bool) *SetShowScrollBottleneckRectsParams {
 	return &SetShowScrollBottleneckRectsParams{
 		Show: show,
@@ -688,7 +709,8 @@ type SetShowWebVitalsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowWebVitals
 //
 // parameters:
-//   show
+//
+//	show
 func SetShowWebVitals(show bool) *SetShowWebVitalsParams {
 	return &SetShowWebVitalsParams{
 		Show: show,
@@ -711,7 +733,8 @@ type SetShowViewportSizeOnResizeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowViewportSizeOnResize
 //
 // parameters:
-//   show - Whether to paint size or not.
+//
+//	show - Whether to paint size or not.
 func SetShowViewportSizeOnResize(show bool) *SetShowViewportSizeOnResizeParams {
 	return &SetShowViewportSizeOnResizeParams{
 		Show: show,
@@ -759,7 +782,8 @@ type SetShowIsolatedElementsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Overlay#method-setShowIsolatedElements
 //
 // parameters:
-//   isolatedElementHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
+//
+//	isolatedElementHighlightConfigs - An array of node identifiers and descriptors for the highlight appearance.
 func SetShowIsolatedElements(isolatedElementHighlightConfigs []*IsolatedElementHighlightConfig) *SetShowIsolatedElementsParams {
 	return &SetShowIsolatedElementsParams{
 		IsolatedElementHighlightConfigs: isolatedElementHighlightConfigs,

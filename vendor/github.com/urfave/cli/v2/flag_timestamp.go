@@ -11,6 +11,7 @@ type Timestamp struct {
 	timestamp  *time.Time
 	hasBeenSet bool
 	layout     string
+	location   *time.Location
 }
 
 // Timestamp constructor
@@ -31,9 +32,22 @@ func (t *Timestamp) SetLayout(layout string) {
 	t.layout = layout
 }
 
+// Set perceived timezone of the to-be parsed time string
+func (t *Timestamp) SetLocation(loc *time.Location) {
+	t.location = loc
+}
+
 // Parses the string value to timestamp
 func (t *Timestamp) Set(value string) error {
-	timestamp, err := time.Parse(t.layout, value)
+	var timestamp time.Time
+	var err error
+
+	if t.location != nil {
+		timestamp, err = time.ParseInLocation(t.layout, value, t.location)
+	} else {
+		timestamp, err = time.Parse(t.layout, value)
+	}
+
 	if err != nil {
 		return err
 	}
@@ -76,7 +90,7 @@ func (f *TimestampFlag) GetCategory() string {
 // GetValue returns the flags value as string representation and an empty
 // string if the flag takes no value at all.
 func (f *TimestampFlag) GetValue() string {
-	if f.Value != nil {
+	if f.Value != nil && f.Value.timestamp != nil {
 		return f.Value.timestamp.String()
 	}
 	return ""
@@ -104,9 +118,11 @@ func (f *TimestampFlag) Apply(set *flag.FlagSet) error {
 		f.Value = &Timestamp{}
 	}
 	f.Value.SetLayout(f.Layout)
+	f.Value.SetLocation(f.Timezone)
 
 	if f.Destination != nil {
 		f.Destination.SetLayout(f.Layout)
+		f.Destination.SetLocation(f.Timezone)
 	}
 
 	if val, source, found := flagFromEnvOrFile(f.EnvVars, f.FilePath); found {

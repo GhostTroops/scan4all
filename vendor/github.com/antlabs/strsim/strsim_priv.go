@@ -15,6 +15,8 @@ func compare(s1, s2 string, o *option) float64 {
 func modifyStrAndCheck(o *option, s1, s2 *string) (score float64, exit bool) {
 	modifyString(o, s1)
 	modifyString(o, s2)
+	modifyStrToBase64Str(o, s1)
+	modifyStrToBase64Str(o, s2)
 
 	return check(*s1, *s2)
 }

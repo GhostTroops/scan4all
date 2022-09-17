@@ -176,6 +176,10 @@ func newPool(config poolConfig, connOpts ...ConnectionOption) *pool {
 		conns:                 make(map[uint64]*connection, config.MaxPoolSize),
 		idleConns:             make([]*connection, 0, config.MaxPoolSize),
 	}
+	// minSize must not exceed maxSize if maxSize is not 0
+	if pool.maxSize != 0 && pool.minSize > pool.maxSize {
+		pool.minSize = pool.maxSize
+	}
 	pool.connOpts = append(pool.connOpts, withGenerationNumberFn(func(_ generationNumberFn) generationNumberFn { return pool.getGenerationForNewConnection }))
 
 	pool.generation.connect()
@@ -373,6 +377,8 @@ func (p *pool) unpinConnectionFromTransaction() {
 // ready, checkOut returns an error.
 // Based partially on https://cs.opensource.google/go/go/+/refs/tags/go1.16.6:src/net/http/transport.go;l=1324
 func (p *pool) checkOut(ctx context.Context) (conn *connection, err error) {
+	// TODO(CSOT): If a Timeout was specified at any level, respect the Timeout is server selection, connection
+	// TODO checkout.
 	if p.monitor != nil {
 		p.monitor.Event(&event.PoolEvent{
 			Type:    event.GetStarted,

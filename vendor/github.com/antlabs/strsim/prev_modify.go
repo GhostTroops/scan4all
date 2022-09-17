@@ -1,6 +1,7 @@
 package strsim
 
 import (
+	"github.com/antlabs/strsim/similarity"
 	"strings"
 )
 
@@ -28,4 +29,12 @@ func modifyString(o *option, s *string) {
 			modiyTab[i](s)
 		}
 	}
+}
+
+func modifyStrToBase64Str(o *option, s *string) {
+	if o.base64 {
+		// 将字符串转换为base64编码
+		*s = similarity.Base64Encode(*s)
+	}
+
 }

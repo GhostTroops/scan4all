@@ -30,7 +30,8 @@ type ContinueToLocationParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-continueToLocation
 //
 // parameters:
-//   location - Location to continue to.
+//
+//	location - Location to continue to.
 func ContinueToLocation(location *Location) *ContinueToLocationParams {
 	return &ContinueToLocationParams{
 		Location: location,
@@ -96,7 +97,8 @@ type EnableReturns struct {
 // Do executes Debugger.enable against the provided context.
 //
 // returns:
-//   debuggerID - Unique identifier of the debugger.
+//
+//	debuggerID - Unique identifier of the debugger.
 func (p *EnableParams) Do(ctx context.Context) (debuggerID runtime.UniqueDebuggerID, err error) {
 	// execute
 	var res EnableReturns
@@ -126,8 +128,9 @@ type EvaluateOnCallFrameParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-evaluateOnCallFrame
 //
 // parameters:
-//   callFrameID - Call frame identifier to evaluate on.
-//   expression - Expression to evaluate.
+//
+//	callFrameID - Call frame identifier to evaluate on.
+//	expression - Expression to evaluate.
 func EvaluateOnCallFrame(callFrameID CallFrameID, expression string) *EvaluateOnCallFrameParams {
 	return &EvaluateOnCallFrameParams{
 		CallFrameID: callFrameID,
@@ -191,8 +194,9 @@ type EvaluateOnCallFrameReturns struct {
 // Do executes Debugger.evaluateOnCallFrame against the provided context.
 //
 // returns:
-//   result - Object wrapper for the evaluation result.
-//   exceptionDetails - Exception details.
+//
+//	result - Object wrapper for the evaluation result.
+//	exceptionDetails - Exception details.
 func (p *EvaluateOnCallFrameParams) Do(ctx context.Context) (result *runtime.RemoteObject, exceptionDetails *runtime.ExceptionDetails, err error) {
 	// execute
 	var res EvaluateOnCallFrameReturns
@@ -218,7 +222,8 @@ type GetPossibleBreakpointsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-getPossibleBreakpoints
 //
 // parameters:
-//   start - Start of range to search possible breakpoint locations in.
+//
+//	start - Start of range to search possible breakpoint locations in.
 func GetPossibleBreakpoints(start *Location) *GetPossibleBreakpointsParams {
 	return &GetPossibleBreakpointsParams{
 		Start: start,
@@ -247,7 +252,8 @@ type GetPossibleBreakpointsReturns struct {
 // Do executes Debugger.getPossibleBreakpoints against the provided context.
 //
 // returns:
-//   locations - List of the possible breakpoint locations.
+//
+//	locations - List of the possible breakpoint locations.
 func (p *GetPossibleBreakpointsParams) Do(ctx context.Context) (locations []*BreakLocation, err error) {
 	// execute
 	var res GetPossibleBreakpointsReturns
@@ -269,7 +275,8 @@ type GetScriptSourceParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-getScriptSource
 //
 // parameters:
-//   scriptID - Id of the script to get source for.
+//
+//	scriptID - Id of the script to get source for.
 func GetScriptSource(scriptID runtime.ScriptID) *GetScriptSourceParams {
 	return &GetScriptSourceParams{
 		ScriptID: scriptID,
@@ -285,8 +292,9 @@ type GetScriptSourceReturns struct {
 // Do executes Debugger.getScriptSource against the provided context.
 //
 // returns:
-//   scriptSource - Script source (empty in case of Wasm bytecode).
-//   bytecode - Wasm bytecode.
+//
+//	scriptSource - Script source (empty in case of Wasm bytecode).
+//	bytecode - Wasm bytecode.
 func (p *GetScriptSourceParams) Do(ctx context.Context) (scriptSource string, bytecode []byte, err error) {
 	// execute
 	var res GetScriptSourceReturns
@@ -304,6 +312,96 @@ func (p *GetScriptSourceParams) Do(ctx context.Context) (scriptSource string, by
 	return res.ScriptSource, dec, nil
 }
 
+// DisassembleWasmModuleParams [no description].
+type DisassembleWasmModuleParams struct {
+	ScriptID runtime.ScriptID `json:"scriptId"` // Id of the script to disassemble
+}
+
+// DisassembleWasmModule [no description].
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-disassembleWasmModule
+//
+// parameters:
+//
+//	scriptID - Id of the script to disassemble
+func DisassembleWasmModule(scriptID runtime.ScriptID) *DisassembleWasmModuleParams {
+	return &DisassembleWasmModuleParams{
+		ScriptID: scriptID,
+	}
+}
+
+// DisassembleWasmModuleReturns return values.
+type DisassembleWasmModuleReturns struct {
+	StreamID            string                `json:"streamId,omitempty"`            // For large modules, return a stream from which additional chunks of disassembly can be read successively.
+	TotalNumberOfLines  int64                 `json:"totalNumberOfLines,omitempty"`  // The total number of lines in the disassembly text.
+	FunctionBodyOffsets []int64               `json:"functionBodyOffsets,omitempty"` // The offsets of all function bodies, in the format [start1, end1, start2, end2, ...] where all ends are exclusive.
+	Chunk               *WasmDisassemblyChunk `json:"chunk,omitempty"`               // The first chunk of disassembly.
+}
+
+// Do executes Debugger.disassembleWasmModule against the provided context.
+//
+// returns:
+//
+//	streamID - For large modules, return a stream from which additional chunks of disassembly can be read successively.
+//	totalNumberOfLines - The total number of lines in the disassembly text.
+//	functionBodyOffsets - The offsets of all function bodies, in the format [start1, end1, start2, end2, ...] where all ends are exclusive.
+//	chunk - The first chunk of disassembly.
+func (p *DisassembleWasmModuleParams) Do(ctx context.Context) (streamID string, totalNumberOfLines int64, functionBodyOffsets []int64, chunk *WasmDisassemblyChunk, err error) {
+	// execute
+	var res DisassembleWasmModuleReturns
+	err = cdp.Execute(ctx, CommandDisassembleWasmModule, p, &res)
+	if err != nil {
+		return "", 0, nil, nil, err
+	}
+
+	return res.StreamID, res.TotalNumberOfLines, res.FunctionBodyOffsets, res.Chunk, nil
+}
+
+// NextWasmDisassemblyChunkParams disassemble the next chunk of lines for the
+// module corresponding to the stream. If disassembly is complete, this API will
+// invalidate the streamId and return an empty chunk. Any subsequent calls for
+// the now invalid stream will return errors.
+type NextWasmDisassemblyChunkParams struct {
+	StreamID string `json:"streamId"`
+}
+
+// NextWasmDisassemblyChunk disassemble the next chunk of lines for the
+// module corresponding to the stream. If disassembly is complete, this API will
+// invalidate the streamId and return an empty chunk. Any subsequent calls for
+// the now invalid stream will return errors.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-nextWasmDisassemblyChunk
+//
+// parameters:
+//
+//	streamID
+func NextWasmDisassemblyChunk(streamID string) *NextWasmDisassemblyChunkParams {
+	return &NextWasmDisassemblyChunkParams{
+		StreamID: streamID,
+	}
+}
+
+// NextWasmDisassemblyChunkReturns return values.
+type NextWasmDisassemblyChunkReturns struct {
+	Chunk *WasmDisassemblyChunk `json:"chunk,omitempty"` // The next chunk of disassembly.
+}
+
+// Do executes Debugger.nextWasmDisassemblyChunk against the provided context.
+//
+// returns:
+//
+//	chunk - The next chunk of disassembly.
+func (p *NextWasmDisassemblyChunkParams) Do(ctx context.Context) (chunk *WasmDisassemblyChunk, err error) {
+	// execute
+	var res NextWasmDisassemblyChunkReturns
+	err = cdp.Execute(ctx, CommandNextWasmDisassemblyChunk, p, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.Chunk, nil
+}
+
 // GetStackTraceParams returns stack trace with given stackTraceId.
 type GetStackTraceParams struct {
 	StackTraceID *runtime.StackTraceID `json:"stackTraceId"`
@@ -314,7 +412,8 @@ type GetStackTraceParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-getStackTrace
 //
 // parameters:
-//   stackTraceID
+//
+//	stackTraceID
 func GetStackTrace(stackTraceID *runtime.StackTraceID) *GetStackTraceParams {
 	return &GetStackTraceParams{
 		StackTraceID: stackTraceID,
@@ -329,7 +428,8 @@ type GetStackTraceReturns struct {
 // Do executes Debugger.getStackTrace against the provided context.
 //
 // returns:
-//   stackTrace
+//
+//	stackTrace
 func (p *GetStackTraceParams) Do(ctx context.Context) (stackTrace *runtime.StackTrace, err error) {
 	// execute
 	var res GetStackTraceReturns
@@ -366,7 +466,8 @@ type RemoveBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-removeBreakpoint
 //
 // parameters:
-//   breakpointID
+//
+//	breakpointID
 func RemoveBreakpoint(breakpointID BreakpointID) *RemoveBreakpointParams {
 	return &RemoveBreakpointParams{
 		BreakpointID: breakpointID,
@@ -407,7 +508,8 @@ type RestartFrameParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-restartFrame
 //
 // parameters:
-//   callFrameID - Call frame identifier to evaluate on.
+//
+//	callFrameID - Call frame identifier to evaluate on.
 func RestartFrame(callFrameID CallFrameID) *RestartFrameParams {
 	return &RestartFrameParams{
 		CallFrameID: callFrameID,
@@ -468,8 +570,9 @@ type SearchInContentParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-searchInContent
 //
 // parameters:
-//   scriptID - Id of the script to search in.
-//   query - String to search for.
+//
+//	scriptID - Id of the script to search in.
+//	query - String to search for.
 func SearchInContent(scriptID runtime.ScriptID, query string) *SearchInContentParams {
 	return &SearchInContentParams{
 		ScriptID: scriptID,
@@ -497,7 +600,8 @@ type SearchInContentReturns struct {
 // Do executes Debugger.searchInContent against the provided context.
 //
 // returns:
-//   result - List of search matches.
+//
+//	result - List of search matches.
 func (p *SearchInContentParams) Do(ctx context.Context) (result []*SearchMatch, err error) {
 	// execute
 	var res SearchInContentReturns
@@ -520,7 +624,8 @@ type SetAsyncCallStackDepthParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setAsyncCallStackDepth
 //
 // parameters:
-//   maxDepth - Maximum depth of async call stacks. Setting to 0 will effectively disable collecting async call stacks (default).
+//
+//	maxDepth - Maximum depth of async call stacks. Setting to 0 will effectively disable collecting async call stacks (default).
 func SetAsyncCallStackDepth(maxDepth int64) *SetAsyncCallStackDepthParams {
 	return &SetAsyncCallStackDepthParams{
 		MaxDepth: maxDepth,
@@ -548,7 +653,8 @@ type SetBlackboxPatternsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setBlackboxPatterns
 //
 // parameters:
-//   patterns - Array of regexps that will be used to check script url for blackbox state.
+//
+//	patterns - Array of regexps that will be used to check script url for blackbox state.
 func SetBlackboxPatterns(patterns []string) *SetBlackboxPatternsParams {
 	return &SetBlackboxPatternsParams{
 		Patterns: patterns,
@@ -579,8 +685,9 @@ type SetBlackboxedRangesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setBlackboxedRanges
 //
 // parameters:
-//   scriptID - Id of the script.
-//   positions
+//
+//	scriptID - Id of the script.
+//	positions
 func SetBlackboxedRanges(scriptID runtime.ScriptID, positions []*ScriptPosition) *SetBlackboxedRangesParams {
 	return &SetBlackboxedRangesParams{
 		ScriptID:  scriptID,
@@ -604,7 +711,8 @@ type SetBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setBreakpoint
 //
 // parameters:
-//   location - Location to set breakpoint in.
+//
+//	location - Location to set breakpoint in.
 func SetBreakpoint(location *Location) *SetBreakpointParams {
 	return &SetBreakpointParams{
 		Location: location,
@@ -628,8 +736,9 @@ type SetBreakpointReturns struct {
 // Do executes Debugger.setBreakpoint against the provided context.
 //
 // returns:
-//   breakpointID - Id of the created breakpoint for further reference.
-//   actualLocation - Location this breakpoint resolved into.
+//
+//	breakpointID - Id of the created breakpoint for further reference.
+//	actualLocation - Location this breakpoint resolved into.
 func (p *SetBreakpointParams) Do(ctx context.Context) (breakpointID BreakpointID, actualLocation *Location, err error) {
 	// execute
 	var res SetBreakpointReturns
@@ -651,7 +760,8 @@ type SetInstrumentationBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setInstrumentationBreakpoint
 //
 // parameters:
-//   instrumentation - Instrumentation name.
+//
+//	instrumentation - Instrumentation name.
 func SetInstrumentationBreakpoint(instrumentation SetInstrumentationBreakpointInstrumentation) *SetInstrumentationBreakpointParams {
 	return &SetInstrumentationBreakpointParams{
 		Instrumentation: instrumentation,
@@ -666,7 +776,8 @@ type SetInstrumentationBreakpointReturns struct {
 // Do executes Debugger.setInstrumentationBreakpoint against the provided context.
 //
 // returns:
-//   breakpointID - Id of the created breakpoint for further reference.
+//
+//	breakpointID - Id of the created breakpoint for further reference.
 func (p *SetInstrumentationBreakpointParams) Do(ctx context.Context) (breakpointID BreakpointID, err error) {
 	// execute
 	var res SetInstrumentationBreakpointReturns
@@ -702,7 +813,8 @@ type SetBreakpointByURLParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setBreakpointByUrl
 //
 // parameters:
-//   lineNumber - Line number to set breakpoint at.
+//
+//	lineNumber - Line number to set breakpoint at.
 func SetBreakpointByURL(lineNumber int64) *SetBreakpointByURLParams {
 	return &SetBreakpointByURLParams{
 		LineNumber: lineNumber,
@@ -751,8 +863,9 @@ type SetBreakpointByURLReturns struct {
 // Do executes Debugger.setBreakpointByUrl against the provided context.
 //
 // returns:
-//   breakpointID - Id of the created breakpoint for further reference.
-//   locations - List of the locations this breakpoint resolved into upon addition.
+//
+//	breakpointID - Id of the created breakpoint for further reference.
+//	locations - List of the locations this breakpoint resolved into upon addition.
 func (p *SetBreakpointByURLParams) Do(ctx context.Context) (breakpointID BreakpointID, locations []*Location, err error) {
 	// execute
 	var res SetBreakpointByURLReturns
@@ -779,7 +892,8 @@ type SetBreakpointOnFunctionCallParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setBreakpointOnFunctionCall
 //
 // parameters:
-//   objectID - Function object id.
+//
+//	objectID - Function object id.
 func SetBreakpointOnFunctionCall(objectID runtime.RemoteObjectID) *SetBreakpointOnFunctionCallParams {
 	return &SetBreakpointOnFunctionCallParams{
 		ObjectID: objectID,
@@ -801,7 +915,8 @@ type SetBreakpointOnFunctionCallReturns struct {
 // Do executes Debugger.setBreakpointOnFunctionCall against the provided context.
 //
 // returns:
-//   breakpointID - Id of the created breakpoint for further reference.
+//
+//	breakpointID - Id of the created breakpoint for further reference.
 func (p *SetBreakpointOnFunctionCallParams) Do(ctx context.Context) (breakpointID BreakpointID, err error) {
 	// execute
 	var res SetBreakpointOnFunctionCallReturns
@@ -824,7 +939,8 @@ type SetBreakpointsActiveParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setBreakpointsActive
 //
 // parameters:
-//   active - New value for breakpoints active state.
+//
+//	active - New value for breakpoints active state.
 func SetBreakpointsActive(active bool) *SetBreakpointsActiveParams {
 	return &SetBreakpointsActiveParams{
 		Active: active,
@@ -850,7 +966,8 @@ type SetPauseOnExceptionsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setPauseOnExceptions
 //
 // parameters:
-//   state - Pause on exceptions mode.
+//
+//	state - Pause on exceptions mode.
 func SetPauseOnExceptions(state ExceptionsState) *SetPauseOnExceptionsParams {
 	return &SetPauseOnExceptionsParams{
 		State: state,
@@ -874,7 +991,8 @@ type SetReturnValueParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setReturnValue
 //
 // parameters:
-//   newValue - New return value.
+//
+//	newValue - New return value.
 func SetReturnValue(newValue *runtime.CallArgument) *SetReturnValueParams {
 	return &SetReturnValueParams{
 		NewValue: newValue,
@@ -909,8 +1027,9 @@ type SetScriptSourceParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setScriptSource
 //
 // parameters:
-//   scriptID - Id of the script to edit.
-//   scriptSource - New content of the script.
+//
+//	scriptID - Id of the script to edit.
+//	scriptSource - New content of the script.
 func SetScriptSource(scriptID runtime.ScriptID, scriptSource string) *SetScriptSourceParams {
 	return &SetScriptSourceParams{
 		ScriptID:     scriptID,
@@ -942,8 +1061,9 @@ type SetScriptSourceReturns struct {
 // Do executes Debugger.setScriptSource against the provided context.
 //
 // returns:
-//   status - Whether the operation was successful or not. Only Ok denotes a successful live edit while the other enum variants denote why the live edit failed.
-//   exceptionDetails - Exception details if any. Only present when status is CompileError.
+//
+//	status - Whether the operation was successful or not. Only Ok denotes a successful live edit while the other enum variants denote why the live edit failed.
+//	exceptionDetails - Exception details if any. Only present when status is CompileError.
 func (p *SetScriptSourceParams) Do(ctx context.Context) (status SetScriptSourceStatus, exceptionDetails *runtime.ExceptionDetails, err error) {
 	// execute
 	var res SetScriptSourceReturns
@@ -967,7 +1087,8 @@ type SetSkipAllPausesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setSkipAllPauses
 //
 // parameters:
-//   skip - New value for skip pauses state.
+//
+//	skip - New value for skip pauses state.
 func SetSkipAllPauses(skip bool) *SetSkipAllPausesParams {
 	return &SetSkipAllPausesParams{
 		Skip: skip,
@@ -994,10 +1115,11 @@ type SetVariableValueParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Debugger#method-setVariableValue
 //
 // parameters:
-//   scopeNumber - 0-based number of scope as was listed in scope chain. Only 'local', 'closure' and 'catch' scope types are allowed. Other scopes could be manipulated manually.
-//   variableName - Variable name.
-//   newValue - New variable value.
-//   callFrameID - Id of callframe that holds variable.
+//
+//	scopeNumber - 0-based number of scope as was listed in scope chain. Only 'local', 'closure' and 'catch' scope types are allowed. Other scopes could be manipulated manually.
+//	variableName - Variable name.
+//	newValue - New variable value.
+//	callFrameID - Id of callframe that holds variable.
 func SetVariableValue(scopeNumber int64, variableName string, newValue *runtime.CallArgument, callFrameID CallFrameID) *SetVariableValueParams {
 	return &SetVariableValueParams{
 		ScopeNumber:  scopeNumber,
@@ -1095,6 +1217,8 @@ const (
 	CommandEvaluateOnCallFrame          = "Debugger.evaluateOnCallFrame"
 	CommandGetPossibleBreakpoints       = "Debugger.getPossibleBreakpoints"
 	CommandGetScriptSource              = "Debugger.getScriptSource"
+	CommandDisassembleWasmModule        = "Debugger.disassembleWasmModule"
+	CommandNextWasmDisassemblyChunk     = "Debugger.nextWasmDisassemblyChunk"
 	CommandGetStackTrace                = "Debugger.getStackTrace"
 	CommandPause                        = "Debugger.pause"
 	CommandRemoveBreakpoint             = "Debugger.removeBreakpoint"

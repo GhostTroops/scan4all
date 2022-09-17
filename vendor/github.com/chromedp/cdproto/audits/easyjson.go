@@ -2655,16 +2655,6 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoAudits24(in *jlexer.Lexer, ou
 		switch key {
 		case "violationType":
 			(out.ViolationType).UnmarshalEasyJSON(in)
-		case "frame":
-			if in.IsNull() {
-				in.Skip()
-				out.Frame = nil
-			} else {
-				if out.Frame == nil {
-					out.Frame = new(AffectedFrame)
-				}
-				(*out.Frame).UnmarshalEasyJSON(in)
-			}
 		case "request":
 			if in.IsNull() {
 				in.Skip()
@@ -2697,11 +2687,6 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoAudits24(out *jwriter.Writer,
 		const prefix string = ",\"violationType\":"
 		out.RawString(prefix[1:])
 		(in.ViolationType).MarshalEasyJSON(out)
-	}
-	if in.Frame != nil {
-		const prefix string = ",\"frame\":"
-		out.RawString(prefix)
-		(*in.Frame).MarshalEasyJSON(out)
 	}
 	if in.Request != nil {
 		const prefix string = ",\"request\":"

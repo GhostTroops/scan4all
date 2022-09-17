@@ -1,4 +1,9 @@
 # Changelog
+## [v0.12.9](https://github.com/itchyny/gojq/compare/v0.12.8..v0.12.9) (2022-09-01)
+* fix `fromjson` to emit error on unexpected trailing string
+* fix path analyzer on variable argument evaluation (`def f($x): .y; path(f(.x))`)
+* fix raw input option `--raw-input` (`-R`) to keep carriage returns and support 64KiB+ lines
+
 ## [v0.12.8](https://github.com/itchyny/gojq/compare/v0.12.7..v0.12.8) (2022-06-01)
 * implement `gojq.Compare` for comparing values in custom internal functions
 * implement `gojq.TypeOf` for obtaining type name of values in custom internal functions

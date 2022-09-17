@@ -57,6 +57,7 @@ const (
 	CookieExclusionReasonExcludeSameSiteStrict                  CookieExclusionReason = "ExcludeSameSiteStrict"
 	CookieExclusionReasonExcludeInvalidSameParty                CookieExclusionReason = "ExcludeInvalidSameParty"
 	CookieExclusionReasonExcludeSamePartyCrossPartyContext      CookieExclusionReason = "ExcludeSamePartyCrossPartyContext"
+	CookieExclusionReasonExcludeDomainNonASCII                  CookieExclusionReason = "ExcludeDomainNonASCII"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -84,6 +85,8 @@ func (t *CookieExclusionReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = CookieExclusionReasonExcludeInvalidSameParty
 	case CookieExclusionReasonExcludeSamePartyCrossPartyContext:
 		*t = CookieExclusionReasonExcludeSamePartyCrossPartyContext
+	case CookieExclusionReasonExcludeDomainNonASCII:
+		*t = CookieExclusionReasonExcludeDomainNonASCII
 
 	default:
 		in.AddError(errors.New("unknown CookieExclusionReason value"))
@@ -116,6 +119,7 @@ const (
 	CookieWarningReasonWarnSameSiteLaxCrossDowngradeStrict     CookieWarningReason = "WarnSameSiteLaxCrossDowngradeStrict"
 	CookieWarningReasonWarnSameSiteLaxCrossDowngradeLax        CookieWarningReason = "WarnSameSiteLaxCrossDowngradeLax"
 	CookieWarningReasonWarnAttributeValueExceedsMaxSize        CookieWarningReason = "WarnAttributeValueExceedsMaxSize"
+	CookieWarningReasonWarnDomainNonASCII                      CookieWarningReason = "WarnDomainNonASCII"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -149,6 +153,8 @@ func (t *CookieWarningReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = CookieWarningReasonWarnSameSiteLaxCrossDowngradeLax
 	case CookieWarningReasonWarnAttributeValueExceedsMaxSize:
 		*t = CookieWarningReasonWarnAttributeValueExceedsMaxSize
+	case CookieWarningReasonWarnDomainNonASCII:
+		*t = CookieWarningReasonWarnDomainNonASCII
 
 	default:
 		in.AddError(errors.New("unknown CookieWarningReason value"))
@@ -795,10 +801,17 @@ func (t AttributionReportingIssueType) String() string {
 
 // AttributionReportingIssueType values.
 const (
-	AttributionReportingIssueTypePermissionPolicyDisabled             AttributionReportingIssueType = "PermissionPolicyDisabled"
-	AttributionReportingIssueTypeAttributionSourceUntrustworthyOrigin AttributionReportingIssueType = "AttributionSourceUntrustworthyOrigin"
-	AttributionReportingIssueTypeAttributionUntrustworthyOrigin       AttributionReportingIssueType = "AttributionUntrustworthyOrigin"
-	AttributionReportingIssueTypeInvalidHeader                        AttributionReportingIssueType = "InvalidHeader"
+	AttributionReportingIssueTypePermissionPolicyDisabled     AttributionReportingIssueType = "PermissionPolicyDisabled"
+	AttributionReportingIssueTypePermissionPolicyNotDelegated AttributionReportingIssueType = "PermissionPolicyNotDelegated"
+	AttributionReportingIssueTypeUntrustworthyReportingOrigin AttributionReportingIssueType = "UntrustworthyReportingOrigin"
+	AttributionReportingIssueTypeInsecureContext              AttributionReportingIssueType = "InsecureContext"
+	AttributionReportingIssueTypeInvalidHeader                AttributionReportingIssueType = "InvalidHeader"
+	AttributionReportingIssueTypeInvalidRegisterTriggerHeader AttributionReportingIssueType = "InvalidRegisterTriggerHeader"
+	AttributionReportingIssueTypeInvalidEligibleHeader        AttributionReportingIssueType = "InvalidEligibleHeader"
+	AttributionReportingIssueTypeTooManyConcurrentRequests    AttributionReportingIssueType = "TooManyConcurrentRequests"
+	AttributionReportingIssueTypeSourceAndTriggerHeaders      AttributionReportingIssueType = "SourceAndTriggerHeaders"
+	AttributionReportingIssueTypeSourceIgnored                AttributionReportingIssueType = "SourceIgnored"
+	AttributionReportingIssueTypeTriggerIgnored               AttributionReportingIssueType = "TriggerIgnored"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -816,12 +829,26 @@ func (t *AttributionReportingIssueType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 	switch AttributionReportingIssueType(in.String()) {
 	case AttributionReportingIssueTypePermissionPolicyDisabled:
 		*t = AttributionReportingIssueTypePermissionPolicyDisabled
-	case AttributionReportingIssueTypeAttributionSourceUntrustworthyOrigin:
-		*t = AttributionReportingIssueTypeAttributionSourceUntrustworthyOrigin
-	case AttributionReportingIssueTypeAttributionUntrustworthyOrigin:
-		*t = AttributionReportingIssueTypeAttributionUntrustworthyOrigin
+	case AttributionReportingIssueTypePermissionPolicyNotDelegated:
+		*t = AttributionReportingIssueTypePermissionPolicyNotDelegated
+	case AttributionReportingIssueTypeUntrustworthyReportingOrigin:
+		*t = AttributionReportingIssueTypeUntrustworthyReportingOrigin
+	case AttributionReportingIssueTypeInsecureContext:
+		*t = AttributionReportingIssueTypeInsecureContext
 	case AttributionReportingIssueTypeInvalidHeader:
 		*t = AttributionReportingIssueTypeInvalidHeader
+	case AttributionReportingIssueTypeInvalidRegisterTriggerHeader:
+		*t = AttributionReportingIssueTypeInvalidRegisterTriggerHeader
+	case AttributionReportingIssueTypeInvalidEligibleHeader:
+		*t = AttributionReportingIssueTypeInvalidEligibleHeader
+	case AttributionReportingIssueTypeTooManyConcurrentRequests:
+		*t = AttributionReportingIssueTypeTooManyConcurrentRequests
+	case AttributionReportingIssueTypeSourceAndTriggerHeaders:
+		*t = AttributionReportingIssueTypeSourceAndTriggerHeaders
+	case AttributionReportingIssueTypeSourceIgnored:
+		*t = AttributionReportingIssueTypeSourceIgnored
+	case AttributionReportingIssueTypeTriggerIgnored:
+		*t = AttributionReportingIssueTypeTriggerIgnored
 
 	default:
 		in.AddError(errors.New("unknown AttributionReportingIssueType value"))
@@ -840,7 +867,6 @@ func (t *AttributionReportingIssueType) UnmarshalJSON(buf []byte) error {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Audits#type-AttributionReportingIssueDetails
 type AttributionReportingIssueDetails struct {
 	ViolationType    AttributionReportingIssueType `json:"violationType"`
-	Frame            *AffectedFrame                `json:"frame,omitempty"`
 	Request          *AffectedRequest              `json:"request,omitempty"`
 	ViolatingNodeID  cdp.BackendNodeID             `json:"violatingNodeId,omitempty"`
 	InvalidParameter string                        `json:"invalidParameter,omitempty"`
@@ -941,6 +967,7 @@ const (
 	DeprecationIssueTypeDeprecationExample                                        DeprecationIssueType = "DeprecationExample"
 	DeprecationIssueTypeDocumentDomainSettingWithoutOriginAgentClusterHeader      DeprecationIssueType = "DocumentDomainSettingWithoutOriginAgentClusterHeader"
 	DeprecationIssueTypeEventPath                                                 DeprecationIssueType = "EventPath"
+	DeprecationIssueTypeExpectCTHeader                                            DeprecationIssueType = "ExpectCTHeader"
 	DeprecationIssueTypeGeolocationInsecureOrigin                                 DeprecationIssueType = "GeolocationInsecureOrigin"
 	DeprecationIssueTypeGeolocationInsecureOriginDeprecatedNotRemoved             DeprecationIssueType = "GeolocationInsecureOriginDeprecatedNotRemoved"
 	DeprecationIssueTypeGetUserMediaInsecureOrigin                                DeprecationIssueType = "GetUserMediaInsecureOrigin"
@@ -951,11 +978,15 @@ const (
 	DeprecationIssueTypeLocalCSSFileExtensionRejected                             DeprecationIssueType = "LocalCSSFileExtensionRejected"
 	DeprecationIssueTypeMediaSourceAbortRemove                                    DeprecationIssueType = "MediaSourceAbortRemove"
 	DeprecationIssueTypeMediaSourceDurationTruncatingBuffered                     DeprecationIssueType = "MediaSourceDurationTruncatingBuffered"
+	DeprecationIssueTypeNavigateEventRestoreScroll                                DeprecationIssueType = "NavigateEventRestoreScroll"
+	DeprecationIssueTypeNavigateEventTransitionWhile                              DeprecationIssueType = "NavigateEventTransitionWhile"
 	DeprecationIssueTypeNoSysexWebMIDIWithoutPermission                           DeprecationIssueType = "NoSysexWebMIDIWithoutPermission"
 	DeprecationIssueTypeNotificationInsecureOrigin                                DeprecationIssueType = "NotificationInsecureOrigin"
 	DeprecationIssueTypeNotificationPermissionRequestedIframe                     DeprecationIssueType = "NotificationPermissionRequestedIframe"
 	DeprecationIssueTypeObsoleteWebRtcCipherSuite                                 DeprecationIssueType = "ObsoleteWebRtcCipherSuite"
 	DeprecationIssueTypeOpenWebDatabaseInsecureContext                            DeprecationIssueType = "OpenWebDatabaseInsecureContext"
+	DeprecationIssueTypeOverflowVisibleOnReplacedElement                          DeprecationIssueType = "OverflowVisibleOnReplacedElement"
+	DeprecationIssueTypePersistentQuotaType                                       DeprecationIssueType = "PersistentQuotaType"
 	DeprecationIssueTypePictureSourceSrc                                          DeprecationIssueType = "PictureSourceSrc"
 	DeprecationIssueTypePrefixedCancelAnimationFrame                              DeprecationIssueType = "PrefixedCancelAnimationFrame"
 	DeprecationIssueTypePrefixedRequestAnimationFrame                             DeprecationIssueType = "PrefixedRequestAnimationFrame"
@@ -1020,6 +1051,8 @@ func (t *DeprecationIssueType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = DeprecationIssueTypeDocumentDomainSettingWithoutOriginAgentClusterHeader
 	case DeprecationIssueTypeEventPath:
 		*t = DeprecationIssueTypeEventPath
+	case DeprecationIssueTypeExpectCTHeader:
+		*t = DeprecationIssueTypeExpectCTHeader
 	case DeprecationIssueTypeGeolocationInsecureOrigin:
 		*t = DeprecationIssueTypeGeolocationInsecureOrigin
 	case DeprecationIssueTypeGeolocationInsecureOriginDeprecatedNotRemoved:
@@ -1040,6 +1073,10 @@ func (t *DeprecationIssueType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = DeprecationIssueTypeMediaSourceAbortRemove
 	case DeprecationIssueTypeMediaSourceDurationTruncatingBuffered:
 		*t = DeprecationIssueTypeMediaSourceDurationTruncatingBuffered
+	case DeprecationIssueTypeNavigateEventRestoreScroll:
+		*t = DeprecationIssueTypeNavigateEventRestoreScroll
+	case DeprecationIssueTypeNavigateEventTransitionWhile:
+		*t = DeprecationIssueTypeNavigateEventTransitionWhile
 	case DeprecationIssueTypeNoSysexWebMIDIWithoutPermission:
 		*t = DeprecationIssueTypeNoSysexWebMIDIWithoutPermission
 	case DeprecationIssueTypeNotificationInsecureOrigin:
@@ -1050,6 +1087,10 @@ func (t *DeprecationIssueType) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = DeprecationIssueTypeObsoleteWebRtcCipherSuite
 	case DeprecationIssueTypeOpenWebDatabaseInsecureContext:
 		*t = DeprecationIssueTypeOpenWebDatabaseInsecureContext
+	case DeprecationIssueTypeOverflowVisibleOnReplacedElement:
+		*t = DeprecationIssueTypeOverflowVisibleOnReplacedElement
+	case DeprecationIssueTypePersistentQuotaType:
+		*t = DeprecationIssueTypePersistentQuotaType
 	case DeprecationIssueTypePictureSourceSrc:
 		*t = DeprecationIssueTypePictureSourceSrc
 	case DeprecationIssueTypePrefixedCancelAnimationFrame:
@@ -1185,32 +1226,32 @@ func (t FederatedAuthRequestIssueReason) String() string {
 
 // FederatedAuthRequestIssueReason values.
 const (
-	FederatedAuthRequestIssueReasonApprovalDeclined                      FederatedAuthRequestIssueReason = "ApprovalDeclined"
-	FederatedAuthRequestIssueReasonTooManyRequests                       FederatedAuthRequestIssueReason = "TooManyRequests"
-	FederatedAuthRequestIssueReasonManifestListHTTPNotFound              FederatedAuthRequestIssueReason = "ManifestListHttpNotFound"
-	FederatedAuthRequestIssueReasonManifestListNoResponse                FederatedAuthRequestIssueReason = "ManifestListNoResponse"
-	FederatedAuthRequestIssueReasonManifestListInvalidResponse           FederatedAuthRequestIssueReason = "ManifestListInvalidResponse"
-	FederatedAuthRequestIssueReasonManifestNotInManifestList             FederatedAuthRequestIssueReason = "ManifestNotInManifestList"
-	FederatedAuthRequestIssueReasonManifestListTooBig                    FederatedAuthRequestIssueReason = "ManifestListTooBig"
-	FederatedAuthRequestIssueReasonManifestHTTPNotFound                  FederatedAuthRequestIssueReason = "ManifestHttpNotFound"
-	FederatedAuthRequestIssueReasonManifestNoResponse                    FederatedAuthRequestIssueReason = "ManifestNoResponse"
-	FederatedAuthRequestIssueReasonManifestInvalidResponse               FederatedAuthRequestIssueReason = "ManifestInvalidResponse"
-	FederatedAuthRequestIssueReasonClientMetadataHTTPNotFound            FederatedAuthRequestIssueReason = "ClientMetadataHttpNotFound"
-	FederatedAuthRequestIssueReasonClientMetadataNoResponse              FederatedAuthRequestIssueReason = "ClientMetadataNoResponse"
-	FederatedAuthRequestIssueReasonClientMetadataInvalidResponse         FederatedAuthRequestIssueReason = "ClientMetadataInvalidResponse"
-	FederatedAuthRequestIssueReasonClientMetadataMissingPrivacyPolicyURL FederatedAuthRequestIssueReason = "ClientMetadataMissingPrivacyPolicyUrl"
-	FederatedAuthRequestIssueReasonDisabledInSettings                    FederatedAuthRequestIssueReason = "DisabledInSettings"
-	FederatedAuthRequestIssueReasonErrorFetchingSignin                   FederatedAuthRequestIssueReason = "ErrorFetchingSignin"
-	FederatedAuthRequestIssueReasonInvalidSigninResponse                 FederatedAuthRequestIssueReason = "InvalidSigninResponse"
-	FederatedAuthRequestIssueReasonAccountsHTTPNotFound                  FederatedAuthRequestIssueReason = "AccountsHttpNotFound"
-	FederatedAuthRequestIssueReasonAccountsNoResponse                    FederatedAuthRequestIssueReason = "AccountsNoResponse"
-	FederatedAuthRequestIssueReasonAccountsInvalidResponse               FederatedAuthRequestIssueReason = "AccountsInvalidResponse"
-	FederatedAuthRequestIssueReasonIDTokenHTTPNotFound                   FederatedAuthRequestIssueReason = "IdTokenHttpNotFound"
-	FederatedAuthRequestIssueReasonIDTokenNoResponse                     FederatedAuthRequestIssueReason = "IdTokenNoResponse"
-	FederatedAuthRequestIssueReasonIDTokenInvalidResponse                FederatedAuthRequestIssueReason = "IdTokenInvalidResponse"
-	FederatedAuthRequestIssueReasonIDTokenInvalidRequest                 FederatedAuthRequestIssueReason = "IdTokenInvalidRequest"
-	FederatedAuthRequestIssueReasonErrorIDToken                          FederatedAuthRequestIssueReason = "ErrorIdToken"
-	FederatedAuthRequestIssueReasonCanceled                              FederatedAuthRequestIssueReason = "Canceled"
+	FederatedAuthRequestIssueReasonShouldEmbargo                 FederatedAuthRequestIssueReason = "ShouldEmbargo"
+	FederatedAuthRequestIssueReasonTooManyRequests               FederatedAuthRequestIssueReason = "TooManyRequests"
+	FederatedAuthRequestIssueReasonManifestListHTTPNotFound      FederatedAuthRequestIssueReason = "ManifestListHttpNotFound"
+	FederatedAuthRequestIssueReasonManifestListNoResponse        FederatedAuthRequestIssueReason = "ManifestListNoResponse"
+	FederatedAuthRequestIssueReasonManifestListInvalidResponse   FederatedAuthRequestIssueReason = "ManifestListInvalidResponse"
+	FederatedAuthRequestIssueReasonManifestNotInManifestList     FederatedAuthRequestIssueReason = "ManifestNotInManifestList"
+	FederatedAuthRequestIssueReasonManifestListTooBig            FederatedAuthRequestIssueReason = "ManifestListTooBig"
+	FederatedAuthRequestIssueReasonManifestHTTPNotFound          FederatedAuthRequestIssueReason = "ManifestHttpNotFound"
+	FederatedAuthRequestIssueReasonManifestNoResponse            FederatedAuthRequestIssueReason = "ManifestNoResponse"
+	FederatedAuthRequestIssueReasonManifestInvalidResponse       FederatedAuthRequestIssueReason = "ManifestInvalidResponse"
+	FederatedAuthRequestIssueReasonClientMetadataHTTPNotFound    FederatedAuthRequestIssueReason = "ClientMetadataHttpNotFound"
+	FederatedAuthRequestIssueReasonClientMetadataNoResponse      FederatedAuthRequestIssueReason = "ClientMetadataNoResponse"
+	FederatedAuthRequestIssueReasonClientMetadataInvalidResponse FederatedAuthRequestIssueReason = "ClientMetadataInvalidResponse"
+	FederatedAuthRequestIssueReasonDisabledInSettings            FederatedAuthRequestIssueReason = "DisabledInSettings"
+	FederatedAuthRequestIssueReasonErrorFetchingSignin           FederatedAuthRequestIssueReason = "ErrorFetchingSignin"
+	FederatedAuthRequestIssueReasonInvalidSigninResponse         FederatedAuthRequestIssueReason = "InvalidSigninResponse"
+	FederatedAuthRequestIssueReasonAccountsHTTPNotFound          FederatedAuthRequestIssueReason = "AccountsHttpNotFound"
+	FederatedAuthRequestIssueReasonAccountsNoResponse            FederatedAuthRequestIssueReason = "AccountsNoResponse"
+	FederatedAuthRequestIssueReasonAccountsInvalidResponse       FederatedAuthRequestIssueReason = "AccountsInvalidResponse"
+	FederatedAuthRequestIssueReasonIDTokenHTTPNotFound           FederatedAuthRequestIssueReason = "IdTokenHttpNotFound"
+	FederatedAuthRequestIssueReasonIDTokenNoResponse             FederatedAuthRequestIssueReason = "IdTokenNoResponse"
+	FederatedAuthRequestIssueReasonIDTokenInvalidResponse        FederatedAuthRequestIssueReason = "IdTokenInvalidResponse"
+	FederatedAuthRequestIssueReasonIDTokenInvalidRequest         FederatedAuthRequestIssueReason = "IdTokenInvalidRequest"
+	FederatedAuthRequestIssueReasonErrorIDToken                  FederatedAuthRequestIssueReason = "ErrorIdToken"
+	FederatedAuthRequestIssueReasonCanceled                      FederatedAuthRequestIssueReason = "Canceled"
+	FederatedAuthRequestIssueReasonRpPageNotVisible              FederatedAuthRequestIssueReason = "RpPageNotVisible"
 )
 
 // MarshalEasyJSON satisfies easyjson.Marshaler.
@@ -1226,8 +1267,8 @@ func (t FederatedAuthRequestIssueReason) MarshalJSON() ([]byte, error) {
 // UnmarshalEasyJSON satisfies easyjson.Unmarshaler.
 func (t *FederatedAuthRequestIssueReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 	switch FederatedAuthRequestIssueReason(in.String()) {
-	case FederatedAuthRequestIssueReasonApprovalDeclined:
-		*t = FederatedAuthRequestIssueReasonApprovalDeclined
+	case FederatedAuthRequestIssueReasonShouldEmbargo:
+		*t = FederatedAuthRequestIssueReasonShouldEmbargo
 	case FederatedAuthRequestIssueReasonTooManyRequests:
 		*t = FederatedAuthRequestIssueReasonTooManyRequests
 	case FederatedAuthRequestIssueReasonManifestListHTTPNotFound:
@@ -1252,8 +1293,6 @@ func (t *FederatedAuthRequestIssueReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = FederatedAuthRequestIssueReasonClientMetadataNoResponse
 	case FederatedAuthRequestIssueReasonClientMetadataInvalidResponse:
 		*t = FederatedAuthRequestIssueReasonClientMetadataInvalidResponse
-	case FederatedAuthRequestIssueReasonClientMetadataMissingPrivacyPolicyURL:
-		*t = FederatedAuthRequestIssueReasonClientMetadataMissingPrivacyPolicyURL
 	case FederatedAuthRequestIssueReasonDisabledInSettings:
 		*t = FederatedAuthRequestIssueReasonDisabledInSettings
 	case FederatedAuthRequestIssueReasonErrorFetchingSignin:
@@ -1278,6 +1317,8 @@ func (t *FederatedAuthRequestIssueReason) UnmarshalEasyJSON(in *jlexer.Lexer) {
 		*t = FederatedAuthRequestIssueReasonErrorIDToken
 	case FederatedAuthRequestIssueReasonCanceled:
 		*t = FederatedAuthRequestIssueReasonCanceled
+	case FederatedAuthRequestIssueReasonRpPageNotVisible:
+		*t = FederatedAuthRequestIssueReasonRpPageNotVisible
 
 	default:
 		in.AddError(errors.New("unknown FederatedAuthRequestIssueReason value"))

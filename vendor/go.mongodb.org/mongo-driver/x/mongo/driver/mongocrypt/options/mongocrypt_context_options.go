@@ -14,6 +14,7 @@ import (
 // DataKeyOptions specifies options for creating a new data key.
 type DataKeyOptions struct {
 	KeyAltNames []string
+	KeyMaterial []byte
 	MasterKey   bsoncore.Document
 }
 
@@ -34,11 +35,27 @@ func (dko *DataKeyOptions) SetMasterKey(key bsoncore.Document) *DataKeyOptions {
 	return dko
 }
 
+// SetKeyMaterial specifies the key material.
+func (dko *DataKeyOptions) SetKeyMaterial(keyMaterial []byte) *DataKeyOptions {
+	dko.KeyMaterial = keyMaterial
+	return dko
+}
+
+// QueryType describes the type of query the result of Encrypt is used for.
+type QueryType int
+
+// These constants specify valid values for QueryType
+const (
+	QueryTypeEquality QueryType = 1
+)
+
 // ExplicitEncryptionOptions specifies options for configuring an explicit encryption context.
 type ExplicitEncryptionOptions struct {
-	KeyID      *primitive.Binary
-	KeyAltName *string
-	Algorithm  string
+	KeyID            *primitive.Binary
+	KeyAltName       *string
+	Algorithm        string
+	QueryType        string
+	ContentionFactor *int64
 }
 
 // ExplicitEncryption creates a new ExplicitEncryptionOptions instance.
@@ -62,4 +79,61 @@ func (eeo *ExplicitEncryptionOptions) SetKeyAltName(keyAltName string) *Explicit
 func (eeo *ExplicitEncryptionOptions) SetAlgorithm(algorithm string) *ExplicitEncryptionOptions {
 	eeo.Algorithm = algorithm
 	return eeo
+}
+
+// SetQueryType specifies the query type.
+func (eeo *ExplicitEncryptionOptions) SetQueryType(queryType string) *ExplicitEncryptionOptions {
+	eeo.QueryType = queryType
+	return eeo
+}
+
+// SetContentionFactor specifies the contention factor.
+func (eeo *ExplicitEncryptionOptions) SetContentionFactor(contentionFactor int64) *ExplicitEncryptionOptions {
+	eeo.ContentionFactor = &contentionFactor
+	return eeo
+}
+
+// RewrapManyDataKeyOptions represents all possible options used to decrypt and encrypt all matching data keys with a
+// possibly new masterKey.
+type RewrapManyDataKeyOptions struct {
+	// Provider identifies the new KMS provider. If omitted, encrypting uses the current KMS provider.
+	Provider *string
+
+	// MasterKey identifies the new masterKey. If omitted, rewraps with the current masterKey.
+	MasterKey bsoncore.Document
+}
+
+// RewrapManyDataKey creates a new RewrapManyDataKeyOptions instance.
+func RewrapManyDataKey() *RewrapManyDataKeyOptions {
+	return new(RewrapManyDataKeyOptions)
+}
+
+// SetProvider sets the value for the Provider field.
+func (rmdko *RewrapManyDataKeyOptions) SetProvider(provider string) *RewrapManyDataKeyOptions {
+	rmdko.Provider = &provider
+	return rmdko
+}
+
+// SetMasterKey sets the value for the MasterKey field.
+func (rmdko *RewrapManyDataKeyOptions) SetMasterKey(masterKey bsoncore.Document) *RewrapManyDataKeyOptions {
+	rmdko.MasterKey = masterKey
+	return rmdko
+}
+
+// MergeRewrapManyDataKeyOptions combines the given RewrapManyDataKeyOptions instances into a single
+// RewrapManyDataKeyOptions in a last one wins fashion.
+func MergeRewrapManyDataKeyOptions(opts ...*RewrapManyDataKeyOptions) *RewrapManyDataKeyOptions {
+	rmdkOpts := RewrapManyDataKey()
+	for _, rmdko := range opts {
+		if rmdko == nil {
+			continue
+		}
+		if provider := rmdko.Provider; provider != nil {
+			rmdkOpts.Provider = provider
+		}
+		if masterKey := rmdko.MasterKey; masterKey != nil {
+			rmdkOpts.MasterKey = masterKey
+		}
+	}
+	return rmdkOpts
 }

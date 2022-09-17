@@ -23,7 +23,8 @@ type GetStorageKeyForFrameParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-getStorageKeyForFrame
 //
 // parameters:
-//   frameID
+//
+//	frameID
 func GetStorageKeyForFrame(frameID cdp.FrameID) *GetStorageKeyForFrameParams {
 	return &GetStorageKeyForFrameParams{
 		FrameID: frameID,
@@ -38,7 +39,8 @@ type GetStorageKeyForFrameReturns struct {
 // Do executes Storage.getStorageKeyForFrame against the provided context.
 //
 // returns:
-//   storageKey
+//
+//	storageKey
 func (p *GetStorageKeyForFrameParams) Do(ctx context.Context) (storageKey SerializedStorageKey, err error) {
 	// execute
 	var res GetStorageKeyForFrameReturns
@@ -61,8 +63,9 @@ type ClearDataForOriginParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-clearDataForOrigin
 //
 // parameters:
-//   origin - Security origin.
-//   storageTypes - Comma separated list of StorageType to clear.
+//
+//	origin - Security origin.
+//	storageTypes - Comma separated list of StorageType to clear.
 func ClearDataForOrigin(origin string, storageTypes string) *ClearDataForOriginParams {
 	return &ClearDataForOriginParams{
 		Origin:       origin,
@@ -73,6 +76,32 @@ func ClearDataForOrigin(origin string, storageTypes string) *ClearDataForOriginP
 // Do executes Storage.clearDataForOrigin against the provided context.
 func (p *ClearDataForOriginParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandClearDataForOrigin, p, nil)
+}
+
+// ClearDataForStorageKeyParams clears storage for storage key.
+type ClearDataForStorageKeyParams struct {
+	StorageKey   string `json:"storageKey"`   // Storage key.
+	StorageTypes string `json:"storageTypes"` // Comma separated list of StorageType to clear.
+}
+
+// ClearDataForStorageKey clears storage for storage key.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-clearDataForStorageKey
+//
+// parameters:
+//
+//	storageKey - Storage key.
+//	storageTypes - Comma separated list of StorageType to clear.
+func ClearDataForStorageKey(storageKey string, storageTypes string) *ClearDataForStorageKeyParams {
+	return &ClearDataForStorageKeyParams{
+		StorageKey:   storageKey,
+		StorageTypes: storageTypes,
+	}
+}
+
+// Do executes Storage.clearDataForStorageKey against the provided context.
+func (p *ClearDataForStorageKeyParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandClearDataForStorageKey, p, nil)
 }
 
 // GetCookiesParams returns all browser cookies.
@@ -104,7 +133,8 @@ type GetCookiesReturns struct {
 // Do executes Storage.getCookies against the provided context.
 //
 // returns:
-//   cookies - Array of cookie objects.
+//
+//	cookies - Array of cookie objects.
 func (p *GetCookiesParams) Do(ctx context.Context) (cookies []*network.Cookie, err error) {
 	// execute
 	var res GetCookiesReturns
@@ -127,7 +157,8 @@ type SetCookiesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-setCookies
 //
 // parameters:
-//   cookies - Cookies to be set.
+//
+//	cookies - Cookies to be set.
 func SetCookies(cookies []*network.CookieParam) *SetCookiesParams {
 	return &SetCookiesParams{
 		Cookies: cookies,
@@ -182,7 +213,8 @@ type GetUsageAndQuotaParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-getUsageAndQuota
 //
 // parameters:
-//   origin - Security origin.
+//
+//	origin - Security origin.
 func GetUsageAndQuota(origin string) *GetUsageAndQuotaParams {
 	return &GetUsageAndQuotaParams{
 		Origin: origin,
@@ -200,10 +232,11 @@ type GetUsageAndQuotaReturns struct {
 // Do executes Storage.getUsageAndQuota against the provided context.
 //
 // returns:
-//   usage - Storage usage (bytes).
-//   quota - Storage quota (bytes).
-//   overrideActive - Whether or not the origin has an active storage quota override
-//   usageBreakdown - Storage usage per type (bytes).
+//
+//	usage - Storage usage (bytes).
+//	quota - Storage quota (bytes).
+//	overrideActive - Whether or not the origin has an active storage quota override
+//	usageBreakdown - Storage usage per type (bytes).
 func (p *GetUsageAndQuotaParams) Do(ctx context.Context) (usage float64, quota float64, overrideActive bool, usageBreakdown []*UsageForType, err error) {
 	// execute
 	var res GetUsageAndQuotaReturns
@@ -226,7 +259,8 @@ type OverrideQuotaForOriginParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-overrideQuotaForOrigin
 //
 // parameters:
-//   origin - Security origin.
+//
+//	origin - Security origin.
 func OverrideQuotaForOrigin(origin string) *OverrideQuotaForOriginParams {
 	return &OverrideQuotaForOriginParams{
 		Origin: origin,
@@ -262,7 +296,8 @@ type TrackCacheStorageForOriginParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-trackCacheStorageForOrigin
 //
 // parameters:
-//   origin - Security origin.
+//
+//	origin - Security origin.
 func TrackCacheStorageForOrigin(origin string) *TrackCacheStorageForOriginParams {
 	return &TrackCacheStorageForOriginParams{
 		Origin: origin,
@@ -286,7 +321,8 @@ type TrackIndexedDBForOriginParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-trackIndexedDBForOrigin
 //
 // parameters:
-//   origin - Security origin.
+//
+//	origin - Security origin.
 func TrackIndexedDBForOrigin(origin string) *TrackIndexedDBForOriginParams {
 	return &TrackIndexedDBForOriginParams{
 		Origin: origin,
@@ -296,6 +332,31 @@ func TrackIndexedDBForOrigin(origin string) *TrackIndexedDBForOriginParams {
 // Do executes Storage.trackIndexedDBForOrigin against the provided context.
 func (p *TrackIndexedDBForOriginParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandTrackIndexedDBForOrigin, p, nil)
+}
+
+// TrackIndexedDBForStorageKeyParams registers storage key to be notified
+// when an update occurs to its IndexedDB.
+type TrackIndexedDBForStorageKeyParams struct {
+	StorageKey string `json:"storageKey"` // Storage key.
+}
+
+// TrackIndexedDBForStorageKey registers storage key to be notified when an
+// update occurs to its IndexedDB.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-trackIndexedDBForStorageKey
+//
+// parameters:
+//
+//	storageKey - Storage key.
+func TrackIndexedDBForStorageKey(storageKey string) *TrackIndexedDBForStorageKeyParams {
+	return &TrackIndexedDBForStorageKeyParams{
+		StorageKey: storageKey,
+	}
+}
+
+// Do executes Storage.trackIndexedDBForStorageKey against the provided context.
+func (p *TrackIndexedDBForStorageKeyParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandTrackIndexedDBForStorageKey, p, nil)
 }
 
 // UntrackCacheStorageForOriginParams unregisters origin from receiving
@@ -310,7 +371,8 @@ type UntrackCacheStorageForOriginParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-untrackCacheStorageForOrigin
 //
 // parameters:
-//   origin - Security origin.
+//
+//	origin - Security origin.
 func UntrackCacheStorageForOrigin(origin string) *UntrackCacheStorageForOriginParams {
 	return &UntrackCacheStorageForOriginParams{
 		Origin: origin,
@@ -334,7 +396,8 @@ type UntrackIndexedDBForOriginParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-untrackIndexedDBForOrigin
 //
 // parameters:
-//   origin - Security origin.
+//
+//	origin - Security origin.
 func UntrackIndexedDBForOrigin(origin string) *UntrackIndexedDBForOriginParams {
 	return &UntrackIndexedDBForOriginParams{
 		Origin: origin,
@@ -344,6 +407,31 @@ func UntrackIndexedDBForOrigin(origin string) *UntrackIndexedDBForOriginParams {
 // Do executes Storage.untrackIndexedDBForOrigin against the provided context.
 func (p *UntrackIndexedDBForOriginParams) Do(ctx context.Context) (err error) {
 	return cdp.Execute(ctx, CommandUntrackIndexedDBForOrigin, p, nil)
+}
+
+// UntrackIndexedDBForStorageKeyParams unregisters storage key from receiving
+// notifications for IndexedDB.
+type UntrackIndexedDBForStorageKeyParams struct {
+	StorageKey string `json:"storageKey"` // Storage key.
+}
+
+// UntrackIndexedDBForStorageKey unregisters storage key from receiving
+// notifications for IndexedDB.
+//
+// See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-untrackIndexedDBForStorageKey
+//
+// parameters:
+//
+//	storageKey - Storage key.
+func UntrackIndexedDBForStorageKey(storageKey string) *UntrackIndexedDBForStorageKeyParams {
+	return &UntrackIndexedDBForStorageKeyParams{
+		StorageKey: storageKey,
+	}
+}
+
+// Do executes Storage.untrackIndexedDBForStorageKey against the provided context.
+func (p *UntrackIndexedDBForStorageKeyParams) Do(ctx context.Context) (err error) {
+	return cdp.Execute(ctx, CommandUntrackIndexedDBForStorageKey, p, nil)
 }
 
 // GetTrustTokensParams returns the number of stored Trust Tokens per issuer
@@ -366,7 +454,8 @@ type GetTrustTokensReturns struct {
 // Do executes Storage.getTrustTokens against the provided context.
 //
 // returns:
-//   tokens
+//
+//	tokens
 func (p *GetTrustTokensParams) Do(ctx context.Context) (tokens []*TrustTokens, err error) {
 	// execute
 	var res GetTrustTokensReturns
@@ -392,7 +481,8 @@ type ClearTrustTokensParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-clearTrustTokens
 //
 // parameters:
-//   issuerOrigin
+//
+//	issuerOrigin
 func ClearTrustTokens(issuerOrigin string) *ClearTrustTokensParams {
 	return &ClearTrustTokensParams{
 		IssuerOrigin: issuerOrigin,
@@ -407,7 +497,8 @@ type ClearTrustTokensReturns struct {
 // Do executes Storage.clearTrustTokens against the provided context.
 //
 // returns:
-//   didDeleteTokens - True if any tokens were deleted, false otherwise.
+//
+//	didDeleteTokens - True if any tokens were deleted, false otherwise.
 func (p *ClearTrustTokensParams) Do(ctx context.Context) (didDeleteTokens bool, err error) {
 	// execute
 	var res ClearTrustTokensReturns
@@ -430,8 +521,9 @@ type GetInterestGroupDetailsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-getInterestGroupDetails
 //
 // parameters:
-//   ownerOrigin
-//   name
+//
+//	ownerOrigin
+//	name
 func GetInterestGroupDetails(ownerOrigin string, name string) *GetInterestGroupDetailsParams {
 	return &GetInterestGroupDetailsParams{
 		OwnerOrigin: ownerOrigin,
@@ -447,7 +539,8 @@ type GetInterestGroupDetailsReturns struct {
 // Do executes Storage.getInterestGroupDetails against the provided context.
 //
 // returns:
-//   details
+//
+//	details
 func (p *GetInterestGroupDetailsParams) Do(ctx context.Context) (details *InterestGroupDetails, err error) {
 	// execute
 	var res GetInterestGroupDetailsReturns
@@ -471,7 +564,8 @@ type SetInterestGroupTrackingParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Storage#method-setInterestGroupTracking
 //
 // parameters:
-//   enable
+//
+//	enable
 func SetInterestGroupTracking(enable bool) *SetInterestGroupTrackingParams {
 	return &SetInterestGroupTrackingParams{
 		Enable: enable,
@@ -485,19 +579,22 @@ func (p *SetInterestGroupTrackingParams) Do(ctx context.Context) (err error) {
 
 // Command names.
 const (
-	CommandGetStorageKeyForFrame        = "Storage.getStorageKeyForFrame"
-	CommandClearDataForOrigin           = "Storage.clearDataForOrigin"
-	CommandGetCookies                   = "Storage.getCookies"
-	CommandSetCookies                   = "Storage.setCookies"
-	CommandClearCookies                 = "Storage.clearCookies"
-	CommandGetUsageAndQuota             = "Storage.getUsageAndQuota"
-	CommandOverrideQuotaForOrigin       = "Storage.overrideQuotaForOrigin"
-	CommandTrackCacheStorageForOrigin   = "Storage.trackCacheStorageForOrigin"
-	CommandTrackIndexedDBForOrigin      = "Storage.trackIndexedDBForOrigin"
-	CommandUntrackCacheStorageForOrigin = "Storage.untrackCacheStorageForOrigin"
-	CommandUntrackIndexedDBForOrigin    = "Storage.untrackIndexedDBForOrigin"
-	CommandGetTrustTokens               = "Storage.getTrustTokens"
-	CommandClearTrustTokens             = "Storage.clearTrustTokens"
-	CommandGetInterestGroupDetails      = "Storage.getInterestGroupDetails"
-	CommandSetInterestGroupTracking     = "Storage.setInterestGroupTracking"
+	CommandGetStorageKeyForFrame         = "Storage.getStorageKeyForFrame"
+	CommandClearDataForOrigin            = "Storage.clearDataForOrigin"
+	CommandClearDataForStorageKey        = "Storage.clearDataForStorageKey"
+	CommandGetCookies                    = "Storage.getCookies"
+	CommandSetCookies                    = "Storage.setCookies"
+	CommandClearCookies                  = "Storage.clearCookies"
+	CommandGetUsageAndQuota              = "Storage.getUsageAndQuota"
+	CommandOverrideQuotaForOrigin        = "Storage.overrideQuotaForOrigin"
+	CommandTrackCacheStorageForOrigin    = "Storage.trackCacheStorageForOrigin"
+	CommandTrackIndexedDBForOrigin       = "Storage.trackIndexedDBForOrigin"
+	CommandTrackIndexedDBForStorageKey   = "Storage.trackIndexedDBForStorageKey"
+	CommandUntrackCacheStorageForOrigin  = "Storage.untrackCacheStorageForOrigin"
+	CommandUntrackIndexedDBForOrigin     = "Storage.untrackIndexedDBForOrigin"
+	CommandUntrackIndexedDBForStorageKey = "Storage.untrackIndexedDBForStorageKey"
+	CommandGetTrustTokens                = "Storage.getTrustTokens"
+	CommandClearTrustTokens              = "Storage.clearTrustTokens"
+	CommandGetInterestGroupDetails       = "Storage.getInterestGroupDetails"
+	CommandSetInterestGroupTracking      = "Storage.setInterestGroupTracking"
 )

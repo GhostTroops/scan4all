@@ -267,9 +267,6 @@ func (d *digest128) sum256(data []byte) (hash1, hash2, hash3, hash4 uint64) {
 	// we do not want to append to an actual array!!!
 	if tail_length+1 == block_size {
 		// We are left with no tail!!!
-		// Note that murmur3 is sensitive to endianess and so are we.
-		// We assume a little endian system. Go effectively never run
-		// on big endian systems so this is fine.
 		word1 := *(*uint64)(unsafe.Pointer(&tail[0]))
 		word2 := uint64(*(*uint32)(unsafe.Pointer(&tail[8])))
 		word2 = word2 | (uint64(tail[12]) << 32) | (uint64(tail[13]) << 40) | (uint64(tail[14]) << 48)

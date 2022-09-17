@@ -1,6 +1,7 @@
 package timefmt
 
 import (
+	"math"
 	"strconv"
 	"time"
 )
@@ -10,8 +11,7 @@ func Format(t time.Time, format string) string {
 	return string(AppendFormat(make([]byte, 0, 64), t, format))
 }
 
-// AppendFormat appends formatted time to the bytes.
-// You can use this method to reduce allocations.
+// AppendFormat appends formatted time string to the buffer.
 func AppendFormat(buf []byte, t time.Time, format string) []byte {
 	year, month, day := t.Date()
 	hour, min, sec := t.Clock()
@@ -74,7 +74,7 @@ func AppendFormat(buf []byte, t time.Time, format string) []byte {
 					b = format[i]
 					if b <= '9' && '0' <= b {
 						width = width*10 + int(b&0x0F)
-						if width >= int((^uint(0)>>1)/10) {
+						if width >= math.MaxInt/10 {
 							width = maxWidth
 						}
 					} else {
