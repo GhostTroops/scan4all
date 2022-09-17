@@ -17,7 +17,7 @@ type KvDbOp struct {
 }
 
 func NewKvDbOp() *KvDbOp {
-	if nil != Cache1 {
+	if nil != Cache1 && nil != Cache1.DbConn {
 		return Cache1
 	}
 	Cache1 = &KvDbOp{}
