@@ -365,7 +365,7 @@ func GetSha1(a ...interface{}) string {
 }
 
 var Abs404 = "/scan4all404"
-var defaultInteractionDuration time.Duration = 60 * time.Second
+var defaultInteractionDuration time.Duration = 180 * time.Second
 
 func TestRepeat(a ...interface{}) bool {
 	if nil == noRpt {
@@ -395,10 +395,16 @@ func TestRepeat4Save(key string, a ...interface{}) (interface{}, bool) {
 // 关闭cache
 func CloseCache() {
 	if nil != noRpt {
-		log.Println("start clear noRpt cahe")
 		noRpt.Clear()
 		noRpt.Stop()
 		noRpt = nil
+	}
+
+	if nil != clientHttpCc {
+		CloseAllHttpClient()
+		clientHttpCc.Clear()
+		clientHttpCc.Stop()
+		clientHttpCc = nil
 	}
 }
 
