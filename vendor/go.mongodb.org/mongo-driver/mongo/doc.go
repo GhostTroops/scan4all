@@ -105,8 +105,21 @@
 //
 // Note: Auto encryption is an enterprise-only feature.
 //
-// The libmongocrypt C library is required when using client-side encryption. libmongocrypt version 1.3.0 or higher is
-// required when using driver version 1.8.0 or higher. To install libmongocrypt, follow the instructions for your
+// The libmongocrypt C library is required when using client-side encryption. Specific versions of libmongocrypt
+// are required for different versions of the Go Driver:
+//
+// - Go Driver v1.2.0 requires libmongocrypt v1.0.0 or higher
+//
+// - Go Driver v1.5.0 requires libmongocrypt v1.1.0 or higher
+//
+// - Go Driver v1.8.0 requires libmongocrypt v1.3.0 or higher
+//
+// - Go Driver v1.10.0 requires libmongocrypt v1.5.0 or higher.
+// There is a severe bug when calling RewrapManyDataKey with libmongocrypt versions less than 1.5.2.
+// This bug may result in data corruption.
+// Please use libmongocrypt 1.5.2 or higher when calling RewrapManyDataKey.
+//
+// To install libmongocrypt, follow the instructions for your
 // operating system:
 //
 // 1. Linux: follow the instructions listed at
@@ -117,6 +130,7 @@
 // to install packages via brew and compile the libmongocrypt source code.
 //
 // 3. Windows:
+//
 //    mkdir -p c:/libmongocrypt/bin
 //    mkdir -p c:/libmongocrypt/include
 //
@@ -128,18 +142,8 @@
 //    cp ./include/mongocrypt/*.h c:/libmongocrypt/include
 //    export PATH=$PATH:/cygdrive/c/libmongocrypt/bin
 //
-// libmongocrypt communicates with the mongocryptd process for automatic encryption. This process can be started manually
-// or auto-spawned by the driver itself. To enable auto-spawning, ensure the process binary is on the PATH. To start it
-// manually, use AutoEncryptionOptions:
+// libmongocrypt communicates with the mongocryptd process or mongo_crypt shared library for automatic encryption.
+// See AutoEncryptionOpts.SetExtraOptions for options to configure use of mongocryptd or mongo_crypt.
 //
-//    aeo := options.AutoEncryption()
-//    mongocryptdOpts := map[string]interface{}{
-//        "mongocryptdBypassSpawn": true,
-//    }
-//    aeo.SetExtraOptions(mongocryptdOpts)
-// To specify a process URI for mongocryptd, the "mongocryptdURI" option can be passed in the ExtraOptions map as well.
-// See the ClientSideEncryption and ClientSideEncryptionCreateKey examples below for code samples about using this
-// feature.
-//
-// [1] See https://docs.mongodb.com/manual/reference/connection-string/#dns-seedlist-connection-format
+// [1] See https://www.mongodb.com/docs/manual/reference/connection-string/#dns-seedlist-connection-format
 package mongo

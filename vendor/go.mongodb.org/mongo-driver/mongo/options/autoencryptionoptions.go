@@ -32,6 +32,8 @@ type AutoEncryptionOptions struct {
 	BypassAutoEncryption  *bool
 	ExtraOptions          map[string]interface{}
 	TLSConfig             map[string]*tls.Config
+	EncryptedFieldsMap    map[string]interface{}
+	BypassQueryAnalysis   *bool
 }
 
 // AutoEncryption creates a new AutoEncryptionOptions configured with default values.
@@ -90,7 +92,35 @@ func (a *AutoEncryptionOptions) SetBypassAutoEncryption(bypass bool) *AutoEncryp
 	return a
 }
 
-// SetExtraOptions specifies a map of options to configure the mongocryptd process.
+// SetExtraOptions specifies a map of options to configure the mongocryptd process or mongo_crypt shared library.
+//
+// Supported Extra Options
+//
+// "mongocryptdURI" - The mongocryptd URI. Allows setting a custom URI used to communicate with the
+// mongocryptd process. The default is "mongodb://localhost:27020", which works with the default
+// mongocryptd process spawned by the Client. Must be a string.
+//
+// "mongocryptdBypassSpawn" - If set to true, the Client will not attempt to spawn a mongocryptd
+// process. Must be a bool.
+//
+// "mongocryptdSpawnPath" - The path used when spawning mongocryptd.
+// Defaults to empty string and spawns mongocryptd from system path. Must be a string.
+//
+// "mongocryptdSpawnArgs" - Command line arguments passed when spawning mongocryptd.
+// Defaults to ["--idleShutdownTimeoutSecs=60"]. Must be an array of strings.
+//
+// "cryptSharedLibRequired" - If set to true, Client creation will return an error if the
+// crypt_shared library is not loaded. If unset or set to false, Client creation will not return an
+// error if the crypt_shared library is not loaded. The default is unset. Must be a bool.
+//
+// "cryptSharedLibPath" - The crypt_shared library override path. This must be the path to the
+// crypt_shared dynamic library file (for example, a .so, .dll, or .dylib file), not the directory
+// that contains it. If the override path is a relative path, it will be resolved relative to the
+// working directory of the process. If the override path is a relative path and the first path
+// component is the literal string "$ORIGIN", the "$ORIGIN" component will be replaced by the
+// absolute path to the directory containing the linked libmongocrypt library. Setting an override
+// path disables the default system library search path. If an override path is specified but the
+// crypt_shared library cannot be loaded, Client creation will return an error. Must be a string.
 func (a *AutoEncryptionOptions) SetExtraOptions(extraOpts map[string]interface{}) *AutoEncryptionOptions {
 	a.ExtraOptions = extraOpts
 	return a
@@ -110,6 +140,22 @@ func (a *AutoEncryptionOptions) SetTLSConfig(tlsOpts map[string]*tls.Config) *Au
 		tlsConfigs[provider] = config
 	}
 	a.TLSConfig = tlsConfigs
+	return a
+}
+
+// SetEncryptedFieldsMap specifies a map from namespace to local EncryptedFieldsMap document.
+// EncryptedFieldsMap is used for Queryable Encryption.
+// Queryable Encryption is in Public Technical Preview. Queryable Encryption should not be used in production and is subject to backwards breaking changes.
+func (a *AutoEncryptionOptions) SetEncryptedFieldsMap(ef map[string]interface{}) *AutoEncryptionOptions {
+	a.EncryptedFieldsMap = ef
+	return a
+}
+
+// SetBypassQueryAnalysis specifies whether or not query analysis should be used for automatic encryption.
+// Use this option when using explicit encryption with Queryable Encryption.
+// Queryable Encryption is in Public Technical Preview. Queryable Encryption should not be used in production and is subject to backwards breaking changes.
+func (a *AutoEncryptionOptions) SetBypassQueryAnalysis(bypass bool) *AutoEncryptionOptions {
+	a.BypassQueryAnalysis = &bypass
 	return a
 }
 
@@ -141,6 +187,12 @@ func MergeAutoEncryptionOptions(opts ...*AutoEncryptionOptions) *AutoEncryptionO
 		}
 		if opt.TLSConfig != nil {
 			aeo.TLSConfig = opt.TLSConfig
+		}
+		if opt.EncryptedFieldsMap != nil {
+			aeo.EncryptedFieldsMap = opt.EncryptedFieldsMap
+		}
+		if opt.BypassQueryAnalysis != nil {
+			aeo.BypassQueryAnalysis = opt.BypassQueryAnalysis
 		}
 	}
 

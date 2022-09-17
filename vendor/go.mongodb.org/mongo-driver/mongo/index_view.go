@@ -45,7 +45,7 @@ type IndexView struct {
 // IndexModel represents a new index to be created.
 type IndexModel struct {
 	// A document describing which keys should be used for the index. It cannot be nil. This must be an order-preserving
-	// type such as bson.D. Map types such as bson.M are not valid. See https://docs.mongodb.com/manual/indexes/#indexes
+	// type such as bson.D. Map types such as bson.M are not valid. See https://www.mongodb.com/docs/manual/indexes/#indexes
 	// for examples of valid documents.
 	Keys interface{}
 
@@ -65,7 +65,7 @@ func isNamespaceNotFoundError(err error) bool {
 // The opts parameter can be used to specify options for this operation (see the options.ListIndexesOptions
 // documentation).
 //
-// For more information about the command, see https://docs.mongodb.com/manual/reference/command/listIndexes/.
+// For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/listIndexes/.
 func (iv IndexView) List(ctx context.Context, opts ...*options.ListIndexesOptions) (*Cursor, error) {
 	if ctx == nil {
 		ctx = context.Background()
@@ -95,7 +95,8 @@ func (iv IndexView) List(ctx context.Context, opts ...*options.ListIndexesOption
 		Session(sess).CommandMonitor(iv.coll.client.monitor).
 		ServerSelector(selector).ClusterClock(iv.coll.client.clock).
 		Database(iv.coll.db.name).Collection(iv.coll.name).
-		Deployment(iv.coll.client.deployment).ServerAPI(iv.coll.client.serverAPI)
+		Deployment(iv.coll.client.deployment).ServerAPI(iv.coll.client.serverAPI).
+		Timeout(iv.coll.client.timeout)
 
 	cursorOpts := iv.coll.client.createBaseCursorOptions()
 	lio := options.MergeListIndexesOptions(opts...)
@@ -175,7 +176,7 @@ func (iv IndexView) CreateOne(ctx context.Context, model IndexModel, opts ...*op
 // The opts parameter can be used to specify options for this operation (see the options.CreateIndexesOptions
 // documentation).
 //
-// For more information about the command, see https://docs.mongodb.com/manual/reference/command/createIndexes/.
+// For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/createIndexes/.
 func (iv IndexView) CreateMany(ctx context.Context, models []IndexModel, opts ...*options.CreateIndexesOptions) ([]string, error) {
 	names := make([]string, 0, len(models))
 
@@ -256,7 +257,8 @@ func (iv IndexView) CreateMany(ctx context.Context, models []IndexModel, opts ..
 	op := operation.NewCreateIndexes(indexes).
 		Session(sess).WriteConcern(wc).ClusterClock(iv.coll.client.clock).
 		Database(iv.coll.db.name).Collection(iv.coll.name).CommandMonitor(iv.coll.client.monitor).
-		Deployment(iv.coll.client.deployment).ServerSelector(selector).ServerAPI(iv.coll.client.serverAPI)
+		Deployment(iv.coll.client.deployment).ServerSelector(selector).ServerAPI(iv.coll.client.serverAPI).
+		Timeout(iv.coll.client.timeout)
 
 	if option.MaxTime != nil {
 		op.MaxTimeMS(int64(*option.MaxTime / time.Millisecond))
@@ -400,7 +402,8 @@ func (iv IndexView) drop(ctx context.Context, name string, opts ...*options.Drop
 		Session(sess).WriteConcern(wc).CommandMonitor(iv.coll.client.monitor).
 		ServerSelector(selector).ClusterClock(iv.coll.client.clock).
 		Database(iv.coll.db.name).Collection(iv.coll.name).
-		Deployment(iv.coll.client.deployment).ServerAPI(iv.coll.client.serverAPI)
+		Deployment(iv.coll.client.deployment).ServerAPI(iv.coll.client.serverAPI).
+		Timeout(iv.coll.client.timeout)
 	if dio.MaxTime != nil {
 		op.MaxTimeMS(int64(*dio.MaxTime / time.Millisecond))
 	}
@@ -427,7 +430,7 @@ func (iv IndexView) drop(ctx context.Context, name string, opts ...*options.Drop
 // The opts parameter can be used to specify options for this operation (see the options.DropIndexesOptions
 // documentation).
 //
-// For more information about the command, see https://docs.mongodb.com/manual/reference/command/dropIndexes/.
+// For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/dropIndexes/.
 func (iv IndexView) DropOne(ctx context.Context, name string, opts ...*options.DropIndexesOptions) (bson.Raw, error) {
 	if name == "*" {
 		return nil, ErrMultipleIndexDrop
@@ -443,7 +446,7 @@ func (iv IndexView) DropOne(ctx context.Context, name string, opts ...*options.D
 // The opts parameter can be used to specify options for this operation (see the options.DropIndexesOptions
 // documentation).
 //
-// For more information about the command, see https://docs.mongodb.com/manual/reference/command/dropIndexes/.
+// For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/dropIndexes/.
 func (iv IndexView) DropAll(ctx context.Context, opts ...*options.DropIndexesOptions) (bson.Raw, error) {
 	return iv.drop(ctx, "*", opts...)
 }

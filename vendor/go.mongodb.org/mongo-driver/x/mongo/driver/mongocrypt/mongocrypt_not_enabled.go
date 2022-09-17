@@ -19,6 +19,12 @@ const cseNotSupportedMsg = "client-side encryption not enabled. add the cse buil
 // MongoCrypt represents a mongocrypt_t handle.
 type MongoCrypt struct{}
 
+// Version returns the version string for the loaded libmongocrypt, or an empty string
+// if libmongocrypt was not loaded.
+func Version() string {
+	return ""
+}
+
 // NewMongoCrypt constructs a new MongoCrypt instance configured using the provided MongoCryptOptions.
 func NewMongoCrypt(opts *options.MongoCryptOptions) (*MongoCrypt, error) {
 	panic(cseNotSupportedMsg)
@@ -44,8 +50,25 @@ func (m *MongoCrypt) CreateExplicitEncryptionContext(doc bsoncore.Document, opts
 	panic(cseNotSupportedMsg)
 }
 
+// RewrapDataKeyContext creates a Context to use for rewrapping a data key.
+func (m *MongoCrypt) RewrapDataKeyContext(filter []byte, opts *options.RewrapManyDataKeyOptions) (*Context, error) {
+	panic(cseNotSupportedMsg)
+}
+
 // CreateExplicitDecryptionContext creates a Context to use for explicit decryption.
 func (m *MongoCrypt) CreateExplicitDecryptionContext(doc bsoncore.Document) (*Context, error) {
+	panic(cseNotSupportedMsg)
+}
+
+// CryptSharedLibVersion returns the version number for the loaded crypt_shared library, or 0 if the
+// crypt_shared library was not loaded.
+func (m *MongoCrypt) CryptSharedLibVersion() uint64 {
+	panic(cseNotSupportedMsg)
+}
+
+// CryptSharedLibVersionString returns the version string for the loaded crypt_shared library, or an
+// empty string if the crypt_shared library was not loaded.
+func (m *MongoCrypt) CryptSharedLibVersionString() string {
 	panic(cseNotSupportedMsg)
 }
 

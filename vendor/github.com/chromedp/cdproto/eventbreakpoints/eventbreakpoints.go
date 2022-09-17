@@ -28,7 +28,8 @@ type SetInstrumentationBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/EventBreakpoints#method-setInstrumentationBreakpoint
 //
 // parameters:
-//   eventName - Instrumentation name to stop on.
+//
+//	eventName - Instrumentation name to stop on.
 func SetInstrumentationBreakpoint(eventName string) *SetInstrumentationBreakpointParams {
 	return &SetInstrumentationBreakpointParams{
 		EventName: eventName,
@@ -52,7 +53,8 @@ type RemoveInstrumentationBreakpointParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/EventBreakpoints#method-removeInstrumentationBreakpoint
 //
 // parameters:
-//   eventName - Instrumentation name to stop on.
+//
+//	eventName - Instrumentation name to stop on.
 func RemoveInstrumentationBreakpoint(eventName string) *RemoveInstrumentationBreakpointParams {
 	return &RemoveInstrumentationBreakpointParams{
 		EventName: eventName,

@@ -15,6 +15,13 @@ type CountOptions struct {
 	// default value is nil, which means the default collation of the collection will be used.
 	Collation *Collation
 
+	// TODO(GODRIVER-2386): CountOptions executor uses aggregation under the hood, which means this type has to be
+	// TODO a string for now.  This can be replaced with `Comment interface{}` once 2386 is implemented.
+
+	// A string or document that will be included in server logs, profiling logs, and currentOp queries to help trace
+	// the operation.  The default is nil, which means that no comment will be included in the logs.
+	Comment *string
+
 	// The index to use for the aggregation. This should either be the index name as a string or the index specification
 	// as a document. The driver will return an error if the hint parameter is a multi-key map. The default value is nil,
 	// which means that no hint will be sent.
@@ -26,6 +33,10 @@ type CountOptions struct {
 
 	// The maximum amount of time that the query can run on the server. The default value is nil, meaning that there is
 	// no time limit for query execution.
+	//
+	// NOTE(benjirewis): MaxTime will be deprecated in a future release. The more general Timeout option may be used in
+	// its place to control the amount of time that a single operation can run before returning an error. MaxTime is
+	// ignored if Timeout is set on the client.
 	MaxTime *time.Duration
 
 	// The number of documents to skip before counting. The default value is 0.
@@ -43,6 +54,12 @@ func (co *CountOptions) SetCollation(c *Collation) *CountOptions {
 	return co
 }
 
+// SetComment sets the value for the Comment field.
+func (co *CountOptions) SetComment(c string) *CountOptions {
+	co.Comment = &c
+	return co
+}
+
 // SetHint sets the value for the Hint field.
 func (co *CountOptions) SetHint(h interface{}) *CountOptions {
 	co.Hint = h
@@ -56,6 +73,10 @@ func (co *CountOptions) SetLimit(i int64) *CountOptions {
 }
 
 // SetMaxTime sets the value for the MaxTime field.
+//
+// NOTE(benjirewis): MaxTime will be deprecated in a future release. The more general Timeout
+// option may be used in its place to control the amount of time that a single operation can
+// run before returning an error. MaxTime is ignored if Timeout is set on the client.
 func (co *CountOptions) SetMaxTime(d time.Duration) *CountOptions {
 	co.MaxTime = &d
 	return co
@@ -76,6 +97,9 @@ func MergeCountOptions(opts ...*CountOptions) *CountOptions {
 		}
 		if co.Collation != nil {
 			countOpts.Collation = co.Collation
+		}
+		if co.Comment != nil {
+			countOpts.Comment = co.Comment
 		}
 		if co.Hint != nil {
 			countOpts.Hint = co.Hint

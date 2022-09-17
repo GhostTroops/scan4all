@@ -8,7 +8,7 @@ import (
 )
 
 func normalizeNumber(v json.Number) interface{} {
-	if i, err := v.Int64(); err == nil && minInt <= i && i <= maxInt {
+	if i, err := v.Int64(); err == nil && math.MinInt <= i && i <= math.MaxInt {
 		return int(i)
 	}
 	if strings.ContainsAny(v.String(), ".eE") {
@@ -31,13 +31,13 @@ func normalizeNumbers(v interface{}) interface{} {
 		return normalizeNumber(v)
 	case *big.Int:
 		if v.IsInt64() {
-			if i := v.Int64(); minInt <= i && i <= maxInt {
+			if i := v.Int64(); math.MinInt <= i && i <= math.MaxInt {
 				return int(i)
 			}
 		}
 		return v
 	case int64:
-		if minInt <= v && v <= maxInt {
+		if math.MinInt <= v && v <= math.MaxInt {
 			return int(v)
 		}
 		return big.NewInt(v)
@@ -48,17 +48,17 @@ func normalizeNumbers(v interface{}) interface{} {
 	case int8:
 		return int(v)
 	case uint:
-		if v <= maxInt {
+		if v <= math.MaxInt {
 			return int(v)
 		}
 		return new(big.Int).SetUint64(uint64(v))
 	case uint64:
-		if v <= maxInt {
+		if v <= math.MaxInt {
 			return int(v)
 		}
 		return new(big.Int).SetUint64(v)
 	case uint32:
-		if uint64(v) <= maxInt {
+		if uint64(v) <= math.MaxInt {
 			return int(v)
 		}
 		return new(big.Int).SetUint64(uint64(v))

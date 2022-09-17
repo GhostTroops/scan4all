@@ -22,6 +22,7 @@ type URL struct {
 	Host       string
 	Port       string
 	RequestURI string
+	Fragment   string
 }
 
 func (u URL) String() string {
@@ -40,6 +41,12 @@ func (u URL) String() string {
 		fullURL.WriteString(":" + u.Port)
 	}
 	fullURL.WriteString(u.RequestURI)
+	if u.Fragment != "" {
+		if u.RequestURI == "" {
+			fullURL.WriteString("/")
+		}
+		fullURL.WriteString("#" + u.Fragment)
+	}
 	return fullURL.String()
 }
 
@@ -102,6 +109,9 @@ func ParseWithScheme(u string) (*URL, error) {
 		requri = origReqURI
 	}
 
+	// fragment
+	fragment := U.Fragment
+
 	return &URL{
 		Scheme:     scheme,
 		Host:       host,
@@ -109,6 +119,7 @@ func ParseWithScheme(u string) (*URL, error) {
 		Password:   password,
 		Port:       port,
 		RequestURI: requri,
+		Fragment:   fragment,
 	}, nil
 }
 

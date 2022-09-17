@@ -124,6 +124,7 @@ func (j JSON) Str() string {
 var floatType = reflect.TypeOf(.0)
 
 // Num value
+// returns zero value for type if underlying JSON type is not convertible.
 func (j JSON) Num() float64 {
 	v := reflect.ValueOf(j.Val())
 	if v.IsValid() && v.Type().ConvertibleTo(floatType) {
@@ -133,6 +134,7 @@ func (j JSON) Num() float64 {
 }
 
 // Bool value
+// returns zero value for type if underlying JSON type is not boolean
 func (j JSON) Bool() bool {
 	if v, ok := j.Val().(bool); ok {
 		return v
@@ -148,6 +150,7 @@ func (j JSON) Nil() bool {
 var intType = reflect.TypeOf(0)
 
 // Int value
+// returns zero value for type if underlying JSON type is not convertible.
 func (j JSON) Int() int {
 	v := reflect.ValueOf(j.Val())
 	if v.IsValid() && v.Type().ConvertibleTo(intType) {
@@ -157,6 +160,7 @@ func (j JSON) Int() int {
 }
 
 // Map of JSON
+// returns empty map if underlying JSON object is not a map.
 func (j JSON) Map() map[string]JSON {
 	val := reflect.ValueOf(j.Val())
 	if val.IsValid() && val.Kind() == reflect.Map && val.Type().Key().Kind() == reflect.String {
@@ -172,6 +176,7 @@ func (j JSON) Map() map[string]JSON {
 }
 
 // Arr of JSON
+// returns empty array if underlying JSON is not an array.
 func (j JSON) Arr() []JSON {
 	val := reflect.ValueOf(j.Val())
 	if val.IsValid() && val.Kind() == reflect.Slice {

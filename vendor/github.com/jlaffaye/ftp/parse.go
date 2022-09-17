@@ -27,7 +27,11 @@ var dirTimeFormats = []string{
 }
 
 // parseRFC3659ListLine parses the style of directory line defined in RFC 3659.
-func parseRFC3659ListLine(line string, now time.Time, loc *time.Location) (*Entry, error) {
+func parseRFC3659ListLine(line string, _ time.Time, loc *time.Location) (*Entry, error) {
+	return parseNextRFC3659ListLine(line, loc, &Entry{})
+}
+
+func parseNextRFC3659ListLine(line string, loc *time.Location, e *Entry) (*Entry, error) {
 	iSemicolon := strings.Index(line, ";")
 	iWhitespace := strings.Index(line, " ")
 
@@ -35,8 +39,12 @@ func parseRFC3659ListLine(line string, now time.Time, loc *time.Location) (*Entr
 		return nil, errUnsupportedListLine
 	}
 
-	e := &Entry{
-		Name: line[iWhitespace+1:],
+	name := line[iWhitespace+1:]
+	if e.Name == "" {
+		e.Name = name
+	} else if e.Name != name {
+		// All lines must have the same name
+		return nil, errUnsupportedListLine
 	}
 
 	for _, field := range strings.Split(line[:iWhitespace-1], ";") {
@@ -63,7 +71,9 @@ func parseRFC3659ListLine(line string, now time.Time, loc *time.Location) (*Entr
 				e.Type = EntryTypeFile
 			}
 		case "size":
-			e.setSize(value)
+			if err := e.setSize(value); err != nil {
+				return nil, err
+			}
 		}
 	}
 	return e, nil

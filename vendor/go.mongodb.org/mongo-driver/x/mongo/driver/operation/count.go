@@ -10,7 +10,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
+	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"go.mongodb.org/mongo-driver/event"
 	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
@@ -27,6 +29,7 @@ type Count struct {
 	session        *session.Client
 	clock          *session.ClusterClock
 	collection     string
+	comment        bsoncore.Value
 	monitor        *event.CommandMonitor
 	crypt          driver.Crypt
 	database       string
@@ -37,6 +40,7 @@ type Count struct {
 	retry          *driver.RetryMode
 	result         CountResult
 	serverAPI      *driver.ServerAPIOptions
+	timeout        *time.Duration
 }
 
 // CountResult represents a count result returned by the server.
@@ -120,6 +124,7 @@ func (c *Count) Execute(ctx context.Context) error {
 		ReadPreference:    c.readPreference,
 		Selector:          c.selector,
 		ServerAPI:         c.serverAPI,
+		Timeout:           c.timeout,
 	}.Execute(ctx, nil)
 
 	// Swallow error if NamespaceNotFound(26) is returned from aggregate on non-existent namespace
@@ -133,42 +138,17 @@ func (c *Count) Execute(ctx context.Context) error {
 }
 
 func (c *Count) command(dst []byte, desc description.SelectedServer) ([]byte, error) {
-	switch {
-	case desc.WireVersion.Max < 12: // If wire version < 12 (4.9.0), use count command
-		dst = bsoncore.AppendStringElement(dst, "count", c.collection)
-		if c.query != nil {
-			dst = bsoncore.AppendDocumentElement(dst, "query", c.query)
-		}
-	default: // If wire version >= 12 (4.9.0), use aggregate with $collStats
-		dst = bsoncore.AppendStringElement(dst, "aggregate", c.collection)
-		var idx int32
-		idx, dst = bsoncore.AppendDocumentElementStart(dst, "cursor")
-		dst, _ = bsoncore.AppendDocumentEnd(dst, idx)
-		if c.query != nil {
-			return nil, fmt.Errorf("'query' cannot be set on Count against servers at or above 4.9.0")
-		}
-
-		collStatsStage := bsoncore.NewDocumentBuilder().
-			AppendDocument("$collStats", bsoncore.NewDocumentBuilder().
-				AppendDocument("count", bsoncore.NewDocumentBuilder().Build()).
-				Build()).
-			Build()
-		groupStage := bsoncore.NewDocumentBuilder().
-			AppendDocument("$group", bsoncore.NewDocumentBuilder().
-				AppendInt64("_id", 1).
-				AppendDocument("n", bsoncore.NewDocumentBuilder().
-					AppendString("$sum", "$count").Build()).
-				Build()).
-			Build()
-		countPipeline := bsoncore.NewArrayBuilder().
-			AppendDocument(collStatsStage).
-			AppendDocument(groupStage).
-			Build()
-		dst = bsoncore.AppendArrayElement(dst, "pipeline", countPipeline)
+	dst = bsoncore.AppendStringElement(dst, "count", c.collection)
+	if c.query != nil {
+		dst = bsoncore.AppendDocumentElement(dst, "query", c.query)
 	}
 
-	if c.maxTimeMS != nil {
+	// Only append specified maxTimeMS if timeout is not also specified.
+	if c.maxTimeMS != nil && c.timeout == nil {
 		dst = bsoncore.AppendInt64Element(dst, "maxTimeMS", *c.maxTimeMS)
+	}
+	if c.comment.Type != bsontype.Type(0) {
+		dst = bsoncore.AppendValueElement(dst, "comment", c.comment)
 	}
 	return dst, nil
 }
@@ -223,6 +203,16 @@ func (c *Count) Collection(collection string) *Count {
 	return c
 }
 
+// Comment sets a value to help trace an operation.
+func (c *Count) Comment(comment bsoncore.Value) *Count {
+	if c == nil {
+		c = new(Count)
+	}
+
+	c.comment = comment
+	return c
+}
+
 // CommandMonitor sets the monitor to use for APM events.
 func (c *Count) CommandMonitor(monitor *event.CommandMonitor) *Count {
 	if c == nil {
@@ -273,7 +263,7 @@ func (c *Count) ReadConcern(readConcern *readconcern.ReadConcern) *Count {
 	return c
 }
 
-// ReadPreference set the read prefernce used with this operation.
+// ReadPreference set the read preference used with this operation.
 func (c *Count) ReadPreference(readPreference *readpref.ReadPref) *Count {
 	if c == nil {
 		c = new(Count)
@@ -311,5 +301,15 @@ func (c *Count) ServerAPI(serverAPI *driver.ServerAPIOptions) *Count {
 	}
 
 	c.serverAPI = serverAPI
+	return c
+}
+
+// Timeout sets the timeout for this operation.
+func (c *Count) Timeout(timeout *time.Duration) *Count {
+	if c == nil {
+		c = new(Count)
+	}
+
+	c.timeout = timeout
 	return c
 }

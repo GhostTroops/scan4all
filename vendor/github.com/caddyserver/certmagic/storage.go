@@ -29,19 +29,30 @@ import (
 // Keys are prefix-based, with forward slash '/' as separators
 // and without a leading slash.
 //
-// Processes running in a cluster will wish to use the
-// same Storage value (its implementation and configuration)
-// in order to share certificates and other TLS resources
-// with the cluster.
+// Processes running in a cluster should use the same Storage
+// value (with the same configuration) in order to share
+// certificates and other TLS resources with the cluster.
 //
 // The Load, Delete, List, and Stat methods should return
 // fs.ErrNotExist if the key does not exist.
 //
 // Implementations of Storage must be safe for concurrent use
-// and honor context cancellations.
+// and honor context cancellations. Methods should block until
+// their operation is complete; that is, Load() should always
+// return the value from the last call to Store() for a given
+// key, and concurrent calls to Store() should not corrupt a
+// file.
+//
+// For simplicity, this is not a streaming API and is not
+// suitable for very large files.
 type Storage interface {
 	// Locker provides atomic synchronization
 	// operations, making Storage safe to share.
+	// The use of Locker is not expected around
+	// every other method (Store, Load, etc.)
+	// as those should already be thread-safe;
+	// Locker is intended for custom jobs or
+	// transactions that need synchronization.
 	Locker
 
 	// Store puts value at key.
@@ -70,10 +81,11 @@ type Storage interface {
 	Stat(ctx context.Context, key string) (KeyInfo, error)
 }
 
-// Locker facilitates synchronization of certificate tasks across
-// machines and networks.
+// Locker facilitates synchronization across machines and networks.
+// It essentially provides a distributed named-mutex service so
+// that multiple consumers can coordinate tasks and share resources.
 type Locker interface {
-	// Lock acquires the lock for key, blocking until the lock
+	// Lock acquires the lock for name, blocking until the lock
 	// can be obtained or an error is returned. Note that, even
 	// after acquiring a lock, an idempotent operation may have
 	// already been performed by another process that acquired
@@ -86,20 +98,25 @@ type Locker interface {
 	// same time always results in only one caller receiving the
 	// lock at any given time.
 	//
-	// To prevent deadlocks, all implementations (where this concern
-	// is relevant) should put a reasonable expiration on the lock in
-	// case Unlock is unable to be called due to some sort of network
-	// failure or system crash. Additionally, implementations should
-	// honor context cancellation as much as possible (in case the
-	// caller wishes to give up and free resources before the lock
-	// can be obtained).
-	Lock(ctx context.Context, key string) error
+	// To prevent deadlocks, all implementations should put a
+	// reasonable expiration on the lock in case Unlock is unable
+	// to be called due to some sort of network failure or system
+	// crash. Additionally, implementations should honor context
+	// cancellation as much as possible (in case the caller wishes
+	// to give up and free resources before the lock can be obtained).
+	//
+	// Additionally, implementations may wish to support fencing
+	// tokens (https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html)
+	// in order to be robust against long process pauses, extremely
+	// high network latency (or other factors that get in the way of
+	// renewing lock leases).
+	Lock(ctx context.Context, name string) error
 
-	// Unlock releases the lock for key. This method must ONLY be
+	// Unlock releases the lock for name. This method must ONLY be
 	// called after a successful call to Lock, and only after the
 	// critical section is finished, even if it errored or timed
 	// out. Unlock cleans up any resources allocated during Lock.
-	Unlock(ctx context.Context, key string) error
+	Unlock(ctx context.Context, name string) error
 }
 
 // KeyInfo holds information about a key in storage.

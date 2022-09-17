@@ -5,7 +5,7 @@ type Iter interface {
 	Next() (interface{}, bool)
 }
 
-// NewIter creates a new Iter from values.
+// NewIter creates a new [Iter] from values.
 func NewIter(values ...interface{}) Iter {
 	switch len(values) {
 	case 0:

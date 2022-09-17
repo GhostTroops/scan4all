@@ -30,10 +30,11 @@ type Code struct {
 }
 
 // Run runs the code with the variable values (which should be in the
-// same order as the given variables using WithVariables) and returns
+// same order as the given variables using [WithVariables]) and returns
 // a result iterator.
 //
-// It is safe to call this method of a *Code in multiple goroutines.
+// It is safe to call this method in goroutines, to reuse a compiled [*Code].
+// But for arguments, do not give values sharing same data between goroutines.
 func (c *Code) Run(v interface{}, values ...interface{}) Iter {
 	return c.RunWithContext(context.Background(), v, values...)
 }
@@ -341,10 +342,12 @@ func (c *compiler) compileFuncDef(e *FuncDef, builtin bool) error {
 		}
 		for _, w := range vis {
 			c.append(&code{op: opload, v: v})
+			c.append(&code{op: opexpbegin})
 			c.append(&code{op: opload, v: w.index})
 			c.append(&code{op: opcallpc})
 			c.appendCodeInfo(w.name)
 			c.append(&code{op: opstore, v: c.pushVariable(w.name)})
+			c.append(&code{op: opexpend})
 		}
 		c.append(&code{op: opload, v: v})
 	}

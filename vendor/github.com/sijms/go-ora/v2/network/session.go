@@ -450,7 +450,7 @@ func (session *Session) Write() error {
 // Read numBytes of data from input buffer if requested data is larger
 // than input buffer session will get the remaining from network stream
 func (session *Session) read(numBytes int) ([]byte, error) {
-	if session.index+numBytes > len(session.inBuffer) {
+	for session.index+numBytes > len(session.inBuffer) {
 		pck, err := session.readPacket()
 		if err != nil {
 			return nil, err

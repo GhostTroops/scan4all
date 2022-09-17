@@ -37,7 +37,7 @@ const (
 	OpUpdateAlt
 )
 
-// String implements Stringer.
+// String implements [fmt.Stringer].
 func (op Operator) String() string {
 	switch op {
 	case OpPipe:
@@ -93,7 +93,7 @@ func (op Operator) String() string {
 	}
 }
 
-// GoString implements GoStringer.
+// GoString implements [fmt.GoStringer].
 func (op Operator) GoString() (str string) {
 	defer func() { str = "gojq." + str }()
 	switch op {
