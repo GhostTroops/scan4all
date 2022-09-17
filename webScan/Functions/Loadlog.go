@@ -13,8 +13,8 @@ import (
 func init() {
 	util.RegInitFunc(func() {
 		fileValue := util.GetAsAny("Exploit")
-		Configs.ConfigJsonMap.Exploit.Logs = fmt.Sprintf("%v", util.GetJson4Query(fileValue, ".Logs"))
-		Configs.ConfigJsonMap.Exploit.Path = fmt.Sprintf("%v", util.GetJson4Query(fileValue, ".Path"))
+		Configs.ConfigJsonMap.Exploit.Logs = fmt.Sprintf("%v", util.GetJson4Query(fileValue, ".logs"))
+		Configs.ConfigJsonMap.Exploit.Path = fmt.Sprintf("%v", util.GetJson4Query(fileValue, ".path"))
 
 		FileLog, err := os.OpenFile(Configs.ConfigJsonMap.Exploit.Logs, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if err != nil {
