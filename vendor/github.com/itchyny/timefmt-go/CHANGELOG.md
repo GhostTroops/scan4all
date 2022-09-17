@@ -1,4 +1,8 @@
 # Changelog
+## [v0.1.4](https://github.com/itchyny/timefmt-go/compare/v0.1.3..v0.1.4) (2022-09-01)
+* improve documents
+* drop support for Go 1.16
+
 ## [v0.1.3](https://github.com/itchyny/timefmt-go/compare/v0.1.2..v0.1.3) (2021-04-14)
 * implement `ParseInLocation` for configuring the default location
 

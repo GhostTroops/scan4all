@@ -24,7 +24,9 @@ package ants
 
 import (
 	"errors"
+	"log"
 	"math"
+	"os"
 	"runtime"
 	"time"
 )
@@ -35,17 +37,19 @@ const (
 
 	// DefaultCleanIntervalTime is the interval time to clean up goroutines.
 	DefaultCleanIntervalTime = time.Second
+)
+
+const (
+	// OPENED represents that the pool is opened.
+	OPENED = iota
 
 	// CLOSED represents that the pool is closed.
-	CLOSED = 1
+	CLOSED
 )
 
 var (
-	// Error types for the Ants API.
-	//---------------------------------------------------------------------------
-
-	// ErrInvalidPoolSize will be returned when setting a negative number as pool capacity.
-	ErrInvalidPoolSize = errors.New("invalid size for pool")
+	//
+	//--------------------------Error types for the Ants API------------------------------
 
 	// ErrLackPoolFunc will be returned when invokers don't provide function for pool.
 	ErrLackPoolFunc = errors.New("must provide function for pool")
@@ -58,93 +62,41 @@ var (
 
 	// ErrPoolOverload will be returned when the pool is full and no workers available.
 	ErrPoolOverload = errors.New("too many goroutines blocked on submit or Nonblocking is set")
+
+	// ErrInvalidPreAllocSize will be returned when trying to set up a negative capacity under PreAlloc mode.
+	ErrInvalidPreAllocSize = errors.New("can not set up a negative capacity under PreAlloc mode")
+
+	// ErrTimeout will be returned after the operations timed out.
+	ErrTimeout = errors.New("operation timed out")
+
 	//---------------------------------------------------------------------------
 
 	// workerChanCap determines whether the channel of a worker should be a buffered channel
-	// to get the best performance. Inspired by fasthttp at https://github.com/valyala/fasthttp/blob/master/workerpool.go#L139
+	// to get the best performance. Inspired by fasthttp at
+	// https://github.com/valyala/fasthttp/blob/master/workerpool.go#L139
 	workerChanCap = func() int {
-		// Use blocking workerChan if GOMAXPROCS=1.
-		// This immediately switches Serve to WorkerFunc, which results
-		// in higher performance (under go1.5 at least).
+		// Use blocking channel if GOMAXPROCS=1.
+		// This switches context from sender to receiver immediately,
+		// which results in higher performance (under go1.5 at least).
 		if runtime.GOMAXPROCS(0) == 1 {
 			return 0
 		}
 
 		// Use non-blocking workerChan if GOMAXPROCS>1,
-		// since otherwise the Serve caller (Acceptor) may lag accepting
-		// new connections if WorkerFunc is CPU-bound.
+		// since otherwise the sender might be dragged down if the receiver is CPU-bound.
 		return 1
 	}()
 
-	// Init a instance pool when importing ants.
+	defaultLogger = Logger(log.New(os.Stderr, "", log.LstdFlags))
+
+	// Init an instance pool when importing ants.
 	defaultAntsPool, _ = NewPool(DefaultAntsPoolSize)
 )
 
-// Option represents the optional function.
-type Option func(opts *Options)
-
-// Options contains all options which will be applied when instantiating a ants pool.
-type Options struct {
-	// ExpiryDuration set the expired time of every worker.
-	ExpiryDuration time.Duration
-
-	// PreAlloc indicate whether to make memory pre-allocation when initializing Pool.
-	PreAlloc bool
-
-	// Max number of goroutine blocking on pool.Submit.
-	// 0 (default value) means no such limit.
-	MaxBlockingTasks int
-
-	// When Nonblocking is true, Pool.Submit will never be blocked.
-	// ErrPoolOverload will be returned when Pool.Submit cannot be done at once.
-	// When Nonblocking is true, MaxBlockingTasks is inoperative.
-	Nonblocking bool
-
-	// PanicHandler is used to handle panics from each worker goroutine.
-	// if nil, panics will be thrown out again from worker goroutines.
-	PanicHandler func(interface{})
-}
-
-// WithOptions accepts the whole options config.
-func WithOptions(options Options) Option {
-	return func(opts *Options) {
-		*opts = options
-	}
-}
-
-// WithExpiryDuration sets up the interval time of cleaning up goroutines.
-func WithExpiryDuration(expiryDuration time.Duration) Option {
-	return func(opts *Options) {
-		opts.ExpiryDuration = expiryDuration
-	}
-}
-
-// WithPreAlloc indicates whether it should malloc for workers.
-func WithPreAlloc(preAlloc bool) Option {
-	return func(opts *Options) {
-		opts.PreAlloc = preAlloc
-	}
-}
-
-// WithMaxBlockingTasks sets up the maximum number of goroutines that are blocked when it reaches the capacity of pool.
-func WithMaxBlockingTasks(maxBlockingTasks int) Option {
-	return func(opts *Options) {
-		opts.MaxBlockingTasks = maxBlockingTasks
-	}
-}
-
-// WithNonblocking indicates that pool will return nil when there is no available workers.
-func WithNonblocking(nonblocking bool) Option {
-	return func(opts *Options) {
-		opts.Nonblocking = nonblocking
-	}
-}
-
-// WithPanicHandler sets up panic handler.
-func WithPanicHandler(panicHandler func(interface{})) Option {
-	return func(opts *Options) {
-		opts.PanicHandler = panicHandler
-	}
+// Logger is used for logging formatted messages.
+type Logger interface {
+	// Printf must have the same semantics as log.Printf.
+	Printf(format string, args ...interface{})
 }
 
 // Submit submits a task to pool.
@@ -170,4 +122,9 @@ func Free() int {
 // Release Closes the default pool.
 func Release() {
 	defaultAntsPool.Release()
+}
+
+// Reboot reboots the default pool.
+func Reboot() {
+	defaultAntsPool.Reboot()
 }

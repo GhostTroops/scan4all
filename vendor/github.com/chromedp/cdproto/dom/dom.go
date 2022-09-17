@@ -37,7 +37,8 @@ type CollectClassNamesFromSubtreeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-collectClassNamesFromSubtree
 //
 // parameters:
-//   nodeID - Id of the node to collect class names.
+//
+//	nodeID - Id of the node to collect class names.
 func CollectClassNamesFromSubtree(nodeID cdp.NodeID) *CollectClassNamesFromSubtreeParams {
 	return &CollectClassNamesFromSubtreeParams{
 		NodeID: nodeID,
@@ -52,7 +53,8 @@ type CollectClassNamesFromSubtreeReturns struct {
 // Do executes DOM.collectClassNamesFromSubtree against the provided context.
 //
 // returns:
-//   classNames - Class name list.
+//
+//	classNames - Class name list.
 func (p *CollectClassNamesFromSubtreeParams) Do(ctx context.Context) (classNames []string, err error) {
 	// execute
 	var res CollectClassNamesFromSubtreeReturns
@@ -78,8 +80,9 @@ type CopyToParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-copyTo
 //
 // parameters:
-//   nodeID - Id of the node to copy.
-//   targetNodeID - Id of the element to drop the copy into.
+//
+//	nodeID - Id of the node to copy.
+//	targetNodeID - Id of the element to drop the copy into.
 func CopyTo(nodeID cdp.NodeID, targetNodeID cdp.NodeID) *CopyToParams {
 	return &CopyToParams{
 		NodeID:       nodeID,
@@ -102,7 +105,8 @@ type CopyToReturns struct {
 // Do executes DOM.copyTo against the provided context.
 //
 // returns:
-//   nodeID - Id of the node clone.
+//
+//	nodeID - Id of the node clone.
 func (p *CopyToParams) Do(ctx context.Context) (nodeID cdp.NodeID, err error) {
 	// execute
 	var res CopyToReturns
@@ -175,7 +179,8 @@ type DescribeNodeReturns struct {
 // Do executes DOM.describeNode against the provided context.
 //
 // returns:
-//   node - Node description.
+//
+//	node - Node description.
 func (p *DescribeNodeParams) Do(ctx context.Context) (node *cdp.Node, err error) {
 	// execute
 	var res DescribeNodeReturns
@@ -266,7 +271,8 @@ type DiscardSearchResultsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-discardSearchResults
 //
 // parameters:
-//   searchID - Unique search session identifier.
+//
+//	searchID - Unique search session identifier.
 func DiscardSearchResults(searchID string) *DiscardSearchResultsParams {
 	return &DiscardSearchResultsParams{
 		SearchID: searchID,
@@ -353,7 +359,8 @@ type GetAttributesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-getAttributes
 //
 // parameters:
-//   nodeID - Id of the node to retrieve attibutes for.
+//
+//	nodeID - Id of the node to retrieve attibutes for.
 func GetAttributes(nodeID cdp.NodeID) *GetAttributesParams {
 	return &GetAttributesParams{
 		NodeID: nodeID,
@@ -368,7 +375,8 @@ type GetAttributesReturns struct {
 // Do executes DOM.getAttributes against the provided context.
 //
 // returns:
-//   attributes - An interleaved array of node attribute names and values.
+//
+//	attributes - An interleaved array of node attribute names and values.
 func (p *GetAttributesParams) Do(ctx context.Context) (attributes []string, err error) {
 	// execute
 	var res GetAttributesReturns
@@ -422,7 +430,8 @@ type GetBoxModelReturns struct {
 // Do executes DOM.getBoxModel against the provided context.
 //
 // returns:
-//   model - Box model for the node.
+//
+//	model - Box model for the node.
 func (p *GetBoxModelParams) Do(ctx context.Context) (model *BoxModel, err error) {
 	// execute
 	var res GetBoxModelReturns
@@ -478,7 +487,8 @@ type GetContentQuadsReturns struct {
 // Do executes DOM.getContentQuads against the provided context.
 //
 // returns:
-//   quads - Quads that describe node layout relative to viewport.
+//
+//	quads - Quads that describe node layout relative to viewport.
 func (p *GetContentQuadsParams) Do(ctx context.Context) (quads []Quad, err error) {
 	// execute
 	var res GetContentQuadsReturns
@@ -530,7 +540,8 @@ type GetDocumentReturns struct {
 // Do executes DOM.getDocument against the provided context.
 //
 // returns:
-//   root - Resulting node.
+//
+//	root - Resulting node.
 func (p *GetDocumentParams) Do(ctx context.Context) (root *cdp.Node, err error) {
 	// execute
 	var res GetDocumentReturns
@@ -556,8 +567,9 @@ type GetNodesForSubtreeByStyleParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-getNodesForSubtreeByStyle
 //
 // parameters:
-//   nodeID - Node ID pointing to the root of a subtree.
-//   computedStyles - The style to filter nodes by (includes nodes if any of properties matches).
+//
+//	nodeID - Node ID pointing to the root of a subtree.
+//	computedStyles - The style to filter nodes by (includes nodes if any of properties matches).
 func GetNodesForSubtreeByStyle(nodeID cdp.NodeID, computedStyles []*CSSComputedStyleProperty) *GetNodesForSubtreeByStyleParams {
 	return &GetNodesForSubtreeByStyleParams{
 		NodeID:         nodeID,
@@ -580,7 +592,8 @@ type GetNodesForSubtreeByStyleReturns struct {
 // Do executes DOM.getNodesForSubtreeByStyle against the provided context.
 //
 // returns:
-//   nodeIDs - Resulting nodes.
+//
+//	nodeIDs - Resulting nodes.
 func (p *GetNodesForSubtreeByStyleParams) Do(ctx context.Context) (nodeIDs []cdp.NodeID, err error) {
 	// execute
 	var res GetNodesForSubtreeByStyleReturns
@@ -607,8 +620,9 @@ type GetNodeForLocationParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-getNodeForLocation
 //
 // parameters:
-//   x - X coordinate.
-//   y - Y coordinate.
+//
+//	x - X coordinate.
+//	y - Y coordinate.
 func GetNodeForLocation(x int64, y int64) *GetNodeForLocationParams {
 	return &GetNodeForLocationParams{
 		X: x,
@@ -640,9 +654,10 @@ type GetNodeForLocationReturns struct {
 // Do executes DOM.getNodeForLocation against the provided context.
 //
 // returns:
-//   backendNodeID - Resulting node.
-//   frameID - Frame this node belongs to.
-//   nodeID - Id of the node at given coordinates, only when enabled and requested document.
+//
+//	backendNodeID - Resulting node.
+//	frameID - Frame this node belongs to.
+//	nodeID - Id of the node at given coordinates, only when enabled and requested document.
 func (p *GetNodeForLocationParams) Do(ctx context.Context) (backendNodeID cdp.BackendNodeID, frameID cdp.FrameID, nodeID cdp.NodeID, err error) {
 	// execute
 	var res GetNodeForLocationReturns
@@ -696,7 +711,8 @@ type GetOuterHTMLReturns struct {
 // Do executes DOM.getOuterHTML against the provided context.
 //
 // returns:
-//   outerHTML - Outer HTML markup.
+//
+//	outerHTML - Outer HTML markup.
 func (p *GetOuterHTMLParams) Do(ctx context.Context) (outerHTML string, err error) {
 	// execute
 	var res GetOuterHTMLReturns
@@ -720,7 +736,8 @@ type GetRelayoutBoundaryParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-getRelayoutBoundary
 //
 // parameters:
-//   nodeID - Id of the node.
+//
+//	nodeID - Id of the node.
 func GetRelayoutBoundary(nodeID cdp.NodeID) *GetRelayoutBoundaryParams {
 	return &GetRelayoutBoundaryParams{
 		NodeID: nodeID,
@@ -735,7 +752,8 @@ type GetRelayoutBoundaryReturns struct {
 // Do executes DOM.getRelayoutBoundary against the provided context.
 //
 // returns:
-//   nodeID - Relayout boundary node id for the given node.
+//
+//	nodeID - Relayout boundary node id for the given node.
 func (p *GetRelayoutBoundaryParams) Do(ctx context.Context) (nodeID cdp.NodeID, err error) {
 	// execute
 	var res GetRelayoutBoundaryReturns
@@ -761,9 +779,10 @@ type GetSearchResultsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-getSearchResults
 //
 // parameters:
-//   searchID - Unique search session identifier.
-//   fromIndex - Start index of the search result to be returned.
-//   toIndex - End index of the search result to be returned.
+//
+//	searchID - Unique search session identifier.
+//	fromIndex - Start index of the search result to be returned.
+//	toIndex - End index of the search result to be returned.
 func GetSearchResults(searchID string, fromIndex int64, toIndex int64) *GetSearchResultsParams {
 	return &GetSearchResultsParams{
 		SearchID:  searchID,
@@ -780,7 +799,8 @@ type GetSearchResultsReturns struct {
 // Do executes DOM.getSearchResults against the provided context.
 //
 // returns:
-//   nodeIDs - Ids of the search result nodes.
+//
+//	nodeIDs - Ids of the search result nodes.
 func (p *GetSearchResultsParams) Do(ctx context.Context) (nodeIDs []cdp.NodeID, err error) {
 	// execute
 	var res GetSearchResultsReturns
@@ -821,8 +841,9 @@ type MoveToParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-moveTo
 //
 // parameters:
-//   nodeID - Id of the node to move.
-//   targetNodeID - Id of the element to drop the moved node into.
+//
+//	nodeID - Id of the node to move.
+//	targetNodeID - Id of the element to drop the moved node into.
 func MoveTo(nodeID cdp.NodeID, targetNodeID cdp.NodeID) *MoveToParams {
 	return &MoveToParams{
 		NodeID:       nodeID,
@@ -845,7 +866,8 @@ type MoveToReturns struct {
 // Do executes DOM.moveTo against the provided context.
 //
 // returns:
-//   nodeID - New id of the moved node.
+//
+//	nodeID - New id of the moved node.
 func (p *MoveToParams) Do(ctx context.Context) (nodeID cdp.NodeID, err error) {
 	// execute
 	var res MoveToReturns
@@ -872,7 +894,8 @@ type PerformSearchParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-performSearch
 //
 // parameters:
-//   query - Plain text or query selector or XPath search query.
+//
+//	query - Plain text or query selector or XPath search query.
 func PerformSearch(query string) *PerformSearchParams {
 	return &PerformSearchParams{
 		Query: query,
@@ -894,8 +917,9 @@ type PerformSearchReturns struct {
 // Do executes DOM.performSearch against the provided context.
 //
 // returns:
-//   searchID - Unique search session identifier.
-//   resultCount - Number of search results.
+//
+//	searchID - Unique search session identifier.
+//	resultCount - Number of search results.
 func (p *PerformSearchParams) Do(ctx context.Context) (searchID string, resultCount int64, err error) {
 	// execute
 	var res PerformSearchReturns
@@ -919,7 +943,8 @@ type PushNodeByPathToFrontendParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-pushNodeByPathToFrontend
 //
 // parameters:
-//   path - Path to node in the proprietary format.
+//
+//	path - Path to node in the proprietary format.
 func PushNodeByPathToFrontend(path string) *PushNodeByPathToFrontendParams {
 	return &PushNodeByPathToFrontendParams{
 		Path: path,
@@ -934,7 +959,8 @@ type PushNodeByPathToFrontendReturns struct {
 // Do executes DOM.pushNodeByPathToFrontend against the provided context.
 //
 // returns:
-//   nodeID - Id of the node for given path.
+//
+//	nodeID - Id of the node for given path.
 func (p *PushNodeByPathToFrontendParams) Do(ctx context.Context) (nodeID cdp.NodeID, err error) {
 	// execute
 	var res PushNodeByPathToFrontendReturns
@@ -958,7 +984,8 @@ type PushNodesByBackendIDsToFrontendParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-pushNodesByBackendIdsToFrontend
 //
 // parameters:
-//   backendNodeIDs - The array of backend node ids.
+//
+//	backendNodeIDs - The array of backend node ids.
 func PushNodesByBackendIDsToFrontend(backendNodeIDs []cdp.BackendNodeID) *PushNodesByBackendIDsToFrontendParams {
 	return &PushNodesByBackendIDsToFrontendParams{
 		BackendNodeIDs: backendNodeIDs,
@@ -973,7 +1000,8 @@ type PushNodesByBackendIDsToFrontendReturns struct {
 // Do executes DOM.pushNodesByBackendIdsToFrontend against the provided context.
 //
 // returns:
-//   nodeIDs - The array of ids of pushed nodes that correspond to the backend ids specified in backendNodeIds.
+//
+//	nodeIDs - The array of ids of pushed nodes that correspond to the backend ids specified in backendNodeIds.
 func (p *PushNodesByBackendIDsToFrontendParams) Do(ctx context.Context) (nodeIDs []cdp.NodeID, err error) {
 	// execute
 	var res PushNodesByBackendIDsToFrontendReturns
@@ -996,8 +1024,9 @@ type QuerySelectorParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-querySelector
 //
 // parameters:
-//   nodeID - Id of the node to query upon.
-//   selector - Selector string.
+//
+//	nodeID - Id of the node to query upon.
+//	selector - Selector string.
 func QuerySelector(nodeID cdp.NodeID, selector string) *QuerySelectorParams {
 	return &QuerySelectorParams{
 		NodeID:   nodeID,
@@ -1013,7 +1042,8 @@ type QuerySelectorReturns struct {
 // Do executes DOM.querySelector against the provided context.
 //
 // returns:
-//   nodeID - Query selector result.
+//
+//	nodeID - Query selector result.
 func (p *QuerySelectorParams) Do(ctx context.Context) (nodeID cdp.NodeID, err error) {
 	// execute
 	var res QuerySelectorReturns
@@ -1036,8 +1066,9 @@ type QuerySelectorAllParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-querySelectorAll
 //
 // parameters:
-//   nodeID - Id of the node to query upon.
-//   selector - Selector string.
+//
+//	nodeID - Id of the node to query upon.
+//	selector - Selector string.
 func QuerySelectorAll(nodeID cdp.NodeID, selector string) *QuerySelectorAllParams {
 	return &QuerySelectorAllParams{
 		NodeID:   nodeID,
@@ -1053,7 +1084,8 @@ type QuerySelectorAllReturns struct {
 // Do executes DOM.querySelectorAll against the provided context.
 //
 // returns:
-//   nodeIDs - Query selector result.
+//
+//	nodeIDs - Query selector result.
 func (p *QuerySelectorAllParams) Do(ctx context.Context) (nodeIDs []cdp.NodeID, err error) {
 	// execute
 	var res QuerySelectorAllReturns
@@ -1087,7 +1119,8 @@ type GetTopLayerElementsReturns struct {
 // Do executes DOM.getTopLayerElements against the provided context.
 //
 // returns:
-//   nodeIDs - NodeIds of top layer elements
+//
+//	nodeIDs - NodeIds of top layer elements
 func (p *GetTopLayerElementsParams) Do(ctx context.Context) (nodeIDs []cdp.NodeID, err error) {
 	// execute
 	var res GetTopLayerElementsReturns
@@ -1127,8 +1160,9 @@ type RemoveAttributeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-removeAttribute
 //
 // parameters:
-//   nodeID - Id of the element to remove attribute from.
-//   name - Name of the attribute to remove.
+//
+//	nodeID - Id of the element to remove attribute from.
+//	name - Name of the attribute to remove.
 func RemoveAttribute(nodeID cdp.NodeID, name string) *RemoveAttributeParams {
 	return &RemoveAttributeParams{
 		NodeID: nodeID,
@@ -1151,7 +1185,8 @@ type RemoveNodeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-removeNode
 //
 // parameters:
-//   nodeID - Id of the node to remove.
+//
+//	nodeID - Id of the node to remove.
 func RemoveNode(nodeID cdp.NodeID) *RemoveNodeParams {
 	return &RemoveNodeParams{
 		NodeID: nodeID,
@@ -1181,7 +1216,8 @@ type RequestChildNodesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-requestChildNodes
 //
 // parameters:
-//   nodeID - Id of the node to get children for.
+//
+//	nodeID - Id of the node to get children for.
 func RequestChildNodes(nodeID cdp.NodeID) *RequestChildNodesParams {
 	return &RequestChildNodesParams{
 		NodeID: nodeID,
@@ -1224,7 +1260,8 @@ type RequestNodeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-requestNode
 //
 // parameters:
-//   objectID - JavaScript object id to convert into node.
+//
+//	objectID - JavaScript object id to convert into node.
 func RequestNode(objectID runtime.RemoteObjectID) *RequestNodeParams {
 	return &RequestNodeParams{
 		ObjectID: objectID,
@@ -1239,7 +1276,8 @@ type RequestNodeReturns struct {
 // Do executes DOM.requestNode against the provided context.
 //
 // returns:
-//   nodeID - Node id for given object.
+//
+//	nodeID - Node id for given object.
 func (p *RequestNodeParams) Do(ctx context.Context) (nodeID cdp.NodeID, err error) {
 	// execute
 	var res RequestNodeReturns
@@ -1303,7 +1341,8 @@ type ResolveNodeReturns struct {
 // Do executes DOM.resolveNode against the provided context.
 //
 // returns:
-//   object - JavaScript object wrapper for given node.
+//
+//	object - JavaScript object wrapper for given node.
 func (p *ResolveNodeParams) Do(ctx context.Context) (object *runtime.RemoteObject, err error) {
 	// execute
 	var res ResolveNodeReturns
@@ -1327,9 +1366,10 @@ type SetAttributeValueParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-setAttributeValue
 //
 // parameters:
-//   nodeID - Id of the element to set attribute for.
-//   name - Attribute name.
-//   value - Attribute value.
+//
+//	nodeID - Id of the element to set attribute for.
+//	name - Attribute name.
+//	value - Attribute value.
 func SetAttributeValue(nodeID cdp.NodeID, name string, value string) *SetAttributeValueParams {
 	return &SetAttributeValueParams{
 		NodeID: nodeID,
@@ -1359,8 +1399,9 @@ type SetAttributesAsTextParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-setAttributesAsText
 //
 // parameters:
-//   nodeID - Id of the element to set attributes for.
-//   text - Text with a number of attributes. Will parse this text using HTML parser.
+//
+//	nodeID - Id of the element to set attributes for.
+//	text - Text with a number of attributes. Will parse this text using HTML parser.
 func SetAttributesAsText(nodeID cdp.NodeID, text string) *SetAttributesAsTextParams {
 	return &SetAttributesAsTextParams{
 		NodeID: nodeID,
@@ -1393,7 +1434,8 @@ type SetFileInputFilesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-setFileInputFiles
 //
 // parameters:
-//   files - Array of file paths to set.
+//
+//	files - Array of file paths to set.
 func SetFileInputFiles(files []string) *SetFileInputFilesParams {
 	return &SetFileInputFilesParams{
 		Files: files,
@@ -1435,7 +1477,8 @@ type SetNodeStackTracesEnabledParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-setNodeStackTracesEnabled
 //
 // parameters:
-//   enable - Enable or disable.
+//
+//	enable - Enable or disable.
 func SetNodeStackTracesEnabled(enable bool) *SetNodeStackTracesEnabledParams {
 	return &SetNodeStackTracesEnabledParams{
 		Enable: enable,
@@ -1459,7 +1502,8 @@ type GetNodeStackTracesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-getNodeStackTraces
 //
 // parameters:
-//   nodeID - Id of the node to get stack traces for.
+//
+//	nodeID - Id of the node to get stack traces for.
 func GetNodeStackTraces(nodeID cdp.NodeID) *GetNodeStackTracesParams {
 	return &GetNodeStackTracesParams{
 		NodeID: nodeID,
@@ -1474,7 +1518,8 @@ type GetNodeStackTracesReturns struct {
 // Do executes DOM.getNodeStackTraces against the provided context.
 //
 // returns:
-//   creation - Creation stack trace, if available.
+//
+//	creation - Creation stack trace, if available.
 func (p *GetNodeStackTracesParams) Do(ctx context.Context) (creation *runtime.StackTrace, err error) {
 	// execute
 	var res GetNodeStackTracesReturns
@@ -1496,7 +1541,8 @@ type GetFileInfoParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-getFileInfo
 //
 // parameters:
-//   objectID - JavaScript object id of the node wrapper.
+//
+//	objectID - JavaScript object id of the node wrapper.
 func GetFileInfo(objectID runtime.RemoteObjectID) *GetFileInfoParams {
 	return &GetFileInfoParams{
 		ObjectID: objectID,
@@ -1511,7 +1557,8 @@ type GetFileInfoReturns struct {
 // Do executes DOM.getFileInfo against the provided context.
 //
 // returns:
-//   path
+//
+//	path
 func (p *GetFileInfoParams) Do(ctx context.Context) (path string, err error) {
 	// execute
 	var res GetFileInfoReturns
@@ -1535,7 +1582,8 @@ type SetInspectedNodeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-setInspectedNode
 //
 // parameters:
-//   nodeID - DOM node id to be accessible by means of $x command line API.
+//
+//	nodeID - DOM node id to be accessible by means of $x command line API.
 func SetInspectedNode(nodeID cdp.NodeID) *SetInspectedNodeParams {
 	return &SetInspectedNodeParams{
 		NodeID: nodeID,
@@ -1558,8 +1606,9 @@ type SetNodeNameParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-setNodeName
 //
 // parameters:
-//   nodeID - Id of the node to set name for.
-//   name - New node's name.
+//
+//	nodeID - Id of the node to set name for.
+//	name - New node's name.
 func SetNodeName(nodeID cdp.NodeID, name string) *SetNodeNameParams {
 	return &SetNodeNameParams{
 		NodeID: nodeID,
@@ -1575,7 +1624,8 @@ type SetNodeNameReturns struct {
 // Do executes DOM.setNodeName against the provided context.
 //
 // returns:
-//   nodeID - New node's id.
+//
+//	nodeID - New node's id.
 func (p *SetNodeNameParams) Do(ctx context.Context) (nodeID cdp.NodeID, err error) {
 	// execute
 	var res SetNodeNameReturns
@@ -1598,8 +1648,9 @@ type SetNodeValueParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-setNodeValue
 //
 // parameters:
-//   nodeID - Id of the node to set value for.
-//   value - New node's value.
+//
+//	nodeID - Id of the node to set value for.
+//	value - New node's value.
 func SetNodeValue(nodeID cdp.NodeID, value string) *SetNodeValueParams {
 	return &SetNodeValueParams{
 		NodeID: nodeID,
@@ -1623,8 +1674,9 @@ type SetOuterHTMLParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-setOuterHTML
 //
 // parameters:
-//   nodeID - Id of the node to set markup for.
-//   outerHTML - Outer HTML markup to set.
+//
+//	nodeID - Id of the node to set markup for.
+//	outerHTML - Outer HTML markup to set.
 func SetOuterHTML(nodeID cdp.NodeID, outerHTML string) *SetOuterHTMLParams {
 	return &SetOuterHTMLParams{
 		NodeID:    nodeID,
@@ -1663,7 +1715,8 @@ type GetFrameOwnerParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-getFrameOwner
 //
 // parameters:
-//   frameID
+//
+//	frameID
 func GetFrameOwner(frameID cdp.FrameID) *GetFrameOwnerParams {
 	return &GetFrameOwnerParams{
 		FrameID: frameID,
@@ -1679,8 +1732,9 @@ type GetFrameOwnerReturns struct {
 // Do executes DOM.getFrameOwner against the provided context.
 //
 // returns:
-//   backendNodeID - Resulting node.
-//   nodeID - Id of the node at given coordinates, only when enabled and requested document.
+//
+//	backendNodeID - Resulting node.
+//	nodeID - Id of the node at given coordinates, only when enabled and requested document.
 func (p *GetFrameOwnerParams) Do(ctx context.Context) (backendNodeID cdp.BackendNodeID, nodeID cdp.NodeID, err error) {
 	// execute
 	var res GetFrameOwnerReturns
@@ -1709,7 +1763,8 @@ type GetContainerForNodeParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-getContainerForNode
 //
 // parameters:
-//   nodeID
+//
+//	nodeID
 func GetContainerForNode(nodeID cdp.NodeID) *GetContainerForNodeParams {
 	return &GetContainerForNodeParams{
 		NodeID: nodeID,
@@ -1730,7 +1785,8 @@ type GetContainerForNodeReturns struct {
 // Do executes DOM.getContainerForNode against the provided context.
 //
 // returns:
-//   nodeID - The container node for the given node, or null if not found.
+//
+//	nodeID - The container node for the given node, or null if not found.
 func (p *GetContainerForNodeParams) Do(ctx context.Context) (nodeID cdp.NodeID, err error) {
 	// execute
 	var res GetContainerForNodeReturns
@@ -1754,7 +1810,8 @@ type GetQueryingDescendantsForContainerParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-getQueryingDescendantsForContainer
 //
 // parameters:
-//   nodeID - Id of the container node to find querying descendants from.
+//
+//	nodeID - Id of the container node to find querying descendants from.
 func GetQueryingDescendantsForContainer(nodeID cdp.NodeID) *GetQueryingDescendantsForContainerParams {
 	return &GetQueryingDescendantsForContainerParams{
 		NodeID: nodeID,
@@ -1769,7 +1826,8 @@ type GetQueryingDescendantsForContainerReturns struct {
 // Do executes DOM.getQueryingDescendantsForContainer against the provided context.
 //
 // returns:
-//   nodeIDs - Descendant nodes with container queries against the given container.
+//
+//	nodeIDs - Descendant nodes with container queries against the given container.
 func (p *GetQueryingDescendantsForContainerParams) Do(ctx context.Context) (nodeIDs []cdp.NodeID, err error) {
 	// execute
 	var res GetQueryingDescendantsForContainerReturns

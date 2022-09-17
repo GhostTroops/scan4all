@@ -14,6 +14,14 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/go-multierror"
+)
+
+const (
+	// 30 seconds was chosen as it's the
+	// same duration as http.DefaultTransport's timeout.
+	DefaultDialTimeout = 30 * time.Second
 )
 
 // EntryType describes the different types of an Entry.
@@ -26,18 +34,35 @@ const (
 	EntryTypeLink
 )
 
+// TransferType denotes the formats for transferring Entries.
+type TransferType string
+
+// The different transfer types
+const (
+	TransferTypeBinary = TransferType("I")
+	TransferTypeASCII  = TransferType("A")
+)
+
+// Time format used by the MDTM and MFMT commands
+const timeFormat = "20060102150405"
+
 // ServerConn represents the connection to a remote FTP server.
 // A single connection only supports one in-flight data connection.
 // It is not safe to be called concurrently.
 type ServerConn struct {
 	options *dialOptions
-	conn    *textproto.Conn
+	conn    *textproto.Conn // connection wrapper for text protocol
+	netConn net.Conn        // underlying network connection
 	host    string
 
 	// Server capabilities discovered at runtime
 	features      map[string]string
 	skipEPSV      bool
 	mlstSupported bool
+	mfmtSupported bool
+	mdtmSupported bool
+	mdtmCanWrite  bool
+	usePRET       bool
 }
 
 // DialOption represents an option to start a new connection with Dial
@@ -47,14 +72,19 @@ type DialOption struct {
 
 // dialOptions contains all the options set by DialOption.setup
 type dialOptions struct {
-	context     context.Context
-	dialer      net.Dialer
-	tlsConfig   *tls.Config
-	conn        net.Conn
-	disableEPSV bool
-	location    *time.Location
-	debugOutput io.Writer
-	dialFunc    func(network, address string) (net.Conn, error)
+	context         context.Context
+	dialer          net.Dialer
+	tlsConfig       *tls.Config
+	explicitTLS     bool
+	disableEPSV     bool
+	disableUTF8     bool
+	disableMLSD     bool
+	writingMDTM     bool
+	forceListHidden bool
+	location        *time.Location
+	debugOutput     io.Writer
+	dialFunc        func(network, address string) (net.Conn, error)
+	shutTimeout     time.Duration // time to wait for data connection closing status
 }
 
 // Entry describes a file and is returned by List().
@@ -73,7 +103,7 @@ type Response struct {
 	closed bool
 }
 
-// Dial connects to the specified address with optinal options
+// Dial connects to the specified address with optional options
 func Dial(addr string, options ...DialOption) (*ServerConn, error) {
 	do := &dialOptions{}
 	for _, option := range options {
@@ -84,59 +114,66 @@ func Dial(addr string, options ...DialOption) (*ServerConn, error) {
 		do.location = time.UTC
 	}
 
-	tconn := do.conn
-	if tconn == nil {
-		var err error
+	dialFunc := do.dialFunc
 
-		if do.dialFunc != nil {
-			tconn, err = do.dialFunc("tcp", addr)
-		} else if do.tlsConfig != nil {
-			tconn, err = tls.DialWithDialer(&do.dialer , "tcp", addr, do.tlsConfig)
-		} else {
-			ctx := do.context
+	if dialFunc == nil {
+		ctx := do.context
 
-			if ctx == nil {
-				ctx = context.Background()
+		if ctx == nil {
+			ctx = context.Background()
+		}
+		if _, ok := ctx.Deadline(); !ok {
+			var cancel context.CancelFunc
+			ctx, cancel = context.WithTimeout(ctx, DefaultDialTimeout)
+			defer cancel()
+		}
+
+		if do.tlsConfig != nil && !do.explicitTLS {
+			dialFunc = func(network, address string) (net.Conn, error) {
+				tlsDialer := &tls.Dialer{
+					NetDialer: &do.dialer,
+					Config:    do.tlsConfig,
+				}
+				return tlsDialer.DialContext(ctx, network, addr)
 			}
+		} else {
 
-			tconn, err = do.dialer.DialContext(ctx, "tcp", addr)
+			dialFunc = func(network, address string) (net.Conn, error) {
+				return do.dialer.DialContext(ctx, network, addr)
+			}
 		}
+	}
 
-		if err != nil {
-			return nil, err
-		}
+	tconn, err := dialFunc("tcp", addr)
+	if err != nil {
+		return nil, err
 	}
 
 	// Use the resolved IP address in case addr contains a domain name
 	// If we use the domain name, we might not resolve to the same IP.
 	remoteAddr := tconn.RemoteAddr().(*net.TCPAddr)
 
-	var sourceConn io.ReadWriteCloser = tconn
-	if do.debugOutput != nil {
-		sourceConn = newDebugWrapper(tconn, do.debugOutput)
-	}
-
 	c := &ServerConn{
 		options:  do,
 		features: make(map[string]string),
-		conn:     textproto.NewConn(sourceConn),
+		conn:     textproto.NewConn(do.wrapConn(tconn)),
+		netConn:  tconn,
 		host:     remoteAddr.IP.String(),
 	}
 
-	_, _, err := c.conn.ReadResponse(StatusReady)
+	_, _, err = c.conn.ReadResponse(StatusReady)
 	if err != nil {
-		c.Quit()
+		_ = c.Quit()
 		return nil, err
 	}
 
-	err = c.feat()
-	if err != nil {
-		c.Quit()
-		return nil, err
-	}
-
-	if _, mlstSupported := c.features["MLST"]; mlstSupported {
-		c.mlstSupported = true
+	if do.explicitTLS {
+		if err := c.authTLS(); err != nil {
+			_ = c.Quit()
+			return nil, err
+		}
+		tconn = tls.Client(tconn, do.tlsConfig)
+		c.conn = textproto.NewConn(do.wrapConn(tconn))
 	}
 
 	return c, nil
@@ -149,6 +186,15 @@ func DialWithTimeout(timeout time.Duration) DialOption {
 	}}
 }
 
+// DialWithShutTimeout returns a DialOption that configures the ServerConn with
+// maximum time to wait for the data closing status on control connection
+// and nudging the control connection deadline before reading status.
+func DialWithShutTimeout(shutTimeout time.Duration) DialOption {
+	return DialOption{func(do *dialOptions) {
+		do.shutTimeout = shutTimeout
+	}}
+}
+
 // DialWithDialer returns a DialOption that configures the ServerConn with specified net.Dialer
 func DialWithDialer(dialer net.Dialer) DialOption {
 	return DialOption{func(do *dialOptions) {
@@ -157,10 +203,12 @@ func DialWithDialer(dialer net.Dialer) DialOption {
 }
 
 // DialWithNetConn returns a DialOption that configures the ServerConn with the underlying net.Conn
+//
+// Deprecated: Use [DialWithDialFunc] instead
 func DialWithNetConn(conn net.Conn) DialOption {
-	return DialOption{func(do *dialOptions) {
-		do.conn = conn
-	}}
+	return DialWithDialFunc(func(network, address string) (net.Conn, error) {
+		return conn, nil
+	})
 }
 
 // DialWithDisabledEPSV returns a DialOption that configures the ServerConn with EPSV disabled
@@ -171,8 +219,47 @@ func DialWithDisabledEPSV(disabled bool) DialOption {
 	}}
 }
 
+// DialWithDisabledUTF8 returns a DialOption that configures the ServerConn with UTF8 option disabled
+func DialWithDisabledUTF8(disabled bool) DialOption {
+	return DialOption{func(do *dialOptions) {
+		do.disableUTF8 = disabled
+	}}
+}
+
+// DialWithDisabledMLSD returns a DialOption that configures the ServerConn with MLSD option disabled
+//
+// This is useful for servers which advertise MLSD (eg some versions
+// of Serv-U) but don't support it properly.
+func DialWithDisabledMLSD(disabled bool) DialOption {
+	return DialOption{func(do *dialOptions) {
+		do.disableMLSD = disabled
+	}}
+}
+
+// DialWithWritingMDTM returns a DialOption making ServerConn use MDTM to set file time
+//
+// This option addresses a quirk in the VsFtpd server which doesn't support
+// the MFMT command for setting file time like other servers but by default
+// uses the MDTM command with non-standard arguments for that.
+// See "mdtm_write" in https://security.appspot.com/vsftpd/vsftpd_conf.html
+func DialWithWritingMDTM(enabled bool) DialOption {
+	return DialOption{func(do *dialOptions) {
+		do.writingMDTM = enabled
+	}}
+}
+
+// DialWithForceListHidden returns a DialOption making ServerConn use LIST -a to include hidden files and folders in directory listings
+//
+// This is useful for servers that do not do this by default, but it forces the use of the LIST command
+// even if the server supports MLST.
+func DialWithForceListHidden(enabled bool) DialOption {
+	return DialOption{func(do *dialOptions) {
+		do.forceListHidden = enabled
+	}}
+}
+
 // DialWithLocation returns a DialOption that configures the ServerConn with specified time.Location
-// The lococation is used to parse the dates sent by the server which are in server's timezone
+// The location is used to parse the dates sent by the server which are in server's timezone
 func DialWithLocation(location *time.Location) DialOption {
 	return DialOption{func(do *dialOptions) {
 		do.location = location
@@ -188,12 +275,21 @@ func DialWithContext(ctx context.Context) DialOption {
 }
 
 // DialWithTLS returns a DialOption that configures the ServerConn with specified TLS config
-// 
+//
 // If called together with the DialWithDialFunc option, the DialWithDialFunc function
 // will be used when dialing new connections but regardless of the function,
 // the connection will be treated as a TLS connection.
 func DialWithTLS(tlsConfig *tls.Config) DialOption {
 	return DialOption{func(do *dialOptions) {
+		do.tlsConfig = tlsConfig
+	}}
+}
+
+// DialWithExplicitTLS returns a DialOption that configures the ServerConn to be upgraded to TLS
+// See DialWithTLS for general TLS documentation
+func DialWithExplicitTLS(tlsConfig *tls.Config) DialOption {
+	return DialOption{func(do *dialOptions) {
+		do.explicitTLS = true
 		do.tlsConfig = tlsConfig
 	}}
 }
@@ -218,15 +314,32 @@ func DialWithDialFunc(f func(network, address string) (net.Conn, error)) DialOpt
 	}}
 }
 
+func (o *dialOptions) wrapConn(netConn net.Conn) io.ReadWriteCloser {
+	if o.debugOutput == nil {
+		return netConn
+	}
+
+	return newDebugWrapper(netConn, o.debugOutput)
+}
+
+func (o *dialOptions) wrapStream(rd io.ReadCloser) io.ReadCloser {
+	if o.debugOutput == nil {
+		return rd
+	}
+
+	return newStreamDebugWrapper(rd, o.debugOutput)
+}
+
 // Connect is an alias to Dial, for backward compatibility
+//
+// Deprecated: Use [Dial] instead
 func Connect(addr string) (*ServerConn, error) {
 	return Dial(addr)
 }
 
 // DialTimeout initializes the connection to the specified ftp server address.
 //
-// It is generally followed by a call to Login() as most FTP commands require
-// an authenticated user.
+// Deprecated: Use [Dial] with [DialWithTimeout] option instead
 func DialTimeout(addr string, timeout time.Duration) (*ServerConn, error) {
 	return Dial(addr, DialWithTimeout(timeout))
 }
@@ -252,20 +365,46 @@ func (c *ServerConn) Login(user, password string) error {
 		return errors.New(message)
 	}
 
+	// Probe features
+	err = c.feat()
+	if err != nil {
+		return err
+	}
+	if _, mlstSupported := c.features["MLST"]; mlstSupported && !c.options.disableMLSD {
+		c.mlstSupported = true
+	}
+	_, c.usePRET = c.features["PRET"]
+
+	_, c.mfmtSupported = c.features["MFMT"]
+	_, c.mdtmSupported = c.features["MDTM"]
+	c.mdtmCanWrite = c.mdtmSupported && c.options.writingMDTM
+
 	// Switch to binary mode
-	if _, _, err = c.cmd(StatusCommandOK, "TYPE I"); err != nil {
+	if err = c.Type(TransferTypeBinary); err != nil {
 		return err
 	}
 
 	// Switch to UTF-8
-	err = c.setUTF8()
+	if !c.options.disableUTF8 {
+		err = c.setUTF8()
+	}
 
 	// If using implicit TLS, make data connections also use TLS
 	if c.options.tlsConfig != nil {
-		c.cmd(StatusCommandOK, "PBSZ 0")
-		c.cmd(StatusCommandOK, "PROT P")
+		if _, _, err = c.cmd(StatusCommandOK, "PBSZ 0"); err != nil {
+			return err
+		}
+		if _, _, err = c.cmd(StatusCommandOK, "PROT P"); err != nil {
+			return err
+		}
 	}
 
+	return err
+}
+
+// authTLS upgrades the connection to use TLS
+func (c *ServerConn) authTLS() error {
+	_, _, err := c.cmd(StatusAuthOK, "AUTH TLS")
 	return err
 }
 
@@ -318,7 +457,7 @@ func (c *ServerConn) setUTF8() error {
 	}
 
 	// Workaround for FTP servers, that does not support this option.
-	if code == StatusBadArguments {
+	if code == StatusBadArguments || code == StatusNotImplementedParameter {
 		return nil
 	}
 
@@ -340,53 +479,48 @@ func (c *ServerConn) setUTF8() error {
 func (c *ServerConn) epsv() (port int, err error) {
 	_, line, err := c.cmd(StatusExtendedPassiveMode, "EPSV")
 	if err != nil {
-		return
+		return 0, err
 	}
 
 	start := strings.Index(line, "|||")
 	end := strings.LastIndex(line, "|")
 	if start == -1 || end == -1 {
-		err = errors.New("invalid EPSV response format")
-		return
+		return 0, errors.New("invalid EPSV response format")
 	}
 	port, err = strconv.Atoi(line[start+3 : end])
-	return
+	return port, err
 }
 
 // pasv issues a "PASV" command to get a port number for a data connection.
 func (c *ServerConn) pasv() (host string, port int, err error) {
 	_, line, err := c.cmd(StatusPassiveMode, "PASV")
 	if err != nil {
-		return
+		return "", 0, err
 	}
 
 	// PASV response format : 227 Entering Passive Mode (h1,h2,h3,h4,p1,p2).
 	start := strings.Index(line, "(")
 	end := strings.LastIndex(line, ")")
 	if start == -1 || end == -1 {
-		err = errors.New("invalid PASV response format")
-		return
+		return "", 0, errors.New("invalid PASV response format")
 	}
 
 	// We have to split the response string
 	pasvData := strings.Split(line[start+1:end], ",")
 
 	if len(pasvData) < 6 {
-		err = errors.New("invalid PASV response format")
-		return
+		return "", 0, errors.New("invalid PASV response format")
 	}
 
 	// Let's compute the port number
-	portPart1, err1 := strconv.Atoi(pasvData[4])
-	if err1 != nil {
-		err = err1
-		return
+	portPart1, err := strconv.Atoi(pasvData[4])
+	if err != nil {
+		return "", 0, err
 	}
 
-	portPart2, err2 := strconv.Atoi(pasvData[5])
-	if err2 != nil {
-		err = err2
-		return
+	portPart2, err := strconv.Atoi(pasvData[5])
+	if err != nil {
+		return "", 0, err
 	}
 
 	// Recompose port
@@ -394,7 +528,7 @@ func (c *ServerConn) pasv() (host string, port int, err error) {
 
 	// Make the IP address to connect to
 	host = strings.Join(pasvData[0:4], ".")
-	return
+	return host, port, nil
 }
 
 // getDataConnPort returns a host, port for a new data connection
@@ -425,11 +559,7 @@ func (c *ServerConn) openDataConn() (net.Conn, error) {
 	}
 
 	if c.options.tlsConfig != nil {
-		conn, err := c.options.dialer.Dial("tcp", addr)
-		if err != nil {
-			return nil, err
-		}
-		return tls.Client(conn, c.options.tlsConfig), err
+		return tls.DialWithDialer(&c.options.dialer, "tcp", addr, c.options.tlsConfig)
 	}
 
 	return c.options.dialer.Dial("tcp", addr)
@@ -449,56 +579,81 @@ func (c *ServerConn) cmd(expected int, format string, args ...interface{}) (int,
 // cmdDataConnFrom executes a command which require a FTP data connection.
 // Issues a REST FTP command to specify the number of bytes to skip for the transfer.
 func (c *ServerConn) cmdDataConnFrom(offset uint64, format string, args ...interface{}) (net.Conn, error) {
+	// If server requires PRET send the PRET command to warm it up
+	// See: https://tools.ietf.org/html/draft-dd-pret-00
+	if c.usePRET {
+		_, _, err := c.cmd(-1, "PRET "+format, args...)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	conn, err := c.openDataConn()
 	if err != nil {
 		return nil, err
 	}
 
 	if offset != 0 {
-		_, _, err := c.cmd(StatusRequestFilePending, "REST %d", offset)
+		_, _, err = c.cmd(StatusRequestFilePending, "REST %d", offset)
 		if err != nil {
-			conn.Close()
+			_ = conn.Close()
 			return nil, err
 		}
 	}
 
 	_, err = c.conn.Cmd(format, args...)
 	if err != nil {
-		conn.Close()
+		_ = conn.Close()
 		return nil, err
 	}
 
 	code, msg, err := c.conn.ReadResponse(-1)
 	if err != nil {
-		conn.Close()
+		_ = conn.Close()
 		return nil, err
 	}
 	if code != StatusAlreadyOpen && code != StatusAboutToSend {
-		conn.Close()
+		_ = conn.Close()
 		return nil, &textproto.Error{Code: code, Msg: msg}
 	}
 
 	return conn, nil
 }
 
+// Type switches the transfer mode for the connection.
+func (c *ServerConn) Type(transferType TransferType) (err error) {
+	_, _, err = c.cmd(StatusCommandOK, "TYPE "+string(transferType))
+	return err
+}
+
 // NameList issues an NLST FTP command.
 func (c *ServerConn) NameList(path string) (entries []string, err error) {
-	conn, err := c.cmdDataConnFrom(0, "NLST %s", path)
+	space := " "
+	if path == "" {
+		space = ""
+	}
+	conn, err := c.cmdDataConnFrom(0, "NLST%s%s", space, path)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	r := &Response{conn: conn, c: c}
-	defer r.Close()
+	var errs *multierror.Error
 
-	scanner := bufio.NewScanner(r)
+	r := &Response{conn: conn, c: c}
+
+	scanner := bufio.NewScanner(c.options.wrapStream(r))
 	for scanner.Scan() {
 		entries = append(entries, scanner.Text())
 	}
-	if err = scanner.Err(); err != nil {
-		return entries, err
+
+	if err := scanner.Err(); err != nil {
+		errs = multierror.Append(errs, err)
 	}
-	return
+	if err := r.Close(); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	return entries, errs.ErrorOrNil()
 }
 
 // List issues a LIST FTP command.
@@ -506,34 +661,105 @@ func (c *ServerConn) List(path string) (entries []*Entry, err error) {
 	var cmd string
 	var parser parseFunc
 
-	if c.mlstSupported {
+	if c.mlstSupported && !c.options.forceListHidden {
 		cmd = "MLSD"
 		parser = parseRFC3659ListLine
 	} else {
 		cmd = "LIST"
+		if c.options.forceListHidden {
+			cmd += " -a"
+		}
 		parser = parseListLine
 	}
 
-	conn, err := c.cmdDataConnFrom(0, "%s %s", cmd, path)
+	space := " "
+	if path == "" {
+		space = ""
+	}
+	conn, err := c.cmdDataConnFrom(0, "%s%s%s", cmd, space, path)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	r := &Response{conn: conn, c: c}
-	defer r.Close()
+	var errs *multierror.Error
 
-	scanner := bufio.NewScanner(r)
+	r := &Response{conn: conn, c: c}
+
+	scanner := bufio.NewScanner(c.options.wrapStream(r))
 	now := time.Now()
 	for scanner.Scan() {
-		entry, err := parser(scanner.Text(), now, c.options.location)
-		if err == nil {
+		entry, errParse := parser(scanner.Text(), now, c.options.location)
+		if errParse == nil {
 			entries = append(entries, entry)
 		}
 	}
+
 	if err := scanner.Err(); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+	if err := r.Close(); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	return entries, errs.ErrorOrNil()
+}
+
+// GetEntry issues a MLST FTP command which retrieves one single Entry using the
+// control connection. The returnedEntry will describe the current directory
+// when no path is given.
+func (c *ServerConn) GetEntry(path string) (entry *Entry, err error) {
+	if !c.mlstSupported {
+		return nil, &textproto.Error{Code: StatusNotImplemented, Msg: StatusText(StatusNotImplemented)}
+	}
+	space := " "
+	if path == "" {
+		space = ""
+	}
+	_, msg, err := c.cmd(StatusRequestedFileActionOK, "%s%s%s", "MLST", space, path)
+	if err != nil {
 		return nil, err
 	}
-	return
+
+	// The expected reply will look something like:
+	//
+	//    250-File details
+	//     Type=file;Size=1024;Modify=20220813133357; path
+	//    250 End
+	//
+	// Multiple lines are allowed though, so it can also be in the form:
+	//
+	//    250-File details
+	//     Type=file;Size=1024; path
+	//     Modify=20220813133357; path
+	//    250 End
+	lines := strings.Split(msg, "\n")
+	lc := len(lines)
+
+	// lines must be a multi-line message with a length of 3 or more, and we
+	// don't care about the first and last line
+	if lc < 3 {
+		return nil, errors.New("invalid response")
+	}
+
+	e := &Entry{}
+	for _, l := range lines[1 : lc-1] {
+		// According to RFC 3659, the entry lines must start with a space when passed over the
+		// control connection. Some servers don't seem to add that space though. Both forms are
+		// accepted here.
+		if len(l) > 0 && l[0] == ' ' {
+			l = l[1:]
+		}
+		if e, err = parseNextRFC3659ListLine(l, c.options.location, e); err != nil {
+			return nil, err
+		}
+	}
+	return e, nil
+}
+
+// IsTimePreciseInList returns true if client and server support the MLSD
+// command so List can return time with 1-second precision for all files.
+func (c *ServerConn) IsTimePreciseInList() bool {
+	return c.mlstSupported
 }
 
 // ChangeDir issues a CWD FTP command, which changes the current directory to
@@ -579,6 +805,49 @@ func (c *ServerConn) FileSize(path string) (int64, error) {
 	return strconv.ParseInt(msg, 10, 64)
 }
 
+// GetTime issues the MDTM FTP command to obtain the file modification time.
+// It returns a UTC time.
+func (c *ServerConn) GetTime(path string) (time.Time, error) {
+	var t time.Time
+	if !c.mdtmSupported {
+		return t, errors.New("GetTime is not supported")
+	}
+	_, msg, err := c.cmd(StatusFile, "MDTM %s", path)
+	if err != nil {
+		return t, err
+	}
+	return time.ParseInLocation(timeFormat, msg, time.UTC)
+}
+
+// IsGetTimeSupported allows library callers to check in advance that they
+// can use GetTime to get file time.
+func (c *ServerConn) IsGetTimeSupported() bool {
+	return c.mdtmSupported
+}
+
+// SetTime issues the MFMT FTP command to set the file modification time.
+// Also it can use a non-standard form of the MDTM command supported by
+// the VsFtpd server instead of MFMT for the same purpose.
+// See "mdtm_write" in https://security.appspot.com/vsftpd/vsftpd_conf.html
+func (c *ServerConn) SetTime(path string, t time.Time) (err error) {
+	utime := t.In(time.UTC).Format(timeFormat)
+	switch {
+	case c.mfmtSupported:
+		_, _, err = c.cmd(StatusFile, "MFMT %s %s", utime, path)
+	case c.mdtmCanWrite:
+		_, _, err = c.cmd(StatusFile, "MDTM %s %s", utime, path)
+	default:
+		err = errors.New("SetTime is not supported")
+	}
+	return
+}
+
+// IsSetTimeSupported allows library callers to check in advance that they
+// can use SetTime to set file time.
+func (c *ServerConn) IsSetTimeSupported() bool {
+	return c.mfmtSupported || c.mdtmCanWrite
+}
+
 // Retr issues a RETR FTP command to fetch the specified file from the remote
 // FTP server.
 //
@@ -608,6 +877,24 @@ func (c *ServerConn) Stor(path string, r io.Reader) error {
 	return c.StorFrom(path, r, 0)
 }
 
+// checkDataShut reads the "closing data connection" status from the
+// control connection. It is called after transferring a piece of data
+// on the data connection during which the control connection was idle.
+// This may result in the idle timeout triggering on the control connection
+// right when we try to read the response.
+// The ShutTimeout dial option will rescue here. It will nudge the control
+// connection deadline right before checking the data closing status.
+func (c *ServerConn) checkDataShut() error {
+	if c.options.shutTimeout != 0 {
+		shutDeadline := time.Now().Add(c.options.shutTimeout)
+		if err := c.netConn.SetDeadline(shutDeadline); err != nil {
+			return err
+		}
+	}
+	_, _, err := c.conn.ReadResponse(StatusClosingDataConnection)
+	return err
+}
+
 // StorFrom issues a STOR FTP command to store a file to the remote FTP server.
 // Stor creates the specified file with the content of the io.Reader, writing
 // on the server will start at the given file offset.
@@ -619,14 +906,53 @@ func (c *ServerConn) StorFrom(path string, r io.Reader, offset uint64) error {
 		return err
 	}
 
-	_, err = io.Copy(conn, r)
-	conn.Close()
+	var errs *multierror.Error
+
+	// if the upload fails we still need to try to read the server
+	// response otherwise if the failure is not due to a connection problem,
+	// for example the server denied the upload for quota limits, we miss
+	// the response and we cannot use the connection to send other commands.
+	if _, err := io.Copy(conn, r); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	if err := conn.Close(); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	if err := c.checkDataShut(); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	return errs.ErrorOrNil()
+}
+
+// Append issues a APPE FTP command to store a file to the remote FTP server.
+// If a file already exists with the given path, then the content of the
+// io.Reader is appended. Otherwise, a new file is created with that content.
+//
+// Hint: io.Pipe() can be used if an io.Writer is required.
+func (c *ServerConn) Append(path string, r io.Reader) error {
+	conn, err := c.cmdDataConnFrom(0, "APPE %s", path)
 	if err != nil {
 		return err
 	}
 
-	_, _, err = c.conn.ReadResponse(StatusClosingDataConnection)
-	return err
+	var errs *multierror.Error
+
+	if _, err := io.Copy(conn, r); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	if err := conn.Close(); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	if err := c.checkDataShut(); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	return errs.ErrorOrNil()
 }
 
 // Rename renames a file on the remote FTP server.
@@ -701,6 +1027,21 @@ func (c *ServerConn) RemoveDir(path string) error {
 	return err
 }
 
+// Walk prepares the internal walk function so that the caller can begin traversing the directory
+func (c *ServerConn) Walk(root string) *Walker {
+	w := new(Walker)
+	w.serverConn = c
+
+	if !strings.HasSuffix(root, "/") {
+		root += "/"
+	}
+
+	w.root = root
+	w.descend = true
+
+	return w
+}
+
 // NoOp issues a NOOP FTP command.
 // NOOP has no effects and is usually used to prevent the remote FTP server to
 // close the otherwise idle connection.
@@ -718,8 +1059,17 @@ func (c *ServerConn) Logout() error {
 // Quit issues a QUIT FTP command to properly close the connection from the
 // remote FTP server.
 func (c *ServerConn) Quit() error {
-	c.conn.Cmd("QUIT")
-	return c.conn.Close()
+	var errs *multierror.Error
+
+	if _, err := c.conn.Cmd("QUIT"); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	if err := c.conn.Close(); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
+	return errs.ErrorOrNil()
 }
 
 // Read implements the io.Reader interface on a FTP data connection.
@@ -733,16 +1083,27 @@ func (r *Response) Close() error {
 	if r.closed {
 		return nil
 	}
-	err := r.conn.Close()
-	_, _, err2 := r.c.conn.ReadResponse(StatusClosingDataConnection)
-	if err2 != nil {
-		err = err2
+
+	var errs *multierror.Error
+
+	if err := r.conn.Close(); err != nil {
+		errs = multierror.Append(errs, err)
 	}
+
+	if err := r.c.checkDataShut(); err != nil {
+		errs = multierror.Append(errs, err)
+	}
+
 	r.closed = true
-	return err
+	return errs.ErrorOrNil()
 }
 
 // SetDeadline sets the deadlines associated with the connection.
 func (r *Response) SetDeadline(t time.Time) error {
 	return r.conn.SetDeadline(t)
+}
+
+// String returns the string representation of EntryType t.
+func (t EntryType) String() string {
+	return [...]string{"file", "folder", "link"}[t]
 }

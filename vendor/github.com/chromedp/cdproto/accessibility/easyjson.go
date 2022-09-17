@@ -788,6 +788,16 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoAccessibility6(in *jlexer.Lex
 				}
 				(*out.Role).UnmarshalEasyJSON(in)
 			}
+		case "chromeRole":
+			if in.IsNull() {
+				in.Skip()
+				out.ChromeRole = nil
+			} else {
+				if out.ChromeRole == nil {
+					out.ChromeRole = new(Value)
+				}
+				(*out.ChromeRole).UnmarshalEasyJSON(in)
+			}
 		case "name":
 			if in.IsNull() {
 				in.Skip()
@@ -924,6 +934,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoAccessibility6(out *jwriter.W
 		const prefix string = ",\"role\":"
 		out.RawString(prefix)
 		(*in.Role).MarshalEasyJSON(out)
+	}
+	if in.ChromeRole != nil {
+		const prefix string = ",\"chromeRole\":"
+		out.RawString(prefix)
+		(*in.ChromeRole).MarshalEasyJSON(out)
 	}
 	if in.Name != nil {
 		const prefix string = ",\"name\":"

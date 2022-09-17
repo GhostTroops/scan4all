@@ -83,8 +83,9 @@ type FailRequestParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-failRequest
 //
 // parameters:
-//   requestID - An id the client received in requestPaused event.
-//   errorReason - Causes the request to fail with the given reason.
+//
+//	requestID - An id the client received in requestPaused event.
+//	errorReason - Causes the request to fail with the given reason.
 func FailRequest(requestID RequestID, errorReason network.ErrorReason) *FailRequestParams {
 	return &FailRequestParams{
 		RequestID:   requestID,
@@ -112,8 +113,9 @@ type FulfillRequestParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-fulfillRequest
 //
 // parameters:
-//   requestID - An id the client received in requestPaused event.
-//   responseCode - An HTTP response code.
+//
+//	requestID - An id the client received in requestPaused event.
+//	responseCode - An HTTP response code.
 func FulfillRequest(requestID RequestID, responseCode int64) *FulfillRequestParams {
 	return &FulfillRequestParams{
 		RequestID:    requestID,
@@ -173,7 +175,8 @@ type ContinueRequestParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-continueRequest
 //
 // parameters:
-//   requestID - An id the client received in requestPaused event.
+//
+//	requestID - An id the client received in requestPaused event.
 func ContinueRequest(requestID RequestID) *ContinueRequestParams {
 	return &ContinueRequestParams{
 		RequestID: requestID,
@@ -230,8 +233,9 @@ type ContinueWithAuthParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-continueWithAuth
 //
 // parameters:
-//   requestID - An id the client received in authRequired event.
-//   authChallengeResponse - Response to  with an authChallenge.
+//
+//	requestID - An id the client received in authRequired event.
+//	authChallengeResponse - Response to  with an authChallenge.
 func ContinueWithAuth(requestID RequestID, authChallengeResponse *AuthChallengeResponse) *ContinueWithAuthParams {
 	return &ContinueWithAuthParams{
 		RequestID:             requestID,
@@ -262,7 +266,8 @@ type ContinueResponseParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-continueResponse
 //
 // parameters:
-//   requestID - An id the client received in requestPaused event.
+//
+//	requestID - An id the client received in requestPaused event.
 func ContinueResponse(requestID RequestID) *ContinueResponseParams {
 	return &ContinueResponseParams{
 		RequestID: requestID,
@@ -324,7 +329,8 @@ type GetResponseBodyParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-getResponseBody
 //
 // parameters:
-//   requestID - Identifier for the intercepted request to get body for.
+//
+//	requestID - Identifier for the intercepted request to get body for.
 func GetResponseBody(requestID RequestID) *GetResponseBodyParams {
 	return &GetResponseBodyParams{
 		RequestID: requestID,
@@ -340,7 +346,8 @@ type GetResponseBodyReturns struct {
 // Do executes Fetch.getResponseBody against the provided context.
 //
 // returns:
-//   body - Response body.
+//
+//	body - Response body.
 func (p *GetResponseBodyParams) Do(ctx context.Context) (body []byte, err error) {
 	// execute
 	var res GetResponseBodyReturns
@@ -386,7 +393,8 @@ type TakeResponseBodyAsStreamParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-takeResponseBodyAsStream
 //
 // parameters:
-//   requestID
+//
+//	requestID
 func TakeResponseBodyAsStream(requestID RequestID) *TakeResponseBodyAsStreamParams {
 	return &TakeResponseBodyAsStreamParams{
 		RequestID: requestID,
@@ -401,7 +409,8 @@ type TakeResponseBodyAsStreamReturns struct {
 // Do executes Fetch.takeResponseBodyAsStream against the provided context.
 //
 // returns:
-//   stream
+//
+//	stream
 func (p *TakeResponseBodyAsStreamParams) Do(ctx context.Context) (stream io.StreamHandle, err error) {
 	// execute
 	var res TakeResponseBodyAsStreamReturns

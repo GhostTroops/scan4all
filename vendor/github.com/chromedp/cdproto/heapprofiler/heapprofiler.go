@@ -25,7 +25,8 @@ type AddInspectedHeapObjectParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/HeapProfiler#method-addInspectedHeapObject
 //
 // parameters:
-//   heapObjectID - Heap snapshot object id to be accessible by means of $x command line API.
+//
+//	heapObjectID - Heap snapshot object id to be accessible by means of $x command line API.
 func AddInspectedHeapObject(heapObjectID HeapSnapshotObjectID) *AddInspectedHeapObjectParams {
 	return &AddInspectedHeapObjectParams{
 		HeapObjectID: heapObjectID,
@@ -92,7 +93,8 @@ type GetHeapObjectIDParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/HeapProfiler#method-getHeapObjectId
 //
 // parameters:
-//   objectID - Identifier of the object to get heap object id for.
+//
+//	objectID - Identifier of the object to get heap object id for.
 func GetHeapObjectID(objectID runtime.RemoteObjectID) *GetHeapObjectIDParams {
 	return &GetHeapObjectIDParams{
 		ObjectID: objectID,
@@ -107,7 +109,8 @@ type GetHeapObjectIDReturns struct {
 // Do executes HeapProfiler.getHeapObjectId against the provided context.
 //
 // returns:
-//   heapSnapshotObjectID - Id of the heap snapshot object corresponding to the passed remote object id.
+//
+//	heapSnapshotObjectID - Id of the heap snapshot object corresponding to the passed remote object id.
 func (p *GetHeapObjectIDParams) Do(ctx context.Context) (heapSnapshotObjectID HeapSnapshotObjectID, err error) {
 	// execute
 	var res GetHeapObjectIDReturns
@@ -130,7 +133,8 @@ type GetObjectByHeapObjectIDParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/HeapProfiler#method-getObjectByHeapObjectId
 //
 // parameters:
-//   objectID
+//
+//	objectID
 func GetObjectByHeapObjectID(objectID HeapSnapshotObjectID) *GetObjectByHeapObjectIDParams {
 	return &GetObjectByHeapObjectIDParams{
 		ObjectID: objectID,
@@ -152,7 +156,8 @@ type GetObjectByHeapObjectIDReturns struct {
 // Do executes HeapProfiler.getObjectByHeapObjectId against the provided context.
 //
 // returns:
-//   result - Evaluation result.
+//
+//	result - Evaluation result.
 func (p *GetObjectByHeapObjectIDParams) Do(ctx context.Context) (result *runtime.RemoteObject, err error) {
 	// execute
 	var res GetObjectByHeapObjectIDReturns
@@ -182,7 +187,8 @@ type GetSamplingProfileReturns struct {
 // Do executes HeapProfiler.getSamplingProfile against the provided context.
 //
 // returns:
-//   profile - Return the sampling profile being collected.
+//
+//	profile - Return the sampling profile being collected.
 func (p *GetSamplingProfileParams) Do(ctx context.Context) (profile *SamplingHeapProfile, err error) {
 	// execute
 	var res GetSamplingProfileReturns
@@ -263,7 +269,8 @@ type StopSamplingReturns struct {
 // Do executes HeapProfiler.stopSampling against the provided context.
 //
 // returns:
-//   profile - Recorded sampling heap profile.
+//
+//	profile - Recorded sampling heap profile.
 func (p *StopSamplingParams) Do(ctx context.Context) (profile *SamplingHeapProfile, err error) {
 	// execute
 	var res StopSamplingReturns

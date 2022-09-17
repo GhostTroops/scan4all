@@ -98,12 +98,12 @@ func stapleOCSP(ctx context.Context, ocspConfig OCSPConfig, storage Storage, cer
 		gotNewOCSP = true
 	}
 
-	if ocspResp.NextUpdate.After(cert.Leaf.NotAfter) {
+	if ocspResp.NextUpdate.After(expiresAt(cert.Leaf)) {
 		// uh oh, this OCSP response expires AFTER the certificate does, that's kinda bogus.
 		// it was the reason a lot of Symantec-validated sites (not Caddy) went down
 		// in October 2017. https://twitter.com/mattiasgeniar/status/919432824708648961
 		return fmt.Errorf("invalid: OCSP response for %v valid after certificate expiration (%s)",
-			cert.Names, cert.Leaf.NotAfter.Sub(ocspResp.NextUpdate))
+			cert.Names, expiresAt(cert.Leaf).Sub(ocspResp.NextUpdate))
 	}
 
 	// Attach the latest OCSP response to the certificate; this is NOT the same

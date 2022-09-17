@@ -6024,6 +6024,8 @@ func easyjsonC5a4559bDecodeGithubComChromedpCdprotoPage68(in *jlexer.Lexer, out 
 			out.PrerenderingURL = string(in.String())
 		case "finalStatus":
 			(out.FinalStatus).UnmarshalEasyJSON(in)
+		case "disallowedApiMethod":
+			out.DisallowedAPIMethod = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -6052,6 +6054,11 @@ func easyjsonC5a4559bEncodeGithubComChromedpCdprotoPage68(out *jwriter.Writer, i
 		const prefix string = ",\"finalStatus\":"
 		out.RawString(prefix)
 		(in.FinalStatus).MarshalEasyJSON(out)
+	}
+	if in.DisallowedAPIMethod != "" {
+		const prefix string = ",\"disallowedApiMethod\":"
+		out.RawString(prefix)
+		out.String(string(in.DisallowedAPIMethod))
 	}
 	out.RawByte('}')
 }

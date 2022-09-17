@@ -83,8 +83,9 @@ type BeginFrameReturns struct {
 // Do executes HeadlessExperimental.beginFrame against the provided context.
 //
 // returns:
-//   hasDamage - Whether the BeginFrame resulted in damage and, thus, a new frame was committed to the display. Reported for diagnostic uses, may be removed in the future.
-//   screenshotData - Base64-encoded image data of the screenshot, if one was requested and successfully taken.
+//
+//	hasDamage - Whether the BeginFrame resulted in damage and, thus, a new frame was committed to the display. Reported for diagnostic uses, may be removed in the future.
+//	screenshotData - Base64-encoded image data of the screenshot, if one was requested and successfully taken.
 func (p *BeginFrameParams) Do(ctx context.Context) (hasDamage bool, screenshotData []byte, err error) {
 	// execute
 	var res BeginFrameReturns

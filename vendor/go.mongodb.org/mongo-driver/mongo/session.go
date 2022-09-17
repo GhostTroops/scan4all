@@ -29,8 +29,9 @@ var ErrWrongClient = errors.New("session was not created by this client")
 var withTransactionTimeout = 120 * time.Second
 
 // SessionContext combines the context.Context and mongo.Session interfaces. It should be used as the Context arguments
-// to operations that should be executed in a session. This type is not goroutine safe and must not be used concurrently
-// by multiple goroutines.
+// to operations that should be executed in a session.
+//
+// Implementations of SessionContext are not safe for concurrent use by multiple goroutines.
 //
 // There are two ways to create a SessionContext and use it in a session/transaction. The first is to use one of the
 // callback-based functions such as WithSession and UseSession. These functions create a SessionContext and pass it to
@@ -77,9 +78,12 @@ func SessionFromContext(ctx context.Context) Session {
 // for a group of operations or to execute operations in an ACID transaction. A new Session can be created from a Client
 // instance. A Session created from a Client must only be used to execute operations using that Client or a Database or
 // Collection created from that Client. Custom implementations of this interface should not be used in production. For
-// more information about sessions, and their use cases, see https://docs.mongodb.com/manual/reference/server-sessions/,
-// https://docs.mongodb.com/manual/core/read-isolation-consistency-recency/#causal-consistency, and
-// https://docs.mongodb.com/manual/core/transactions/.
+// more information about sessions, and their use cases, see
+// https://www.mongodb.com/docs/manual/reference/server-sessions/,
+// https://www.mongodb.com/docs/manual/core/read-isolation-consistency-recency/#causal-consistency, and
+// https://www.mongodb.com/docs/manual/core/transactions/.
+//
+// Implementations of Session are not safe for concurrent use by multiple goroutines.
 //
 // StartTransaction starts a new transaction, configured with the given options, on this session. This method will
 // return an error if there is already a transaction in-progress for this session.
@@ -196,10 +200,6 @@ func (s *sessionImpl) WithTransaction(ctx context.Context, fn func(sessCtx Sessi
 			default:
 			}
 
-			// End if context has timed out or been canceled, as retrying has no chance of success.
-			if ctx.Err() != nil {
-				return res, err
-			}
 			if errorHasLabel(err, driver.TransientTransactionError) {
 				continue
 			}
@@ -214,10 +214,9 @@ func (s *sessionImpl) WithTransaction(ctx context.Context, fn func(sessCtx Sessi
 	CommitLoop:
 		for {
 			err = s.CommitTransaction(ctx)
-			// End when error is nil (transaction has been committed), or when context has timed out or been
-			// canceled, as retrying has no chance of success.
-			if err == nil || ctx.Err() != nil {
-				return res, err
+			// End when error is nil, as transaction has been committed.
+			if err == nil {
+				return res, nil
 			}
 
 			select {

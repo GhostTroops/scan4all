@@ -3,10 +3,15 @@
 <br/>
 <a href="https://pkg.go.dev/github.com/simonnilsson/ask"><img src="https://pkg.go.dev/badge/github.com/simonnilsson/ask" alt="PkgGoDev" /></a>
 <a href="https://goreportcard.com/report/github.com/simonnilsson/ask"><img src="https://goreportcard.com/badge/github.com/simonnilsson/ask" alt="Go Report Card" /></a>
+<a href="https://gocover.io/github.com/simonnilsson/ask"><img src="http://gocover.io/_badge/github.com/simonnilsson/ask" alt="GoCover.io" /></a>
+<a href="https://github.com/avelino/awesome-go#json"><img src="https://awesome.re/mentioned-badge.svg" alt="Mentioned in Awesome Go" /></a>  
 <br/>
 and you shall receive.
 </p>
 Ask provides a simple way of accessing nested properties in maps and slices. Works great in combination with encoding/json and other packages that "Unmarshal" arbitrary data into Go data-types. Inspired by the get function in the lodash javascript library.
+
+
+:warning: From version `v0.3.0`, the package requires [Go 1.17+](https://golang.org/doc/install), due to the usage of new additions to the reflect package.
 
 ## Use
 

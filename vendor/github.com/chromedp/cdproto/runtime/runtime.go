@@ -31,7 +31,8 @@ type AwaitPromiseParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-awaitPromise
 //
 // parameters:
-//   promiseObjectID - Identifier of the promise.
+//
+//	promiseObjectID - Identifier of the promise.
 func AwaitPromise(promiseObjectID RemoteObjectID) *AwaitPromiseParams {
 	return &AwaitPromiseParams{
 		PromiseObjectID: promiseObjectID,
@@ -60,8 +61,9 @@ type AwaitPromiseReturns struct {
 // Do executes Runtime.awaitPromise against the provided context.
 //
 // returns:
-//   result - Promise result. Will contain rejected value if promise was rejected.
-//   exceptionDetails - Exception details if stack strace is available.
+//
+//	result - Promise result. Will contain rejected value if promise was rejected.
+//	exceptionDetails - Exception details if stack strace is available.
 func (p *AwaitPromiseParams) Do(ctx context.Context) (result *RemoteObject, exceptionDetails *ExceptionDetails, err error) {
 	// execute
 	var res AwaitPromiseReturns
@@ -96,7 +98,8 @@ type CallFunctionOnParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-callFunctionOn
 //
 // parameters:
-//   functionDeclaration - Declaration of the function to call.
+//
+//	functionDeclaration - Declaration of the function to call.
 func CallFunctionOn(functionDeclaration string) *CallFunctionOnParams {
 	return &CallFunctionOnParams{
 		FunctionDeclaration: functionDeclaration,
@@ -192,8 +195,9 @@ type CallFunctionOnReturns struct {
 // Do executes Runtime.callFunctionOn against the provided context.
 //
 // returns:
-//   result - Call result.
-//   exceptionDetails - Exception details.
+//
+//	result - Call result.
+//	exceptionDetails - Exception details.
 func (p *CallFunctionOnParams) Do(ctx context.Context) (result *RemoteObject, exceptionDetails *ExceptionDetails, err error) {
 	// execute
 	var res CallFunctionOnReturns
@@ -218,9 +222,10 @@ type CompileScriptParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-compileScript
 //
 // parameters:
-//   expression - Expression to compile.
-//   sourceURL - Source url to be set for the script.
-//   persistScript - Specifies whether the compiled script should be persisted.
+//
+//	expression - Expression to compile.
+//	sourceURL - Source url to be set for the script.
+//	persistScript - Specifies whether the compiled script should be persisted.
 func CompileScript(expression string, sourceURL string, persistScript bool) *CompileScriptParams {
 	return &CompileScriptParams{
 		Expression:    expression,
@@ -246,8 +251,9 @@ type CompileScriptReturns struct {
 // Do executes Runtime.compileScript against the provided context.
 //
 // returns:
-//   scriptID - Id of the script.
-//   exceptionDetails - Exception details.
+//
+//	scriptID - Id of the script.
+//	exceptionDetails - Exception details.
 func (p *CompileScriptParams) Do(ctx context.Context) (scriptID ScriptID, exceptionDetails *ExceptionDetails, err error) {
 	// execute
 	var res CompileScriptReturns
@@ -334,7 +340,8 @@ type EvaluateParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-evaluate
 //
 // parameters:
-//   expression - Expression to evaluate.
+//
+//	expression - Expression to evaluate.
 func Evaluate(expression string) *EvaluateParams {
 	return &EvaluateParams{
 		Expression: expression,
@@ -463,8 +470,9 @@ type EvaluateReturns struct {
 // Do executes Runtime.evaluate against the provided context.
 //
 // returns:
-//   result - Evaluation result.
-//   exceptionDetails - Exception details.
+//
+//	result - Evaluation result.
+//	exceptionDetails - Exception details.
 func (p *EvaluateParams) Do(ctx context.Context) (result *RemoteObject, exceptionDetails *ExceptionDetails, err error) {
 	// execute
 	var res EvaluateReturns
@@ -494,7 +502,8 @@ type GetIsolateIDReturns struct {
 // Do executes Runtime.getIsolateId against the provided context.
 //
 // returns:
-//   id - The isolate id.
+//
+//	id - The isolate id.
 func (p *GetIsolateIDParams) Do(ctx context.Context) (id string, err error) {
 	// execute
 	var res GetIsolateIDReturns
@@ -527,8 +536,9 @@ type GetHeapUsageReturns struct {
 // Do executes Runtime.getHeapUsage against the provided context.
 //
 // returns:
-//   usedSize - Used heap size in bytes.
-//   totalSize - Allocated heap size in bytes.
+//
+//	usedSize - Used heap size in bytes.
+//	totalSize - Allocated heap size in bytes.
 func (p *GetHeapUsageParams) Do(ctx context.Context) (usedSize float64, totalSize float64, err error) {
 	// execute
 	var res GetHeapUsageReturns
@@ -556,7 +566,8 @@ type GetPropertiesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-getProperties
 //
 // parameters:
-//   objectID - Identifier of the object to return properties for.
+//
+//	objectID - Identifier of the object to return properties for.
 func GetProperties(objectID RemoteObjectID) *GetPropertiesParams {
 	return &GetPropertiesParams{
 		ObjectID: objectID,
@@ -600,10 +611,11 @@ type GetPropertiesReturns struct {
 // Do executes Runtime.getProperties against the provided context.
 //
 // returns:
-//   result - Object properties.
-//   internalProperties - Internal object properties (only of the element itself).
-//   privateProperties - Object private properties.
-//   exceptionDetails - Exception details.
+//
+//	result - Object properties.
+//	internalProperties - Internal object properties (only of the element itself).
+//	privateProperties - Object private properties.
+//	exceptionDetails - Exception details.
 func (p *GetPropertiesParams) Do(ctx context.Context) (result []*PropertyDescriptor, internalProperties []*InternalPropertyDescriptor, privateProperties []*PrivatePropertyDescriptor, exceptionDetails *ExceptionDetails, err error) {
 	// execute
 	var res GetPropertiesReturns
@@ -646,7 +658,8 @@ type GlobalLexicalScopeNamesReturns struct {
 // Do executes Runtime.globalLexicalScopeNames against the provided context.
 //
 // returns:
-//   names
+//
+//	names
 func (p *GlobalLexicalScopeNamesParams) Do(ctx context.Context) (names []string, err error) {
 	// execute
 	var res GlobalLexicalScopeNamesReturns
@@ -669,7 +682,8 @@ type QueryObjectsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-queryObjects
 //
 // parameters:
-//   prototypeObjectID - Identifier of the prototype to return objects for.
+//
+//	prototypeObjectID - Identifier of the prototype to return objects for.
 func QueryObjects(prototypeObjectID RemoteObjectID) *QueryObjectsParams {
 	return &QueryObjectsParams{
 		PrototypeObjectID: prototypeObjectID,
@@ -691,7 +705,8 @@ type QueryObjectsReturns struct {
 // Do executes Runtime.queryObjects against the provided context.
 //
 // returns:
-//   objects - Array with objects.
+//
+//	objects - Array with objects.
 func (p *QueryObjectsParams) Do(ctx context.Context) (objects *RemoteObject, err error) {
 	// execute
 	var res QueryObjectsReturns
@@ -713,7 +728,8 @@ type ReleaseObjectParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-releaseObject
 //
 // parameters:
-//   objectID - Identifier of the object to release.
+//
+//	objectID - Identifier of the object to release.
 func ReleaseObject(objectID RemoteObjectID) *ReleaseObjectParams {
 	return &ReleaseObjectParams{
 		ObjectID: objectID,
@@ -737,7 +753,8 @@ type ReleaseObjectGroupParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-releaseObjectGroup
 //
 // parameters:
-//   objectGroup - Symbolic object group name.
+//
+//	objectGroup - Symbolic object group name.
 func ReleaseObjectGroup(objectGroup string) *ReleaseObjectGroupParams {
 	return &ReleaseObjectGroupParams{
 		ObjectGroup: objectGroup,
@@ -783,7 +800,8 @@ type RunScriptParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-runScript
 //
 // parameters:
-//   scriptID - Id of the script to run.
+//
+//	scriptID - Id of the script to run.
 func RunScript(scriptID ScriptID) *RunScriptParams {
 	return &RunScriptParams{
 		ScriptID: scriptID,
@@ -848,8 +866,9 @@ type RunScriptReturns struct {
 // Do executes Runtime.runScript against the provided context.
 //
 // returns:
-//   result - Run result.
-//   exceptionDetails - Exception details.
+//
+//	result - Run result.
+//	exceptionDetails - Exception details.
 func (p *RunScriptParams) Do(ctx context.Context) (result *RemoteObject, exceptionDetails *ExceptionDetails, err error) {
 	// execute
 	var res RunScriptReturns
@@ -871,7 +890,8 @@ type SetCustomObjectFormatterEnabledParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-setCustomObjectFormatterEnabled
 //
 // parameters:
-//   enabled
+//
+//	enabled
 func SetCustomObjectFormatterEnabled(enabled bool) *SetCustomObjectFormatterEnabledParams {
 	return &SetCustomObjectFormatterEnabledParams{
 		Enabled: enabled,
@@ -893,7 +913,8 @@ type SetMaxCallStackSizeToCaptureParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-setMaxCallStackSizeToCapture
 //
 // parameters:
-//   size
+//
+//	size
 func SetMaxCallStackSizeToCapture(size int64) *SetMaxCallStackSizeToCaptureParams {
 	return &SetMaxCallStackSizeToCaptureParams{
 		Size: size,
@@ -943,7 +964,8 @@ type AddBindingParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-addBinding
 //
 // parameters:
-//   name
+//
+//	name
 func AddBinding(name string) *AddBindingParams {
 	return &AddBindingParams{
 		Name: name,
@@ -979,7 +1001,8 @@ type RemoveBindingParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-removeBinding
 //
 // parameters:
-//   name
+//
+//	name
 func RemoveBinding(name string) *RemoveBindingParams {
 	return &RemoveBindingParams{
 		Name: name,
@@ -1007,7 +1030,8 @@ type GetExceptionDetailsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Runtime#method-getExceptionDetails
 //
 // parameters:
-//   errorObjectID - The error object for which to resolve the exception details.
+//
+//	errorObjectID - The error object for which to resolve the exception details.
 func GetExceptionDetails(errorObjectID RemoteObjectID) *GetExceptionDetailsParams {
 	return &GetExceptionDetailsParams{
 		ErrorObjectID: errorObjectID,
@@ -1022,7 +1046,8 @@ type GetExceptionDetailsReturns struct {
 // Do executes Runtime.getExceptionDetails against the provided context.
 //
 // returns:
-//   exceptionDetails
+//
+//	exceptionDetails
 func (p *GetExceptionDetailsParams) Do(ctx context.Context) (exceptionDetails *ExceptionDetails, err error) {
 	// execute
 	var res GetExceptionDetailsReturns

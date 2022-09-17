@@ -67,7 +67,7 @@ func (cert Certificate) Empty() bool {
 // NeedsRenewal returns true if the certificate is
 // expiring soon (according to cfg) or has expired.
 func (cert Certificate) NeedsRenewal(cfg *Config) bool {
-	return currentlyInRenewalWindow(cert.Leaf.NotBefore, cert.Leaf.NotAfter, cfg.RenewalWindowRatio)
+	return currentlyInRenewalWindow(cert.Leaf.NotBefore, expiresAt(cert.Leaf), cfg.RenewalWindowRatio)
 }
 
 // Expired returns true if the certificate has expired.
@@ -79,7 +79,7 @@ func (cert Certificate) Expired() bool {
 		// tls.X509KeyPair() discards the leaf; oh well
 		return false
 	}
-	return time.Now().After(cert.Leaf.NotAfter)
+	return time.Now().After(expiresAt(cert.Leaf))
 }
 
 // currentlyInRenewalWindow returns true if the current time is
@@ -109,6 +109,13 @@ func (cert Certificate) HasTag(tag string) bool {
 	return false
 }
 
+// expiresAt return the time that a certificate expires. Account for the 1s
+// resolution of ASN.1 UTCTime/GeneralizedTime by including the extra fraction
+// of a second of certificate validity beyond the NotAfter value.
+func expiresAt(cert *x509.Certificate) time.Time {
+	return cert.NotAfter.Truncate(time.Second).Add(1 * time.Second)
+}
+
 // CacheManagedCertificate loads the certificate for domain into the
 // cache, from the TLS storage for managed certificates. It returns a
 // copy of the Certificate that was put into the cache.
@@ -122,7 +129,7 @@ func (cfg *Config) CacheManagedCertificate(ctx context.Context, domain string) (
 		return cert, err
 	}
 	cfg.certCache.cacheCertificate(cert)
-	cfg.emit("cached_managed_cert", cert.Names)
+	cfg.emit(ctx, "cached_managed_cert", map[string]any{"sans": cert.Names})
 	return cert, nil
 }
 
@@ -155,7 +162,7 @@ func (cfg *Config) CacheUnmanagedCertificatePEMFile(ctx context.Context, certFil
 	}
 	cert.Tags = tags
 	cfg.certCache.cacheCertificate(cert)
-	cfg.emit("cached_unmanaged_cert", cert.Names)
+	cfg.emit(ctx, "cached_unmanaged_cert", map[string]any{"sans": cert.Names})
 	return nil
 }
 
@@ -173,7 +180,7 @@ func (cfg *Config) CacheUnmanagedTLSCertificate(ctx context.Context, tlsCert tls
 	if err != nil && cfg.Logger != nil {
 		cfg.Logger.Warn("stapling OCSP", zap.Error(err))
 	}
-	cfg.emit("cached_unmanaged_cert", cert.Names)
+	cfg.emit(ctx, "cached_unmanaged_cert", map[string]any{"sans": cert.Names})
 	cert.Tags = tags
 	cfg.certCache.cacheCertificate(cert)
 	return nil
@@ -190,7 +197,7 @@ func (cfg *Config) CacheUnmanagedCertificatePEMBytes(ctx context.Context, certBy
 	}
 	cert.Tags = tags
 	cfg.certCache.cacheCertificate(cert)
-	cfg.emit("cached_unmanaged_cert", cert.Names)
+	cfg.emit(ctx, "cached_unmanaged_cert", map[string]any{"sans": cert.Names})
 	return nil
 }
 

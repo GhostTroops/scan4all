@@ -26,10 +26,11 @@ type DispatchDragEventParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-dispatchDragEvent
 //
 // parameters:
-//   type - Type of the drag event.
-//   x - X coordinate of the event relative to the main frame's viewport in CSS pixels.
-//   y - Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
-//   data
+//
+//	type - Type of the drag event.
+//	x - X coordinate of the event relative to the main frame's viewport in CSS pixels.
+//	y - Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+//	data
 func DispatchDragEvent(typeVal DispatchDragEventType, x float64, y float64, data *DragData) *DispatchDragEventParams {
 	return &DispatchDragEventParams{
 		Type: typeVal,
@@ -75,7 +76,8 @@ type DispatchKeyEventParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-dispatchKeyEvent
 //
 // parameters:
-//   type - Type of the key event.
+//
+//	type - Type of the key event.
 func DispatchKeyEvent(typeVal KeyType) *DispatchKeyEventParams {
 	return &DispatchKeyEventParams{
 		Type: typeVal,
@@ -198,7 +200,8 @@ type InsertTextParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-insertText
 //
 // parameters:
-//   text - The text to insert.
+//
+//	text - The text to insert.
 func InsertText(text string) *InsertTextParams {
 	return &InsertTextParams{
 		Text: text,
@@ -228,9 +231,10 @@ type ImeSetCompositionParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-imeSetComposition
 //
 // parameters:
-//   text - The text to insert
-//   selectionStart - selection start
-//   selectionEnd - selection end
+//
+//	text - The text to insert
+//	selectionStart - selection start
+//	selectionEnd - selection end
 func ImeSetComposition(text string, selectionStart int64, selectionEnd int64) *ImeSetCompositionParams {
 	return &ImeSetCompositionParams{
 		Text:           text,
@@ -281,9 +285,10 @@ type DispatchMouseEventParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-dispatchMouseEvent
 //
 // parameters:
-//   type - Type of the mouse event.
-//   x - X coordinate of the event relative to the main frame's viewport in CSS pixels.
-//   y - Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
+//
+//	type - Type of the mouse event.
+//	x - X coordinate of the event relative to the main frame's viewport in CSS pixels.
+//	y - Y coordinate of the event relative to the main frame's viewport in CSS pixels. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport.
 func DispatchMouseEvent(typeVal MouseType, x float64, y float64) *DispatchMouseEventParams {
 	return &DispatchMouseEventParams{
 		Type: typeVal,
@@ -398,8 +403,9 @@ type DispatchTouchEventParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-dispatchTouchEvent
 //
 // parameters:
-//   type - Type of the touch event. TouchEnd and TouchCancel must not contain any touch points, while TouchStart and TouchMove must contains at least one.
-//   touchPoints - Active touch points on the touch device. One event per any changed point (compared to previous touch event in a sequence) is generated, emulating pressing/moving/releasing points one by one.
+//
+//	type - Type of the touch event. TouchEnd and TouchCancel must not contain any touch points, while TouchStart and TouchMove must contains at least one.
+//	touchPoints - Active touch points on the touch device. One event per any changed point (compared to previous touch event in a sequence) is generated, emulating pressing/moving/releasing points one by one.
 func DispatchTouchEvent(typeVal TouchType, touchPoints []*TouchPoint) *DispatchTouchEventParams {
 	return &DispatchTouchEventParams{
 		Type:        typeVal,
@@ -445,10 +451,11 @@ type EmulateTouchFromMouseEventParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-emulateTouchFromMouseEvent
 //
 // parameters:
-//   type - Type of the mouse event.
-//   x - X coordinate of the mouse pointer in DIP.
-//   y - Y coordinate of the mouse pointer in DIP.
-//   button - Mouse button. Only "none", "left", "right" are supported.
+//
+//	type - Type of the mouse event.
+//	x - X coordinate of the mouse pointer in DIP.
+//	y - Y coordinate of the mouse pointer in DIP.
+//	button - Mouse button. Only "none", "left", "right" are supported.
 func EmulateTouchFromMouseEvent(typeVal MouseType, x int64, y int64, button MouseButton) *EmulateTouchFromMouseEventParams {
 	return &EmulateTouchFromMouseEventParams{
 		Type:   typeVal,
@@ -505,7 +512,8 @@ type SetIgnoreInputEventsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-setIgnoreInputEvents
 //
 // parameters:
-//   ignore - Ignores input events processing when set to true.
+//
+//	ignore - Ignores input events processing when set to true.
 func SetIgnoreInputEvents(ignore bool) *SetIgnoreInputEventsParams {
 	return &SetIgnoreInputEventsParams{
 		Ignore: ignore,
@@ -531,7 +539,8 @@ type SetInterceptDragsParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-setInterceptDrags
 //
 // parameters:
-//   enabled
+//
+//	enabled
 func SetInterceptDrags(enabled bool) *SetInterceptDragsParams {
 	return &SetInterceptDragsParams{
 		Enabled: enabled,
@@ -559,9 +568,10 @@ type SynthesizePinchGestureParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-synthesizePinchGesture
 //
 // parameters:
-//   x - X coordinate of the start of the gesture in CSS pixels.
-//   y - Y coordinate of the start of the gesture in CSS pixels.
-//   scaleFactor - Relative scale factor after zooming (>1.0 zooms in, <1.0 zooms out).
+//
+//	x - X coordinate of the start of the gesture in CSS pixels.
+//	y - Y coordinate of the start of the gesture in CSS pixels.
+//	scaleFactor - Relative scale factor after zooming (>1.0 zooms in, <1.0 zooms out).
 func SynthesizePinchGesture(x float64, y float64, scaleFactor float64) *SynthesizePinchGestureParams {
 	return &SynthesizePinchGestureParams{
 		X:           x,
@@ -612,8 +622,9 @@ type SynthesizeScrollGestureParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-synthesizeScrollGesture
 //
 // parameters:
-//   x - X coordinate of the start of the gesture in CSS pixels.
-//   y - Y coordinate of the start of the gesture in CSS pixels.
+//
+//	x - X coordinate of the start of the gesture in CSS pixels.
+//	y - Y coordinate of the start of the gesture in CSS pixels.
 func SynthesizeScrollGesture(x float64, y float64) *SynthesizeScrollGestureParams {
 	return &SynthesizeScrollGestureParams{
 		X: x,
@@ -709,8 +720,9 @@ type SynthesizeTapGestureParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Input#method-synthesizeTapGesture
 //
 // parameters:
-//   x - X coordinate of the start of the gesture in CSS pixels.
-//   y - Y coordinate of the start of the gesture in CSS pixels.
+//
+//	x - X coordinate of the start of the gesture in CSS pixels.
+//	y - Y coordinate of the start of the gesture in CSS pixels.
 func SynthesizeTapGesture(x float64, y float64) *SynthesizeTapGestureParams {
 	return &SynthesizeTapGestureParams{
 		X: x,

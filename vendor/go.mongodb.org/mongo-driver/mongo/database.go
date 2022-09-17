@@ -13,12 +13,12 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
+	"go.mongodb.org/mongo-driver/internal"
 	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.mongodb.org/mongo-driver/mongo/writeconcern"
-	"go.mongodb.org/mongo-driver/x/bsonx"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/operation"
@@ -107,12 +107,12 @@ func (db *Database) Collection(name string, opts ...*options.CollectionOptions) 
 // The pipeline parameter must be a slice of documents, each representing an aggregation stage. The pipeline
 // cannot be nil but can be empty. The stage documents must all be non-nil. For a pipeline of bson.D documents, the
 // mongo.Pipeline type can be used. See
-// https://docs.mongodb.com/manual/reference/operator/aggregation-pipeline/#db-aggregate-stages for a list of valid
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation-pipeline/#db-aggregate-stages for a list of valid
 // stages in database-level aggregations.
 //
 // The opts parameter can be used to specify options for this operation (see the options.AggregateOptions documentation).
 //
-// For more information about the command, see https://docs.mongodb.com/manual/reference/command/aggregate/.
+// For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/aggregate/.
 func (db *Database) Aggregate(ctx context.Context, pipeline interface{},
 	opts ...*options.AggregateOptions) (*Cursor, error) {
 	a := aggregateParams{
@@ -176,7 +176,8 @@ func (db *Database) processRunCommand(ctx context.Context, cmd interface{},
 	return op.Session(sess).CommandMonitor(db.client.monitor).
 		ServerSelector(readSelect).ClusterClock(db.client.clock).
 		Database(db.name).Deployment(db.client.deployment).ReadConcern(db.readConcern).
-		Crypt(db.client.cryptFLE).ReadPreference(ro.ReadPreference).ServerAPI(db.client.serverAPI), sess, nil
+		Crypt(db.client.cryptFLE).ReadPreference(ro.ReadPreference).ServerAPI(db.client.serverAPI).
+		Timeout(db.client.timeout), sess, nil
 }
 
 // RunCommand executes the given command against the database. This function does not obey the Database's read
@@ -184,11 +185,13 @@ func (db *Database) processRunCommand(ctx context.Context, cmd interface{},
 //
 // The runCommand parameter must be a document for the command to be executed. It cannot be nil.
 // This must be an order-preserving type such as bson.D. Map types such as bson.M are not valid.
-// If the command document contains a session ID or any transaction-specific fields, the behavior is undefined.
-// Specifying API versioning options in the command document and declaring an API version on the client is not supported.
-// The behavior of RunCommand is undefined in this case.
 //
 // The opts parameter can be used to specify options for this operation (see the options.RunCmdOptions documentation).
+//
+// The behavior of RunCommand is undefined if the command document contains any of the following:
+// - A session ID or any transaction-specific fields
+// - API versioning options when an API version is already declared on the Client
+// - maxTimeMS when Timeout is set on the Client
 func (db *Database) RunCommand(ctx context.Context, runCommand interface{}, opts ...*options.RunCmdOptions) *SingleResult {
 	if ctx == nil {
 		ctx = context.Background()
@@ -217,9 +220,13 @@ func (db *Database) RunCommand(ctx context.Context, runCommand interface{}, opts
 //
 // The runCommand parameter must be a document for the command to be executed. It cannot be nil.
 // This must be an order-preserving type such as bson.D. Map types such as bson.M are not valid.
-// If the command document contains a session ID or any transaction-specific fields, the behavior is undefined.
 //
 // The opts parameter can be used to specify options for this operation (see the options.RunCmdOptions documentation).
+//
+// The behavior of RunCommandCursor is undefined if the command document contains any of the following:
+// - A session ID or any transaction-specific fields
+// - API versioning options when an API version is already declared on the Client
+// - maxTimeMS when Timeout is set on the Client
 func (db *Database) RunCommandCursor(ctx context.Context, runCommand interface{}, opts ...*options.RunCmdOptions) (*Cursor, error) {
 	if ctx == nil {
 		ctx = context.Background()
@@ -302,7 +309,7 @@ func (db *Database) Drop(ctx context.Context) error {
 // The opts parameter can be used to specify options for the operation (see the options.ListCollectionsOptions
 // documentation).
 //
-// For more information about the command, see https://docs.mongodb.com/manual/reference/command/listCollections/.
+// For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/listCollections/.
 //
 // BUG(benjirewis): ListCollectionSpecifications prevents listing more than 100 collections per database when running
 // against MongoDB version 2.6.
@@ -339,7 +346,7 @@ func (db *Database) ListCollectionSpecifications(ctx context.Context, filter int
 // The opts parameter can be used to specify options for the operation (see the options.ListCollectionsOptions
 // documentation).
 //
-// For more information about the command, see https://docs.mongodb.com/manual/reference/command/listCollections/.
+// For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/listCollections/.
 //
 // BUG(benjirewis): ListCollections prevents listing more than 100 collections per database when running against
 // MongoDB version 2.6.
@@ -378,7 +385,7 @@ func (db *Database) ListCollections(ctx context.Context, filter interface{}, opt
 		Session(sess).ReadPreference(db.readPreference).CommandMonitor(db.client.monitor).
 		ServerSelector(selector).ClusterClock(db.client.clock).
 		Database(db.name).Deployment(db.client.deployment).Crypt(db.client.cryptFLE).
-		ServerAPI(db.client.serverAPI)
+		ServerAPI(db.client.serverAPI).Timeout(db.client.timeout)
 
 	cursorOpts := db.client.createBaseCursorOptions()
 	if lco.NameOnly != nil {
@@ -423,7 +430,7 @@ func (db *Database) ListCollections(ctx context.Context, filter interface{}, opt
 // The opts parameter can be used to specify options for the operation (see the options.ListCollectionsOptions
 // documentation).
 //
-// For more information about the command, see https://docs.mongodb.com/manual/reference/command/listCollections/.
+// For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/listCollections/.
 //
 // BUG(benjirewis): ListCollectionNames prevents listing more than 100 collections per database when running against
 // MongoDB version 2.6.
@@ -439,19 +446,13 @@ func (db *Database) ListCollectionNames(ctx context.Context, filter interface{},
 
 	names := make([]string, 0)
 	for res.Next(ctx) {
-		next := &bsonx.Doc{}
-		err = res.Decode(next)
+		elem, err := res.Current.LookupErr("name")
 		if err != nil {
 			return nil, err
 		}
 
-		elem, err := next.LookupErr("name")
-		if err != nil {
-			return nil, err
-		}
-
-		if elem.Type() != bson.TypeString {
-			return nil, fmt.Errorf("incorrect type for 'name'. got %v. want %v", elem.Type(), bson.TypeString)
+		if elem.Type != bson.TypeString {
+			return nil, fmt.Errorf("incorrect type for 'name'. got %v. want %v", elem.Type, bson.TypeString)
 		}
 
 		elemName := elem.StringValue()
@@ -478,13 +479,13 @@ func (db *Database) WriteConcern() *writeconcern.WriteConcern {
 }
 
 // Watch returns a change stream for all changes to the corresponding database. See
-// https://docs.mongodb.com/manual/changeStreams/ for more information about change streams.
+// https://www.mongodb.com/docs/manual/changeStreams/ for more information about change streams.
 //
 // The Database must be configured with read concern majority or no read concern for a change stream to be created
 // successfully.
 //
 // The pipeline parameter must be a slice of documents, each representing a pipeline stage. The pipeline cannot be
-// nil but can be empty. The stage documents must all be non-nil. See https://docs.mongodb.com/manual/changeStreams/ for
+// nil but can be empty. The stage documents must all be non-nil. See https://www.mongodb.com/docs/manual/changeStreams/ for
 // a list of pipeline stages that can be used with change streams. For a pipeline of bson.D documents, the
 // mongo.Pipeline{} type can be used.
 //
@@ -512,8 +513,141 @@ func (db *Database) Watch(ctx context.Context, pipeline interface{},
 // The opts parameter can be used to specify options for the operation (see the options.CreateCollectionOptions
 // documentation).
 //
-// For more information about the command, see https://docs.mongodb.com/manual/reference/command/create/.
+// For more information about the command, see https://www.mongodb.com/docs/manual/reference/command/create/.
 func (db *Database) CreateCollection(ctx context.Context, name string, opts ...*options.CreateCollectionOptions) error {
+	cco := options.MergeCreateCollectionOptions(opts...)
+	// Follow Client-Side Encryption specification to check for encryptedFields.
+	// Check for encryptedFields from create options.
+	ef := cco.EncryptedFields
+	// Check for encryptedFields from the client EncryptedFieldsMap.
+	if ef == nil {
+		ef = db.getEncryptedFieldsFromMap(name)
+	}
+	if ef != nil {
+		return db.createCollectionWithEncryptedFields(ctx, name, ef, opts...)
+	}
+
+	return db.createCollection(ctx, name, opts...)
+}
+
+// getEncryptedFieldsFromServer tries to get an "encryptedFields" document associated with collectionName by running the "listCollections" command.
+// Returns nil and no error if the listCollections command succeeds, but "encryptedFields" is not present.
+func (db *Database) getEncryptedFieldsFromServer(ctx context.Context, collectionName string) (interface{}, error) {
+	// Check if collection has an EncryptedFields configured server-side.
+	collSpecs, err := db.ListCollectionSpecifications(ctx, bson.D{{"name", collectionName}})
+	if err != nil {
+		return nil, err
+	}
+	if len(collSpecs) == 0 {
+		return nil, nil
+	}
+	if len(collSpecs) > 1 {
+		return nil, fmt.Errorf("expected 1 or 0 results from listCollections, got %v", len(collSpecs))
+	}
+	collSpec := collSpecs[0]
+	rawValue, err := collSpec.Options.LookupErr("encryptedFields")
+	if err == bsoncore.ErrElementNotFound {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	encryptedFields, ok := rawValue.DocumentOK()
+	if !ok {
+		return nil, fmt.Errorf("expected encryptedFields of %v to be document, got %v", collectionName, rawValue.Type)
+	}
+
+	return encryptedFields, nil
+}
+
+// getEncryptedFieldsFromServer tries to get an "encryptedFields" document associated with collectionName by checking the client EncryptedFieldsMap.
+// Returns nil and no error if an EncryptedFieldsMap is not configured, or does not contain an entry for collectionName.
+func (db *Database) getEncryptedFieldsFromMap(collectionName string) interface{} {
+	// Check the EncryptedFieldsMap
+	efMap := db.client.encryptedFieldsMap
+	if efMap == nil {
+		return nil
+	}
+
+	namespace := db.name + "." + collectionName
+
+	ef, ok := efMap[namespace]
+	if ok {
+		return ef
+	}
+	return nil
+}
+
+// createCollectionWithEncryptedFields creates a collection with an EncryptedFields.
+func (db *Database) createCollectionWithEncryptedFields(ctx context.Context, name string, ef interface{}, opts ...*options.CreateCollectionOptions) error {
+	efBSON, err := transformBsoncoreDocument(db.registry, ef, true /* mapAllowed */, "encryptedFields")
+	if err != nil {
+		return fmt.Errorf("error transforming document: %v", err)
+	}
+
+	// Create the three encryption-related, associated collections: `escCollection`, `eccCollection` and `ecocCollection`.
+
+	stateCollectionOpts := options.CreateCollection().
+		SetClusteredIndex(bson.D{{"key", bson.D{{"_id", 1}}}, {"unique", true}})
+	// Create ESCCollection.
+	escCollection, err := internal.GetEncryptedStateCollectionName(efBSON, name, internal.EncryptedStateCollection)
+	if err != nil {
+		return err
+	}
+
+	if err := db.createCollection(ctx, escCollection, stateCollectionOpts); err != nil {
+		return err
+	}
+
+	// Create ECCCollection.
+	eccCollection, err := internal.GetEncryptedStateCollectionName(efBSON, name, internal.EncryptedCacheCollection)
+	if err != nil {
+		return err
+	}
+
+	if err := db.createCollection(ctx, eccCollection, stateCollectionOpts); err != nil {
+		return err
+	}
+
+	// Create ECOCCollection.
+	ecocCollection, err := internal.GetEncryptedStateCollectionName(efBSON, name, internal.EncryptedCompactionCollection)
+	if err != nil {
+		return err
+	}
+
+	if err := db.createCollection(ctx, ecocCollection, stateCollectionOpts); err != nil {
+		return err
+	}
+
+	// Create a data collection with the 'encryptedFields' option.
+	op, err := db.createCollectionOperation(name, opts...)
+	if err != nil {
+		return err
+	}
+
+	op.EncryptedFields(efBSON)
+	if err := db.executeCreateOperation(ctx, op); err != nil {
+		return err
+	}
+
+	// Create an index on the __safeContent__ field in the collection @collectionName.
+	if _, err := db.Collection(name).Indexes().CreateOne(ctx, IndexModel{Keys: bson.D{{"__safeContent__", 1}}}); err != nil {
+		return fmt.Errorf("error creating safeContent index: %v", err)
+	}
+
+	return nil
+}
+
+// createCollection creates a collection without EncryptedFields.
+func (db *Database) createCollection(ctx context.Context, name string, opts ...*options.CreateCollectionOptions) error {
+	op, err := db.createCollectionOperation(name, opts...)
+	if err != nil {
+		return err
+	}
+	return db.executeCreateOperation(ctx, op)
+}
+
+func (db *Database) createCollectionOperation(name string, opts ...*options.CreateCollectionOptions) (*operation.Create, error) {
 	cco := options.MergeCreateCollectionOptions(opts...)
 	op := operation.NewCreate(name).ServerAPI(db.client.serverAPI)
 
@@ -523,19 +657,26 @@ func (db *Database) CreateCollection(ctx context.Context, name string, opts ...*
 	if cco.Collation != nil {
 		op.Collation(bsoncore.Document(cco.Collation.ToDocument()))
 	}
+	if cco.ChangeStreamPreAndPostImages != nil {
+		csppi, err := transformBsoncoreDocument(db.registry, cco.ChangeStreamPreAndPostImages, true, "changeStreamPreAndPostImages")
+		if err != nil {
+			return nil, err
+		}
+		op.ChangeStreamPreAndPostImages(csppi)
+	}
 	if cco.DefaultIndexOptions != nil {
 		idx, doc := bsoncore.AppendDocumentStart(nil)
 		if cco.DefaultIndexOptions.StorageEngine != nil {
 			storageEngine, err := transformBsoncoreDocument(db.registry, cco.DefaultIndexOptions.StorageEngine, true, "storageEngine")
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			doc = bsoncore.AppendDocumentElement(doc, "storageEngine", storageEngine)
 		}
 		doc, err := bsoncore.AppendDocumentEnd(doc, idx)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		op.IndexOptionDefaults(doc)
@@ -549,7 +690,7 @@ func (db *Database) CreateCollection(ctx context.Context, name string, opts ...*
 	if cco.StorageEngine != nil {
 		storageEngine, err := transformBsoncoreDocument(db.registry, cco.StorageEngine, true, "storageEngine")
 		if err != nil {
-			return err
+			return nil, err
 		}
 		op.StorageEngine(storageEngine)
 	}
@@ -562,7 +703,7 @@ func (db *Database) CreateCollection(ctx context.Context, name string, opts ...*
 	if cco.Validator != nil {
 		validator, err := transformBsoncoreDocument(db.registry, cco.Validator, true, "validator")
 		if err != nil {
-			return err
+			return nil, err
 		}
 		op.Validator(validator)
 	}
@@ -582,17 +723,24 @@ func (db *Database) CreateCollection(ctx context.Context, name string, opts ...*
 
 		doc, err := bsoncore.AppendDocumentEnd(doc, idx)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		op.TimeSeries(doc)
 	}
+	if cco.ClusteredIndex != nil {
+		clusteredIndex, err := transformBsoncoreDocument(db.registry, cco.ClusteredIndex, true, "clusteredIndex")
+		if err != nil {
+			return nil, err
+		}
+		op.ClusteredIndex(clusteredIndex)
+	}
 
-	return db.executeCreateOperation(ctx, op)
+	return op, nil
 }
 
 // CreateView executes a create command to explicitly create a view on the server. See
-// https://docs.mongodb.com/manual/core/views/ for more information about views. This method requires driver version >=
+// https://www.mongodb.com/docs/manual/core/views/ for more information about views. This method requires driver version >=
 // 1.4.0 and MongoDB version >= 3.4.
 //
 // The viewName parameter specifies the name of the view to create.

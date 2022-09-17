@@ -33,7 +33,8 @@ type CanEmulateReturns struct {
 // Do executes Emulation.canEmulate against the provided context.
 //
 // returns:
-//   result - True if emulation is supported.
+//
+//	result - True if emulation is supported.
 func (p *CanEmulateParams) Do(ctx context.Context) (result bool, err error) {
 	// execute
 	var res CanEmulateReturns
@@ -106,7 +107,8 @@ type SetFocusEmulationEnabledParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setFocusEmulationEnabled
 //
 // parameters:
-//   enabled - Whether to enable to disable focus emulation.
+//
+//	enabled - Whether to enable to disable focus emulation.
 func SetFocusEmulationEnabled(enabled bool) *SetFocusEmulationEnabledParams {
 	return &SetFocusEmulationEnabledParams{
 		Enabled: enabled,
@@ -156,7 +158,8 @@ type SetCPUThrottlingRateParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setCPUThrottlingRate
 //
 // parameters:
-//   rate - Throttling rate as a slowdown factor (1 is no throttle, 2 is 2x slowdown, etc).
+//
+//	rate - Throttling rate as a slowdown factor (1 is no throttle, 2 is 2x slowdown, etc).
 func SetCPUThrottlingRate(rate float64) *SetCPUThrottlingRateParams {
 	return &SetCPUThrottlingRateParams{
 		Rate: rate,
@@ -226,10 +229,11 @@ type SetDeviceMetricsOverrideParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setDeviceMetricsOverride
 //
 // parameters:
-//   width - Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override.
-//   height - Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override.
-//   deviceScaleFactor - Overriding device scale factor value. 0 disables the override.
-//   mobile - Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more.
+//
+//	width - Overriding width value in pixels (minimum 0, maximum 10000000). 0 disables the override.
+//	height - Overriding height value in pixels (minimum 0, maximum 10000000). 0 disables the override.
+//	deviceScaleFactor - Overriding device scale factor value. 0 disables the override.
+//	mobile - Whether to emulate mobile device. This includes viewport meta tag, overlay scrollbars, text autosizing and more.
 func SetDeviceMetricsOverride(width int64, height int64, deviceScaleFactor float64, mobile bool) *SetDeviceMetricsOverrideParams {
 	return &SetDeviceMetricsOverrideParams{
 		Width:             width,
@@ -316,7 +320,8 @@ type SetScrollbarsHiddenParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setScrollbarsHidden
 //
 // parameters:
-//   hidden - Whether scrollbars should be always hidden.
+//
+//	hidden - Whether scrollbars should be always hidden.
 func SetScrollbarsHidden(hidden bool) *SetScrollbarsHiddenParams {
 	return &SetScrollbarsHiddenParams{
 		Hidden: hidden,
@@ -338,7 +343,8 @@ type SetDocumentCookieDisabledParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setDocumentCookieDisabled
 //
 // parameters:
-//   disabled - Whether document.coookie API should be disabled.
+//
+//	disabled - Whether document.coookie API should be disabled.
 func SetDocumentCookieDisabled(disabled bool) *SetDocumentCookieDisabledParams {
 	return &SetDocumentCookieDisabledParams{
 		Disabled: disabled,
@@ -361,7 +367,8 @@ type SetEmitTouchEventsForMouseParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setEmitTouchEventsForMouse
 //
 // parameters:
-//   enabled - Whether touch emulation based on mouse input should be enabled.
+//
+//	enabled - Whether touch emulation based on mouse input should be enabled.
 func SetEmitTouchEventsForMouse(enabled bool) *SetEmitTouchEventsForMouseParams {
 	return &SetEmitTouchEventsForMouseParams{
 		Enabled: enabled,
@@ -424,7 +431,8 @@ type SetEmulatedVisionDeficiencyParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setEmulatedVisionDeficiency
 //
 // parameters:
-//   type - Vision deficiency to emulate.
+//
+//	type - Vision deficiency to emulate.
 func SetEmulatedVisionDeficiency(typeVal SetEmulatedVisionDeficiencyType) *SetEmulatedVisionDeficiencyParams {
 	return &SetEmulatedVisionDeficiencyParams{
 		Type: typeVal,
@@ -488,8 +496,9 @@ type SetIdleOverrideParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setIdleOverride
 //
 // parameters:
-//   isUserActive - Mock isUserActive
-//   isScreenUnlocked - Mock isScreenUnlocked
+//
+//	isUserActive - Mock isUserActive
+//	isScreenUnlocked - Mock isScreenUnlocked
 func SetIdleOverride(isUserActive bool, isScreenUnlocked bool) *SetIdleOverrideParams {
 	return &SetIdleOverrideParams{
 		IsUserActive:     isUserActive,
@@ -527,7 +536,8 @@ type SetPageScaleFactorParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setPageScaleFactor
 //
 // parameters:
-//   pageScaleFactor - Page scale factor.
+//
+//	pageScaleFactor - Page scale factor.
 func SetPageScaleFactor(pageScaleFactor float64) *SetPageScaleFactorParams {
 	return &SetPageScaleFactorParams{
 		PageScaleFactor: pageScaleFactor,
@@ -549,7 +559,8 @@ type SetScriptExecutionDisabledParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setScriptExecutionDisabled
 //
 // parameters:
-//   value - Whether script execution should be disabled in the page.
+//
+//	value - Whether script execution should be disabled in the page.
 func SetScriptExecutionDisabled(value bool) *SetScriptExecutionDisabledParams {
 	return &SetScriptExecutionDisabledParams{
 		Value: value,
@@ -574,7 +585,8 @@ type SetTouchEmulationEnabledParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setTouchEmulationEnabled
 //
 // parameters:
-//   enabled - Whether the touch event emulation should be enabled.
+//
+//	enabled - Whether the touch event emulation should be enabled.
 func SetTouchEmulationEnabled(enabled bool) *SetTouchEmulationEnabledParams {
 	return &SetTouchEmulationEnabledParams{
 		Enabled: enabled,
@@ -609,7 +621,8 @@ type SetVirtualTimePolicyParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setVirtualTimePolicy
 //
 // parameters:
-//   policy
+//
+//	policy
 func SetVirtualTimePolicy(policy VirtualTimePolicy) *SetVirtualTimePolicyParams {
 	return &SetVirtualTimePolicyParams{
 		Policy: policy,
@@ -646,7 +659,8 @@ type SetVirtualTimePolicyReturns struct {
 // Do executes Emulation.setVirtualTimePolicy against the provided context.
 //
 // returns:
-//   virtualTimeTicksBase - Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
+//
+//	virtualTimeTicksBase - Absolute timestamp at which virtual time was first enabled (up time in milliseconds).
 func (p *SetVirtualTimePolicyParams) Do(ctx context.Context) (virtualTimeTicksBase float64, err error) {
 	// execute
 	var res SetVirtualTimePolicyReturns
@@ -698,7 +712,8 @@ type SetTimezoneOverrideParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setTimezoneOverride
 //
 // parameters:
-//   timezoneID - The timezone identifier. If empty, disables the override and restores default host system timezone.
+//
+//	timezoneID - The timezone identifier. If empty, disables the override and restores default host system timezone.
 func SetTimezoneOverride(timezoneID string) *SetTimezoneOverrideParams {
 	return &SetTimezoneOverrideParams{
 		TimezoneID: timezoneID,
@@ -720,7 +735,8 @@ type SetDisabledImageTypesParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setDisabledImageTypes
 //
 // parameters:
-//   imageTypes - Image types to disable.
+//
+//	imageTypes - Image types to disable.
 func SetDisabledImageTypes(imageTypes []DisabledImageType) *SetDisabledImageTypesParams {
 	return &SetDisabledImageTypesParams{
 		ImageTypes: imageTypes,
@@ -742,7 +758,8 @@ type SetHardwareConcurrencyOverrideParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setHardwareConcurrencyOverride
 //
 // parameters:
-//   hardwareConcurrency - Hardware concurrency to report
+//
+//	hardwareConcurrency - Hardware concurrency to report
 func SetHardwareConcurrencyOverride(hardwareConcurrency int64) *SetHardwareConcurrencyOverrideParams {
 	return &SetHardwareConcurrencyOverrideParams{
 		HardwareConcurrency: hardwareConcurrency,
@@ -768,7 +785,8 @@ type SetUserAgentOverrideParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setUserAgentOverride
 //
 // parameters:
-//   userAgent - User agent to use.
+//
+//	userAgent - User agent to use.
 func SetUserAgentOverride(userAgent string) *SetUserAgentOverrideParams {
 	return &SetUserAgentOverrideParams{
 		UserAgent: userAgent,
@@ -809,7 +827,8 @@ type SetAutomationOverrideParams struct {
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Emulation#method-setAutomationOverride
 //
 // parameters:
-//   enabled - Whether the override should be enabled.
+//
+//	enabled - Whether the override should be enabled.
 func SetAutomationOverride(enabled bool) *SetAutomationOverrideParams {
 	return &SetAutomationOverrideParams{
 		Enabled: enabled,

@@ -1,6 +1,6 @@
 package gojq
 
-// TermType represents the type of Term.
+// TermType represents the type of [Term].
 type TermType int
 
 // TermType list.
@@ -27,7 +27,7 @@ const (
 	TermTypeQuery
 )
 
-// GoString implements GoStringer.
+// GoString implements [fmt.GoStringer].
 func (termType TermType) GoString() (str string) {
 	defer func() { str = "gojq." + str }()
 	switch termType {

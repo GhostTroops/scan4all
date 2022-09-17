@@ -116,6 +116,7 @@ func (val *NullTimeStamp) Scan(value interface{}) error {
 		val.Valid = false
 		return nil
 	}
+	val.Valid = true
 	return val.TimeStamp.Scan(value)
 }
 
