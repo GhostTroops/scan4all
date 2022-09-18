@@ -66,22 +66,11 @@ noScan=true  ./scan4all -l list.txt  -v
 
 - 快速 15000+ POC 检测功能，PoCs包含：
   * nuclei POC
-  ## Nuclei Templates Top 10 statistics
 
-|    TAG    | COUNT |    AUTHOR     | COUNT |    DIRECTORY     | COUNT | SEVERITY | COUNT |  TYPE   | COUNT |
-|-----------|-------|---------------|-------|------------------|-------|----------|-------|---------|-------|
-| cve       |  1430 | daffainfo     |   631 | cves             |  1407 | info     |  1474 | http    |  3858 |
-| panel     |   655 | dhiyaneshdk   |   584 | exposed-panels   |   662 | high     |  1009 | file    |    76 |
-| edb       |   563 | pikpikcu      |   329 | vulnerabilities  |   509 | medium   |   818 | network |    51 |
-| lfi       |   509 | pdteam        |   269 | technologies     |   282 | critical |   478 | dns     |    17 |
-| xss       |   491 | geeknik       |   187 | exposures        |   275 | low      |   225 |         |       |
-| wordpress |   419 | dwisiswant0   |   169 | misconfiguration |   237 | unknown  |    11 |         |       |
-| exposure  |   407 | 0x_akoko      |   165 | token-spray      |   230 |          |       |         |       |
-| cve2021   |   352 | princechaddha |   151 | workflows        |   189 |          |       |         |       |
-| rce       |   337 | ritikchaddha  |   137 | default-logins   |   103 |          |       |         |       |
-| wp-plugin |   316 | pussycat0x    |   133 | file             |    76 |          |       |         |       |
+{get_top10()}
 
-**281 directories, 3922 files**.
+**{command(["tree" "config/nuclei-templates"], -2, None)}**.
+
   * vscan POC
     * vscan POC包含了：xray 2.0 300+ POC、 go POC等；特别注意，xray POC检测需要有指纹命中后才会触发检测
   * scan4all POC  
