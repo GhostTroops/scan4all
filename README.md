@@ -70,16 +70,16 @@ noScan=true ./scan4all -l list.txt -v
 
 |    TAG    | COUNT |    AUTHOR     | COUNT |    DIRECTORY     | COUNT | SEVERITY | COUNT |  TYPE   | COUNT |
 |-----------|-------|---------------|-------|------------------|-------|----------|-------|---------|-------|
-| cve       |  1294 | daffainfo     |   605 | cves             |  1277 | info     |  1352 | http    |  3554 |
-| panel     |   591 | dhiyaneshdk   |   503 | exposed-panels   |   600 | high     |   938 | file    |    76 |
-| lfi       |   486 | pikpikcu      |   321 | vulnerabilities  |   493 | medium   |   766 | network |    50 |
-| xss       |   439 | pdteam        |   269 | technologies     |   266 | critical |   436 | dns     |    17 |
-| wordpress |   401 | geeknik       |   187 | exposures        |   254 | low      |   211 |         |       |
-| exposure  |   355 | dwisiswant0   |   169 | misconfiguration |   207 | unknown  |     7 |         |       |
-| cve2021   |   322 | 0x_akoko      |   154 | token-spray      |   206 |          |       |         |       |
-| rce       |   313 | princechaddha |   147 | workflows        |   187 |          |       |         |       |
-| wp-plugin |   297 | pussycat0x    |   128 | default-logins   |   101 |          |       |         |       |
-| tech      |   282 | gy741         |   126 | file             |    76 |          |       |         |       |
+| cve       |  1430 | daffainfo     |   631 | cves             |  1407 | info     |  1474 | http    |  3858 |
+| panel     |   655 | dhiyaneshdk   |   584 | exposed-panels   |   662 | high     |  1009 | file    |    76 |
+| edb       |   563 | pikpikcu      |   329 | vulnerabilities  |   509 | medium   |   818 | network |    51 |
+| lfi       |   509 | pdteam        |   269 | technologies     |   282 | critical |   478 | dns     |    17 |
+| xss       |   491 | geeknik       |   187 | exposures        |   275 | low      |   225 |         |       |
+| wordpress |   419 | dwisiswant0   |   169 | misconfiguration |   237 | unknown  |    11 |         |       |
+| exposure  |   407 | 0x_akoko      |   165 | token-spray      |   230 |          |       |         |       |
+| cve2021   |   352 | princechaddha |   151 | workflows        |   189 |          |       |         |       |
+| rce       |   337 | ritikchaddha  |   137 | default-logins   |   103 |          |       |         |       |
+| wp-plugin |   316 | pussycat0x    |   133 | file             |    76 |          |       |         |       |
 
 **281 directories, 3922 files**.
 * vscan POC
