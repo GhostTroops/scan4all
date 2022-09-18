@@ -3,7 +3,6 @@ package brute
 import (
 	"context"
 	_ "embed"
-	"fmt"
 	"github.com/antlabs/strsim"
 	"github.com/hktalent/scan4all/lib/util"
 	"log"
@@ -12,6 +11,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 // 备份、敏感文件后缀
@@ -141,13 +141,14 @@ var RandStr4Cookie = util.RandStringRunes(10)
 
 // 重写了fuzz：优化流程、优化算法、修复线程安全bug、增加智能功能
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
-	if eableFileFuzz || util.TestRepeat(u, "FileFuzz") {
-		return []string{}, []string{}
-	}
 	u01, err := url.Parse(strings.TrimSpace(u))
 	if nil == err {
 		u = u01.Scheme + "://" + u01.Host + "/"
 	}
+	if eableFileFuzz || util.TestRepeat(u, "FileFuzz") {
+		return []string{}, []string{}
+	}
+
 	//log.Println("start file fuzz", u)
 	var (
 		//path404               = RandStr // 绝对404页面路径
@@ -178,11 +179,14 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	var wg sync.WaitGroup
 	// 中途控制关闭当前目标所有fuzz
 	ctx, stop := context.WithCancel(util.Ctx_global)
+	ctx2, stop2 := context.WithCancel(util.Ctx_global)
 	// 控制 fuzz 线程数
 	var ch = make(chan struct{}, util.Fuzzthreads)
 	// 异步接收结果
-	var async_data = make(chan []string, 64)
-	var async_technologies = make(chan []string, 64)
+	var async_data = make(chan []string, util.Fuzzthreads*2)
+	var async_technologies = make(chan []string, util.Fuzzthreads*2)
+	// 字典长度的 70% 的错误
+	var MaxErrorTimes int32 = int32(float32(len(filedic)) * 0.7)
 	defer func() {
 		close(ch)
 		close(async_data)
@@ -193,16 +197,24 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	go func() {
 		for {
 			select {
-			case <-ctx.Done():
-				return
-			case x1 := <-async_data:
-				path = append(path, x1...)
-				if len(path) > nStop {
-					stop() //发停止指令
-					atomic.AddInt32(&errorTimes, 21)
+			case x1, ok := <-async_data:
+				if ok {
+					path = append(path, x1...)
+					if len(path) > nStop {
+						stop() //发停止指令
+						atomic.AddInt32(&errorTimes, MaxErrorTimes)
+					}
+				} else {
+					return
 				}
-			case x2 := <-async_technologies:
-				technologies = append(technologies, x2...)
+			case x2, ok := <-async_technologies:
+				if ok {
+					technologies = append(technologies, x2...)
+				} else {
+					return
+				}
+			case <-ctx2.Done():
+				return
 			default:
 				// <-time.After(time.Duration(100) * time.Millisecond)
 			}
@@ -210,7 +222,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	}()
 	for _, payload := range filedic {
 		// 接收到停止信号
-		if atomic.LoadInt32(&errorTimes) >= 20 {
+		if atomic.LoadInt32(&errorTimes) >= MaxErrorTimes {
 			break
 		}
 		//log.Println(u, " ", payload)
@@ -223,7 +235,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 				wg.Done() // 控制所有线程结束
 				<-ch      // 并发控制
 			}()
-			log.Printf("start file fuzz %s%s \r", u, payload)
+			//log.Printf("start file fuzz %s%s \r", u, payload)
 			for {
 				select {
 				case _, ok := <-ch:
@@ -232,7 +244,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 						return
 					}
 				case <-ctx.Done(): // 00-捕获所有线程关闭信号，并退出，close for all
-					atomic.AddInt32(&errorTimes, 21)
+					atomic.AddInt32(&errorTimes, MaxErrorTimes)
 					return
 				default:
 					//if _, ok := noRpt.Load(szKey001Over); ok {
@@ -240,7 +252,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 					//	return
 					//}
 					// 01-异常>20关闭所有fuzz
-					if atomic.LoadInt32(&errorTimes) >= 20 {
+					if atomic.LoadInt32(&errorTimes) >= MaxErrorTimes {
 						stop() //发停止指令
 						return
 					}
@@ -249,16 +261,21 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 					if strings.HasPrefix(payload, "/") && endP {
 						szUrl = u + payload[1:]
 					}
-					log.Printf("start fuzz: [%s]", szUrl)
+					//log.Printf("start fuzz: [%s]", szUrl)
 					if fuzzPage, req, err := reqPage(szUrl); err == nil && nil != req && 0 < len(req.Body) {
-						log.Printf("%d : %s \n", req.StatusCode, szUrl)
+						//if 200 == req.StatusCode {
+						//	log.Printf("%d : %s \n", req.StatusCode, szUrl)
+						//}
 						go util.CheckHeader(req.Header, u)
 						// 02-状态码和req1相同，且与req1相似度>9.5，关闭所有fuzz
 						fXsd := strsim.Compare(url404req.Body, req.Body)
 						bBig95 := 9.5 < fXsd
+						//if "/bea_wls_internal/classes/mejb@/org/omg/stub/javax/management/j2ee/_ManagementHome_Stub.class" == payload {
+						//	log.Println("start debug")
+						//}
 						if url404.StatusCode == fuzzPage.StatusCode && bBig95 {
 							stop() //发停止指令
-							atomic.AddInt32(&errorTimes, 21)
+							atomic.AddInt32(&errorTimes, MaxErrorTimes)
 							return
 						}
 						var path1, technologies1 = []string{}, []string{}
@@ -268,7 +285,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 							technologies = Addfingerprints404(technologies, req, fuzzPage) //基于404页面文件扫描指纹添加
 							// 03.02-与绝对404相似度低于0.8，添加body 404 body list
 							// 03.03-添加404titlelist
-							if 0.8 > fXsd {
+							if 0.8 > fXsd && fuzzPage.StatusCode != 200 && fuzzPage.StatusCode != url404.StatusCode {
 								StudyErrPageAI(req, fuzzPage, "") // 异常页面学习
 							}
 							// 04-403： 403 by pass
@@ -293,7 +310,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 						// 1、状态码和绝对404一样 2、智能识别算出来
 						is404Page := url404.StatusCode == fuzzPage.StatusCode || CheckIsErrPageAI(req, fuzzPage)
 						// 06-成功页面, 非异常页面
-						if !is404Page {
+						if !is404Page || 200 == fuzzPage.StatusCode && url404.StatusCode != fuzzPage.StatusCode {
 							// 1、指纹匹配
 							technologies1 = Addfingerprintsnormal(payload, technologies1, req, fuzzPage) // 基于200页面文件扫描指纹添加
 							// 2、成功fuzz路径结果添加
@@ -306,7 +323,9 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 							async_technologies <- technologies1
 						}
 					} else { // 这里应该元子操作
-						fmt.Printf("%s is err %v\n", szUrl, err)
+						if nil != err {
+							log.Printf("%s is err %v\n", szUrl, err)
+						}
 						atomic.AddInt32(&errorTimes, 1)
 					}
 					return
@@ -316,8 +335,12 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	}
 	// 默认情况等待所有结束
 	wg.Wait()
-	stop() //发停止指令
 	log.Printf("fuzz is over: %s\n", u)
+	technologies = util.SliceRemoveDuplicates(technologies)
+	path = util.SliceRemoveDuplicates(path)
+	stop() //发停止指令
+	<-time.After(time.Second * 2)
+	stop2()
 	return path, technologies
 }
 
