@@ -2,13 +2,16 @@ package util
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"github.com/corpix/uarand"
 	"github.com/hbakhtiyor/strsim"
 	"github.com/karlseguin/ccache"
+	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -29,43 +32,8 @@ var (
 
 // http密码爆破
 func HttpRequsetBasic(username string, password string, urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
-	client := GetClient(urlstring)
-	var err error
-	if isredirect {
-		jar, _ := cookiejar.New(nil)
-		client.Jar = jar
-	} else {
-		client.Jar = nil
-	}
-	req, err := http.NewRequest(strings.ToUpper(method), urlstring, strings.NewReader(postdata))
-	if err != nil {
-		return nil, err
-	}
-	req.SetBasicAuth(username, password)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("User-Agent", uarand.GetRandom())
-	SetHeader(&req.Header)
-	for v, k := range headers {
-		req.Header[v] = []string{k}
-	}
-	var resp *http.Response
-
-	// resp, err = tr.RoundTrip(req)
-	resp, err = client.Do(req)
-	if err != nil {
-		//防止空指针
-		return &Response{"999", 999, "", nil, 0, "", ""}, err
-	}
-	var location string
-	var reqbody string
-	defer resp.Body.Close()
-	if body, err := ioutil.ReadAll(resp.Body); err == nil {
-		reqbody = string(body)
-	}
-	if resplocation, err := resp.Location(); err == nil {
-		location = resplocation.String()
-	}
-	return &Response{resp.Status, resp.StatusCode, reqbody, &resp.Header, len(reqbody), resp.Request.URL.String(), location}, nil
+	rsps, _, _, err := GetResponse(username, password, urlstring, method, postdata, isredirect, headers)
+	return rsps, err
 }
 
 // client缓存
@@ -113,13 +81,22 @@ func GetClient(szUrl string) *http.Client {
 	}
 	var tr *http.Transport
 	tr = &http.Transport{
-		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS10},
-		DisableKeepAlives:     false,
-		MaxIdleConns:          300,
-		IdleConnTimeout:       180,
-		TLSHandshakeTimeout:   60,
-		ExpectContinueTimeout: 30,
-		MaxIdleConnsPerHost:   100,
+		DialContext: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).DialContext,
+		MaxIdleConns:           100,
+		MaxIdleConnsPerHost:    1024,
+		TLSHandshakeTimeout:    0 * time.Second,
+		IdleConnTimeout:        90 * time.Second,
+		ExpectContinueTimeout:  1 * time.Second,
+		MaxResponseHeaderBytes: 4096, // net/http default is 10Mb
+		TLSClientConfig: &tls.Config{
+			Renegotiation:      tls.RenegotiateOnceAsClient,
+			InsecureSkipVerify: true,
+		},
+		DisableKeepAlives: false,
 	}
 	if HttpProxy != "" {
 		uri, _ := url.Parse(strings.TrimSpace(HttpProxy))
@@ -151,15 +128,30 @@ func CloseAllHttpClient() {
 	}
 }
 
-// 需要考虑缓存
-//  1、缓解网络不好的情况
-//  2、缓存有效期为当天
-//  3、缓存命中需和请求的数据完全匹配
-func HttpRequset(urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
+// 数组去重
+func SliceRemoveDuplicates(slice []string) []string {
+	if nil == slice || 0 == len(slice) {
+		return slice
+	}
+	sort.Strings(slice)
+	i := 0
+	var j int
+	for {
+		if i >= len(slice)-1 {
+			break
+		}
+		for j = i + 1; j < len(slice) && slice[i] == slice[j]; j++ {
+		}
+		slice = append(slice[:i+1], slice[j:]...)
+		i++
+	}
+	return slice
+}
+
+func GetResponse(username string, password string, urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (resp1 *Response, reqbody, location string, err error) {
 	client := GetClient(urlstring)
 	if nil == client {
-		log.Printf("client is nil, url [%s]\n", urlstring)
-		return nil, nil
+		return nil, "", "", errors.New(urlstring + " client is nil")
 	}
 	if isredirect {
 		jar, _ := cookiejar.New(nil)
@@ -169,32 +161,54 @@ func HttpRequset(urlstring string, method string, postdata string, isredirect bo
 	}
 	req, err := http.NewRequest(strings.ToUpper(method), urlstring, strings.NewReader(postdata))
 	if err != nil {
-		return nil, err
+		return nil, "", "", err
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Set("User-Agent", uarand.GetRandom())
-	// 设置全局自定义头、cookie信息
+	if "" != username && "" != password {
+		req.SetBasicAuth(username, password)
+	}
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+	req.Header.Add("User-Agent", uarand.GetRandom())
+	//req.Header.Add("Connection", "keep-alive")// http1.1 默认 开启
 	SetHeader(&req.Header)
-	for v, k := range headers {
-		req.Header[v] = []string{k}
+	for k, v := range headers {
+		req.Header.Add(k, v)
 	}
-	resp, err := client.Do(req)
-	if nil != resp {
-		defer resp.Body.Close()
-	}
+
+	var resp *http.Response
+	// resp, err = tr.RoundTrip(req)
+	resp, err = client.Do(req)
+	defer func() {
+		req.Body.Close()
+		if nil != resp {
+			//io.Copy(ioutil.Discard, resp.Body)
+			resp.Body.Close()
+		}
+	}()
+
 	if err != nil {
+		if nil != resp {
+			io.Copy(ioutil.Discard, resp.Body)
+		}
 		//防止空指针
-		return &Response{"999", 999, "", nil, 0, "", ""}, err
+		return &Response{"999", 999, "", nil, 0, "", ""}, "", "", err
 	}
-	var location string
-	var reqbody string
+
 	if body, err := ioutil.ReadAll(resp.Body); err == nil {
 		reqbody = string(body)
 	}
 	if resplocation, err := resp.Location(); err == nil {
 		location = resplocation.String()
 	}
-	return &Response{resp.Status, resp.StatusCode, reqbody, &resp.Header, len(reqbody), resp.Request.URL.String(), location}, nil
+	return &Response{resp.Status, resp.StatusCode, reqbody, &resp.Header, len(reqbody), resp.Request.URL.String(), location}, reqbody, location, nil
+}
+
+// 需要考虑缓存
+//  1、缓解网络不好的情况
+//  2、缓存有效期为当天
+//  3、缓存命中需和请求的数据完全匹配
+func HttpRequset(urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
+	rsps, _, _, err := GetResponse("", "", urlstring, method, postdata, isredirect, headers)
+	return rsps, err
 }
 
 func Dnslogchek(randomstr string) bool {
