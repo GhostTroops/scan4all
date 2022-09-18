@@ -1,14 +1,16 @@
 # jarm-go
 
+## Warning: This project is archived and is now read-only. Feel free to fork this as needed.
+
 This is a Go implementation of [JARM](https://github.com/salesforce/jarm).
 
 # jarmscan
 
-To install jarmscan, download a binary from the [releases](https://github.com/RumbleDiscovery/jarm-go/releases) page or install using `go get -u -v github.com/RumbleDiscovery/jarm-go/cmd/jarmscan`.
+To install jarmscan, download a binary from the [releases](https://github.com/hktalent/jarm-go/releases) page or install using `go install github.com/hktalent/jarm-go/cmd/jarmscan@latest`.
 
 To run a scan, provide a list of targets. The following examples are all supported:
 
-* `jarmscan www.rumble.run`
+* `jarmscan www.example.com`
 * `jarmscan -p 443,8443 192.168.0.1`
 * `jarmscan -p 1-1024 https://www.example.com/`
 * `jarmscan -p 443,465,993,995,8443,9443 192.168.0.0/24`
