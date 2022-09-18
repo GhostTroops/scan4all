@@ -155,6 +155,9 @@ func (r *CheckTarget) Log(s string) {
 }
 
 // 连接目标
+// sysctl -w net.ipv4.tcp_keepalive_time=300
+// sysctl -w net.ipv4.tcp_keepalive_intvl=30
+// sysctl -w net.ipv4.tcp_keepalive_probes=5
 func (r *CheckTarget) ConnTarget() (*CheckTarget, error) {
 	var err error
 	szErr := fmt.Sprintf("can not connect to: %s", r.UrlRaw)
@@ -164,6 +167,7 @@ func (r *CheckTarget) ConnTarget() (*CheckTarget, error) {
 		}
 		r.Conn, err = tls.Dial(r.ConnType, fmt.Sprintf("%s:%d", r.Target, r.Port), conf)
 		if err == nil {
+			//r.Conn.SetKeepAlive(true)
 			// 设置读取超时
 			err = r.Conn.SetReadDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
 			if err != nil {
@@ -179,6 +183,7 @@ func (r *CheckTarget) ConnTarget() (*CheckTarget, error) {
 			r.Log(szErr)
 			return r, err
 		}
+		//r.Conn.SetKeepAlive(true)
 		// 设置读取超时
 		err = r.Conn.SetReadDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
 		if err != nil {
