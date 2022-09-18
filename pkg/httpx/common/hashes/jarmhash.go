@@ -2,15 +2,14 @@ package hashes
 
 import (
 	"fmt"
+	"github.com/hktalent/jarm-go"
+	"github.com/hktalent/scan4all/pkg/httpx/common/regexhelper"
+	"golang.org/x/net/proxy"
 	"net"
 	"net/url"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/RumbleDiscovery/jarm-go"
-	"github.com/hktalent/scan4all/pkg/httpx/common/regexhelper"
-	"golang.org/x/net/proxy"
 )
 
 const defaultPort int = 443
