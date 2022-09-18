@@ -1,4 +1,5 @@
 // +build gofuzz
+
 package jarm
 
 // Fuzzing code for use with github.com/dvyukov/go-fuzz
