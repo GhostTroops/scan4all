@@ -15,7 +15,7 @@ import (
 func Addfingerprints404(technologies []string, req *util.Response, oPage *util.Page) []string {
 	var szKey string
 	if nil != oPage {
-		szKey = fmt.Sprintf("Addfingerprints404:%s_%d", oPage.Url, oPage.BodyLen)
+		szKey = fmt.Sprintf("Addfingerprints404:%s_%d", *oPage.Url, oPage.BodyLen)
 		data := util.Cache1.GetKeyForData(szKey)
 		var rst []string
 		if 0 < len(data) {
