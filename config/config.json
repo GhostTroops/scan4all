@@ -99,7 +99,7 @@
   "CheckWeakPassword": true,
   "esthread": 8,
   "hydrathread": 64,
-  "Fuzzthreads": 32,
+  "Fuzzthreads": 16,
   "enableFingerTitleHeaderMd5Hex": false,
   "Cookie": "",
   "esUrl": "http://127.0.0.1:9200/%s_index/_doc/%s",
