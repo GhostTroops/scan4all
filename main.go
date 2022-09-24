@@ -9,18 +9,14 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"runtime"
-	"sync"
 )
 
 //go:embed config/*
 var config embed.FS
 
-var Wg sync.WaitGroup
-
 func main() {
 	//os.Args = []string{"", "-host", "http://127.0.0.1"}
 	runtime.GOMAXPROCS(runtime.NumCPU())
-	util.Wg = &Wg
 	util.DoInit(&config)
 	szTip := ""
 	if util.GetValAsBool("enablDevDebug") {

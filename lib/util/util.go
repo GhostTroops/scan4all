@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/codegangsta/inject"
 	"github.com/corpix/uarand"
 	"github.com/hbakhtiyor/strsim"
 	"github.com/karlseguin/ccache"
@@ -146,6 +147,19 @@ func SliceRemoveDuplicates(slice []string) []string {
 		i++
 	}
 	return slice
+}
+
+// 若干参数依赖注入到对象 obj中
+//  util.MergeParms2Obj(&ms, args...)
+func MergeParms2Obj(obj interface{}, args ...interface{}) interface{} {
+	if nil != args && 0 < len(args) {
+		in := inject.New()
+		for _, i := range args {
+			in.Map(i)
+		}
+		in.Apply(obj)
+	}
+	return obj
 }
 
 func GetResponse(username string, password string, urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (resp1 *Response, reqbody, location string, err error) {
