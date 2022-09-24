@@ -11,7 +11,7 @@ import (
 )
 
 // 全局线程控制
-var Wg *sync.WaitGroup
+var Wg *sync.WaitGroup = &sync.WaitGroup{}
 
 // 全局控制
 var RootContext = context.Background()

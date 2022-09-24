@@ -5,6 +5,7 @@ import (
 	"github.com/hktalent/scan4all/lib/util"
 )
 
+// jndi日志检查
 func Jndilogchek(randomstr string) bool {
 	if JndiLog == nil {
 		return false

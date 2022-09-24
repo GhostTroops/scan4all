@@ -88,6 +88,7 @@ require (
 	github.com/boy-hack/ksubdomain v1.9.5
 	github.com/chromedp/cdproto v0.0.0-20220914223734-4ab9dc957c3e
 	github.com/chromedp/chromedp v0.8.5
+	github.com/codegangsta/inject v0.0.0-20150114235600-33e0aa1cb7c0
 	github.com/denisenkom/go-mssqldb v0.12.2
 	github.com/dgraph-io/badger v1.6.2
 	github.com/dlclark/regexp2 v1.7.0

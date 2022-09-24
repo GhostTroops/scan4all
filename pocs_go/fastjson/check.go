@@ -1,6 +1,7 @@
 package fastjson
 
 import (
+	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/jndi"
 	"net/url"
@@ -13,7 +14,7 @@ func Check(u string, finalURL string) string {
 	for _, jsonurl := range domainx {
 		header := make(map[string]string)
 		header["Content-Type"] = "application/json"
-		randomstr := util.RandomStr()
+		randomstr := fmt.Sprintf("%x", jsonurl)
 		if (util.CeyeApi != "" && util.CeyeDomain != "") || jndi.JndiAddress != "" {
 			for _, payload := range fastjsonJndiPayloads {
 				var uri string

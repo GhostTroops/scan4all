@@ -1,4 +1,7 @@
 {
+  "ScanPoolSize":5000,
+  "JndiAddress": "https://rcejndi.51pwn.com",
+  "CeyeDomain": "scan4all.51pwn.com",
   "CacheName": ".DbCache",
   "autoRmCache": "true",
   "ssh_username": "pkg/hydra/dicts/ssh_user.txt",
