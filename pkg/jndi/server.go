@@ -3,6 +3,7 @@ package jndi
 import (
 	"encoding/hex"
 	"fmt"
+	"github.com/hktalent/scan4all/lib/util"
 	"net"
 	"time"
 )
@@ -10,6 +11,13 @@ import (
 var JndiAddress string
 
 var JndiLog []string
+
+// 初始化变量
+func init() {
+	util.RegInitFunc(func() {
+		JndiAddress = util.GetVal("JndiAddress")
+	})
+}
 
 type Server struct {
 	TcpListen *net.TCPListener

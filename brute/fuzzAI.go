@@ -55,7 +55,7 @@ func init() {
 				asz404Url = aT1 // 容错
 			}
 		}
-		util.GetDb(&ErrPage{})
+		util.InitDb(&ErrPage{})
 	})
 }
 

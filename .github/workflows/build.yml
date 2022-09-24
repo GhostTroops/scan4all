@@ -39,7 +39,7 @@ jobs:
         with:
           go-version: 1.18
       - name: Install Dependences
-        run: sudo apt install -yy libpcap-dev upx
+        run: sudo apt install -yy libpcap-dev upx gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2

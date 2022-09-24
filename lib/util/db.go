@@ -24,15 +24,16 @@ func Close() {
 
 // 初始化模型
 func InitModle(x ...interface{}) {
-	for _, i := range x {
-		dbCC.Table(GetTableName(i)).Model(&i).AutoMigrate(i)
+	if nil == dbCC {
+		InitDb()
 	}
+	dbCC.AutoMigrate(x...)
 }
 
 // go - 交叉编译go-sqlite3 https://www.modb.pro/db/329524
 // ./tools/Check_CVE_2020_26134 -config="/Users/51pwn/MyWork/mybugbounty/allDomains.txt"
 // 获取Gorm db连接、操作对象
-func GetDb(dst ...interface{}) *gorm.DB {
+func InitDb(dst ...interface{}) *gorm.DB {
 	if nil != dbCC {
 		log.Println("dbCC not is nil, DbName = ", DbName)
 		return dbCC
@@ -81,16 +82,24 @@ func GetTableName[T any](mod T) string {
 
 // 通用,update
 // 指定id更新T类型mod数据
-func Update[T any](mod T, id interface{}) int64 {
-	var t1 *T = &mod
-	xxxD := dbCC.Table(GetTableName(mod)).Model(&t1)
+func Update[T any](mod *T, query string, args ...interface{}) int64 {
+	var t1 *T = mod
+	xxxD := dbCC.Table(GetTableName(mod)).Model(t1)
 	xxxD.AutoMigrate(t1)
-	rst := xxxD.Where("id = ?", id).Updates(mod)
+	rst := xxxD.Where(query, args...).Updates(mod)
 	xxxD.Commit()
 	if 0 >= rst.RowsAffected {
 		log.Println(rst.Error)
 	}
 	return rst.RowsAffected
+}
+
+// 更新失败再插入新数据，确保只有一条数据
+func UpInsert[T any](mod *T, query string, args ...interface{}) int64 {
+	if 1 >= Update[T](mod, query, args...) {
+		return Create[T](mod)
+	}
+	return 0
 }
 
 // 通用,insert
