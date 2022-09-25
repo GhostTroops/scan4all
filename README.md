@@ -55,7 +55,7 @@
 
   More references: config/doNmapScan.sh
   By default, naabu is used to complete port scanning -stats=true to view the scanning progress
-  Can I not scan ports?
+  Can I not scan Ports?
 ```bash
 noScan=true ./scan4all -l list.txt -v
 # nmap result default noScan=true 
@@ -115,7 +115,7 @@ noScan=true ./scan4all -l list.txt -v
 ```bash
 mkdir ~/MyWork/;cd ~/MyWork/;git clone https://github.com/hktalent/log4j-scan
 ````
-- Intelligently identify honeypots and skip targets. This function is disabled by default. You can set EnableHoneyportDetection=true to enable
+- Intelligently identify honeypots and skip Targets. This function is disabled by default. You can set EnableHoneyportDetection=true to enable
 - Highly customizable: allow to define your own dictionary through config/config.json configuration, or control more details, including but not limited to: nuclei, httpx, naabu, etc.
 - support HTTP Request Smuggling: CL-TE、TE-CL、TE-TE、CL_CL、BaseErr
   <img width="968" alt="image" src="https://user-images.githubusercontent.com/18223385/182503765-1307a634-61b2-4f7e-9631-a4184ec7ac25.png">
@@ -151,7 +151,7 @@ where 92.168.0.111 is the target to query
 go build
 # Precise scan url list UrlPrecise=true
 UrlPrecise=true ./scan4all -l xx.txt
-# Disable adaptation to nmap and use naabu port to scan its internally defined http-related ports
+# Disable adaptation to nmap and use naabu port to scan its internally defined http-related Ports
 priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 ````
 

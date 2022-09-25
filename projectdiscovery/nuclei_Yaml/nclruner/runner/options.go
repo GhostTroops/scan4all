@@ -115,7 +115,7 @@ func validateOptions(options *types.Options) error {
 	if options.FollowRedirects && options.DisableRedirects {
 		return errors.New("both follow redirects and disable redirects specified")
 	}
-	// loading the proxy server list from file or cli and test the connectivity
+	// loading the proxy server list from file or cli and testnmanp the connectivity
 	if err := loadProxyServers(options); err != nil {
 		return err
 	}

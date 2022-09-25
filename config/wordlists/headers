@@ -630,8 +630,8 @@ retry-after
 returned-error
 rlnclientipaddr
 root
-safe-ports-list
-safe-ports-ssl-list
+safe-Ports-list
+safe-Ports-ssl-list
 schedule-reply
 scheme
 script-name

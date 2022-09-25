@@ -1,4 +1,4 @@
-package masscan
+package portScan
 
 import (
 	"bytes"
@@ -38,7 +38,7 @@ type Nmaprun struct {
 type Host struct {
 	Address Address `json:"address" xml:"address" gorm:"embedded;"`
 	// association_autoupdate:true;association_autocreate:true;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;
-	Ports []Ports `json:"ports" xml:"ports>port" gorm:"foreignKey:addr;References:addr;"` // association_autocreate:true; // many2many:Host_Ports;foreignKey:ID;References:ID;
+	Ports []Ports `json:"Ports" xml:"Ports>port" gorm:"foreignKey:addr;References:addr;"` // association_autocreate:true; // many2many:Host_Ports;foreignKey:ID;References:ID;
 }
 
 // `xml:",innerxml"`

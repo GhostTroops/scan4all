@@ -922,7 +922,7 @@ requests:
           - "status_code==200 && (\"-1810847295\" == mmh3(base64_py(body)))"
 
       - type: dsl
-        name: "websockets-test-page-eg"
+        name: "websockets-testnmanp-page-eg"
         dsl:
           - "status_code==200 && (\"-291579889\" == mmh3(base64_py(body)))"
 

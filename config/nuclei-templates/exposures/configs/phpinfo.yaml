@@ -18,7 +18,7 @@ requests:
       - "{{BaseURL}}/info.php"
       - "{{BaseURL}}/infophp.php"
       - "{{BaseURL}}/php_info.php"
-      - "{{BaseURL}}/test.php"
+      - "{{BaseURL}}/testnmanp.php"
       - "{{BaseURL}}/i.php"
       - "{{BaseURL}}/asdf.php"
       - "{{BaseURL}}/pinfo.php"

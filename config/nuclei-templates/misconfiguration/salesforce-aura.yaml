@@ -6,7 +6,7 @@ info:
   severity: info
   reference:
     - https://www.enumerated.de/index/salesforce
-    - https://github.com/Ph33rr/cirrusgo (test endpoint)
+    - https://github.com/Ph33rr/cirrusgo (testnmanp endpoint)
   tags: aura,unauth,salesforce,exposure
 
 requests:

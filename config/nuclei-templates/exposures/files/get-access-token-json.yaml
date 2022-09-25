@@ -12,8 +12,8 @@ info:
 requests:
   - method: GET
     path:
-      - "{{BaseURL}}/wp-content/plugins/constant-contact-forms/vendor/constantcontact/constantcontact/test/Json/Auth/get_access_token.json"
-      - "{{BaseURL}}/wp-content/plugins/constant-contact-api-old/vendor/constantcontact/constantcontact/test/Json/Auth/get_access_token.json"
+      - "{{BaseURL}}/wp-content/plugins/constant-contact-forms/vendor/constantcontact/constantcontact/testnmanp/Json/Auth/get_access_token.json"
+      - "{{BaseURL}}/wp-content/plugins/constant-contact-api-old/vendor/constantcontact/constantcontact/testnmanp/Json/Auth/get_access_token.json"
 
     stop-at-first-match: true
     matchers-condition: and

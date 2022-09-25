@@ -11,16 +11,16 @@ Usage:
   ./scan4all [flags]
 
 INPUT:
-   -host string[]              hosts to scan ports for (comma-separated)
-   -list, -l string            list of hosts to scan ports (file)
+   -host string[]              hosts to scan Ports for (comma-separated)
+   -list, -l string            list of hosts to scan Ports (file)
    -exclude-hosts, -eh string  hosts to exclude from the scan (comma-separated)
    -exclude-file, -ef string   list of hosts to exclude from scan (file)
 
 PORT:
-   -port, -p string            ports to scan (80,443, 100-200
-   -top-ports, -tp string      top ports to scan (default http)
-   -exclude-ports, -ep string  ports to exclude from scan (comma-separated)
-   -ports-file, -pf string     list of ports to exclude from scan (file)
+   -port, -p string            Ports to scan (80,443, 100-200
+   -top-Ports, -tp string      top Ports to scan (default http)
+   -exclude-Ports, -ep string  Ports to exclude from scan (comma-separated)
+   -Ports-file, -pf string     list of Ports to exclude from scan (file)
    -exclude-cdn, -ec           skip full port scans for CDN's (only checks for 80,443)
 
 RATE-LIMIT:
@@ -41,7 +41,7 @@ CONFIGURATION:
    -source-ip string      source ip
    -interface-list, -il   list available interfaces and public ip
    -interface, -i string  network Interface to use for port scan
-   -nmap                  invoke nmap scan on targets (nmap must be installed) - Deprecated
+   -nmap                  invoke nmap scan on Targets (nmap must be installed) - Deprecated
    -nmap-cli string       nmap command to run on found results (example: -nmap-cli 'nmap -sV')
    -r string              list of custom resolver dns resolution (comma separated or from file)
    -proxy string          socks5 proxy
@@ -53,7 +53,7 @@ OPTIMIZATION:
    -timeout int       millisecond to wait before timing out (default 1000)
    -warm-up-time int  time in seconds between scan phases (default 2)
    -ping              ping probes for verification of host
-   -verify            validate the ports again with TCP verification
+   -verify            validate the Ports again with TCP verification
 
 DEBUG:
    -debug                    display debugging information

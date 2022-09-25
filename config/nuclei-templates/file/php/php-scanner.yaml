@@ -19,7 +19,7 @@ file:
       - cgi
       - inc
       - tpl
-      - test
+      - testnmanp
       - module
       - plugin
 

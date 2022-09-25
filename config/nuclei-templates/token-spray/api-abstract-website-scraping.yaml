@@ -14,7 +14,7 @@ self-contained: true
 requests:
   - method: GET
     path:
-      - "https://scrape.abstractapi.com/v1/?api_key={{token}}&url=https://test.test"
+      - "https://scrape.abstractapi.com/v1/?api_key={{token}}&url=https://testnmanp.testnmanp"
 
     matchers:
       - type: word
