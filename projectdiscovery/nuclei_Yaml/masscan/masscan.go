@@ -54,9 +54,9 @@ type Host struct {
 
 // 端口信息
 type Ports struct {
-	Addr     string  `json:"addr" gorm:"unique_index:S_R"`
-	Protocol string  `xml:"protocol,attr" json:"protocol" gorm:"unique_index:S_R"`
-	PortId   string  `xml:"portid,attr" json:"port_id" gorm:"unique_index:S_R"`
+	Addr     string  `json:"addr" gorm:"unique_index:addr,protocol,port_id"`
+	Protocol string  `xml:"protocol,attr" json:"protocol"`
+	PortId   string  `xml:"portid,attr" json:"port_id"`
 	State    State   `json:"state" xml:"state" gorm:"embedded;"`
 	Service  Service `json:"service" xml:"service"  gorm:"embedded;"`
 }
