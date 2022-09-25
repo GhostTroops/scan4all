@@ -5,7 +5,6 @@ import (
 	"encoding/xml"
 	_ "github.com/codegangsta/inject"
 	"github.com/hktalent/scan4all/lib/util"
-	"gorm.io/gorm"
 	"io"
 	"log"
 	"regexp"
@@ -13,15 +12,15 @@ import (
 
 // 地址
 type Address struct {
-	Addr     string `xml:"addr,attr" json:"addr"`
-	AddrType string `xml:"addrtype,attr" json:"addrType"`
+	Addr     string `xml:"addr,attr" json:"addr" gorm:"primaryKey;"`
+	AddrType string `xml:"addrtype,attr" json:"addr_type"`
 }
 
 // 状态
 type State struct {
 	State     string `xml:"state,attr" json:"state"`
 	Reason    string `xml:"reason,attr" json:"reason"`
-	ReasonTTL string `xml:"reason_ttl,attr" json:"reasonTTL"`
+	ReasonTTL string `xml:"reason_ttl,attr" json:"reason_ttl"`
 }
 
 // nmap 模式
@@ -37,25 +36,29 @@ type Nmaprun struct {
 //  foreignKey should name the model-local key field that joins to the foreign entity.
 //  references should name the foreign entity's primary or unique key.
 type Host struct {
-	gorm.Model
-	//StartTime       string
-	//Endtime         string  `xml:"endtime,attr"`
-	Ip      string  `json:"-"`
-	Port    string  `json:"-"`
-	Address Address `json:",inline" xml:"address" gorm:"foreignKey:Ip;references:Addr"`
-	Ports   Ports   `json:"ports" xml:"ports>port" gorm:"foreignKey:Port;references:Portid"`
-	//LastScanTime    int     `json:"lastScanTime"`
-	//LastScanEndTime int     `json:"lastScanEndTime"`
+	Address Address `json:"address" xml:"address" gorm:"embedded;"`
+	// association_autoupdate:true;association_autocreate:true;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;
+	Ports []Ports `json:"ports" xml:"ports>port" gorm:"foreignKey:addr;References:addr;"` // association_autocreate:true; // many2many:Host_Ports;foreignKey:ID;References:ID;
 }
 
+// `xml:",innerxml"`
+//func (cm Host) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
+//	if cm.Address != nil {
+//		err := e.EncodeToken(cm.comment)
+//		if err != nil {
+//			return err
+//		}
+//	}
+//	return e.Encode(cm.Member)
+//}
+
 // 端口信息
-type Ports []struct {
-	Protocol string  `xml:"protocol,attr" json:"protocol"`
-	Portid   string  `xml:"portid,attr" json:"portid"`
-	State1   string  `json:"-"`
-	State    State   `json:",inline" xml:"state"  gorm:"foreignKey:State1;references:State"`
-	Name     string  `json:"-"`
-	Service  Service `json:",inline" xml:"service" gorm:"foreignKey:Name;references:Name"`
+type Ports struct {
+	Addr     string  `json:"addr" gorm:"unique_index:S_R"`
+	Protocol string  `xml:"protocol,attr" json:"protocol" gorm:"unique_index:S_R"`
+	PortId   string  `xml:"portid,attr" json:"port_id" gorm:"unique_index:S_R"`
+	State    State   `json:"state" xml:"state" gorm:"embedded;"`
+	Service  Service `json:"service" xml:"service"  gorm:"embedded;"`
 }
 
 // 服务信息
@@ -124,9 +127,15 @@ func (m *Masscan) Run() error {
 			return
 		}
 		for _, i := range x1 {
-			nR := util.UpInsert[Host](&i, "address=? and ports=?", i.Address, i.Ports)
-			if 1 >= nR {
-				log.Println("util.UpInsert fail")
+			//log.Printf("%+v\n", i)
+			if 0 < len(i.Ports) {
+				for _, x9 := range i.Ports {
+					x9.Addr = i.Address.Addr
+				}
+				nR := util.UpInsert[Host](&i, "addr=?", i.Address.Addr)
+				if 1 > nR {
+					log.Println("util.UpInsert fail \n", line)
+				}
 			}
 		}
 	}, m.SystemPath, m.Args...)
@@ -153,6 +162,7 @@ func (m *Masscan) ParseLine(s string) ([]Host, error) {
 				if err == io.EOF || err != nil {
 					break
 				}
+				//host.Ip = host.Address.Addr
 				hosts = append(hosts, host)
 			}
 		default:
