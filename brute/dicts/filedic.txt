@@ -9341,7 +9341,7 @@ project/target
 projects
 prometheus
 prometheus/
-prometheus/targets
+prometheus/Targets
 promo
 propadmin
 propel.ini

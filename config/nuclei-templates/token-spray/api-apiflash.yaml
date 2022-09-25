@@ -14,10 +14,10 @@ self-contained: true
 requests:
   - method: GET
     path:
-      - "https://api.apiflash.com/v1/urltoimage?access_key={{token}}&url=https://selfcontained.test"
+      - "https://api.apiflash.com/v1/urltoimage?access_key={{token}}&url=https://selfcontained.testnmanp"
 
     matchers:
       - type: word
         part: body
         words:
-          - 'net::ERR_NAME_NOT_RESOLVED at https://selfcontained.test'
+          - 'net::ERR_NAME_NOT_RESOLVED at https://selfcontained.testnmanp'

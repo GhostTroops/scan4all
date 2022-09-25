@@ -60,8 +60,8 @@ func RunHttpxBinaryAndGetResults(target string, httpxBinary string, debug bool, 
 	return parts, nil
 }
 
-// TestCase is a single integration test case
+// TestCase is a single integration testnmanp case
 type TestCase interface {
-	// Execute executes a test case and returns any errors if occurred
+	// Execute executes a testnmanp case and returns any errors if occurred
 	Execute() error
 }

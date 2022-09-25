@@ -23,7 +23,7 @@ func main9() {
 	//nuclei_Yaml.RunNuclei(Naabubuffer, nucleiDone)
 	//<-nucleiDone
 
-	//x := "test/4ee58a18fc884edd74ff1ec077e8c90c6048a45b.xml"
+	//x := "testnmanp/4ee58a18fc884edd74ff1ec077e8c90c6048a45b.xml"
 	//b, err := ioutil.ReadFile(x)
 	//if nil == err && 0 < len(b) {
 	//	s := string(b)

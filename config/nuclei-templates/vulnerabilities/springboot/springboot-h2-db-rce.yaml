@@ -39,6 +39,6 @@ requests:
       - type: word
         part: body
         words:
-          - '"spring.datasource.hikari.connection-test-query":"CREATE ALIAS EXEC AS CONCAT'
+          - '"spring.datasource.hikari.connection-testnmanp-query":"CREATE ALIAS EXEC AS CONCAT'
 
 # Enhanced by mp on 2022/05/31

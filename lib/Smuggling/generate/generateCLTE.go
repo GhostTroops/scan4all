@@ -39,7 +39,7 @@ Content-Type: application/x-www-form-urlencoded
 Content-Length: %d%s
 Connection: close
 
-search=test`)},
+search=testnmanp`)},
 	}
 	oH, err := url.Parse(szUrl)
 	if nil == err {

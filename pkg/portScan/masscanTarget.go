@@ -1,4 +1,4 @@
-package masscan
+package portScan
 
 import (
 	"github.com/hktalent/scan4all/lib/util"
@@ -21,7 +21,7 @@ rate =  100000.00
 output-format = xml
 output-status = all
 output-filename = scan.xml
-ports = 0-65535
+Ports = 0-65535
 range = 0.0.0.0-255.255.255.255
 excludefile = exclude.txt
 
@@ -35,7 +35,7 @@ func ScanTarget(ip string, args ...interface{}) {
 	ms.Rate = "5000"
 	ms.Ports = "0-65535" // -p-  , "-p-"
 	ms.Args = []string{
-		"--banners",
+		//"--banners",
 		//"-oX", s1 + ".xml",
 		"--max-rate", ms.Rate,
 	}

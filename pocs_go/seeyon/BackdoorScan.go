@@ -11,7 +11,7 @@ import (
 //test123456.jsp?pwd=asasd3344&cmd=cmd+/c+whoami
 //qwer960452.jsp?pwd=el38A9485&cmd=cmd+/c+whoami
 //a234.jspx pass:rebeyond
-//test10086.jsp 蚁剑密码: test
+//test10086.jsp 蚁剑密码: testnmanp
 //peiqi10086.jsp 蚁剑密码: peiqi
 
 func BackdoorScan(u string) bool {

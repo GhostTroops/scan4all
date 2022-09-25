@@ -12,8 +12,8 @@ info:
 requests:
   - method: GET
     path:
-      - "{{BaseURL}}/jolokia/search/*:test=test"
-      - "{{BaseURL}}/actuator/jolokia/search/*:test=test"
+      - "{{BaseURL}}/jolokia/search/*:testnmanp=testnmanp"
+      - "{{BaseURL}}/actuator/jolokia/search/*:testnmanp=testnmanp"
 
     stop-at-first-match: true
     matchers-condition: and

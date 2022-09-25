@@ -10,7 +10,7 @@ info:
 requests:
   - method: GET
     path:
-      - "{{BaseURL}}/node_modules/mqtt/test/helpers/"
+      - "{{BaseURL}}/node_modules/mqtt/testnmanp/helpers/"
 
     matchers-condition: and
     matchers:
@@ -20,6 +20,6 @@ requests:
 
       - type: word
         words:
-          - "Index of /node_modules/mqtt/test/helpers"
+          - "Index of /node_modules/mqtt/testnmanp/helpers"
           - "Parent Directory"
         condition: and

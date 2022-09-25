@@ -1123,8 +1123,8 @@ root
 rR
 rs-feature-poe-ab-test-1
 RTT
-safe-ports-list
-safe-ports-ssl-list
+safe-Ports-list
+safe-Ports-ssl-list
 Samizdat-X-Personalize
 Sat
 save-data

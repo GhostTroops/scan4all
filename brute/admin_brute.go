@@ -79,7 +79,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 	usernamekey, passwordkey, loginurl, ismd5 := getinput(u)
 	var (
 		adminfalsedata        = fmt.Sprintf("%s=admin&%s=Qweasd123admin", usernamekey, passwordkey)
-		testfalsedata         = fmt.Sprintf("%s=test&%s=Qweasd123test", usernamekey, passwordkey)
+		testfalsedata         = fmt.Sprintf("%s=testnmanp&%s=Qweasd123test", usernamekey, passwordkey)
 		adminaccount          = true
 		testaccount           = true
 		usernames             []string
@@ -145,7 +145,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 		usernames = append(usernames, "admin")
 	}
 	if testaccount {
-		usernames = append(usernames, "test")
+		usernames = append(usernames, "testnmanp")
 	}
 	if !adminaccount && !testaccount {
 		falseis500 = true

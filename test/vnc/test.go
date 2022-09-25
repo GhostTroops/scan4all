@@ -13,7 +13,7 @@ func main() {
 		return
 	}
 
-	cc1, err := vnc.Client(nc, &vnc.ClientConfig{Auth: []vnc.ClientAuth{&vnc.PasswordAuth{Password: "test"}}})
+	cc1, err := vnc.Client(nc, &vnc.ClientConfig{Auth: []vnc.ClientAuth{&vnc.PasswordAuth{Password: "testnmanp"}}})
 	if err != nil {
 		log.Println(err)
 	} else {

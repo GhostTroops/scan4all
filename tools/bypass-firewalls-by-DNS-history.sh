@@ -300,7 +300,7 @@ echo -e "${YELLOW}[-] $( echo $list_ips | tr " " "\n" | wc -l | tr -d '[:space:]
 ################################################################################
 ######################## Bypass Test ###########################################
 ################################################################################
-# For each IP test the bypass and calculate the match %
+# For each IP testnmanp the bypass and calculate the match %
 echo -e "${YELLOW}[-] Launching requests to origin servers...${NC}"
 if [[ $checkall -eq 0 ]];then
   for ip in $list_ips;do

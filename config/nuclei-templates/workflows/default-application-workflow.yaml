@@ -6,7 +6,7 @@ info:
   description: Detects default installations of web applications
 
 workflows:
-  - template: technologies/apache/default-apache-test-all.yaml
+  - template: technologies/apache/default-apache-testnmanp-all.yaml
   - template: technologies/apache/xampp-default-page.yaml
   - template: technologies/microsoft/default-iis7-page.yaml
   - template: technologies/microsoft/default-windows-server-page.yaml

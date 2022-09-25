@@ -230,7 +230,7 @@ func LoginForRDP(target, domain, username, password string) error {
 
 func VerifyProtocol(target string) string {
 	var err error
-	err = LoginForSSL(target, "", "administrator", "test")
+	err = LoginForSSL(target, "", "administrator", "testnmanp")
 	if err == nil {
 		return PROTOCOL_SSL
 	}

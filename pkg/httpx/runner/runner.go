@@ -702,7 +702,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 	}
 
 	for target := range r.targets(hp, stringz.TrimProtocol(t, scanopts.NoFallback || scanopts.NoFallbackScheme)) {
-		// if no custom ports specified then test the default ones
+		// if no custom ports specified then testnmanp the default ones
 		if len(customport.Ports) == 0 {
 			for _, method := range scanopts.Methods {
 				for _, prot := range protocols {
@@ -809,7 +809,7 @@ func (r *Runner) targets(hp *httpx.HTTPX, target string) chan string {
 			}
 		}
 
-		// test if the target is a cidr
+		// testnmanp if the target is a cidr
 		if iputil.IsCIDR(target) {
 			cidrIps, err := mapcidr.IPAddresses(target)
 			if err != nil {

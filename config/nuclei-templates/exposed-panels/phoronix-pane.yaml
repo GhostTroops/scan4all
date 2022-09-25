@@ -5,7 +5,7 @@ info:
   author: pikpikcu
   severity: info
   metadata:
-    shodan-query: http.title:"phoronix-test-suite"
+    shodan-query: http.title:"phoronix-testnmanp-suite"
   tags: panel,phoronix
 
 requests:

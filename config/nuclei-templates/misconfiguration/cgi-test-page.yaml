@@ -1,4 +1,4 @@
-id: cgi-test-page
+id: cgi-testnmanp-page
 
 info:
   name: CGI Test page
@@ -9,7 +9,7 @@ info:
 requests:
   - method: GET
     path:
-      - "{{BaseURL}}/cgi-bin/test/test.cgi"
+      - "{{BaseURL}}/cgi-bin/testnmanp/testnmanp.cgi"
 
     matchers-condition: and
     matchers:

