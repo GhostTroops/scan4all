@@ -3,6 +3,7 @@ package util
 import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/gorm/logger"
 	"log"
 	"os"
@@ -52,7 +53,11 @@ func InitDb(dst ...interface{}) *gorm.DB {
 	}
 	log.Println("DbName ", szDf)
 	xx01 := sqlite.Open("file:" + szDf + ".db?cache=shared&mode=rwc&_journal_mode=WAL&Synchronous=Off&temp_store=memory&mmap_size=30000000000")
-	db, err := gorm.Open(xx01, &gorm.Config{PrepareStmt: true, Logger: logger.Default.LogMode(logger.Silent)})
+	db, err := gorm.Open(xx01, &gorm.Config{
+		PrepareStmt: true,
+		//Logger: logger.Default.LogMode(logger.Silent),
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err == nil { // no error
 		db1, _ := db.DB()
 		if err := db1.Ping(); nil == err {
@@ -84,7 +89,7 @@ func GetTableName[T any](mod T) string {
 // 指定id更新T类型mod数据
 func Update[T any](mod *T, query string, args ...interface{}) int64 {
 	var t1 *T = mod
-	xxxD := dbCC.Table(GetTableName(mod)).Model(t1)
+	xxxD := dbCC.Table(GetTableName(mod)).Model(&t1)
 	xxxD.AutoMigrate(t1)
 	rst := xxxD.Where(query, args...).Updates(mod)
 	xxxD.Commit()
@@ -96,10 +101,18 @@ func Update[T any](mod *T, query string, args ...interface{}) int64 {
 
 // 更新失败再插入新数据，确保只有一条数据
 func UpInsert[T any](mod *T, query string, args ...interface{}) int64 {
-	if 1 >= Update[T](mod, query, args...) {
-		return Create[T](mod)
+	// 在冲突时，更新除主键以外的所有列
+	if 1 > Update[T](mod, query, args...) { // &&
+		if 1 > Create[T](mod) {
+			xx1 := dbCC.Clauses(clause.OnConflict(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "addr"}}, // key colume
+				UpdateAll: true})).Create(mod)
+			return xx1.RowsAffected
+		} else {
+			return 1
+		}
 	}
-	return 0
+	return 1
 }
 
 // 通用,insert

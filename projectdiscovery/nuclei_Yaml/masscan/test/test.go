@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	m := &masscan.Host{}
-	util.InitModle(m)
+	//util.InitModle(masscan.Ports{}, masscan.Address{}, masscan.Service{}, masscan.State{}, masscan.Host{})
+	util.InitModle(&masscan.Ports{}, &masscan.Host{})
 	masscan.ScanTarget("192.168.0.111")
 }

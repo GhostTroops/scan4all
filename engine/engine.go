@@ -80,16 +80,17 @@ func (e *Engine) DoEvent(ed *EventData) {
 		fnCall := e.DoCase(ed)
 		if nil != fnCall {
 			in := inject.New()
-			a := ed.EventData
-			for _, i := range a {
+			for _, i := range ed.EventData {
 				in.Map(i)
 			}
 			v, err := in.Invoke(fnCall)
 			if nil != err {
-				log.Printf("DoEvent is error: %v %+v \n", err, ed.EventData)
+				log.Printf("DoEvent %s is error: %v %+v \n", ed.EventType, err, ed.EventData)
 			} else if nil != v {
-				log.Printf("DoEvent result %v\n", v)
+				log.Printf("DoEvent result %s %v\n", ed.EventType, v)
 			}
+		} else {
+			log.Printf("can case func %v\n", ed)
 		}
 	}
 }
