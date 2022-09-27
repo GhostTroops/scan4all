@@ -22,7 +22,7 @@ var (
 	CustomAuthMap  *AuthList
 	// rtsp://admin:admin@192.168.0.111:554/0x8b6c42
 	// rtsp: 554, 5554,8554
-	ProtocolList = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,mongod,smb,telnet,snmp,wap-wsp,router,winrm,pop3,socks5,vnc", ",")
+	ProtocolList = strings.Split("rdp,ssh,rsh-spx,mysql,mssql,oracle,postgresql,redis,ftp,mongodb,mongod,smb,telnet,snmp,wap-wsp,router,winrm,pop3,socks5,vnc,pop3s", ",")
 )
 
 func NewCracker(info *AuthInfo, isAuthUpdate bool, threads int) *Cracker {
@@ -67,6 +67,8 @@ func (c *Cracker) Run() {
 		c.Pool.Function = rdpCracker(ip, port)
 	case "mysql":
 		c.Pool.Function = mysqlCracker
+	case "pop3s":
+		c.Pool.Function = pop3Cracker
 	case "pop3":
 		c.Pool.Function = pop3Cracker
 	case "mssql":
