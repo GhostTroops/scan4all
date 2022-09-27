@@ -97,7 +97,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 							FinalURL:               szUlr,
 							Checklog4j:             false,
 						}
-					} else if bCheckWeakPassword && "110" == szPort && service == "pop3" {
+					} else if bCheckWeakPassword && ("110" == szPort || "995" == szPort) && service == "pop3" {
 						CheckWeakPassword(ip, service, port)
 					} else if "2181" == szPort {
 						util.PocCheck_pipe <- &util.PocCheck{

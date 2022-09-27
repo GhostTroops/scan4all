@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/codegangsta/inject"
 	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg/portScan"
 	"github.com/hktalent/scan4all/pocs_go"
-	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/masscan"
 	"github.com/panjf2000/ants/v2"
 	"log"
 	"sync"
@@ -63,7 +63,9 @@ func (e *Engine) DoCase(ed *EventData) interface{} {
 	if nil != ed {
 		switch ed.EventType {
 		case "masscan":
-			return masscan.ScanTarget
+			return portScan.ScanTarget
+		case "nmap":
+			return portScan.ScanTarget
 		default:
 			return nil
 		}
@@ -128,6 +130,7 @@ func init() {
 						}(x1)
 					})
 				default:
+					util.DoDelayClear()
 					//var f01 float32 = float32(nCnt) / float32(nMax) * float32(100)
 					//fmt.Printf(" Asynchronous go PoCs detection task %%%0.2f ....\r", f01)
 					//<-time.After(time.Duration(1) * time.Second)
