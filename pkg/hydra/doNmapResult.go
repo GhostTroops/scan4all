@@ -65,11 +65,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 				//bf.Write([]byte(fmt.Sprintf("%s:%s\n", ip, szPort)))
 				szUlr := fmt.Sprintf("http://%s:%s\n", ip, szPort)
 				bf.Write([]byte(szUlr))
-				if bCheckWeakPassword {
-					CheckWeakPassword(ip, service, port)
-				} else {
-					log.Println("bCheckWeakPassword = ", bCheckWeakPassword)
-				}
+
 				// 存储结果到其他地方
 				//x9 := AuthInfo{IPAddr: ip, Port: port, Protocol: service}
 				// 构造发送es等数据
@@ -81,9 +77,7 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 					m1[ip] = append(xx09, []string{szPort, service})
 				}
 				if os.Getenv("NoPOC") != "true" {
-					if "socks5" == service || "vnc" == service {
-						CheckWeakPassword(ip, service, port)
-					} else if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
+					if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
 						util.PocCheck_pipe <- &util.PocCheck{
 							Wappalyzertechnologies: &[]string{service},
 							URL:                    szUlr,
@@ -97,8 +91,6 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 							FinalURL:               szUlr,
 							Checklog4j:             false,
 						}
-					} else if bCheckWeakPassword && ("110" == szPort || "995" == szPort) && service == "pop3" {
-						CheckWeakPassword(ip, service, port)
 					} else if "2181" == szPort {
 						util.PocCheck_pipe <- &util.PocCheck{
 							Wappalyzertechnologies: &[]string{"ZookeeperUnauthority"},
@@ -108,11 +100,14 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 						}
 					}
 				}
+				// 若密码、破解
 				if bCheckWeakPassword {
 					if "8728" == szPort && service == "unknown" {
 						CheckWeakPassword(ip, "router", port)
 					} else if ("5985" == szPort || "5986" == szPort) && -1 < strings.Index(service, "microsoft ") {
 						CheckWeakPassword(ip, "winrm", port)
+					} else { // if ("110" == szPort || "995" == szPort) && service == "pop3" || "socks5" == service || "vnc" == service {
+						CheckWeakPassword(ip, service, port)
 					}
 				}
 
