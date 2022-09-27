@@ -2,11 +2,11 @@ package main
 
 import (
 	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/masscan"
+	"github.com/hktalent/scan4all/pkg/portScan"
 )
 
 func main() {
 	//util.InitModle(masscan.Ports{}, masscan.Address{}, masscan.Service{}, masscan.State{}, masscan.Host{})
-	util.InitModle(&masscan.Ports{}, &masscan.Host{})
-	masscan.ScanTarget("192.168.0.111")
+	util.InitModle(&portScan.Ports{}, &portScan.Host{})
+	portScan.ScanTarget("192.168.0.111")
 }

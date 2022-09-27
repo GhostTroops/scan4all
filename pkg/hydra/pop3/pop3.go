@@ -1,416 +1,436 @@
 package pop3
 
 import (
+	"bufio"
+	"bytes"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
 	"strconv"
 	"strings"
+	"time"
 )
+
+// Client implements a Client e-mail client.
+type Client struct {
+	opt Opt
+}
+
+// Conn is a stateful connection with the POP3 server/
+type Conn struct {
+	conn net.Conn
+	r    *bufio.Reader
+	w    *bufio.Writer
+}
+
+// Opt represents the client configuration.
+type Opt struct {
+	Host string `json:"host"`
+	Port int    `json:"port"`
+
+	// Default is 3 seconds.
+	DialTimeout time.Duration `json:"dial_timeout"`
+
+	TLSEnabled    bool `json:"tls_enabled"`
+	TLSSkipVerify bool `json:"tls_skip_verify"`
+}
+
+// MessageID contains the ID and size of an individual message.
+type MessageID struct {
+	// ID is the numerical index (non-unique) of the message.
+	ID   int
+	Size int
+
+	// UID is only present if the response is to the UIDL command.
+	UID string
+}
 
 var (
-	EOF = errors.New("skip the all mail remaining")
+	lineBreak = []byte("\r\n")
+
+	respOK      = []byte("+OK")   // `+OK` without additional info
+	respOKInfo  = []byte("+OK ")  // `+OK <info>`
+	respErr     = []byte("-ERR")  // `-ERR` without additional info
+	respErrInfo = []byte("-ERR ") // `-ERR <info>`
 )
 
-// pop3密码破解
-func DoPop3(address, user, pass string) bool {
-	client, err := Dial(address)
-	if err == nil {
-		defer func() {
-			client.Quit()
-			client.Close()
-		}()
-		if err = client.User(user); err == nil {
-			if err = client.Pass(pass); err != nil {
-				return true
-			}
+// New returns a new client object using an existing connection.
+func New(opt Opt) *Client {
+	if opt.DialTimeout < time.Millisecond {
+		opt.DialTimeout = time.Second * 3
+	}
+
+	return &Client{
+		opt: opt,
+	}
+}
+
+// NewConn creates and returns live POP3 server connection.
+func (c *Client) NewConn() (*Conn, error) {
+	var (
+		addr = fmt.Sprintf("%s:%d", c.opt.Host, c.opt.Port)
+	)
+
+	conn, err := net.DialTimeout("tcp", addr, c.opt.DialTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	// No TLS.
+	if c.opt.TLSEnabled {
+		// Skip TLS host verification.
+		//tlsCfg := tls.Config{}
+		tlsCfg := tls.Config{
+			Renegotiation:      tls.RenegotiateOnceAsClient,
+			InsecureSkipVerify: true,
+			MinVersion:         tls.VersionTLS10,
 		}
+		if c.opt.TLSSkipVerify {
+			tlsCfg.InsecureSkipVerify = c.opt.TLSSkipVerify
+		} else {
+			tlsCfg.ServerName = c.opt.Host // strings.Split(c.opt.Host,":")[0]
+		}
+
+		conn = tls.Client(conn, &tlsCfg)
 	}
-	return false
+
+	pCon := &Conn{
+		conn: conn,
+		r:    bufio.NewReader(conn),
+		w:    bufio.NewWriter(conn),
+	}
+
+	// Verify the connection by reading the welcome +OK greeting.
+	if _, err := pCon.ReadOne(); err != nil {
+		return nil, err
+	}
+
+	return pCon, nil
 }
 
-// MessageInfo has Number, Size, and Uid fields,
-// and used as a return value of ListAll and UidlAll.
-// When used as the return value of the method ListAll,
-// MessageInfo contain only the Number and Size values.
-// When used as the return value of the method UidlAll,
-// MessageInfo contain only the Number and Uid values.
-type MessageInfo struct {
-	Number int
-	Size   uint64
-	Uid    string
+// Send sends a POP3 command to the server. The given comand is suffixed with "\r\n".
+func (c *Conn) Send(b string) error {
+	if _, err := c.w.WriteString(b + "\r\n"); err != nil {
+		return err
+	}
+	return c.w.Flush()
 }
 
-// A Client represents a client connection to an POP server.
-type Client struct {
-	// Text is the pop3.Conn used by the Client.
-	Text *Conn
-	// keep a reference to the connection so it can be used to create a TLS
-	// connection later
-	conn net.Conn
-}
+// Cmd sends a command to the server. POP3 responses are either single line or multi-line.
+// The first line always with -ERR in case of an error or +OK in case of a successful operation.
+// OK+ is always followed by a response on the same line which is either the actual response data
+// in case of single line responses, or a help message followed by multiple lines of actual response
+// data in case of multiline responses.
+// See https://www.shellhacks.com/retrieve-email-pop3-server-command-line/ for examples.
+func (c *Conn) Cmd(cmd string, isMulti bool, args ...interface{}) (*bytes.Buffer, error) {
+	var cmdLine string
 
-// Dial returns a new Client connected to an POP server at addr.
-// The addr must include a port number.
-func Dial(addr string) (*Client, error) {
-	conn, err := net.Dial("tcp", addr)
+	// Repeat a %v to format each arg.
+	if len(args) > 0 {
+		format := " " + strings.TrimRight(strings.Repeat("%v ", len(args)), " ")
 
+		// CMD arg1 argn ...\r\n
+		cmdLine = fmt.Sprintf(cmd+format, args...)
+	} else {
+		cmdLine = cmd
+	}
+
+	if err := c.Send(cmdLine); err != nil {
+		return nil, err
+	}
+
+	// Read the first line of response to get the +OK/-ERR status.
+	b, err := c.ReadOne()
 	if err != nil {
 		return nil, err
 	}
 
-	return NewClient(conn)
+	// Single line response.
+	if !isMulti {
+		return bytes.NewBuffer(b), err
+	}
+
+	buf, err := c.ReadAll()
+	return buf, err
 }
 
-// NewClient returns a new Client using an existing connection.
-func NewClient(conn net.Conn) (*Client, error) {
-	text := NewConn(conn)
-
-	_, err := text.ReadResponse()
-
+// ReadOne reads a single line response from the conn.
+func (c *Conn) ReadOne() ([]byte, error) {
+	b, _, err := c.r.ReadLine()
 	if err != nil {
 		return nil, err
 	}
 
-	return &Client{Text: text, conn: conn}, nil
+	r, err := parseResp(b)
+	return r, err
 }
 
-// User issues a USER command to the server using the provided user name.
-func (c *Client) User(user string) error {
-	return c.cmdSimple("USER %s", user)
-}
+// ReadAll reads all lines from the connection until the POP3 multiline terminator "." is encountered
+// and returns a bytes.Buffer of all the read lines.
+func (c *Conn) ReadAll() (*bytes.Buffer, error) {
+	buf := &bytes.Buffer{}
 
-// Pass issues a PASS command to the server using the provided password.
-func (c *Client) Pass(pass string) error {
-	return c.cmdSimple("PASS %s", pass)
-}
-
-// Stat issues a STAT command to the server
-// and returns mail count and total size.
-func (c *Client) Stat() (int, uint64, error) {
-	return c.cmdStatOrList("STAT", "STAT")
-}
-
-// Retr issues a RETR command to the server using the provided mail number
-// and returns mail data.
-func (c *Client) Retr(number int) (string, error) {
-	var err error
-
-	err = c.Text.WriteLine("RETR %d", number)
-
-	if err != nil {
-		return "", err
-	}
-
-	_, err = c.Text.ReadResponse()
-
-	if err != nil {
-		return "", err
-	}
-
-	return c.Text.ReadToPeriod()
-}
-
-// List issues a LIST command to the server using the provided mail number
-// and returns mail number and size.
-func (c *Client) List(number int) (int, uint64, error) {
-	return c.cmdStatOrList("LIST", "LIST %d", number)
-}
-
-// List issues a LIST command to the server
-// and returns array of MessageInfo.
-func (c *Client) ListAll() ([]MessageInfo, error) {
-	list := make([]MessageInfo, 0)
-
-	err := c.cmdReadLines("LIST", func(line string) error {
-		number, size, err := c.convertNumberAndSize(line)
-
+	for {
+		b, _, err := c.r.ReadLine()
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		list = append(list, MessageInfo{Number: number, Size: size})
-
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return list, nil
-}
-
-// Uidl issues a UIDL command to the server using the provided mail number
-// and returns mail number and unique id.
-func (c *Client) Uidl(number int) (int, string, error) {
-	var err error
-
-	err = c.Text.WriteLine("UIDL %d", number)
-
-	if err != nil {
-		return 0, "", err
-	}
-
-	var msg string
-
-	msg, err = c.Text.ReadResponse()
-
-	if err != nil {
-		return 0, "", err
-	}
-
-	var val int
-	var uid string
-
-	val, uid, err = c.convertNumberAndUid(msg)
-
-	if err != nil {
-		return 0, "", err
-	}
-
-	return val, uid, nil
-}
-
-// Uidl issues a UIDL command to the server
-// and returns array of MessageInfo.
-func (c *Client) UidlAll() ([]MessageInfo, error) {
-	list := make([]MessageInfo, 0)
-
-	err := c.cmdReadLines("UIDL", func(line string) error {
-		number, uid, err := c.convertNumberAndUid(line)
-
-		if err != nil {
-			return err
-		}
-
-		list = append(list, MessageInfo{Number: number, Uid: uid})
-
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return list, nil
-}
-
-// Dele issues a DELE command to the server using the provided mail number.
-func (c *Client) Dele(number int) error {
-	return c.cmdSimple("DELE %d", number)
-}
-
-// Noop issues a NOOP command to the server.
-func (c *Client) Noop() error {
-	return c.cmdSimple("NOOP")
-}
-
-// Rset issues a RSET command to the server.
-func (c *Client) Rset() error {
-	return c.cmdSimple("RSET")
-}
-
-// Quit issues a QUIT command to the server.
-func (c *Client) Quit() error {
-	return c.cmdSimple("QUIT")
-}
-
-// ReceiveMail connects to the server at addr,
-// and authenticates with user and pass,
-// and calling receiveFn for each mail.
-func ReceiveMail(addr, user, pass string, receiveFn ReceiveMailFunc) error {
-	c, err := Dial(addr)
-
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		if err != nil && err != EOF {
-			c.Rset()
-		}
-
-		c.Quit()
-		c.Close()
-	}()
-
-	if err = c.User(user); err != nil {
-		return err
-	}
-
-	if err = c.Pass(pass); err != nil {
-		return err
-	}
-
-	var mis []MessageInfo
-
-	if mis, err = c.UidlAll(); err != nil {
-		return err
-	}
-
-	for _, mi := range mis {
-		var data string
-
-		data, err = c.Retr(mi.Number)
-
-		del, err := receiveFn(mi.Number, mi.Uid, data, err)
-
-		if err != nil && err != EOF {
-			return err
-		}
-
-		if del {
-			if err = c.Dele(mi.Number); err != nil {
-				return err
-			}
-		}
-
-		if err == EOF {
+		// "." indicates the end of a multi-line response.
+		if bytes.Equal(b, []byte(".")) {
 			break
 		}
+
+		if _, err := buf.Write(b); err != nil {
+			return nil, err
+		}
+		if _, err := buf.Write(lineBreak); err != nil {
+			return nil, err
+		}
 	}
 
-	return nil
+	return buf, nil
 }
 
-// ReceiveMailFunc is the type of the function called for each mail.
-// Its arguments are mail's number, uid, data, and mail receiving error.
-// if this function returns false value, the mail will be deleted,
-// if its returns EOF, skip the all mail of remaining.
-// (after deleting mail, if necessary)
-type ReceiveMailFunc func(number int, uid, data string, err error) (bool, error)
-
-func (c *Client) cmdSimple(format string, args ...interface{}) error {
-	var err error
-
-	err = c.Text.WriteLine(format, args...)
-
-	if err != nil {
+// Auth authenticates the given credentials with the server.
+func (c *Conn) Auth(user, password string) error {
+	if err := c.User(user); err != nil {
 		return err
 	}
 
-	_, err = c.Text.ReadResponse()
-
-	if err != nil {
+	if err := c.Pass(password); err != nil {
 		return err
 	}
 
-	return nil
+	// Issue a NOOP to force the server to respond to the auth.
+	// Couresy: github.com/TheCreeper/go-pop3
+	return c.Noop()
 }
 
-func (c *Client) cmdStatOrList(name, format string, args ...interface{}) (int, uint64, error) {
-	var err error
+// User sends the username to the server.
+func (c *Conn) User(s string) error {
+	_, err := c.Cmd("USER", false, s)
+	return err
+}
 
-	err = c.Text.WriteLine(format, args...)
+// Pass sends the password to the server.
+func (c *Conn) Pass(s string) error {
+	_, err := c.Cmd("PASS", false, s)
+	return err
+}
 
+// Stat returns the number of messages and their total size in bytes in the inbox.
+func (c *Conn) Stat() (int, int, error) {
+	b, err := c.Cmd("STAT", false)
 	if err != nil {
 		return 0, 0, err
 	}
 
-	var msg string
+	// count size
+	f := bytes.Fields(b.Bytes())
 
-	msg, err = c.Text.ReadResponse()
+	// Total number of messages.
+	count, err := strconv.Atoi(string(f[0]))
+	if err != nil {
+		return 0, 0, err
+	}
+	if count == 0 {
+		return 0, 0, nil
+	}
 
+	// Total size of all messages in bytes.
+	size, err := strconv.Atoi(string(f[1]))
 	if err != nil {
 		return 0, 0, err
 	}
 
-	s := strings.Split(msg, " ")
-
-	if len(s) < 2 {
-		return 0, 0, ResponseError(fmt.Sprintf("invalid response format: %s", msg))
-	}
-
-	var val int
-	var size uint64
-
-	val, size, err = c.convertNumberAndSize(msg)
-
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return val, size, nil
+	return count, size, nil
 }
 
-func (c *Client) cmdReadLines(cmnd string, lineFn lineFunc) error {
-	var err error
+// List returns a list of (message ID, message Size) pairs.
+// If the optional msgID > 0, then only that particular message is listed.
+// The message IDs are sequential, 1 to N.
+func (c *Conn) List(msgID int) ([]MessageID, error) {
+	var (
+		buf *bytes.Buffer
+		err error
+	)
 
-	err = c.Text.WriteLine(cmnd)
-
+	if msgID <= 0 {
+		// Multiline response listing all messages.
+		buf, err = c.Cmd("LIST", true)
+	} else {
+		// Single line response listing one message.
+		buf, err = c.Cmd("LIST", false, msgID)
+	}
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = c.Text.ReadResponse()
+	var (
+		out   []MessageID
+		lines = bytes.Split(buf.Bytes(), lineBreak)
+	)
 
-	if err != nil {
-		return err
+	for _, l := range lines {
+		// id size
+		f := bytes.Fields(l)
+		if len(f) == 0 {
+			break
+		}
+
+		id, err := strconv.Atoi(string(f[0]))
+		if err != nil {
+			return nil, err
+		}
+
+		size, err := strconv.Atoi(string(f[1]))
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, MessageID{ID: id, Size: size})
 	}
 
-	var lines []string
+	return out, nil
+}
 
-	lines, err = c.Text.ReadLines()
+// Uidl returns a list of (message ID, message UID) pairs. If the optional msgID
+// is > 0, then only that particular message is listed. It works like Top() but only works on
+// servers that support the UIDL command. Messages size field is not available in the UIDL response.
+func (c *Conn) Uidl(msgID int) ([]MessageID, error) {
+	var (
+		buf *bytes.Buffer
+		err error
+	)
 
+	if msgID <= 0 {
+		// Multiline response listing all messages.
+		buf, err = c.Cmd("UIDL", true)
+	} else {
+		// Single line response listing one message.
+		buf, err = c.Cmd("UIDL", false, msgID)
+	}
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for _, line := range lines {
-		err = lineFn(line)
+	var (
+		out   []MessageID
+		lines = bytes.Split(buf.Bytes(), lineBreak)
+	)
 
+	for _, l := range lines {
+		// id size
+		f := bytes.Fields(l)
+		if len(f) == 0 {
+			break
+		}
+
+		id, err := strconv.Atoi(string(f[0]))
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, MessageID{ID: id, UID: string(f[1])})
+	}
+
+	return out, nil
+}
+
+// Retr downloads a message by the given msgID, parses it and returns it as a
+// emersion/go-message.message.Entity object.
+func (c *Conn) Retr(msgID int) (*message.Entity, error) {
+	b, err := c.Cmd("RETR", true, msgID)
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := message.Read(b)
+	if err != nil {
+		if !message.IsUnknownCharset(err) {
+			return nil, err
+		}
+	}
+
+	return m, nil
+}
+
+// RetrRaw downloads a message by the given msgID and returns the raw []byte
+// of the entire message.
+func (c *Conn) RetrRaw(msgID int) (*bytes.Buffer, error) {
+	b, err := c.Cmd("RETR", true, msgID)
+	return b, err
+}
+
+// Top retrieves a message by its ID with full headers and numLines lines of the body.
+func (c *Conn) Top(msgID int, numLines int) (*message.Entity, error) {
+	b, err := c.Cmd("TOP", true, msgID, numLines)
+	if err != nil {
+		return nil, err
+	}
+
+	m, err := message.Read(b)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
+
+// Dele deletes one or more messages. The server only executes the
+// deletions after a successful Quit().
+func (c *Conn) Dele(msgID ...int) error {
+	for _, id := range msgID {
+		_, err := c.Cmd("DELE", false, id)
 		if err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
-type lineFunc func(line string) error
-
-func (c *Client) Close() error {
-	return c.Text.Close()
+// Rset clears the messages marked for deletion in the current session.
+func (c *Conn) Rset() error {
+	_, err := c.Cmd("RSET", false)
+	return err
 }
 
-func (c *Client) convertNumberAndSize(line string) (int, uint64, error) {
-	var err error
-
-	s := strings.Split(line, " ")
-
-	if len(s) < 2 {
-		return 0, 0, errors.New(fmt.Sprintf("the length of the array is less than 2: %s", line))
-	}
-
-	var val int
-	var size uint64
-
-	if val, err = strconv.Atoi(s[0]); err != nil {
-		return 0, 0, errors.New(fmt.Sprintf("can not convert element[0] to int type: %s", line))
-	}
-
-	if size, err = strconv.ParseUint(s[1], 10, 64); err != nil {
-		return 0, 0, errors.New(fmt.Sprintf("can not convert element[1] to uint64 type: %s", line))
-	}
-
-	return val, size, nil
+// Noop issues a do-nothing NOOP command to the server. This is useful for
+// prolonging open connections.
+func (c *Conn) Noop() error {
+	_, err := c.Cmd("NOOP", false)
+	return err
 }
 
-func (c *Client) convertNumberAndUid(line string) (int, string, error) {
-	var err error
+// Quit sends the QUIT command to server and gracefully closes the connection.
+// Message deletions (DELE command) are only excuted by the server on a graceful
+// quit and close.
+func (c *Conn) Quit() error {
+	if _, err := c.Cmd("QUIT", false); err != nil {
+		return err
+	}
+	return c.conn.Close()
+}
 
-	s := strings.Split(line, " ")
-
-	if len(s) < 2 {
-		return 0, "", errors.New(fmt.Sprintf("the length of the array is less than 2: %s", line))
+// parseResp checks if the response is an error that starts with `-ERR`
+// and returns an error with the message that succeeds the error indicator.
+// For success `+OK` messages, it returns the remaining response bytes.
+func parseResp(b []byte) ([]byte, error) {
+	if len(b) == 0 {
+		return nil, nil
 	}
 
-	var val int
-
-	if val, err = strconv.Atoi(s[0]); err != nil {
-		return 0, "", errors.New(fmt.Sprintf("can not convert element[0] to int type: %s", line))
+	if bytes.Equal(b, respOK) {
+		return nil, nil
+	} else if bytes.HasPrefix(b, respOKInfo) {
+		return bytes.TrimPrefix(b, respOKInfo), nil
+	} else if bytes.Equal(b, respErr) {
+		return nil, errors.New("unknown error (no info specified in response)")
+	} else if bytes.HasPrefix(b, respErrInfo) {
+		return nil, errors.New(string(bytes.TrimPrefix(b, respErrInfo)))
+	} else {
+		return nil, fmt.Errorf("unknown response: %s. Neither -ERR, nor +OK", string(b))
 	}
-
-	return val, s[1], nil
 }

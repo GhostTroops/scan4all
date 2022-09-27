@@ -3,6 +3,7 @@ package portScan
 import (
 	"context"
 	"github.com/Ullaakut/nmap"
+	"github.com/hktalent/scan4all/lib/util"
 	"log"
 	"time"
 )
@@ -28,6 +29,16 @@ type Scanner struct {
 	Ports   []string
 }
 
+func DoNmap(Targets []string, Ports []string) {
+	x1 := &Scanner{Targets: Targets, Ports: Ports}
+	_, err := x1.Scan(func(s *Stream) {
+
+	})
+	if nil != err {
+		log.Println("nmap scan is error ", err)
+	}
+}
+
 // Scan scans the target networks and tries to find RTSP streams within them.
 //
 // Targets can be:
@@ -48,12 +59,13 @@ func (s *Scanner) Scan(fnCbk func(*Stream)) ([]*Stream, error) {
 	// Run nmap command to discover open Ports on the specified Targets & Ports.
 	// -F --top-Ports=65535 -n --unique --resolve-all -Pn -sU -sS --min-hostgroup 64 --max-retries 0 --host-timeout 10m --script-timeout 3m --version-intensity 9 --min-rate ${XRate} -T4  -iL $1 -oX $2
 	nmapScanner, err := nmap.NewScanner(
-		//nmap.WithServiceInfo(), // -sV
+		nmap.WithBinaryPath(util.GetVal("nmapScan")),
+		nmap.WithServiceInfo(),           // -sV, 非常慢，但是指纹信息非常全
 		nmap.WithMinRate(5000),           //--min-rate ${XRate}
 		nmap.WithVersionIntensity(9),     // --version-intensity 9
 		nmap.WithDisabledDNSResolution(), // -n
-		//nmap.WithSkipHostDiscovery(),            // -Pn
-		//nmap.WithUDPScan(), // -sU,需要root
+		//nmap.WithSkipHostDiscovery(),     // -Pn
+		//nmap.WithUDPScan(),                      // -sU,需要root
 		//nmap.WithSYNScan(),                      // -sS,需要root
 		nmap.WithMinHostgroup(64),               // --min-hostgroup 64
 		nmap.WithMaxRetries(0),                  // --max-retries 0

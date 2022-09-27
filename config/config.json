@@ -58,6 +58,7 @@
   "snmp_user": "pkg/hydra/dicts/snmp_user.txt",
   "snmp_pswd": "pkg/hydra/dicts/snmp_pswd.txt",
   "snmp_default": "pkg/hydra/dicts/snmp_default.txt",
+  "nmapScan": "echo 'Miracle!@#123'|sudo -S nmap ",
   "nmap": "nmap -n --unique --resolve-all -Pn --min-hostgroup 64 --max-retries 0 --host-timeout 10m --script-timeout 3m -oX {filename} --version-intensity 9 --min-rate 10000 -T4 ",
   "HydraUser": "",
   "HydraPass": "",
