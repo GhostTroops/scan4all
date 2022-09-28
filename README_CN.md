@@ -43,7 +43,7 @@ Vulnerabilities Scan；15000+PoC漏洞扫描；[ 23 ] 种应用弱口令爆破�
   * Tomcat
   * Jboss
   * Winrm(wsman)
-  * POP3
+  * POP3/POP3S
 - 默认开启http密码智能爆破，需要 HTTP 密码时才会自动启动，无需人工干预
 - 检测系统是否存在 nmap ，存在通过 priorityNmap=true 启用 nmap 进行快速扫描，默认开启，优化过的 nmap 参数比 masscan 快
   使用 nmap 的弊端：网络不好的是否，因为流量网络包过大可能会导致结果不全

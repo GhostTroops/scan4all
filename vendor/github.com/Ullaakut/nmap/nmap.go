@@ -65,7 +65,6 @@ func (s *Scanner) Run() (result *Run, warnings []string, err error) {
 
 	// Prepare nmap process
 	cmd := exec.Command(s.binaryPath, s.args...)
-	//fmt.Println(s.binaryPath, s.args)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 

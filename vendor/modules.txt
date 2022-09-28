@@ -329,6 +329,13 @@ github.com/dsnet/compress/internal/prefix
 # github.com/dustin/go-humanize v1.0.0
 ## explicit
 github.com/dustin/go-humanize
+# github.com/emersion/go-message v0.16.0
+## explicit; go 1.14
+github.com/emersion/go-message
+github.com/emersion/go-message/textproto
+# github.com/emersion/go-textwrapper v0.0.0-20200911093747-65d896831594
+## explicit
+github.com/emersion/go-textwrapper
 # github.com/fatih/structs v1.1.0
 ## explicit
 github.com/fatih/structs
@@ -640,9 +647,6 @@ github.com/kr/pretty
 # github.com/kr/text v0.2.0
 ## explicit
 github.com/kr/text
-# github.com/lair-framework/go-nmap v0.0.0-20191202052157-3507e0b03523
-## explicit
-github.com/lair-framework/go-nmap
 # github.com/lcvvvv/gonmap v1.2.1
 ## explicit; go 1.16
 github.com/lcvvvv/gonmap/lib/chinese

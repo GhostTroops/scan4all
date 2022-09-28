@@ -9,15 +9,28 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"runtime"
+	"runtime/debug"
 )
 
 //go:embed config/*
 var config embed.FS
 
+// Version can be set at link time to override debug.BuildInfo.Main.Version,
+// which is "(devel)" when building from within the module. See
+// golang.org/issue/29814 and golang.org/issue/29228.
+var Version string
+
 func main() {
 	//os.Args = []string{"", "-host", "http://127.0.0.1"}
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	util.DoInit(&config)
+	// set version
+	if buildInfo, ok := debug.ReadBuildInfo(); ok {
+		util.Version = buildInfo.Main.Version
+	} else {
+		Version = util.Version
+	}
+
 	szTip := ""
 	if util.GetValAsBool("enablDevDebug") {
 		// debug 优化时启用///////////////////////

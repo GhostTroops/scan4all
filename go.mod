@@ -92,6 +92,7 @@ require (
 	github.com/denisenkom/go-mssqldb v0.12.2
 	github.com/dgraph-io/badger v1.6.2
 	github.com/dlclark/regexp2 v1.7.0
+	github.com/emersion/go-message v0.16.0
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/go-routeros/routeros v0.0.0-20210123142807-2a44d57c6730
 	github.com/go-sql-driver/mysql v1.6.0
@@ -104,7 +105,6 @@ require (
 	github.com/icodeface/tls v0.0.0-20190904083142-17aec93c60e5
 	github.com/jlaffaye/ftp v0.1.0
 	github.com/karlseguin/ccache v2.0.3+incompatible
-	github.com/lair-framework/go-nmap v0.0.0-20191202052157-3507e0b03523
 	github.com/lcvvvv/gonmap v1.2.1
 	github.com/lib/pq v1.10.7
 	github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40
@@ -113,6 +113,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/olivere/elastic v6.2.37+incompatible
+	github.com/panjf2000/ants/v2 v2.5.0
 	github.com/projectdiscovery/folderutil v0.0.0-20220523100846-d6161a49c221
 	github.com/projectdiscovery/iputil v0.0.0-20220620153941-036d511e4097
 	github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220726130814-981d44a34f84
@@ -174,6 +175,7 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
+	github.com/emersion/go-textwrapper v0.0.0-20200911093747-65d896831594 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
@@ -245,7 +247,6 @@ require (
 	github.com/nwaples/rardecode v1.1.3 // indirect
 	github.com/openrdap/rdap v0.9.1-0.20191017185644-af93e7ef17b7 // indirect
 	github.com/owenrumney/go-sarif/v2 v2.1.2 // indirect
-	github.com/panjf2000/ants/v2 v2.5.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect

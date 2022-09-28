@@ -43,7 +43,7 @@
   * Tomcat
   * Jboss
   * Winrm(wsman)
-  * POP3
+  * POP3/POP3S
 - By default, http password intelligent blasting is enabled, and it will be automatically activated when an HTTP password is required, without manual intervention
 - Detect whether there is nmap in the system, and enable nmap for fast scanning through priorityNmap=true, which is enabled by default, and the optimized nmap parameters are faster than masscan
   Disadvantages of using nmap: Is the network bad, because the traffic network packet is too large, which may lead to incomplete results
