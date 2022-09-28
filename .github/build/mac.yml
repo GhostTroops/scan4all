@@ -7,7 +7,7 @@ project_name: scan4all
 builds:
   - id: scan4all-darwin
     ldflags:
-      - -s -w
+      - -s -w -X main.Version={{.Version}}
     binary: scan4all
     env:
       - CGO_ENABLED=1

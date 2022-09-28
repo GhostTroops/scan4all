@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/emersion/go-message"
 	"net"
 	"strconv"
 	"strings"
