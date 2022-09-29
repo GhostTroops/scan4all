@@ -14,7 +14,7 @@ self-contained: true
 requests:
   - method: GET
     path:
-      - "https://api.html2pdf.app/v1/generate?url=https://testnmanp.testnmanp&apiKey={{token}}"
+      - "https://api.html2pdf.app/v1/generate?url=https://test.test&apiKey={{token}}"
 
     matchers:
       - type: word

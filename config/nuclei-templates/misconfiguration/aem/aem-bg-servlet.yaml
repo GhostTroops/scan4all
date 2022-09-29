@@ -13,7 +13,7 @@ info:
 requests:
   - method: GET
     path:
-      - '{{BaseURL}}/system/bgservlets/testnmanp.css'
+      - '{{BaseURL}}/system/bgservlets/test.css'
 
     matchers-condition: and
     matchers:

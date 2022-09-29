@@ -5,14 +5,14 @@ info:
   author: zzeitlin
   severity: info
   reference:
-    - https://api.slack.com/methods/auth.testnmanp
+    - https://api.slack.com/methods/auth.test
   tags: token-spray,slack
 
 self-contained: true
 requests:
   - method: POST
     path:
-      - "https://slack.com/api/auth.testnmanp"
+      - "https://slack.com/api/auth.test"
     headers:
       Authorization: Bearer {{token}}
 

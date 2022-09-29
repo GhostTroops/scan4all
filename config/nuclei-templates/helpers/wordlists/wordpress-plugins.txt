@@ -60100,7 +60100,7 @@ seo-slider
 seo-slugs
 seo-slugs-4-bbpress
 seo-slugs-dutch
-seo-smart-link-Targets
+seo-smart-link-targets
 seo-smart-links
 seo-social-bookmarking
 seo-social-sidebar
