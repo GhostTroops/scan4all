@@ -20,7 +20,7 @@ require (
 	github.com/remeh/sizedwaitgroup v1.0.0
 	go.uber.org/ratelimit v0.2.0
 	golang.org/x/net v0.0.0-20220909164309-bea034e7d591
-	golang.org/x/sys v0.0.0-20220915200043-7b5979e65e41
+	golang.org/x/sys v0.0.0-20220927170352-d9d178bc13c6
 )
 
 require (
@@ -131,7 +131,7 @@ require (
 	go.mongodb.org/mongo-driver v1.10.2
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
-	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9
+	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af
 	google.golang.org/genproto v0.0.0-20220916172020-2692e8806bfa
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/irc.v3 v3.1.4
@@ -171,6 +171,7 @@ require (
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dimchansky/utfbom v1.1.1 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
@@ -182,6 +183,7 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
+	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/go-rod/rod v0.109.3 // indirect
 	github.com/goburrow/cache v0.1.4 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
@@ -211,6 +213,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
+	github.com/hibiken/asynq v0.23.0 // indirect
 	github.com/iancoleman/orderedmap v0.2.0 // indirect
 	github.com/itchyny/gojq v0.12.9 // indirect
 	github.com/itchyny/timefmt-go v0.1.4 // indirect
@@ -258,6 +261,7 @@ require (
 	github.com/projectdiscovery/reflectutil v0.0.0-20210804085554-4d90952bf92f // indirect
 	github.com/projectdiscovery/yamldoc-go v1.0.3-0.20211126104922-00d2c6bb43b6 // indirect
 	github.com/rivo/uniseg v0.4.2 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
