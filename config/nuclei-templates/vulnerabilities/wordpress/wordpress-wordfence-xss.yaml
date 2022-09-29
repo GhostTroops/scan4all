@@ -20,7 +20,7 @@ requests:
     matchers:
       - type: word
         words:
-          - "'>\"<svg/onload=confirm('testnmanp')>"
+          - "'>\"<svg/onload=confirm('test')>"
         part: body
 
       - type: word

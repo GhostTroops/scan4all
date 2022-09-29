@@ -14,10 +14,10 @@ self-contained: true
 requests:
   - method: GET
     path:
-      - "https://api.savepage.io/v1?key={{token}}&q=https://selfcontained.testnmanp"
+      - "https://api.savepage.io/v1?key={{token}}&q=https://selfcontained.test"
 
     matchers:
       - type: word
         part: body
         words:
-          - 'getaddrinfo ENOTFOUND selfcontained.testnmanp'
+          - 'getaddrinfo ENOTFOUND selfcontained.test'

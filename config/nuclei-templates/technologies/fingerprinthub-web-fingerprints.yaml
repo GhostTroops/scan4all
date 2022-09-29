@@ -6150,12 +6150,12 @@ requests:
           - 建恒信安日志审计系统
 
       - type: word
-        name: jiaozhichu-online-testnmanp-system
+        name: jiaozhichu-online-test-system
         words:
           - content="jiaozhichu
 
       - type: word
-        name: jiaozhichu-online-testnmanp-system
+        name: jiaozhichu-online-test-system
         words:
           - href="/ksxt/h5/images/jiaozhichu.ico
 
@@ -11572,7 +11572,7 @@ requests:
           - var unitid = getpagerequestvalue("unitid")
 
       - type: word
-        name: speed-testnmanp
+        name: speed-test
         words:
           - classid="clsid:53028063-426b-446d-85f9-62e9e3dc5501"
 

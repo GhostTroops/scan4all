@@ -20,7 +20,7 @@ requests:
       - "{{BaseURL}}/libs/cq/ui/content/dumplibs.html"
       - "{{BaseURL}}/libs/granite/ui/content/dumplibs.validate.html"
       - "{{BaseURL}}/libs/granite/ui/content/dumplibs.rebuild.html"
-      - "{{BaseURL}}/libs/granite/ui/content/dumplibs.testnmanp.html"
+      - "{{BaseURL}}/libs/granite/ui/content/dumplibs.test.html"
       - "{{BaseURL}}/libs/granite/ui/content/dumplibs.html"
 
     stop-at-first-match: true
