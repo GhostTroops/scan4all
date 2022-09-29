@@ -1,3 +1,4 @@
+/_wpeprivate/config.json
 /bea_wls_internal/classes/mejb@/org/omg/stub/javax/management/j2ee/_ManagementHome_Stub.class
 !.gitignore
 !.htaccess
