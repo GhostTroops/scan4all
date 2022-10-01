@@ -19,12 +19,12 @@ jobs:
       - name: Update submodule
         run: |
           git submodule update --init --recursive --remote
-#      - name: Commit changes
-#        uses: stefanzweifel/git-auto-commit-action@v4
-#        with:
-#          commit_message: "Auto Update Submodule"
-      - name: Push changes
-          uses: ad-m/github-push-action@master
-          with:
-            github_token: ${{ secrets.GITHUB_TOKEN }}
-            branch: ${{ github.ref }}
+#      - name: Push changes
+#          uses: ad-m/github-push-action@master
+#          with:
+#            github_token: ${{ secrets.GITHUB_TOKEN }}
+#            branch: ${{ github.ref }}
+      - name: Commit changes
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Auto Update Submodule"
