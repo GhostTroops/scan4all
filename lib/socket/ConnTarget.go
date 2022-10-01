@@ -91,6 +91,32 @@ func (r *CheckTarget) SendOnePayload(str, szPath, szHost string, nTimes int) str
 	return ""
 }
 
+func (r *CheckTarget) SendPayload(data []byte, nTimes int) string {
+	_, err := r.ConnTarget()
+	defer r.Close()
+	if nil == err && r.ConnState {
+		for i := 0; i < nTimes; i++ {
+			r.WriteWithFlushByte(data)
+		}
+		s1 := *r.ReadAll2Str()
+		if "" != s1 {
+			return s1
+		}
+	}
+	return ""
+}
+
+func (r *CheckTarget) WriteWithFlushByte(s []byte) (nn int, err error) {
+	bw := r.GetBufWriter()
+	if nil == bw {
+		return -1, errors.New("WriteWithFlush can not get GetBufWriter")
+	}
+	//log.Printf("Payload: %s\n%s", r.UrlRaw, s)
+	nn, err = bw.Write(s)
+	bw.Flush()
+	return
+}
+
 // 获取操作io
 func (r *CheckTarget) WriteWithFlush(s string) (nn int, err error) {
 	bw := r.GetBufWriter()

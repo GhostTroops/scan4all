@@ -55,8 +55,8 @@ func InitDb(dst ...interface{}) *gorm.DB {
 	xx01 := sqlite.Open("file:" + szDf + ".db?cache=shared&mode=rwc&_journal_mode=WAL&Synchronous=Off&temp_store=memory&mmap_size=30000000000")
 	db, err := gorm.Open(xx01, &gorm.Config{
 		PrepareStmt: true,
-		//Logger: logger.Default.LogMode(logger.Silent),
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger:      logger.Default.LogMode(logger.Silent),
+		//Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err == nil { // no error
 		db1, _ := db.DB()
