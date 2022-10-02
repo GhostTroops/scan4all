@@ -14,6 +14,8 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -21,7 +23,7 @@ jobs:
       - name: Install Dependences
         run: |
           brew install libpcap upx
-          git submodule update --init --recursive --remote
+#          git submodule update --init --recursive --remote
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
@@ -38,6 +40,8 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -45,7 +49,7 @@ jobs:
       - name: Install Dependences
         run: |
           sudo apt install -yy libpcap-dev upx gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
-          git submodule update --init --recursive --remote
+#          git submodule update --init --recursive --remote
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
@@ -64,10 +68,6 @@ jobs:
           fetch-depth: 0
       - name: Checkout submodules
         run: git submodule update --init --recursive
-      - name: Checkout submodules
-        uses: textbook/git-checkout-submodule-action@master
-        with:
-          remote: true
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
