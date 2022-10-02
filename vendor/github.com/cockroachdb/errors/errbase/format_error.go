@@ -349,66 +349,76 @@ func (s *state) formatRecursive(err error, isOutermost, withDetail bool) {
 
 	bufIsRedactable := false
 
-	printDone := false
-	for _, fn := range specialCases {
-		if handled, desiredShortening := fn(err, (*safePrinter)(s), cause == nil /* leaf */); handled {
-			printDone = true
-			bufIsRedactable = true
-			if desiredShortening == nil {
-				// The error wants to elide the short messages from inner
-				// causes. Do it.
-				for i := range s.entries {
-					s.entries[i].elideShort = true
-				}
+	switch v := err.(type) {
+	case SafeFormatter:
+		bufIsRedactable = true
+		desiredShortening := v.SafeFormatError((*safePrinter)(s))
+		if desiredShortening == nil {
+			// The error wants to elide the short messages from inner
+			// causes. Do it.
+			for i := range s.entries {
+				s.entries[i].elideShort = true
 			}
-			break
 		}
-	}
-	if !printDone {
-		switch v := err.(type) {
-		case SafeFormatter:
-			bufIsRedactable = true
-			desiredShortening := v.SafeFormatError((*safePrinter)(s))
-			if desiredShortening == nil {
-				// The error wants to elide the short messages from inner
-				// causes. Do it.
-				for i := range s.entries {
-					s.entries[i].elideShort = true
-				}
-			}
 
-		case Formatter:
-			desiredShortening := v.FormatError((*printer)(s))
-			if desiredShortening == nil {
-				// The error wants to elide the short messages from inner
-				// causes. Do it.
-				for i := range s.entries {
-					s.entries[i].elideShort = true
-				}
+	case Formatter:
+		desiredShortening := v.FormatError((*printer)(s))
+		if desiredShortening == nil {
+			// The error wants to elide the short messages from inner
+			// causes. Do it.
+			for i := range s.entries {
+				s.entries[i].elideShort = true
 			}
+		}
 
-		case fmt.Formatter:
-			// We can only use a fmt.Formatter when both the following
-			// conditions are true:
-			// - when it is the leaf error, because a fmt.Formatter
-			//   on a wrapper also recurses.
-			// - when it is not the outermost wrapper, because
-			//   the Format() method is likely to be calling FormatError()
-			//   to do its job and we want to avoid an infinite recursion.
-			if !isOutermost && cause == nil {
-				v.Format(s, 'v')
-				if st, ok := err.(StackTraceProvider); ok {
-					// This is likely a leaf error from github/pkg/errors.
-					// The thing probably printed its stack trace on its own.
-					seenTrace = true
-					// We'll subsequently simplify stack traces in wrappers.
-					s.lastStack = st.StackTrace()
-				}
-			} else {
-				s.formatSimple(err, cause)
+	case fmt.Formatter:
+		// We can only use a fmt.Formatter when both the following
+		// conditions are true:
+		// - when it is the leaf error, because a fmt.Formatter
+		//   on a wrapper also recurses.
+		// - when it is not the outermost wrapper, because
+		//   the Format() method is likely to be calling FormatError()
+		//   to do its job and we want to avoid an infinite recursion.
+		if !isOutermost && cause == nil {
+			v.Format(s, 'v')
+			if st, ok := err.(StackTraceProvider); ok {
+				// This is likely a leaf error from github/pkg/errors.
+				// The thing probably printed its stack trace on its own.
+				seenTrace = true
+				// We'll subsequently simplify stack traces in wrappers.
+				s.lastStack = st.StackTrace()
 			}
+		} else {
+			s.formatSimple(err, cause)
+		}
 
-		default:
+	default:
+		// Handle the special case overrides for context.Canceled,
+		// os.PathError, etc for which we know how to extract some safe
+		// strings.
+		//
+		// We need to do this in the `default` branch, instead of doing
+		// this above the switch, because the special handler could call a
+		// .Error() that delegates its implementation to fmt.Formatter,
+		// errors.Safeformatter or errors.Formattable, which brings us
+		// back to this method in a call cycle. So we need to handle the
+		// various interfaces first.
+		printDone := false
+		for _, fn := range specialCases {
+			if handled, desiredShortening := fn(err, (*safePrinter)(s), cause == nil /* leaf */); handled {
+				printDone = true
+				bufIsRedactable = true
+				if desiredShortening == nil {
+					// The error wants to elide the short messages from inner
+					// causes. Do it.
+					for i := range s.entries {
+						s.entries[i].elideShort = true
+					}
+				}
+				break
+			}
+		}
+		if !printDone {
 			// If the error did not implement errors.Formatter nor
 			// fmt.Formatter, but it is a wrapper, still attempt best effort:
 			// print what we can at this level.

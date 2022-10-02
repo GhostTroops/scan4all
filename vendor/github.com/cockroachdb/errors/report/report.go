@@ -15,7 +15,6 @@
 package report
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 
@@ -23,7 +22,7 @@ import (
 	"github.com/cockroachdb/errors/errbase"
 	"github.com/cockroachdb/errors/withstack"
 	"github.com/cockroachdb/redact"
-	"github.com/cockroachdb/sentry-go"
+	sentry "github.com/getsentry/sentry-go"
 )
 
 // BuildSentryReport builds the components of a sentry report.  This
@@ -76,13 +75,13 @@ import (
 // Given this mapping, an error object is decomposed as follows:
 //
 // (1)/(7): <filename>:<lineno> (<functionname>)
-// (3)/(8): <error type>: <first safe detail line, if any>
+// (3)/(8): first line of verbose error printout
 // (4): not populated in this function, caller is to manage this
-// (5): detailed structure of the entire error object, with references to "additional data"
-//      and additional "exception" objects
+// (5): detailed structure of the entire error object, with references to
+//      additional "exception" objects
 // (9): generated from innermost stack trace
 // (6): every exception object after the 1st reports additional stack trace contexts
-// (11): "additional data" populated from safe detail payloads
+// (11): the detailed error types and their error mark.
 //
 // If there is no stack trace in the error, a synthetic Exception
 // object is still produced to provide visual detail in the Sentry UI.
@@ -119,17 +118,22 @@ func BuildSentryReport(err error) (event *sentry.Event, extraDetails map[string]
 	var firstDetailLine string
 
 	// longMsgBuf will become the Message field, which contains the full
-	// structure of the error with cross-references to "Exception" and
-	// "Additional data" fields.
+	// structure of the error.
 	var longMsgBuf strings.Builder
-	redactedErrStr := redact.Sprint(err).Redact()
-	if redactedErrStr != redactedMarker {
-		if f, l, _, ok := withstack.GetOneLineSource(err); ok {
-			fmt.Fprintf(&longMsgBuf, "%s:%d: ", f, l)
-		}
-		firstDetailLine = redactedErrStr.StripMarkers()
-		fmt.Fprintf(&longMsgBuf, "%v\n--\n", firstDetailLine)
+	if f, l, _, ok := withstack.GetOneLineSource(err); ok {
+		fmt.Fprintf(&longMsgBuf, "%s:%d: ", f, l)
 	}
+	// Include the verbose error printout, with sensitive bits redacted out.
+	verboseErr := redact.Sprintf("%+v", err).Redact().StripMarkers()
+	if verboseErr != redactedMarker {
+		idx := strings.IndexByte(verboseErr, '\n')
+		if idx == -1 {
+			firstDetailLine = verboseErr
+		} else {
+			firstDetailLine = verboseErr[:idx]
+		}
+	}
+	fmt.Fprint(&longMsgBuf, verboseErr)
 
 	// sep is used to separate the entries in the longMsgBuf / Message
 	// payload.
@@ -159,6 +163,7 @@ func BuildSentryReport(err error) (event *sentry.Event, extraDetails map[string]
 	// layer. We iterate in this order because we want to describe the
 	// error from innermost to outermost layer in longMsgBuf and
 	// typesBuf.
+	longMsgBuf.WriteString("\n-- report composition:\n")
 	for i := len(details) - 1; i >= 0; i-- {
 		// Collect the type name for this layer of error wrapping, towards
 		// the "error types" additional data field.
@@ -204,10 +209,6 @@ func BuildSentryReport(err error) (event *sentry.Event, extraDetails map[string]
 		// Now decide what kind of payload we want to add to the Event
 		// object.
 
-		// genExtra will remember whether we are adding an
-		// additional payload or not.
-		var genExtra bool
-
 		// Is there a stack trace?
 		if st := stacks[i]; st != nil {
 			var excType strings.Builder
@@ -245,17 +246,21 @@ func BuildSentryReport(err error) (event *sentry.Event, extraDetails map[string]
 			exceptions = append(exceptions, exc)
 		} else {
 			// No stack trace.
-			// Are there safe details? If so, print them.
+			// Are there safe details? If so, print the first safe detail
+			// string (we're assuming that all the important bits will
+			// also be included in the verbose printout, so there's no
+			// need to dig out more safe strings here.)
+			//
+			// TODO(knz): the SafeDetails API is not really meant for Sentry
+			// reporting. Once we have more experience to prove that the
+			// verbose printout is sufficient, we can remove the SafeDetails
+			// from sentry reports.
 			//
 			// Note: we only print the details if no stack trace was found
 			// at that level. This is because stack trace annotations also
 			// produce the stack trace as safe detail string.
-			genExtra = len(details[i].SafeDetails) > 1
 			if len(details[i].SafeDetails) > 0 {
 				d := details[i].SafeDetails[0]
-				if d != "" {
-					genExtra = true
-				}
 				if j := strings.IndexByte(d, '\n'); j >= 0 {
 					d = d[:j]
 				}
@@ -268,18 +273,6 @@ func BuildSentryReport(err error) (event *sentry.Event, extraDetails map[string]
 					}
 				}
 			}
-		}
-
-		// Are we generating another extra for the safe detail strings?
-		if genExtra {
-			stKey := fmt.Sprintf("%d: details", extraNum)
-			var extraStr bytes.Buffer
-			for _, d := range details[i].SafeDetails {
-				fmt.Fprintln(&extraStr, strings.ReplaceAll(d, "\n", "\n   "))
-			}
-			extras[stKey] = extraStr.String()
-			fmt.Fprintf(&longMsgBuf, " (%d)", extraNum)
-			extraNum++
 		}
 	}
 
@@ -354,7 +347,7 @@ func BuildSentryReport(err error) (event *sentry.Event, extraDetails map[string]
 	return event, extras
 }
 
-var redactedMarker = redact.RedactableString(redact.RedactedMarker())
+var redactedMarker = redact.RedactableString(redact.RedactedMarker()).StripMarkers()
 
 // ReportError reports the given error to Sentry. The caller is responsible for
 // checking whether telemetry is enabled, and calling the sentry.Flush()

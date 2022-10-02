@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"github.com/cockroachdb/errors/errbase"
-	"github.com/cockroachdb/sentry-go"
+	"github.com/getsentry/sentry-go"
 	pkgErr "github.com/pkg/errors"
 )
 

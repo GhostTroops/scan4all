@@ -18,7 +18,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/cockroachdb/sentry-go"
+	"github.com/getsentry/sentry-go"
 )
 
 // StackTrace is an object suitable for inclusion in errors that can

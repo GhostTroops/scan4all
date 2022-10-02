@@ -67,7 +67,7 @@ func (b *Buffer) Merge(other *Buffer) *Buffer {
 	if b == nil || len(b.tags) == 0 {
 		return other
 	}
-	if len(other.tags) == 0 {
+	if other == nil || len(other.tags) == 0 {
 		return b
 	}
 

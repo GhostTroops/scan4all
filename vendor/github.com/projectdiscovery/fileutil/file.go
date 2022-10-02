@@ -204,7 +204,7 @@ func ReadFile(filename string) (chan string, error) {
 	return out, nil
 }
 
-// // ReadFile with filename and specific buffer size
+// ReadFile with filename and specific buffer size
 func ReadFileWithBufferSize(filename string, maxCapacity int) (chan string, error) {
 	if !FileExists(filename) {
 		return nil, errors.New("file doesn't exist")

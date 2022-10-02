@@ -2,7 +2,7 @@ syntax = "proto3";
 package cockroach.errorspb;
 option go_package = "errorspb";
 
-import "github.com/cockroachdb/errors/errorspb/errors.proto";
+import "errorspb/errors.proto";
 import "gogoproto/gogo.proto";
 
 // MarkPayload is the error payload for a forced marker.

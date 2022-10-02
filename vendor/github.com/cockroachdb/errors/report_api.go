@@ -16,7 +16,7 @@ package errors
 
 import (
 	"github.com/cockroachdb/errors/report"
-	"github.com/cockroachdb/sentry-go"
+	"github.com/getsentry/sentry-go"
 )
 
 // BuildSentryReport builds the components of a sentry report.  This

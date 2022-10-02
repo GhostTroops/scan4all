@@ -6,13 +6,16 @@
 #   go get github.com/gogo/protobuf/types
 #   go get github.com/gogo/protobuf/protoc-gen-gogo
 #
-# Note: as of 2020-11-01, it is not (yet) possible to use gogoproto
-# v1.3.x to generate .pb.go files so that they are compatible with
-# CockroachDB. This is because CockroachDB hardcodes gogoproto at
-# version v1.2, and thus does not provide v1.3's
-# proto.GoGoProtoPackageIsVersion3.
+# Note: as of 2021-04-13, we like to use a custom protoc-gen-gogo
+# with additional options, to stabilize the marshalled
+# encoding of objects (so that they are deterministic
+# across marshal/unmarshal cycles) and reduce the memory footprint
+# of objects:
 #
-# For details, see https://github.com/cockroachdb/cockroach/issues/56378
+#	vanity.TurnOnStable_MarshalerAll,
+#	vanity.TurnOffGoUnrecognizedAll,
+#	vanity.TurnOffGoUnkeyedAll,
+#	vanity.TurnOffGoSizecacheAll,
 #
 # Until this is resolved, the "go get" commands above are not
 # adequate; instead:
@@ -23,21 +26,33 @@
 #
 # 2. run `make -f Makefile.update-protos` with this PATH active.
 
-PROTOS := $(wildcard errorspb/*.proto)
+export SHELL := env PWD=$(CURDIR) bash
+
+PROTOS := $(wildcard \
+	errbase/internal/*.proto \
+	errorspb/*.proto \
+	extgrpc/*.proto \
+	exthttp/*.proto \
+	grpc/*.proto \
+	markers/internal/*.proto \
+)
 GO_SOURCES = $(PROTOS:.proto=.pb.go)
 
 SED = sed
 SED_INPLACE := $(shell $(SED) --version 2>&1 | grep -q GNU && echo -i || echo "-i ''")
 
 all: $(PROTOS)
-	protoc \
-	   -I$$GOPATH/src/ \
-	   -I$$GOPATH/src/github.com \
-	   -I$$GOPATH/src/github.com/gogo/protobuf \
-	   -I$$GOPATH/src/github.com/gogo/protobuf/protobuf \
-	  --gogoroach_out=Mgoogle/protobuf/any.proto=github.com/gogo/protobuf/types,plugins=grpc,import_prefix=:. \
-	  $(PROTOS:%=$(GOPATH)/src/github.com/cockroachdb/errors/%)
-	mv -f github.com/cockroachdb/errors/errorspb/*.pb.go errorspb/
+	set -e; for dir in $(sort $(dir $(PROTOS))); do \
+		protoc \
+			-I. \
+			-I$$GOPATH/src/ \
+			-I$$GOPATH/src/github.com \
+			-I$$GOPATH/src/github.com/cockroachdb/errors \
+			-I$$GOPATH/src/github.com/gogo/protobuf \
+			-I$$GOPATH/src/github.com/gogo/protobuf/protobuf \
+			--gogoroach_out=Mgoogle/protobuf/any.proto=github.com/gogo/protobuf/types,plugins=grpc,import_prefix=:. \
+			$$dir/*.proto; \
+	done
 	$(SED) $(SED_INPLACE) -E \
 		-e '/import _ /d' \
 		-e 's!import (fmt|math) "github.com/(fmt|math)"! !g' \

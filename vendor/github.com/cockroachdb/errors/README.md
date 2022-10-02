@@ -11,7 +11,8 @@ automatically formats error details and strips them of PII.
 
 See also [the design RFC](https://github.com/cockroachdb/cockroach/blob/master/docs/RFCS/20190318_error_handling.md).
 
-[![Build Status](https://travis-ci.org/cockroachdb/errors.svg?branch=master)](https://travis-ci.org/cockroachdb/errors)
+![Build Status](https://github.com/cockroachdb/errors/actions/workflows/ci.yaml/badge.svg?branch=master)
+[![Go Reference](https://pkg.go.dev/badge/github.com/cockroachdb/errors.svg)](https://pkg.go.dev/github.com/cockroachdb/errors)
 
 Table of contents:
 
@@ -422,10 +423,10 @@ func myLeafDecoder(_ string, details []string, _ proto.Message) error {
 
 (For an example, see the `withTelemetry` type in [`telemetry/with_telemetry.go`](telemetry/with_telemetry.go).)
 
-**The only case where you need a custom encoder is when your error
+__The only case where you need a custom encoder is when your error
 type contains some fields that are not reflected in the error message
 (so you can't extract them back from there), and are not PII-free and
-thus cannot be reported as "safe details".**
+thus cannot be reported as "safe details".__
 
 To take inspiration from examples, see the following types in the
 library that need a custom encoder:
@@ -537,6 +538,9 @@ Example use:
 | `NewAssertionErrorWithWrappedErrf` | `HandledWithMessagef` (barrier) + `WrapWithDepthf` +  `WithAssertionFailure`      |
 
 ## API (not constructing error objects)
+
+The following is a summary of the non-constructor API functions, grouped by category.
+Detailed documentation can be found at: https://pkg.go.dev/github.com/cockroachdb/errors
 
 ```go
 // Access causes.
