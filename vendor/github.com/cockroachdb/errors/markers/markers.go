@@ -28,18 +28,33 @@ import (
 // Is determines whether one of the causes of the given error or any
 // of its causes is equivalent to some reference error.
 //
+// As in the Go standard library, an error is considered to match a
+// reference error if it is equal to that target or if it implements a
+// method Is(error) bool such that Is(reference) returns true.
+//
+// Note: the inverse is not true - making an Is(reference) method
+// return false does not imply that errors.Is() also returns
+// false. Errors can be equal because their network equality marker is
+// the same. To force errors to appear different to Is(), use
+// errors.Mark().
+//
 // Note: if any of the error types has been migrated from a previous
 // package location or a different type, ensure that
 // RegisterTypeMigration() was called prior to Is().
 func Is(err, reference error) bool {
 	if reference == nil {
-		return err == reference
+		return err == nil
 	}
 
 	// Direct reference comparison is the fastest, and most
 	// likely to be true, so do this first.
 	for c := err; c != nil; c = errbase.UnwrapOnce(c) {
 		if c == reference {
+			return true
+		}
+		// Compatibility with std go errors: if the error object itself
+		// implements Is(), try to use that.
+		if tryDelegateToIsMethod(c, reference) {
 			return true
 		}
 	}
@@ -63,6 +78,13 @@ func Is(err, reference error) bool {
 		if equalMarks(getMark(c), refMark) {
 			return true
 		}
+	}
+	return false
+}
+
+func tryDelegateToIsMethod(err, reference error) bool {
+	if x, ok := err.(interface{ Is(error) bool }); ok && x.Is(reference) {
+		return true
 	}
 	return false
 }
@@ -123,6 +145,11 @@ func IsAny(err error, references ...error) bool {
 	for c := err; ; c = errbase.UnwrapOnce(c) {
 		for _, refErr := range references {
 			if c == refErr {
+				return true
+			}
+			// Compatibility with std go errors: if the error object itself
+			// implements Is(), try to use that.
+			if tryDelegateToIsMethod(c, refErr) {
 				return true
 			}
 		}

@@ -23,6 +23,8 @@ import (
 )
 
 // DecodeError decodes an error.
+//
+// Can only be called if the EncodedError is set (see IsSet()).
 func DecodeError(ctx context.Context, enc EncodedError) error {
 	if w := enc.GetWrapper(); w != nil {
 		return decodeWrapper(ctx, w)

@@ -19,6 +19,16 @@ import "github.com/cockroachdb/errors/markers"
 // Is determines whether one of the causes of the given error or any
 // of its causes is equivalent to some reference error.
 //
+// As in the Go standard library, an error is considered to match a
+// reference error if it is equal to that target or if it implements a
+// method Is(error) bool such that Is(reference) returns true.
+//
+// Note: the inverse is not true - making an Is(reference) method
+// return false does not imply that errors.Is() also returns
+// false. Errors can be equal because their network equality marker is
+// the same. To force errors to appear different to Is(), use
+// errors.Mark().
+//
 // Note: if any of the error types has been migrated from a previous
 // package location or a different type, ensure that
 // RegisterTypeMigration() was called prior to Is().

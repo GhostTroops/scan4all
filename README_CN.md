@@ -173,6 +173,8 @@ http://127.0.0.1:9200/nmap_index/_doc/_search?q=_id:192.168.0.111
 - 使用前请自行安装nmap
 <a href=https://github.com/hktalent/scan4all/discussions>使用帮助</a>
 ```bash
+export GOPRIVATE=github.com/hktalent
+go env |grep GOPRIVATE
 go build
 # 精准扫描 url列表 UrlPrecise=true
 UrlPrecise=true ./scan4all -l xx.txt
@@ -242,3 +244,15 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |
 | --- | --- | --- | --- | --- |
 |<img src=https://github.com/hktalent/myhktools/blob/master/md/wc.png>|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/zfb.png>|[paypal](https://www.paypal.me/pwned2019) **miracletalent@gmail.com**|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/BTC.png>|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/BCH.jpg>|
+
+
+<!--
+export GOPRIVATE=github.com/hktalent
+go env |grep GOPRIVATE
+
+go env -w GOPRIVATE=github.com/hktalent/goSqlite_gorm/lib@v1.1.0
+go get -v  github.com/hktalent/goSqlite_gorm/lib@v1.1.0
+
+
+https://github.com/heartshare/go-wafw00f
+-->
