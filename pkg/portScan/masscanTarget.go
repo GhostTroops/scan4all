@@ -1,8 +1,10 @@
 package portScan
 
 import (
+	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
 	"log"
+	"strings"
 )
 
 /*
@@ -28,16 +30,21 @@ excludefile = exclude.txt
 */
 // 每个端口大约10小时内扫描整个互联网（减去排除值）（如果扫描所有端口，则扫描655,360小时）
 // 与nmap兼容的“隐形”选项：-sS -Pn -n --randomize-hosts --send-eth
-func ScanTarget(ip string, args ...interface{}) {
+func MassScanTarget(evt *models.EventData, args ...interface{}) {
+	ip := strings.Join(evt.Target2Ip(), ",")
+	if "" == ip {
+		return
+	}
 	//s1 := fmt.Sprintf("%x", ip)
 	ms := New()
-	ms.Target = ip
-	ms.Rate = "5000"
+	ms.Evt = evt
+	ms.Target = TargetStr(ip)
+	ms.Rate = "10000"
 	ms.Ports = "0-65535" // -p-  , "-p-"
 	ms.Args = []string{
 		//"--banners",
 		//"-oX", s1 + ".xml",
-		"--max-rate", ms.Rate,
+		"--max-rate", string(ms.Rate),
 	}
 	util.MergeParms2Obj(&ms, args...)
 	err := ms.Run()

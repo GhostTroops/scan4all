@@ -3,27 +3,21 @@ package engine
 import (
 	"context"
 	"github.com/codegangsta/inject"
+	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg/portScan"
 	"github.com/hktalent/scan4all/pocs_go"
 	"github.com/panjf2000/ants/v2"
 	"log"
 	"sync"
 )
 
-// 事件数据
-type EventData struct {
-	EventType string        // 类型：masscan、nmap、
-	EventData []interface{} // func，parms
-}
-
 // 引擎对象，全局单实例
 type Engine struct {
-	Context   *context.Context   // 上下文
-	Wg        *sync.WaitGroup    // Wg
-	Pool      int                // 线程池
-	PoolFunc  *ants.PoolWithFunc // 线程调用
-	EventData chan *EventData    // 数据队列
+	Context   *context.Context       // 上下文
+	Wg        *sync.WaitGroup        // Wg
+	Pool      int                    // 线程池
+	PoolFunc  *ants.PoolWithFunc     // 线程调用
+	EventData chan *models.EventData // 数据队列
 }
 
 // 全局引擎
@@ -37,11 +31,11 @@ func NewEngine(c *context.Context, pool int) *Engine {
 	if nil != G_Engine {
 		return G_Engine
 	}
-	G_Engine = &Engine{Context: c, Wg: util.Wg, Pool: pool, EventData: make(chan *EventData, pool)}
+	G_Engine = &Engine{Context: c, Wg: util.Wg, Pool: pool, EventData: make(chan *models.EventData, pool)}
 
 	p, err := ants.NewPoolWithFunc(pool, func(i interface{}) {
 		defer G_Engine.Wg.Done()
-		G_Engine.DoEvent(i.(*EventData))
+		G_Engine.DoEvent(i.(*models.EventData))
 	})
 	if nil != err {
 		log.Println("ants.NewPoolWithFunc is error: ", err)
@@ -59,16 +53,9 @@ func (e *Engine) Close() {
 }
 
 // case 扫描使用的函数
-func (e *Engine) DoCase(ed *EventData) interface{} {
-	if nil != ed {
-		switch ed.EventType {
-		case "masscan":
-			return portScan.ScanTarget
-		case "nmap":
-			return portScan.ScanTarget
-		default:
-			return nil
-		}
+func (e *Engine) DoCase(ed *models.EventData) interface{} {
+	if i, ok := CaseScanFunc[ed.EventType]; ok {
+		return i
 	}
 	return nil
 }
@@ -77,7 +64,10 @@ func (e *Engine) DoCase(ed *EventData) interface{} {
 //  每个事件自己做防重处理
 //  每个事件异步执行
 //  每种事件类型可以独立控制并发数
-func (e *Engine) DoEvent(ed *EventData) {
+func (e *Engine) DoEvent(ed *models.EventData) {
+	var x01 = &models.EventData{}
+	if nil != x01 {
+	}
 	if nil != ed {
 		fnCall := e.DoCase(ed)
 		if nil != fnCall {
@@ -87,7 +77,7 @@ func (e *Engine) DoEvent(ed *EventData) {
 			}
 			v, err := in.Invoke(fnCall)
 			if nil != err {
-				log.Printf("DoEvent %s is error: %v %+v \n", ed.EventType, err, ed.EventData)
+				log.Printf("DoEvent %d is error: %v %+v \n", ed.EventType, err, ed.EventData)
 			} else if nil != v {
 				log.Printf("DoEvent result %s %v\n", ed.EventType, v)
 			}
@@ -102,8 +92,12 @@ func init() {
 	util.RegInitFunc(func() {
 		x1 := NewEngine(&util.Ctx_global, util.GetValAsInt("ScanPoolSize", 5000))
 		// 异步启动一个线程处理检测，避免
+		util.Wg.Add(1)
 		go func() {
-			defer x1.Close()
+			defer func() {
+				x1.Close()
+				util.Wg.Done()
+			}()
 			//nMax := 120 // 等xxx秒都没有消息进入就退出
 			//nCnt := 0
 			for {
@@ -111,10 +105,10 @@ func init() {
 				case <-util.Ctx_global.Done():
 					close(util.PocCheck_pipe)
 					return
-				case x1, ok := <-G_Engine.EventData: // 各种扫描的控制
-					if ok {
+				case x2 := <-G_Engine.EventData: // 各种扫描的控制
+					if nil != x2 {
 						G_Engine.Wg.Add(1)
-						G_Engine.PoolFunc.Invoke(x1)
+						G_Engine.PoolFunc.Invoke(x2)
 					}
 				case x1, ok := <-util.PocCheck_pipe:
 					if util.GetValAsBool("NoPOC") || nil == x1 || !ok {
@@ -131,6 +125,7 @@ func init() {
 					})
 				default:
 					util.DoDelayClear()
+					util.DoSleep()
 					//var f01 float32 = float32(nCnt) / float32(nMax) * float32(100)
 					//fmt.Printf(" Asynchronous go PoCs detection task %%%0.2f ....\r", f01)
 					//<-time.After(time.Duration(1) * time.Second)

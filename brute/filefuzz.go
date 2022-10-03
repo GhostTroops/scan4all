@@ -140,6 +140,7 @@ func init() {
 var RandStr4Cookie = util.RandStringRunes(10)
 
 // 重写了fuzz：优化流程、优化算法、修复线程安全bug、增加智能功能
+//  两次  ioutil.ReadAll(resp.Body)，第二次就会 Read返回EOF error
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
 	u01, err := url.Parse(strings.TrimSpace(u))
 	if nil == err {
@@ -187,22 +188,25 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	var async_technologies = make(chan []string, util.Fuzzthreads*2)
 	// 字典长度的 70% 的错误
 	var MaxErrorTimes int32 = int32(float32(len(filedic)) * 0.7)
-	defer func() {
-		close(ch)
-		close(async_data)
-		close(async_technologies)
-	}()
+	//defer func() {
+	//	close(ch)
+	//	close(async_data)
+	//	close(async_technologies)
+	//}()
 	//log.Printf("start fuzz: %s for", u)
 	nStop := 400
 	go func() {
 		for {
 			select {
+			case <-ctx2.Done():
+				return
 			case x1, ok := <-async_data:
 				if ok {
 					path = append(path, x1...)
 					if len(path) > nStop {
 						stop() //发停止指令
 						atomic.AddInt32(&errorTimes, MaxErrorTimes)
+						return
 					}
 				} else {
 					return
@@ -213,13 +217,12 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 				} else {
 					return
 				}
-			case <-ctx2.Done():
-				return
 			default:
 				// <-time.After(time.Duration(100) * time.Millisecond)
 			}
 		}
 	}()
+	log.Printf("wait for file fuzz(dicts:%d) %s \r", len(filedic), u)
 	for _, payload := range filedic {
 		// 接收到停止信号
 		if atomic.LoadInt32(&errorTimes) >= MaxErrorTimes {
@@ -235,14 +238,8 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 				wg.Done() // 控制所有线程结束
 				<-ch      // 并发控制
 			}()
-			//log.Printf("start file fuzz %s%s \r", u, payload)
 			for {
 				select {
-				case _, ok := <-ch:
-					if !ok {
-						stop()
-						return
-					}
 				case <-ctx.Done(): // 00-捕获所有线程关闭信号，并退出，close for all
 					atomic.AddInt32(&errorTimes, MaxErrorTimes)
 					return
@@ -262,9 +259,14 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 						szUrl = u + payload[1:]
 					}
 					//log.Printf("start fuzz: [%s]", szUrl)
+					client := util.GetClient(szUrl)
+					if nil != client {
+						client.ErrCount = 0
+						client.ErrLimit = 999999
+					}
 					if fuzzPage, req, err := reqPage(szUrl); err == nil && nil != req && 0 < len(req.Body) {
 						//if 200 == req.StatusCode {
-						//	log.Printf("%d : %s \n", req.StatusCode, szUrl)
+						//log.Printf("%d : %s \n", req.StatusCode, szUrl)
 						//}
 						go util.CheckHeader(req.Header, u)
 						// 02-状态码和req1相同，且与req1相似度>9.5，关闭所有fuzz
@@ -324,7 +326,10 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 						}
 					} else { // 这里应该元子操作
 						if nil != err {
-							log.Printf("%s is err %v\n", szUrl, err)
+							//if nil != client && strings.Contains(err.Error(), " connect: connection reset by peer") {
+							//	client.Client = client.GetClient(nil)
+							//}
+							//log.Printf("file fuzz %s is err %v\n", szUrl, err)
 						}
 						atomic.AddInt32(&errorTimes, 1)
 					}

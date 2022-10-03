@@ -23,9 +23,9 @@ func GetAllJson() []Configs.ExpJson {
 	FindResltAllJson := []string{}
 	FindResltAllJson, _ = FindFileAllJson(Configs.ConfigJsonMap.Exploit.Path, FindResltAllJson)
 	// 所有的json文件
-	for _, filename := range FindResltAllJson {
-		fmt.Println(filename)
-	}
+	//for _, filename := range FindResltAllJson {
+	//	fmt.Println(filename)
+	//}
 	size := len(FindResltAllJson)
 	var AllExpJsonContent []Configs.ExpJson = make([]Configs.ExpJson, size)
 	for i := 0; i < size; i++ {
@@ -44,15 +44,12 @@ func GetAllJson() []Configs.ExpJson {
 }
 
 func All_url_one_Json(oneExpjson Configs.ExpJson, urls <-chan string, result chan<- results, timeout_count map[string]int) {
-
 	for url := range urls {
 		var res results
 		res.url = url
 		res.res = JudgeMent_OneUrl_OneJson(url, oneExpjson)
 		result <- res
-
 	}
-
 }
 
 func final_One_url_allJson(timeout_count map[string]int) {
@@ -118,7 +115,6 @@ func final_ALLurl_OneJson(timeout_count map[string]int) {
 func All_url_ALLjson(urls <-chan string, allresult chan<- all_result) {
 	tmp_result := false
 	AllExpJsonContent := GetAllJson()
-
 	for url := range urls {
 		var res all_result
 		res.url = url
@@ -129,22 +125,23 @@ func All_url_ALLjson(urls <-chan string, allresult chan<- all_result) {
 		}
 		allresult <- res
 	}
-
 }
 
-func final_ALLurl_ALLJson(urllist []string) {
+func final_ALLurl_ALLJson(urllist *[]string) {
 	if Configs.UserObject.AllJson == true {
-		size := len(urllist)
+		size := len(*urllist)
 		allresult := make(chan all_result, size+1)
 		//results := make(chan bool, size+1)
 		jobs_url := make(chan string, size+1)
 		for i := 0; i < Configs.UserObject.ThreadNum; i++ {
+			util.Wg.Add(1)
 			util.DoSyncFunc(func() {
+				defer util.Wg.Done()
 				All_url_ALLjson(jobs_url, allresult)
 			})
 		}
 		for i := 0; i < size; i++ {
-			jobs_url <- urllist[i]
+			jobs_url <- (*urllist)[i]
 		}
 		for i := 0; i < size; i++ {
 			res := <-allresult

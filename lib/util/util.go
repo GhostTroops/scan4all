@@ -1,20 +1,19 @@
 package util
 
 import (
-	"crypto/tls"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"github.com/codegangsta/inject"
 	"github.com/corpix/uarand"
 	"github.com/hbakhtiyor/strsim"
+	"github.com/hktalent/PipelineHttp"
 	"github.com/karlseguin/ccache"
 	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
-	"net"
 	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"reflect"
@@ -29,6 +28,11 @@ var (
 	CeyeApi     string // Ceye api
 	CeyeDomain  string // Ceye domain
 	Fuzzthreads = 32   // 2,4,8,16,32,采用2的N次方的数字
+)
+
+const (
+	// Distributed API Server，服务器
+	G_Server = "https://DAS.51pwn.com"
 )
 
 // http密码爆破
@@ -56,12 +60,12 @@ func init() {
 
 var mUrls = make(map[string]string)
 
-func GetClient4Cc(szUrl string) *http.Client {
+func GetClient4Cc(szUrl string) *PipelineHttp.PipelineHttp {
 	InitCHcc()
 	oU, err := url.Parse(szUrl)
 	if nil == err {
 		if o := clientHttpCc.Get(oU.Host); nil != o {
-			if v, ok := o.Value().(*http.Client); ok {
+			if v, ok := o.Value().(*PipelineHttp.PipelineHttp); ok {
 				return v
 			}
 		}
@@ -70,7 +74,7 @@ func GetClient4Cc(szUrl string) *http.Client {
 	}
 	return nil
 }
-func GetClient(szUrl string) *http.Client {
+func GetClient(szUrl string) *PipelineHttp.PipelineHttp {
 	oU, err := url.Parse(szUrl)
 	if nil != err {
 		log.Printf("GetClient url:%s url.Parse err:%v\n", szUrl, err)
@@ -80,36 +84,8 @@ func GetClient(szUrl string) *http.Client {
 	if nil != client {
 		return client
 	}
-	var tr *http.Transport
-	tr = &http.Transport{
-		DialContext: (&net.Dialer{
-			Timeout:   30 * time.Second,
-			KeepAlive: 30 * time.Second,
-			DualStack: true,
-		}).DialContext,
-		MaxIdleConns:           100,
-		MaxIdleConnsPerHost:    1024,
-		TLSHandshakeTimeout:    0 * time.Second,
-		IdleConnTimeout:        90 * time.Second,
-		ExpectContinueTimeout:  1 * time.Second,
-		MaxResponseHeaderBytes: 4096, // net/http default is 10Mb
-		TLSClientConfig: &tls.Config{
-			Renegotiation:      tls.RenegotiateOnceAsClient,
-			InsecureSkipVerify: true,
-		},
-		DisableKeepAlives: false,
-	}
-	if HttpProxy != "" {
-		uri, _ := url.Parse(strings.TrimSpace(HttpProxy))
-		tr.Proxy = http.ProxyURL(uri)
-	}
 
-	client = &http.Client{
-		Timeout:   time.Duration(20) * time.Second,
-		Transport: tr,
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		}}
+	client = PipelineHttp.NewPipelineHttp()
 	mUrls[oU.Host] = ""
 	clientHttpCc.Set(oU.Host, client, defaultInteractionDuration)
 	return client
@@ -119,10 +95,11 @@ func CloseHttpClient(szUrl string) {
 	oU, _ := url.Parse(szUrl)
 	client := GetClient4Cc(szUrl)
 	if nil != client {
-		client.CloseIdleConnections()
+		client.Close()
 	}
 	clientHttpCc.Delete(oU.Host)
 }
+
 func CloseAllHttpClient() {
 	for k, _ := range mUrls {
 		CloseHttpClient("http://" + k)
@@ -151,6 +128,7 @@ func SliceRemoveDuplicates(slice []string) []string {
 
 // 若干参数依赖注入到对象 obj中
 //  util.MergeParms2Obj(&ms, args...)
+//  使用 inject 注入 struct 需要注意的时，每个inject的类型不一样，如果一样的，必须使用类型别名，否则盲注会出问题
 func MergeParms2Obj(obj interface{}, args ...interface{}) interface{} {
 	if nil != args && 0 < len(args) {
 		in := inject.New()
@@ -167,53 +145,34 @@ func GetResponse(username string, password string, urlstring string, method stri
 	if nil == client {
 		return nil, "", "", errors.New(urlstring + " client is nil")
 	}
-	if isredirect {
-		jar, _ := cookiejar.New(nil)
-		client.Jar = jar
-	} else {
-		client.Jar = nil
-	}
-	req, err := http.NewRequest(strings.ToUpper(method), urlstring, strings.NewReader(postdata))
-	if err != nil {
-		return nil, "", "", err
-	}
-	if "" != username && "" != password {
-		req.SetBasicAuth(username, password)
-	}
-	req.Header.Add("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-	req.Header.Add("User-Agent", uarand.GetRandom())
-	//req.Header.Add("Connection", "keep-alive")// http1.1 默认 开启
-	SetHeader(&req.Header)
-	for k, v := range headers {
-		req.Header.Add(k, v)
-	}
-
-	var resp *http.Response
-	// resp, err = tr.RoundTrip(req)
-	resp, err = client.Do(req)
-	defer func() {
-		req.Body.Close()
-		if nil != resp {
-			//io.Copy(ioutil.Discard, resp.Body)
-			resp.Body.Close()
+	client.SetCtx(Ctx_global)
+	client.DoGetWithClient4SetHd(nil, urlstring, strings.ToUpper(method), strings.NewReader(postdata), func(resp *http.Response, err1 error, szU string) {
+		if err1 != nil {
+			if nil != resp {
+				io.Copy(ioutil.Discard, resp.Body)
+			}
+			log.Printf("%s %v", urlstring, err1)
+			resp1, reqbody, location, err = &Response{"999", 999, "", nil, 0, "", ""}, "", "", err1
+		} else {
+			if body, err1 := ioutil.ReadAll(resp.Body); err1 == nil {
+				reqbody = string(body)
+			}
+			if relocation, err1 := resp.Location(); err1 == nil {
+				location = relocation.String()
+			}
+			resp1, reqbody, location, err = &Response{resp.Status, resp.StatusCode, reqbody, &resp.Header, len(reqbody), resp.Request.URL.String(), location}, reqbody, location, nil
 		}
-	}()
-
-	if err != nil {
-		if nil != resp {
-			io.Copy(ioutil.Discard, resp.Body)
+	}, func() map[string]string {
+		hd001 := map[string]string{}
+		if "" != username && "" != password {
+			hd001["Authorization"] = "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password))
 		}
-		//防止空指针
-		return &Response{"999", 999, "", nil, 0, "", ""}, "", "", err
-	}
-
-	if body, err := ioutil.ReadAll(resp.Body); err == nil {
-		reqbody = string(body)
-	}
-	if resplocation, err := resp.Location(); err == nil {
-		location = resplocation.String()
-	}
-	return &Response{resp.Status, resp.StatusCode, reqbody, &resp.Header, len(reqbody), resp.Request.URL.String(), location}, reqbody, location, nil
+		hd001["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
+		hd001["User-Agent"] = uarand.GetRandom()
+		SetHeader4Map(&hd001)
+		return hd001
+	}, true)
+	return resp1, reqbody, location, err
 }
 
 // 需要考虑缓存
@@ -223,6 +182,18 @@ func GetResponse(username string, password string, urlstring string, method stri
 func HttpRequset(urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
 	rsps, _, _, err := GetResponse("", "", urlstring, method, postdata, isredirect, headers)
 	return rsps, err
+}
+
+func TestIsWeb(a *[]string) (a1 *[]string, b *[]string) {
+	var aHttp, noHttp []string
+	for _, k := range *a {
+		if _, _, ok := TestIs404(k); ok {
+			aHttp = append(aHttp, k)
+		} else {
+			noHttp = append(noHttp, k)
+		}
+	}
+	return &aHttp, &noHttp
 }
 
 func Dnslogchek(randomstr string) bool {

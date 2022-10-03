@@ -13,3 +13,7 @@ git checkout vendor/github.com/projectdiscovery/nuclei/v2
 go build
 
 git add vendor
+rm -rf vendor/github.com/hktalent/goSqlite_gorm
+ln -s $HOME/MyWork/goSqlite_gorm $PWD/vendor/github.com/hktalent/goSqlite_gorm
+
+

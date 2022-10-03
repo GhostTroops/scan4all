@@ -3,9 +3,7 @@ package Funcs
 import (
 	"fmt"
 	Configs "github.com/hktalent/scan4all/webScan/config"
-	"io"
-	"io/ioutil"
-	"log"
+	"net/http"
 	"regexp"
 	"strings"
 	"sync"
@@ -68,41 +66,32 @@ func JudgeMent_OneUrl_OneJson(url string, oneExpjson Configs.ExpJson) bool {
 		//---正则替换结束
 
 		paras.Url = url
+		var head http.Header
+		var status_code int
 		if value.Upload.FilePath == "" {
-			RespObject.Resp = Client(value.Method, whole_url, ReqData, value.Header, 5, value.Follow_redirects, paras) //最后一个url为原生url，用来统计是否不继续对该url发包
+			RespObject.Resp, status_code, head = Client(value.Method, whole_url, ReqData, value.Header, 5, value.Follow_redirects, paras) //最后一个url为原生url，用来统计是否不继续对该url发包
 		} else {
-			RespObject.Resp = UClient(value.Method, whole_url, filestruct, ReqData, value.Header, 5, value.Follow_redirects, paras)
+			RespObject.Resp, status_code, head = UClient(value.Method, whole_url, filestruct, ReqData, value.Header, 5, value.Follow_redirects, paras)
 		}
 
 		if RespObject.Resp == nil {
-			log.Println("Http Do Request failed")
+			//log.Println("Http Do Request failed")
 			return false
 		} else {
-
-			body, err := ioutil.ReadAll(RespObject.Resp.Body)
-			if err != nil {
-				log.Println("To read Response body failed")
-				return false
-			}
-			RespObject.Body = string(body)
+			RespObject.Body = string(*RespObject.Resp)
 			//fmt.Println(RespObject.Body)
-			if RespObject.Resp != nil {
-				io.Copy(ioutil.Discard, RespObject.Resp.Body)
-				RespObject.Resp.Body.Close()
-
-			}
 			if value.Search != "" {
 				if strings.HasPrefix("body:", value.Search) {
 					value.Search = strings.TrimPrefix("body:", value.Search)
 					paras.Str_replace = regex_match(value.Search, RespObject.Body)
 				} else {
 					if strings.HasPrefix("Set-Cookie:", value.Search) {
-						str := RespObject.Resp.Header.Get("Set-Cookie")
+						str := head.Get("Set-Cookie")
 						value.Search = strings.TrimPrefix("Set-Cookie:", value.Search)
 						paras.Str_replace = regex_match(value.Search, str)
 					}
 					if strings.HasPrefix("Content-Type:", value.Search) {
-						str := RespObject.Resp.Header.Get("Content-Type")
+						str := head.Get("Content-Type")
 						value.Search = strings.TrimPrefix("Content-Type:", value.Search)
 						paras.Str_replace = regex_match(value.Search, str)
 					}
@@ -117,7 +106,7 @@ func JudgeMent_OneUrl_OneJson(url string, oneExpjson Configs.ExpJson) bool {
 					if chk_value.Operation == `contains` {
 						if chk_value.Key != "" {
 
-							CheckStatus[id][`contains`] = strings.Contains(RespObject.Resp.Header.Get(chk_value.Key), chk_value.Value)
+							CheckStatus[id][`contains`] = strings.Contains(head.Get(chk_value.Key), chk_value.Value)
 
 						} else {
 							CheckStatus[id][`contains`] = strings.Contains(RespObject.Body, chk_value.Value)
@@ -131,7 +120,7 @@ func JudgeMent_OneUrl_OneJson(url string, oneExpjson Configs.ExpJson) bool {
 					}
 					if chk_value.Operation == `code` {
 
-						if fmt.Sprintf("%d", RespObject.Resp.StatusCode) == chk_value.Value {
+						if fmt.Sprintf("%d", status_code) == chk_value.Value {
 							code_ststus = true
 
 						}

@@ -2,10 +2,10 @@ package Funcs
 
 import (
 	"bytes"
-	"crypto/tls"
-	"fmt"
+	"github.com/hktalent/scan4all/lib/util"
 	Configs "github.com/hktalent/scan4all/webScan/config"
 	"io"
+	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -16,87 +16,61 @@ import (
 
 var muxs sync.RWMutex
 
-func Client(method string, url string, body io.Reader, Headers map[string]string, timeout time.Duration, redirects string, paras params) (resp *http.Response) {
-	timeout_count := &Extra.timeout_count
-
-	_, ok := (*timeout_count)[paras.Url]
-	if ok {
-		var resp *http.Response
-		if (*timeout_count)[paras.Url] > 5 {
-			return resp
-		}
-	}
-
-	var client *http.Client
-	//这里是转换为了使用https
-	tr := &http.Transport{
-		TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
-		DisableKeepAlives: true,
-	}
-	if redirects == "true" {
-		client = &http.Client{Timeout: time.Second * timeout, Transport: tr}
-	} else {
-		client = &http.Client{Timeout: time.Second * timeout, Transport: tr,
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			}}
-	}
-	req, err := http.NewRequest(method, url, body)
-	if err != nil {
-		fmt.Println("httpRequest err", err)
-	}
-
-	//遍历添加每个header 头
+func Client(method string, url string, body io.Reader, Headers map[string]string, timeout time.Duration, redirects string, paras params) (resp *[]byte, status_code int, head http.Header) {
 	muxs.Lock()
-	for key, value := range Headers {
-		key = re_replace(key, paras.Str_replace)
-		value = re_replace(value, paras.Str_replace)
-		req.Header.Add(key, value)
+	timeout_count := &Extra.timeout_count
+	if _, ok := (*timeout_count)[paras.Url]; ok {
+		if (*timeout_count)[paras.Url] > 5 {
+			muxs.Unlock()
+			return nil, 0, nil
+		}
 	}
 	muxs.Unlock()
-	//--------------------------------------
-	//ExpJson := &Configs.ExpJson{}
-	//fmt.Println(ExpJson)
-	//------------------------------------
-	resp, err2 := client.Do(req)
+	client := util.GetClient(url)
 
-	if err2 != nil {
-		muxs.Lock()
-		(*timeout_count)[paras.Url] = (*timeout_count)[paras.Url] + 1
-		muxs.Unlock()
-		fmt.Println("Client.Do err", err2)
-
+	if redirects == "true" {
+		client.Client.CheckRedirect = nil
 	}
-
-	return resp
+	client.Client.Timeout = timeout
+	client.DoGetWithClient4SetHd(client.Client, url, method, body, func(resp1 *http.Response, err error, szU string) {
+		if nil != err {
+			muxs.Lock()
+			(*timeout_count)[paras.Url] = (*timeout_count)[paras.Url] + 1
+			muxs.Unlock()
+		} else if nil != resp1 {
+			resp2, err1 := ioutil.ReadAll(resp1.Body)
+			err = err1
+			resp = &resp2
+			status_code = resp1.StatusCode
+			head = resp1.Header
+		}
+	}, func() map[string]string {
+		mhd1 := map[string]string{}
+		for key, value := range Headers {
+			key = re_replace(key, paras.Str_replace)
+			value = re_replace(value, paras.Str_replace)
+			mhd1[key] = value
+		}
+		return mhd1
+	}, true)
+	return resp, status_code, head
 }
 
-func UClient(method, url string, filestruct Configs.FileNameStruct, body io.Reader, Headers map[string]string, timeout time.Duration, redirects string, paras params) (resp *http.Response) {
+func UClient(method, url string, filestruct Configs.FileNameStruct, body io.Reader, Headers map[string]string, timeout time.Duration, redirects string, paras params) (resp *[]byte, status_code int, head http.Header) {
+	muxs.Lock()
 	timeout_count := &Extra.timeout_count
-	_, ok := (*timeout_count)[paras.Url]
-	if ok {
-		//var resp *http.Response
+	if _, ok := (*timeout_count)[paras.Url]; ok {
 		if (*timeout_count)[paras.Url] > 5 {
-			return resp
+			muxs.Unlock()
+			return resp, 0, nil
 		}
-
 	}
-
-	var client *http.Client
-	//这里是转换为了使用https
-	tr := &http.Transport{
-		TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
-		DisableKeepAlives: true,
-	}
+	muxs.Unlock()
+	client := util.GetClient(url)
 	if redirects == "true" {
-		client = &http.Client{Timeout: time.Second * timeout, Transport: tr}
-	} else {
-		client = &http.Client{Timeout: time.Second * timeout, Transport: tr,
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			}}
+		client.Client.CheckRedirect = nil
 	}
-	//client := http.Client{} //原本就一句client
+	client.Client.Timeout = timeout
 	bodyBuf := &bytes.Buffer{}
 	bodyWrite := multipart.NewWriter(bodyBuf)
 	file, err2 := os.Open(filestruct.FilePath)
@@ -119,29 +93,27 @@ func UClient(method, url string, filestruct Configs.FileNameStruct, body io.Read
 	bodyWrite.Close()
 	// 创建请求
 	contentType := bodyWrite.FormDataContentType()
-	request, err := http.NewRequest(http.MethodPost, url, bodyBuf)
-	if err != nil {
-		log.Println("Create http Request failed")
-		return
-	}
-	log.Println(url)
-	request.Header.Set("Content-Type", contentType)
-	muxs.Lock()
-	for key, value := range Headers {
-		key = re_replace(key, paras.Str_replace)
-		value = re_replace(value, paras.Str_replace)
-		request.Header.Add(key, value)
-		//fmt.Println(key, value)
-	}
-	muxs.Unlock()
-	resp, err4 := client.Do(request)
-
-	if err4 != nil {
-		log.Println("Http Client do Request failed")
-		muxs.Lock()
-		(*timeout_count)[paras.Url] = (*timeout_count)[paras.Url] + 1
-		muxs.Unlock()
-	}
-
-	return resp
+	client.DoGetWithClient4SetHd(client.Client, url, http.MethodPost, bodyBuf, func(resp1 *http.Response, err error, szU string) {
+		if nil != err {
+			muxs.Lock()
+			(*timeout_count)[paras.Url] = (*timeout_count)[paras.Url] + 1
+			muxs.Unlock()
+		} else {
+			resp2, err1 := ioutil.ReadAll(resp1.Body)
+			err = err1
+			resp = &resp2
+			status_code = resp1.StatusCode
+			head = resp1.Header
+		}
+	}, func() map[string]string {
+		mhd1 := map[string]string{}
+		for key, value := range Headers {
+			key = re_replace(key, paras.Str_replace)
+			value = re_replace(value, paras.Str_replace)
+			mhd1[key] = value
+		}
+		mhd1["Content-Type"] = contentType
+		return mhd1
+	}, true)
+	return resp, status_code, head
 }

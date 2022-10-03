@@ -88,7 +88,7 @@ func (r *Cmd) AsynCmd(fnCbk func(line string), szCmd string, args ...string) err
 	//}
 
 	scanner := bufio.NewScanner(cmdReader)
-	done := make(chan struct{})
+	done := make(chan struct{}, 1)
 	go func() {
 		defer func() {
 			done <- struct{}{}

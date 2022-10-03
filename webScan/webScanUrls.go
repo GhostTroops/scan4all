@@ -42,9 +42,11 @@ func CheckUrls(buf *bytes.Buffer) {
 	if nil == buf {
 		return
 	}
-	urllist := strings.Split(strings.TrimSpace(buf.String()), "\n")
+	urlList := strings.Split(strings.TrimSpace(buf.String()), "\n")
+	aHttp, _ := util.TestIsWeb(&urlList)
 	Configs.UserObject.GetTitle = true
 	Configs.UserObject.AllJson = true
 	Configs.UserObject.ThreadNum = util.GetValAsInt("Fuzzthreads", 4)
-	ws01.Choose(urllist)
+	ws01.Choose(aHttp)
+	//log.Printf("web scan over %v\n", urlList)
 }

@@ -537,10 +537,10 @@ func (r *Runner) displayExecutionInfo(store *loader.Store) {
 		}
 		builder.WriteString(")")
 	}
-	messageStr := builder.String()
+	//messageStr := builder.String()
 	builder.Reset()
 
-	gologger.Info().Msgf("Using Nuclei Engine %s%s", config.Version, messageStr)
+	//gologger.Info().Msgf("Using Nuclei Engine %s%s", config.Version, messageStr)
 
 	if r.templatesConfig != nil && r.templatesConfig.NucleiTemplatesLatestVersion != "" { // TODO extract duplicated logic
 		builder.WriteString(" (")
@@ -552,14 +552,14 @@ func (r *Runner) displayExecutionInfo(store *loader.Store) {
 		}
 		builder.WriteString(")")
 	}
-	messageStr = builder.String()
+	//messageStr = builder.String()
 	builder.Reset()
 
 	if r.templatesConfig != nil {
-		gologger.Info().Msgf("Using Nuclei Templates %s%s", r.templatesConfig.TemplateVersion, messageStr)
+		//gologger.Info().Msgf("Using Nuclei Templates %s%s", r.templatesConfig.TemplateVersion, messageStr)
 	}
 	if len(store.Templates()) > 0 {
-		gologger.Info().Msgf("Templates added in last update: %d", r.countNewTemplates())
+		//gologger.Info().Msgf("Templates added in last update: %d", r.countNewTemplates())
 		gologger.Info().Msgf("Templates loaded for scan: %d", len(store.Templates()))
 	}
 	if len(store.Workflows()) > 0 {

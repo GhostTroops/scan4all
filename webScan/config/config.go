@@ -1,9 +1,5 @@
 package Configs
 
-import (
-	"net/http"
-)
-
 // json 模式的payload
 type ExpJson struct {
 	Name        string `json:"Name"`
@@ -60,7 +56,7 @@ type UserOption struct {
 }
 
 type HttpResult struct {
-	Resp *http.Response
+	Resp *[]byte
 	Body string
 }
 
