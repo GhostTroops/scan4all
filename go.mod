@@ -100,6 +100,7 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/gorilla/websocket v1.5.0
 	github.com/gosnmp/gosnmp v1.35.0
+	github.com/hktalent/PipelineHttp v0.0.0-20221003131356-bf29cf889d54
 	github.com/hktalent/goSqlite_gorm v1.1.0
 	github.com/hktalent/jarm-go v0.0.0-20220918133110-7801447b6267
 	github.com/huin/asn1ber v0.0.0-20120622192748-af09f62e6358

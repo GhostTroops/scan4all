@@ -26,7 +26,7 @@ nuclei -duc -u http://192.168.10.31:8888 -t "http://127.0.0.1:8088/goSwaggerAPI.
 func DoNuclei(buf *bytes.Buffer, wg *sync.WaitGroup, oOpts *map[string]interface{}) {
 	defer wg.Done()
 	xx := make(chan bool)
-	outNuclei := make(chan *runner2.Runner, 2)
+	outNuclei := make(chan *runner2.Runner, 1)
 	go nuclei_Yaml.RunNuclei(buf, xx, oOpts, outNuclei)
 	<-xx
 }

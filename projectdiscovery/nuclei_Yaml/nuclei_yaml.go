@@ -32,17 +32,12 @@ func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, 
 		return
 	}
 	a := strings.Split(strings.TrimSpace(buf.String()), "\n")
-	var aHttp, noHttp []string
+	var aHttp, noHttp *[]string
 	buf.Reset()
 	buf = nil
-	for _, k := range a {
-		if _, _, ok := util.TestIs404(k); ok {
-			aHttp = append(aHttp, k)
-		} else {
-			noHttp = append(noHttp, k)
-		}
-	}
-	var nucleiDone1, nucleiDone2 = make(chan bool), make(chan bool)
+	aHttp, noHttp = util.TestIsWeb(&a)
+
+	var nucleiDone1, nucleiDone2 = make(chan bool, 1), make(chan bool, 1)
 	util.DoSyncFunc(func() {
 		defer func() { xx <- true }()
 		nCnt := 0
@@ -66,9 +61,9 @@ func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, 
 			}
 		}
 	})
-	if 0 < len(aHttp) {
+	if 0 < len(*aHttp) {
 		buf1 := bytes.Buffer{}
-		buf1.WriteString(strings.Join(aHttp, "\n"))
+		buf1.WriteString(strings.Join(*aHttp, "\n"))
 		m1 := map[string]interface{}{
 			// DNSProtocol,FileProtocol,NetworkProtocol,WorkflowProtocol,SSLProtocol,WebsocketProtocol,WHOISProtocol
 			"Protocols":         []int{2, 3, 4, 6, 7, 8, 9},
@@ -89,9 +84,9 @@ func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, 
 		nucleiDone1 <- true
 		close(nucleiDone1)
 	}
-	if 0 < len(noHttp) {
+	if 0 < len(*noHttp) {
 		buf1 := bytes.Buffer{}
-		buf1.WriteString(strings.Join(noHttp, "\n"))
+		buf1.WriteString(strings.Join(*noHttp, "\n"))
 		m1 := map[string]interface{}{
 			// DNSProtocol,FileProtocol,NetworkProtocol,WorkflowProtocol,SSLProtocol,WHOISProtocol
 			"Protocols":         []int{1, 2, 5, 6, 7},

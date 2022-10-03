@@ -56,7 +56,7 @@ var Naabubuffer = bytes.Buffer{}
 
 func (r *Runner) Httpxrun() error {
 	httpxrunner.Naabubuffer = Naabubuffer
-	var nucleiDone = make(chan bool)
+	var nucleiDone = make(chan bool, 1)
 	Cookie := util.GetVal("Cookie")
 	if "" != Cookie {
 		Cookie = "Cookie: " + Cookie + ";rememberMe=123" // add
@@ -66,7 +66,7 @@ func (r *Runner) Httpxrun() error {
 	//log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
 	//Naabubuffer1 := bytes.Buffer{}
 	//Naabubuffer1.Write(httpxrunner.Naabubuffer.Bytes())
-	var xx1 = make(chan *runner2.Runner, 3)
+	var xx1 = make(chan *runner2.Runner, 1)
 	httpxoptions := httpxrunner.ParseOptions()
 
 	opts := map[string]interface{}{}
@@ -82,7 +82,7 @@ func (r *Runner) Httpxrun() error {
 		util.CustomHeaders = append(util.CustomHeaders, a...)
 	}
 	//var axx1 []*runner2.Runner
-	defer func() { <-nucleiDone }()
+
 	util.DoSyncFunc(func() {
 		if util.GetValAsBool("enableWebScan") {
 			util.DoSyncFunc(func() {
@@ -94,6 +94,7 @@ func (r *Runner) Httpxrun() error {
 		} else {
 			go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone, &opts, xx1)
 		}
+		<-nucleiDone
 	})
 	// 指纹去重复 请求路径
 	if "" != fingerprint.FgDictFile {

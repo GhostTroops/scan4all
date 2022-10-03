@@ -59,26 +59,35 @@ func DoNow(szKey string) {
 // 单实例运行
 var IsDo = make(chan struct{}, 1)
 
+func DoSleep() {
+	time.Sleep(4 * time.Second)
+}
+
 // 延时清理
 func DoDelayClear() {
-	defer func() {
-		<-IsDo
-	}()
-	nN := time.Now().Unix()
-	delayClear.Range(func(key, value any) bool {
-		if nil == value {
-			delayClear.Delete(key)
+	IsDo <- struct{}{}
+	Wg.Add(1)
+	go func() {
+		defer func() {
+			<-IsDo
+			Wg.Done()
+		}()
+		nN := time.Now().Unix()
+		delayClear.Range(func(key, value any) bool {
+			if nil == value {
+				delayClear.Delete(key)
+				return true
+			}
+			x1 := value.(*delayClearObj)
+			n09 := nN - x1.Time
+			//log.Printf("n09 = %d, now = %d, x1.Time = %d", n09, nN, x1.Time)
+			if n09 >= x1.DelayCall {
+				x1.FnCbk()
+				delayClear.Delete(key)
+				//log.Println("nuclei is closed : ", key)
+			}
 			return true
-		}
-		x1 := value.(*delayClearObj)
-		n09 := nN - x1.Time
-		//log.Printf("n09 = %d, now = %d, x1.Time = %d", n09, nN, x1.Time)
-		if n09 >= x1.DelayCall {
-			x1.FnCbk()
-			delayClear.Delete(key)
-			//log.Println("nuclei is closed : ", key)
-		}
-		return true
-	})
+		})
+	}()
 	return
 }

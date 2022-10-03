@@ -1,4 +1,5 @@
 {
+  "OnClient": true,
   "ScanPoolSize":5000,
   "JndiAddress": "https://rcejndi.51pwn.com",
   "CeyeDomain": "scan4all.51pwn.com",
@@ -63,16 +64,16 @@
   "HydraUser": "",
   "HydraPass": "",
   "UrlPrecise": true,
-  "ParseSSl": false,
-  "EnableSubfinder": false,
+  "ParseSSl": true,
+  "EnableSubfinder": true,
   "EnableHoneyportDetection": true,
   "EnableKsubdomain": true,
   "KsubdomainRegxp": "([0-9a-zA-Z\\-]+\\.[0-9a-zA-Z\\-]+)$",
   "naabu_dns": {},
   "naabu": {"TopPorts": "1000","ScanAllIPS": true,"Threads": 50,"EnableProgressBar": false},
-  "priorityNmap": false,
+  "priorityNmap": true,
   "noScan": false,
-  "enableMultNuclei": false,
+  "enableMultNuclei": true,
   "enableNuclei": true,
   "nuclei": {
     "Severities":  [5,4,3],
@@ -86,7 +87,7 @@
     "HeadlessTemplateThreads": 10,
     "ReportingConfig": "config/nuclei_esConfig.yaml"
   },
-  "enablDevDebug": false,
+  "enablDevDebug": true,
   "enablEmbedYaml": true,
   "enablFileFuzz": true,
   "httpx": {
@@ -100,7 +101,7 @@
     "MaxRedirects": 3
   },
   "enableEsSv": false,
-  "CheckWeakPassword": true,
+  "CheckWeakPassword": false,
   "esthread": 8,
   "hydrathread": 64,
   "Fuzzthreads": 16,

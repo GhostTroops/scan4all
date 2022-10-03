@@ -1,8 +1,8 @@
 package Funcs
 
 import (
-	"crypto/tls"
 	"fmt"
+	"github.com/hktalent/scan4all/lib/util"
 	Configs "github.com/hktalent/scan4all/webScan/config"
 	"io/ioutil"
 	"net/http"
@@ -81,114 +81,65 @@ func GetUrlTitle() {
 	defer fp_succ.Close()
 }
 
+// geg title
 func GetUrlTitle_handle(urls <-chan string, Get_title_res chan<- Gettitle_result) {
 	var res Gettitle_result
-	var RespObject Configs.HttpResult
-	var error_str string
 	var result_title string
-	for url := range urls {
-		res.url = url
-		RespObject.Resp, error_str = GetTitleRequest(url, 5)
+	fnCbkGetTitle := func(Resp *http.Response, error_str string) {
 		if error_str != "" {
-			res.url = url
 			res.rescode = 999
 			tmp_string := strings.Split(error_str, ":")
 			res.title_name = tmp_string[len(tmp_string)-1]
-			//Get_title_res <- res
-
 		} else {
-			if RespObject.Resp == nil {
-				res.url = url
+			if Resp == nil {
 				res.rescode = 999
 				res.title_name = "RespObject.Resp==nil"
-				//	Get_title_res <- res
-			}
-			body, err := ioutil.ReadAll(RespObject.Resp.Body)
-			if err != nil {
-				fmt.Println("GetUrlTitle_handle func body is err..", err)
-
-			}
-			reg := regexp.MustCompile(`<title>(.+)</title>`)
-			if reg == nil {
-				fmt.Println("MustCompile err")
-			}
-			res.rescode = RespObject.Resp.StatusCode
-			re_result := reg.FindAllStringSubmatch(string(body), -1)
-			if re_result == nil {
-				result_title = "未获取到标题"
 			} else {
-				result_title = re_result[0][1]
+				body, err := ioutil.ReadAll(Resp.Body)
+				if err != nil {
+					fmt.Println("GetUrlTitle_handle func body is err..", err)
+				} else {
+					reg := regexp.MustCompile(`<title>(.+)?</title>`)
+					if reg == nil {
+						fmt.Println("MustCompile err")
+					}
+					res.rescode = Resp.StatusCode
+					re_result := reg.FindAllStringSubmatch(string(body), -1)
+					if re_result == nil {
+						result_title = "未获取到标题"
+					} else {
+						result_title = re_result[0][1]
+					}
+					res.title_name = result_title
+				}
 			}
-			res.title_name = result_title
 		}
+	}
+	for url := range urls {
+		res.url = url
+		GetTitleRequest(url, 5, fnCbkGetTitle)
 		if strings.Contains(res.title_name, "400 The plain HTTP request was sent to HTTPS port") {
 			tmp_url := url
 			tmp_url = strings.Replace(tmp_url, "http://", "https://", 1)
 			res.url = tmp_url
-			RespObject.Resp, error_str = GetTitleRequest(tmp_url, 5)
-			if error_str != "" {
-				res.rescode = 999
-				//fmt.Println("error_str=", error_str)
-				tmp_string := strings.Split(error_str, ":")
-				res.title_name = tmp_string[len(tmp_string)-1]
-				fmt.Println(res.title_name)
-				//	Get_title_res <- res
-
-			} else {
-				if RespObject.Resp == nil {
-					res.rescode = 999
-					res.title_name = "RespObject.Resp==nil"
-					//		Get_title_res <- res
-				}
-				body, err := ioutil.ReadAll(RespObject.Resp.Body)
-				if err != nil {
-					fmt.Println("GetUrlTitle_handle func body is err..", err)
-				}
-				reg := regexp.MustCompile(`<title>(.+)?</title>`)
-				if reg == nil {
-					fmt.Println("MustCompile err")
-				}
-				res.rescode = RespObject.Resp.StatusCode
-				//result_title := "aaaa"
-				//result_title :=
-				re_result := reg.FindAllStringSubmatch(string(body), -1)
-				if re_result == nil {
-					result_title = "未获取到标题"
-				} else {
-					result_title = re_result[0][1]
-				}
-				res.title_name = result_title
-			}
+			GetTitleRequest(tmp_url, 5, fnCbkGetTitle)
 		}
-
 		Get_title_res <- res
-
 	}
 }
 
-func GetTitleRequest(url string, timeout time.Duration) (resp *http.Response, str string) {
-	str = ""
-	//这里是转换为了使用https
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{Timeout: time.Second * timeout, Transport: tr}
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		fmt.Println("httpRequest err", err)
-	}
-	//遍历添加每个header 头
-	req.Header.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36")
-
-	//--------------------------------------
-	//ExpJson := &Configs.ExpJson{}
-	//fmt.Println(ExpJson)
-	//------------------------------------
-	resp, err2 := client.Do(req)
-	if err2 != nil {
-		//	fmt.Println("Client.Do err", err2)
-		str = string(err2.Error())
-	}
-
-	return resp, str
+func GetTitleRequest(url string, timeout time.Duration, fnCbk func(resp *http.Response, str string)) {
+	client := util.GetClient(url)
+	var str string = ""
+	client.Client.Timeout = time.Second * timeout
+	client.DoGetWithClient4SetHd(client.Client, url, http.MethodPost, nil, func(resp *http.Response, err error, szU string) {
+		if err != nil {
+			str = err.Error()
+		}
+		fnCbk(resp, str)
+	}, func() map[string]string {
+		mhd1 := map[string]string{}
+		mhd1["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36"
+		return mhd1
+	}, true)
 }

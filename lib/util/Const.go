@@ -42,11 +42,22 @@ func GetCustomHeadersRaw() string {
 	return ""
 }
 
+// 全局设置header
 func SetHeader(m *http.Header) {
 	if 0 < len(CustomHeaders) && nil != m {
 		for _, i := range CustomHeaders {
 			n := strings.Index(i, ":")
 			m.Set(strings.TrimSpace(i[:n]), strings.TrimSpace(i[n+1:]))
+		}
+	}
+}
+
+// 设置map格式的header
+func SetHeader4Map(m *map[string]string) {
+	if 0 < len(CustomHeaders) && nil != m {
+		for _, i := range CustomHeaders {
+			n := strings.Index(i, ":")
+			(*m)[strings.TrimSpace(i[:n])] = strings.TrimSpace(i[n+1:])
 		}
 	}
 }

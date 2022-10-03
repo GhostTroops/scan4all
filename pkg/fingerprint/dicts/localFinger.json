@@ -6580,7 +6580,7 @@
     "location": "body",
     "keyword": ["href=\"/landmark.admin.web_deploy/"]
   },{
-    "cms": "landray-oa",
+    "cms": "蓝凌 OA",
     "method": "keyword",
     "location": "body",
     "keyword": ["lui_login_message_td"]
@@ -12220,52 +12220,52 @@
     "location": "body",
     "keyword": ["tomcat monitor uses wadl to describe services it can offer"]
   },{
-    "cms": "tongda-oa",
+    "cms": "通达OA",
     "method": "keyword",
     "location": "body",
     "keyword": ["href=\"/static/images/tongda.ico\""]
   },{
-    "cms": "tongda-oa",
+    "cms": "通达OA",
     "method": "keyword",
     "location": "body",
     "keyword": ["<a href='http://www.tongda2000.com/' target='_black'>通达官网</a>"]
   },{
-    "cms": "tongda-oa",
+    "cms": "通达OA",
     "method": "keyword",
     "location": "body",
     "keyword": ["/images/tongda.ico"]
   },{
-    "cms": "tongda-oa",
+    "cms": "通达OA",
     "method": "keyword",
     "location": "body",
     "keyword": ["Office Anywhere"]
   },{
-    "cms": "tongda-oa",
+    "cms": "通达OA",
     "method": "keyword",
     "location": "body",
     "keyword": ["login","tongda2000"]
   },{
-    "cms": "tongda-oa",
+    "cms": "通达OA",
     "method": "keyword",
     "location": "body",
     "keyword": ["/static/templates/2013_01/index.css/"]
   },{
-    "cms": "tongda-oa",
+    "cms": "通达OA",
     "method": "keyword",
     "location": "body",
     "keyword": ["javascript:document.form1.uname.focus()"]
   },{
-    "cms": "tongda-oa",
+    "cms": "通达OA",
     "method": "keyword",
     "location": "body",
     "keyword": ["<link rel=\"shortcut icon\" href=\"/images/tongda.ico\" />"]
   },{
-    "cms": "tongda-oa",
+    "cms": "通达OA",
     "method": "keyword",
     "location": "body",
     "keyword": ["oa提示：不能登录oa"]
   },{
-    "cms": "tongda-oa",
+    "cms": "通达OA",
     "method": "keyword",
     "location": "body",
     "keyword": ["紧急通知：今日10点停电"]
@@ -14325,37 +14325,37 @@
     "location": "body",
     "keyword": ["shopping cart program by zen cart"]
   },{
-    "cms": "zentao-system",
+    "cms": "禅道",
     "method": "keyword",
     "location": "body",
     "keyword": ["$('#zentao').addClass('btn-success');"]
   },{
-    "cms": "zentao-system",
+    "cms": "禅道",
     "method": "keyword",
     "location": "body",
     "keyword": ["zentao/theme"]
   },{
-    "cms": "zentao-system",
+    "cms": "禅道",
     "method": "keyword",
     "location": "body",
     "keyword": ["<a id='zentaopro' href='/pro/'"]
   },{
-    "cms": "zentao-system",
+    "cms": "禅道",
     "method": "keyword",
     "location": "body",
     "keyword": ["$('#zentaopro').addclass"]
   },{
-    "cms": "zentao-system",
+    "cms": "禅道",
     "method": "keyword",
     "location": "body",
     "keyword": ["powered by <a href='http://www.zentao.net' target='_blank'>zentaopms","welcome to use zentao!"]
   },{
-    "cms": "zentao-system",
+    "cms": "禅道",
     "method": "keyword",
     "location": "body",
     "keyword": ["href='/zentao/favicon.ico"]
   },{
-    "cms": "zentao-system",
+    "cms": "禅道",
     "method": "keyword",
     "location": "body",
     "keyword": ["server: cpws"]
@@ -15649,5 +15649,10 @@
     "method": "keyword",
     "location": "body",
     "keyword": ["//xfpverifyExec.jsp;"]
+  },{
+    "cms": "铭飞MCms",
+    "method": "keyword",
+    "location": "body",
+    "keyword": ["Powered by MCms"]
   }]
 }

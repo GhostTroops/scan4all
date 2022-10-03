@@ -56,6 +56,8 @@ func doSub(s string) (aRst []string, err1 error) {
 		Close:
 			for {
 				select {
+				case <-util.Ctx_global.Done():
+					return
 				case <-close:
 					break Close
 				case ok := <-out:
@@ -63,6 +65,8 @@ func doSub(s string) (aRst []string, err1 error) {
 						aRst = append(aRst, ok)
 						//fmt.Println("out ===> ", ok)
 					}
+				default:
+					util.DoSleep()
 				}
 			}
 			bSend = true

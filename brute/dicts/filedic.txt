@@ -5553,7 +5553,6 @@ admin%20
 admin%20/
 admin%20/page
 admin%24
-admin%ext%
 admin-ANTIGO
 admin-admin
 admin-ajax
@@ -27949,8 +27948,8 @@ url.jsp
 url.php
 url_1.sql
 url_2.sql
-urllist.
-urllist.txt.gz
+urlList.
+urlList.txt.gz
 urlmem-app/.env
 urlogy
 urls.py

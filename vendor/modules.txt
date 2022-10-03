@@ -563,6 +563,9 @@ github.com/hashicorp/hcl/json/token
 # github.com/hbakhtiyor/strsim v0.0.0-20190107154042-4d2bbb273edf
 ## explicit
 github.com/hbakhtiyor/strsim
+# github.com/hktalent/PipelineHttp v0.0.0-20221003131356-bf29cf889d54
+## explicit; go 1.18
+github.com/hktalent/PipelineHttp
 # github.com/hktalent/go-utils v0.0.0-20221002030334-91cfbdd4fc1e
 ## explicit; go 1.18
 github.com/hktalent/go-utils
@@ -570,6 +573,7 @@ github.com/hktalent/go-utils
 ## explicit; go 1.18
 github.com/hktalent/goSqlite_gorm/lib
 github.com/hktalent/goSqlite_gorm/lib/scan/Const
+github.com/hktalent/goSqlite_gorm/pkg/models
 # github.com/hktalent/jarm-go v0.0.0-20220918133110-7801447b6267
 ## explicit; go 1.18
 github.com/hktalent/jarm-go

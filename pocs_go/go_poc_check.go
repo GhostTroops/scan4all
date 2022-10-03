@@ -14,15 +14,20 @@ import (
 	"github.com/hktalent/scan4all/pocs_go/gitlab"
 	"github.com/hktalent/scan4all/pocs_go/jboss"
 	"github.com/hktalent/scan4all/pocs_go/jenkins"
+	"github.com/hktalent/scan4all/pocs_go/landray"
 	"github.com/hktalent/scan4all/pocs_go/log4j"
+	"github.com/hktalent/scan4all/pocs_go/mcms"
 	"github.com/hktalent/scan4all/pocs_go/ms"
 	"github.com/hktalent/scan4all/pocs_go/phpunit"
 	"github.com/hktalent/scan4all/pocs_go/seeyon"
 	"github.com/hktalent/scan4all/pocs_go/shiro"
+	"github.com/hktalent/scan4all/pocs_go/spark"
 	"github.com/hktalent/scan4all/pocs_go/sunlogin"
 	"github.com/hktalent/scan4all/pocs_go/tomcat"
+	"github.com/hktalent/scan4all/pocs_go/tongda"
 	"github.com/hktalent/scan4all/pocs_go/weblogic"
 	"github.com/hktalent/scan4all/pocs_go/zabbix"
+	"github.com/hktalent/scan4all/pocs_go/zentao"
 	"log"
 	"net/url"
 	"strings"
@@ -246,6 +251,9 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if confluence.CVE_2022_26134(URL) {
 				technologies = append(technologies, "exp-confluence|CVE_2022_26134")
 			}
+			if confluence.CVE_2022_26138(URL) {
+				technologies = append(technologies, "exp-confluence|CVE_2022_26138")
+			}
 		case "f5 big ip":
 			if f5.CVE_2020_5902(URL) {
 				technologies = append(technologies, "exp-f5-Big-IP|CVE_2020_5902")
@@ -256,7 +264,34 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if f5.CVE_2022_1388(URL) {
 				technologies = append(technologies, "exp-f5-Big-IP|CVE_2022_1388")
 			}
+		case "禅道":
+			if zentao.CNVD_2022_42853(URL) {
+				technologies = append(technologies, "GoPOC_禅道|CNVD_2022_42853")
+			}
+		case "spark-jobs":
+			if spark.CVE_2022_33891(URL) {
+				technologies = append(technologies, "GoPOC_spark|CVE_2022_33891")
+			}
+		case "蓝凌 OA":
+			if landray.Landray_RCE(URL) {
+				technologies = append(technologies, "GoPOC_Landray|Landray_RCE")
+			}
+		case "通达OA":
+			if tongda.Get_user_session(URL) {
+				technologies = append(technologies, "GoPOC_Tongda|Tongda_get_user_session")
+			}
+			if tongda.File_delete(URL) {
+				technologies = append(technologies, "GoPOC_Tongda|Tongda_File_delete")
+			}
+			if tongda.File_upload(URL) {
+				technologies = append(technologies, "GoPOC_Tongda|Tongda_File_upload")
+			}
+		case "铭飞MCms":
+			if mcms.Front_Sql_inject(URL) {
+				technologies = append(technologies, "GoPOC_Mcms|Mcms_Front_Sql_inject")
+			}
 		}
+
 		if checklog4j {
 			if log4j.Check(URL, finalURL) {
 				technologies = append(technologies, "exp-log4j|JNDI RCE")

@@ -8,7 +8,7 @@ import (
 
 // 加载PoCs
 func LoadPocs(Pocs embed.FS) chan<- string {
-	var rst = make(chan string)
+	var rst = make(chan string, 10000)
 	var szPath string = "goby_pocs"
 	entries, err := Pocs.ReadDir(szPath)
 	if err == nil {
