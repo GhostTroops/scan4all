@@ -47,7 +47,7 @@ func (m *Masscan) SetRate(rate string) {
 }
 
 // masscan -p- --rate=2000 192.168.10.31
-func (m *Masscan) Run() error {
+func (m *Masscan) Run(fnCbk func(*models.Host)) error {
 	//var outb, errs bytes.Buffer
 	if m.Rate != "" {
 		m.Args = append(m.Args, "--rate")
@@ -79,10 +79,11 @@ func (m *Masscan) Run() error {
 				for _, x9 := range i.Ports {
 					x9.Addr = i.Address.Addr
 				}
-				nR := util.UpInsert[models.Host](&i, "addr=?", i.Address.Addr)
-				if 1 > nR {
-					log.Println("util.UpInsert fail \n", line)
-				}
+				fnCbk(&i)
+				//nR := util.UpInsert[models.Host](&i, "addr=?", i.Address.Addr)
+				//if 1 > nR {
+				//	log.Println("util.UpInsert fail \n", line)
+				//}
 			}
 		}
 	}, string(m.SystemPath), m.Args...)

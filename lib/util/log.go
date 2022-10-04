@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"log"
 	"os"
 	"strings"
@@ -30,6 +31,18 @@ func SendLog(szUrl, szVulType, Msg, Payload string) {
 		VulType: szVulType,
 		Payload: Payload,
 		Msg:     strings.TrimSpace(Msg) + " " + szVulType,
+	}
+	SendAnyData(v, Scan4all)
+	writeoutput(v)
+}
+
+// 专门发送改造后的引擎函数执行结果
+func SendEngineLog(evt *models.EventData, nCurType int, data ...interface{}) {
+	v := &SimpleVulResult{
+		Url:      evt.Task.ScanWeb,
+		VulKind:  string(Scan4all),
+		ScanType: nCurType,
+		ScanData: data,
 	}
 	SendAnyData(v, Scan4all)
 	writeoutput(v)

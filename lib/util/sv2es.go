@@ -44,11 +44,13 @@ func Log(v ...any) {
 
 // 简单结果
 type SimpleVulResult struct {
-	Url     string `json:"url"`
-	VulKind string `json:"vulKind"` // 结果分类
-	VulType string `json:"vulType"` // 漏洞类型
-	Payload string `json:"payload"`
-	Msg     string `json:"msg"`
+	Url      string        `json:"url"`
+	VulKind  string        `json:"vulKind"`   // 结果分类
+	VulType  string        `json:"vulType"`   // 漏洞类型
+	Payload  string        `json:"payload"`   // 攻击、检测一类的结果时，当前的payload
+	Msg      string        `json:"msg"`       // 其他消息
+	ScanType int           `json:"scan_type"` // 扫描类型
+	ScanData []interface{} `json:"scan_data"` // 扫描结果，例如 masscan端口扫描、nmap
 }
 
 // 一定得有全局得线程等待

@@ -250,9 +250,5 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 export GOPRIVATE=github.com/hktalent
 go env |grep GOPRIVATE
 
-go env -w GOPRIVATE=github.com/hktalent/goSqlite_gorm/lib@v1.1.0
-go get -v  github.com/hktalent/goSqlite_gorm/lib@v1.1.0
-
-
 https://github.com/heartshare/go-wafw00f
 -->

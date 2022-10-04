@@ -6,6 +6,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/fsnotify/fsnotify"
 	"github.com/karlseguin/ccache"
 	"github.com/spf13/viper"
 	"io/fs"
@@ -17,7 +18,6 @@ import (
 	"reflect"
 	"regexp"
 	"runtime"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -225,28 +225,30 @@ func RandStringRunes(n int) string {
 	return string(b)
 }
 
-// 初始化配置文件信息，这个必须先执行
-func InitConfigFile() {
+// 加载配置文件
+func LoadCoinfig(config *viper.Viper) {
+	if nil == config {
+		config = viper.New()
+	}
+	viper.Set("Verbose", true)
 	pwd, _ := os.Getwd()
 	SzPwd = pwd
-	var ConfigName = "config/config.json"
-	config := viper.New()
-	config.AddConfigPath("./")
+	//var ConfigName = "config/config.json"
+	config.SetConfigName("config") //name of config file (without extension)
 	config.AddConfigPath("./config/")
+	config.AddConfigPath("./")
 	config.AddConfigPath("$HOME")
+	config.AddConfigPath("$HOME/config/")
+	config.AddConfigPath("$HOME/.config/")
 	config.AddConfigPath("/etc/")
-	nT, err := strconv.Atoi(GetVal4File("Fuzzthreads", "32"))
-	if nil != err {
-		nT = 32
-	}
-	Fuzzthreads = nT
+
 	// 显示调用
 	config.SetConfigType("json")
-	if "" != ConfigName {
-		config.SetConfigFile(ConfigName)
-	}
-	err = config.ReadInConfig() // 查找并读取配置文件
-	if err != nil {             // 处理读取配置文件的错误
+	//if "" != ConfigName {
+	//	config.SetConfigFile(ConfigName)
+	//}
+	err := config.ReadInConfig() // 查找并读取配置文件
+	if err != nil {              // 处理读取配置文件的错误
 		log.Println("config.ReadInConfig ", err)
 		return
 	}
@@ -256,33 +258,20 @@ func InitConfigFile() {
 		return
 	}
 	config.Unmarshal(&mData)
-	//for key, val := range mData1 {
-	//	s := string(val)
-	//	i, err := strconv.ParseInt(s, 10, 64)
-	//	if err == nil {
-	//		mData[key] = i
-	//		continue
-	//	}
-	//	f, err := strconv.ParseFloat(s, 64)
-	//	if err == nil {
-	//		mData[key] = f
-	//		continue
-	//	}
-	//	var v interface{}
-	//	err = json.Unmarshal(val, &v)
-	//	if err == nil {
-	//		mData[key] = v
-	//		continue
-	//	}
-	//	mData[key] = val
-	//}
-	//config.Unmarshal(&mData)
-	viper.Set("Verbose", false)
-	EnableHoneyportDetection = GetValAsBool("EnableHoneyportDetection")
+	config.OnConfigChange(func(e fsnotify.Event) {
+		log.Println("Config file changed, now reLoad it: ", e.Name)
+		LoadCoinfig(config)
+	})
+	// 避免 hold
+	go config.WatchConfig()
+}
 
-	configure := ccache.Configure()
-	configure = configure.MaxSize(5000)
-	noRpt = ccache.New(configure)
+// 初始化配置文件信息，这个必须先执行
+func InitConfigFile() {
+	LoadCoinfig(nil)
+	Fuzzthreads = GetValAsInt("Fuzzthreads", 32)
+	EnableHoneyportDetection = GetValAsBool("EnableHoneyportDetection")
+	noRpt = GetMemoryCache(5000, noRpt)
 }
 
 var G_Options interface{}
@@ -385,6 +374,7 @@ func Init1(config *embed.FS) {
 	}
 	szPath := "config"
 	log.Println("wait for init config files ... ")
+	// 释放config目录到本地
 	if nil != config {
 		if x1, err := config.ReadDir(szPath); nil == err {
 			for _, x2 := range x1 {

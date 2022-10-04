@@ -175,7 +175,7 @@ func (r *PipelineHttp) DoGetWithClient4SetHdNoCloseBody(client *http.Client, szU
 // multipart/form-data
 // text/plain
 func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, method string, postBody io.Reader, fnCbk func(resp *http.Response, err error, szU string), setHd func() map[string]string, bCloseBody bool) {
-	r.testHttp2(szUrl)
+	//r.testHttp2(szUrl)
 	if client == nil {
 		if nil != r.Client {
 			client = r.Client
@@ -192,7 +192,7 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 		} else {
 			req.Header.Set("Connection", "keep-alive")
 		}
-		req.Close = true
+		req.Close = true // 避免 Read返回EOF error
 		var fnShk func() map[string]string
 		if nil != setHd {
 			fnShk = setHd
@@ -209,7 +209,13 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 		log.Println("http.NewRequest is error ", err)
 		return
 	}
-	req = req.WithContext(r.Ctx)
+	n1 := client.Timeout
+	if 0 == n1 {
+		n1 = 10
+	}
+	ctx, cc := context.WithTimeout(r.Ctx, n1*r.Timeout)
+	defer cc()
+	req = req.WithContext(ctx)
 
 	resp, err := client.Do(req)
 	if bCloseBody && resp != nil {
@@ -256,7 +262,9 @@ func (r *PipelineHttp) testHttp2(szUrl001 string) {
 		r.TestHttp = true
 		r.UseHttp2 = true
 		c1 := r.GetRawClient4Http2()
-		r.DoGetWithClient(c1, szUrl001, "GET", nil, func(resp *http.Response, err error, szU string) {
+		oU7, _ := url.Parse(szUrl001)
+		szUrl09 := "https://" + oU7.Host + oU7.Path
+		r.DoGetWithClient(c1, szUrl09, "GET", nil, func(resp *http.Response, err error, szU string) {
 			if nil != resp && (resp.Proto == "HTTP/2.0" || resp.StatusCode == http.StatusSwitchingProtocols) {
 				if nil != r.Client {
 					r.Client.CloseIdleConnections()

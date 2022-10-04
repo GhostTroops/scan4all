@@ -44,12 +44,20 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 // client缓存
 var clientHttpCc *ccache.Cache
 
-func InitCHcc() {
-	if nil == clientHttpCc {
+// 获取一个内存对象
+//  如果c不是nil，就不再创建新的
+func GetMemoryCache(nMaxSize int64, c *ccache.Cache) *ccache.Cache {
+	if nil == c {
 		configure := ccache.Configure()
-		configure = configure.MaxSize(10000)
-		clientHttpCc = ccache.New(configure)
+		configure = configure.MaxSize(nMaxSize)
+		c = ccache.New(configure)
 	}
+	return c
+}
+
+// 初始化client cache
+func InitCHcc() {
+	clientHttpCc = GetMemoryCache(10000, clientHttpCc)
 }
 
 func init() {
@@ -146,7 +154,10 @@ func GetResponse(username string, password string, urlstring string, method stri
 		return nil, "", "", errors.New(urlstring + " client is nil")
 	}
 	client.SetCtx(Ctx_global)
-	client.DoGetWithClient4SetHd(nil, urlstring, strings.ToUpper(method), strings.NewReader(postdata), func(resp *http.Response, err1 error, szU string) {
+	if !isredirect {
+		client.Client.CheckRedirect = nil
+	}
+	client.DoGetWithClient4SetHd(client.Client, urlstring, strings.ToUpper(method), strings.NewReader(postdata), func(resp *http.Response, err1 error, szU string) {
 		if err1 != nil {
 			if nil != resp {
 				io.Copy(ioutil.Discard, resp.Body)
@@ -170,6 +181,9 @@ func GetResponse(username string, password string, urlstring string, method stri
 		hd001["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8"
 		hd001["User-Agent"] = uarand.GetRandom()
 		SetHeader4Map(&hd001)
+		for k, v := range headers {
+			hd001[k] = v
+		}
 		return hd001
 	}, true)
 	return resp1, reqbody, location, err

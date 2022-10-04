@@ -3,6 +3,8 @@ package portScan
 import (
 	"context"
 	"github.com/Ullaakut/nmap"
+	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
+	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
 	"log"
 	"time"
@@ -29,15 +31,20 @@ type Scanner struct {
 	Ports   []string
 }
 
-func DoNmap(Targets []string, Ports []string) {
+// 基于工厂方法构建
+var DoNmap = util.EngineFuncFactory(func(evt *models.EventData, args ...interface{}) {
+	var Targets []string = args[0].([]string)
+	var Ports []string = args[1].([]string)
 	x1 := &Scanner{Targets: Targets, Ports: Ports}
+	var streams []*Stream
 	_, err := x1.Scan(func(s *Stream) {
-
+		streams = append(streams, s)
 	})
 	if nil != err {
 		log.Println("nmap scan is error ", err)
 	}
-}
+	util.SendEngineLog(evt, Const.ScanType_Nmap, streams)
+})
 
 // Scan scans the target networks and tries to find RTSP streams within them.
 //
@@ -94,12 +101,10 @@ func (s *Scanner) scan(nmapScanner nmap.ScanRunner, fnCbk func(*Stream)) ([]*Str
 		if len(host.Ports) == 0 || len(host.Addresses) == 0 {
 			continue
 		}
-
 		for _, port := range host.Ports {
 			if port.Status() != "open" {
 				continue
 			}
-
 			for _, address := range host.Addresses {
 				sts := &Stream{
 					Device:  port.Service.Product,
