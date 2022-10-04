@@ -6,12 +6,14 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"github.com/fsnotify/fsnotify"
 	"github.com/karlseguin/ccache"
 	"github.com/spf13/viper"
 	"io/fs"
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"os/exec"
 	"reflect"
@@ -192,28 +194,30 @@ func RandStringRunes(n int) string {
 	return string(b)
 }
 
-// 初始化配置文件信息，这个必须先执行
-func Init2() {
+// 加载配置文件
+func LoadCoinfig(config *viper.Viper) {
+	if nil == config {
+		config = viper.New()
+	}
+	viper.Set("Verbose", true)
 	pwd, _ := os.Getwd()
 	SzPwd = pwd
-	var ConfigName = "config/config.json"
-	config := viper.New()
-	config.AddConfigPath("./")
+	//var ConfigName = "config/config.json"
+	config.SetConfigName("config") //name of config file (without extension)
 	config.AddConfigPath("./config/")
+	config.AddConfigPath("./")
 	config.AddConfigPath("$HOME")
+	config.AddConfigPath("$HOME/config/")
+	config.AddConfigPath("$HOME/.config/")
 	config.AddConfigPath("/etc/")
-	nT, err := strconv.Atoi(GetVal4File("Fuzzthreads", "32"))
-	if nil != err {
-		nT = 32
-	}
-	Fuzzthreads = nT
+
 	// 显示调用
 	config.SetConfigType("json")
-	if "" != ConfigName {
-		config.SetConfigFile(ConfigName)
-	}
-	err = config.ReadInConfig() // 查找并读取配置文件
-	if err != nil {             // 处理读取配置文件的错误
+	//if "" != ConfigName {
+	//	config.SetConfigFile(ConfigName)
+	//}
+	err := config.ReadInConfig() // 查找并读取配置文件
+	if err != nil {              // 处理读取配置文件的错误
 		log.Println("config.ReadInConfig ", err)
 		return
 	}
@@ -223,13 +227,22 @@ func Init2() {
 		return
 	}
 	config.Unmarshal(&mData)
-	viper.Set("Verbose", false)
-	initEs()
-	EnableHoneyportDetection = GetValAsBool("EnableHoneyportDetection")
+	config.OnConfigChange(func(e fsnotify.Event) {
+		log.Println("Config file changed, now reLoad it: ", e.Name)
+		LoadCoinfig(config)
+	})
+	// 避免 hold
+	go config.WatchConfig()
+}
 
-	configure := ccache.Configure()
-	configure = configure.MaxSize(5000)
-	noRpt = ccache.New(configure)
+// 初始化配置文件信息，这个必须先执行
+func Init2() {
+	LoadCoinfig(nil)
+	Fuzzthreads = GetValAsInt("Fuzzthreads", 32)
+	EnableHoneyportDetection = GetValAsBool("EnableHoneyportDetection")
+	initEs()
+
+	noRpt = GetMemoryCache(5000, noRpt)
 }
 
 var G_Options interface{}
@@ -425,10 +438,23 @@ func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 			return r01, err, ok
 		}
 	}
+	sz404 := szUrl + Abs404
+	client := GetClient(sz404)
+	if nil != client {
+		client.Client.Timeout = 5
+		//log.Printf("%v %s \n", client, sz404)
+		var x05 *http.Transport = client.Client.Transport.(*http.Transport)
+		if nil != x05 {
+			x05.DisableKeepAlives = true
+		}
+	}
 
-	r01, err = HttpRequset(szUrl+Abs404, "GET", "", false, map[string]string{"Connection": "close"})
+	log.Println("start test ", sz404)
+	r01, err = HttpRequset(sz404, "GET", "", false, map[string]string{"Connection": "close"})
 	ok = err == nil && nil != r01 && 404 == r01.StatusCode
 	noRpt.Set(key, []interface{}{r01, err, ok}, defaultInteractionDuration)
+	//client.Client.Timeout = 10
+	log.Println("end test ", sz404)
 	return r01, err, ok
 }
 func TestIs404Page(szUrl string) (page *Page, r01 *Response, err error, ok bool) {
@@ -454,6 +480,8 @@ var fnInit []func()
 func RegInitFunc(cbk func()) {
 	fnInit = append(fnInit, cbk)
 }
+
+// 所有初始化的总入口
 func DoInit(config *embed.FS) {
 	Init1(config)
 	rand.Seed(time.Now().UnixNano())

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/corpix/uarand"
 	"github.com/hbakhtiyor/strsim"
+	"github.com/karlseguin/ccache"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -24,6 +25,17 @@ var (
 	CeyeDomain  string // Ceye domain
 	Fuzzthreads = 32   // 2,4,8,16,32,采用2的N次方的数字
 )
+
+// 获取一个内存对象
+//  如果c不是nil，就不再创建新的
+func GetMemoryCache(nMaxSize int64, c *ccache.Cache) *ccache.Cache {
+	if nil == c {
+		configure := ccache.Configure()
+		configure = configure.MaxSize(nMaxSize)
+		c = ccache.New(configure)
+	}
+	return c
+}
 
 // http密码爆破
 func HttpRequsetBasic(username string, password string, urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {

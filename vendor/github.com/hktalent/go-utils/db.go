@@ -12,6 +12,9 @@ import (
 	"time"
 )
 
+// 通过数据库模型，构建gorm
+// https://github.com/smallnest/gen
+
 var dbCC *gorm.DB
 var DbName = "config/scan4all_db"
 

@@ -2,7 +2,6 @@ package engine
 
 import (
 	"context"
-	"github.com/codegangsta/inject"
 	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pocs_go"
@@ -53,7 +52,7 @@ func (e *Engine) Close() {
 }
 
 // case 扫描使用的函数
-func (e *Engine) DoCase(ed *models.EventData) interface{} {
+func (e *Engine) DoCase(ed *models.EventData) util.EngineFuncType {
 	if i, ok := CaseScanFunc[ed.EventType]; ok {
 		return i
 	}
@@ -65,24 +64,12 @@ func (e *Engine) DoCase(ed *models.EventData) interface{} {
 //  每个事件异步执行
 //  每种事件类型可以独立控制并发数
 func (e *Engine) DoEvent(ed *models.EventData) {
-	var x01 = &models.EventData{}
-	if nil != x01 {
-	}
-	if nil != ed {
+	if nil != ed && nil != ed.EventData && 0 < len(ed.EventData) {
 		fnCall := e.DoCase(ed)
 		if nil != fnCall {
-			in := inject.New()
-			for _, i := range ed.EventData {
-				in.Map(i)
-			}
-			v, err := in.Invoke(fnCall)
-			if nil != err {
-				log.Printf("DoEvent %d is error: %v %+v \n", ed.EventType, err, ed.EventData)
-			} else if nil != v {
-				log.Printf("DoEvent result %s %v\n", ed.EventType, v)
-			}
+			fnCall(ed, ed.EventData...)
 		} else {
-			log.Printf("can case func %v\n", ed)
+			log.Printf("can not find fnCall case func %v\n", ed)
 		}
 	}
 }
@@ -106,7 +93,7 @@ func init() {
 					close(util.PocCheck_pipe)
 					return
 				case x2 := <-G_Engine.EventData: // 各种扫描的控制
-					if nil != x2 {
+					if nil != x2 && nil != x2.EventData {
 						G_Engine.Wg.Add(1)
 						G_Engine.PoolFunc.Invoke(x2)
 					}
@@ -126,14 +113,6 @@ func init() {
 				default:
 					util.DoDelayClear()
 					util.DoSleep()
-					//var f01 float32 = float32(nCnt) / float32(nMax) * float32(100)
-					//fmt.Printf(" Asynchronous go PoCs detection task %%%0.2f ....\r", f01)
-					//<-time.After(time.Duration(1) * time.Second)
-					//nCnt += 1
-					//if nMax <= nCnt {
-					//	close(util.PocCheck_pipe)
-					//	return
-					//}
 				}
 			}
 		}()

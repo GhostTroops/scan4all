@@ -5,7 +5,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"github.com/asaskevich/govalidator"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
@@ -255,9 +254,9 @@ func (r *Runner) RunEnumeration() error {
 		r.scanner.State = scan.Scan
 		for cidr := range r.streamChannel {
 			s01 := cidr.String()
-			if govalidator.IsDNSName(s01) {
-
-			}
+			//if govalidator.IsDNSName(s01) { // 转ip
+			//
+			//}
 			if err := r.scanner.IPRanger.Add(s01); err != nil {
 				gologger.Warning().Msgf("Couldn't track %s in scan results: %s\n", cidr, err)
 			}

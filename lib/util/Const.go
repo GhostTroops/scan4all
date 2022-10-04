@@ -3,6 +3,7 @@ package util
 import (
 	"context"
 	"fmt"
+	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"net/http"
 	"os"
 	"regexp"
@@ -131,4 +132,14 @@ func CheckHeader(header *http.Header, szUrl string) {
 			}
 		}
 	})
+}
+
+type EngineFuncType func(evt *models.EventData, args ...interface{})
+
+// 工厂方法
+//   便于同一、规范引擎调用的方法、参数约束
+func EngineFuncFactory(fnCbk EngineFuncType) EngineFuncType {
+	return func(evt *models.EventData, args ...interface{}) {
+		fnCbk(evt, args...)
+	}
 }

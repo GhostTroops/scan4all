@@ -30,7 +30,10 @@ func NewKvDbOp() *KvDbOp {
 		os.RemoveAll(CacheName11)
 	}
 	Mkdirs(CacheName11)
-	Cache1.Init(CacheName11)
+	if nil != Cache1.Init(CacheName11) {
+		os.RemoveAll(CacheName11)
+		NewKvDbOp()
+	}
 	return Cache1
 }
 func (r *KvDbOp) SetExpiresAt(ExpiresAt uint64) {
@@ -46,6 +49,7 @@ func (r *KvDbOp) Init(szDb string) error {
 	opts.LevelSizeMultiplier = 20
 	db, err := badger.Open(opts)
 	if nil != err {
+
 		log.Printf("Init2 k-v db cannot open multiple processes at the same time, or please delete the %s directory and try again: %v", szDb, err)
 		return err
 	}
@@ -78,7 +82,7 @@ func (r *KvDbOp) GetKeyForData(key string) (szRst []byte) {
 
 // https://www.modb.pro/db/87317
 func (r *KvDbOp) Get(key string) (szRst []byte, err error) {
-	err = r.DbConn.View(func(txn *badger.Txn) error {
+	err = NewKvDbOp().DbConn.View(func(txn *badger.Txn) error {
 		item, err := txn.Get([]byte(key))
 		if err != nil {
 			return err

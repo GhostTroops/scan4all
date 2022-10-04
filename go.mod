@@ -93,6 +93,7 @@ require (
 	github.com/dgraph-io/badger v1.6.2
 	github.com/dlclark/regexp2 v1.7.0
 	github.com/emersion/go-message v0.16.0
+	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/go-routeros/routeros v0.0.0-20210123142807-2a44d57c6730
 	github.com/go-sql-driver/mysql v1.6.0
@@ -100,8 +101,8 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/gorilla/websocket v1.5.0
 	github.com/gosnmp/gosnmp v1.35.0
-	github.com/hktalent/PipelineHttp v0.0.0-20221003131356-bf29cf889d54
-	github.com/hktalent/goSqlite_gorm v1.1.0
+	github.com/hktalent/PipelineHttp v0.0.0-20221004080931-279351b9fb96
+	github.com/hktalent/goSqlite_gorm v1.1.1
 	github.com/hktalent/jarm-go v0.0.0-20220918133110-7801447b6267
 	github.com/huin/asn1ber v0.0.0-20120622192748-af09f62e6358
 	github.com/icodeface/tls v0.0.0-20190904083142-17aec93c60e5
@@ -180,7 +181,6 @@ require (
 	github.com/emersion/go-textwrapper v0.0.0-20200911093747-65d896831594 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
-	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/getsentry/sentry-go v0.13.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.8.1 // indirect
@@ -217,7 +217,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hktalent/go-utils v0.0.0-20221002030334-91cfbdd4fc1e // indirect
+	github.com/hktalent/go-utils v0.0.0-20221004021941-7e10e0fb13ea // indirect
 	github.com/hktalent/websocket v0.0.0-20220908204337-b4a81b861976 // indirect
 	github.com/iancoleman/orderedmap v0.2.0 // indirect
 	github.com/itchyny/gojq v0.12.9 // indirect
