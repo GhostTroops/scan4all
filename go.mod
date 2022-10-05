@@ -217,7 +217,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
-	github.com/hktalent/go-utils v0.0.0-20221004021941-7e10e0fb13ea // indirect
+	github.com/hktalent/go-utils v0.0.0-20221004095234-2e23f13b429d // indirect
 	github.com/hktalent/websocket v0.0.0-20220908204337-b4a81b861976 // indirect
 	github.com/iancoleman/orderedmap v0.2.0 // indirect
 	github.com/itchyny/gojq v0.12.9 // indirect

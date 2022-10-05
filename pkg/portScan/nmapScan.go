@@ -6,6 +6,7 @@ import (
 	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
 	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
+	"io"
 	"log"
 	"time"
 )
@@ -65,7 +66,9 @@ func (s *Scanner) Scan(fnCbk func(*Stream)) ([]*Stream, error) {
 	// -script-timeout 3m --unique
 	// Run nmap command to discover open Ports on the specified Targets & Ports.
 	// -F --top-Ports=65535 -n --unique --resolve-all -Pn -sU -sS --min-hostgroup 64 --max-retries 0 --host-timeout 10m --script-timeout 3m --version-intensity 9 --min-rate ${XRate} -T4  -iL $1 -oX $2
-	nmapScanner, err := nmap.NewScanner(
+	var nmapScanner *nmap.Scanner
+	var err error
+	nmapScanner, err = nmap.NewScanner(
 		nmap.WithBinaryPath(util.GetVal("nmapScan")),
 		nmap.WithServiceInfo(),           // -sV, 非常慢，但是指纹信息非常全
 		nmap.WithMinRate(5000),           //--min-rate ${XRate}
@@ -89,34 +92,45 @@ func (s *Scanner) Scan(fnCbk func(*Stream)) ([]*Stream, error) {
 	return s.scan(nmapScanner, fnCbk)
 }
 
-func (s *Scanner) scan(nmapScanner nmap.ScanRunner, fnCbk func(*Stream)) ([]*Stream, error) {
-	results, _, err := nmapScanner.Run()
+func (s *Scanner) scan(nmapScanner *nmap.Scanner, fnCbk func(*Stream)) ([]*Stream, error) {
+	err := nmapScanner.RunAsync()
 	if err != nil {
 		return nil, err
 	}
 
 	// Get streams from nmap results.
 	var streams []*Stream
-	for _, host := range results.Hosts {
-		if len(host.Ports) == 0 || len(host.Addresses) == 0 {
-			continue
-		}
-		for _, port := range host.Ports {
-			if port.Status() != "open" {
-				continue
-			}
-			for _, address := range host.Addresses {
-				sts := &Stream{
-					Device:  port.Service.Product,
-					Address: address.Addr,
-					Port:    port.ID,
-					Service: &port.Service,
+	x3 := nmapScanner.GetStderr()
+	go io.Copy(io.Discard, util.ScannerToReader(&x3))
+	scanner1 := nmapScanner.GetStdout()
+	for scanner1.Scan() {
+		s091 := scanner1.Text()
+		log.Println(s091)
+		if r09, err := nmap.Parse([]byte(s091)); nil == err {
+			for _, host := range r09.Hosts {
+				if len(host.Ports) == 0 || len(host.Addresses) == 0 {
+					continue
 				}
-				if nil != fnCbk {
-					fnCbk(sts)
+				for _, port := range host.Ports {
+					if port.Status() != "open" {
+						continue
+					}
+					for _, address := range host.Addresses {
+						sts := &Stream{
+							Device:  port.Service.Product,
+							Address: address.Addr,
+							Port:    port.ID,
+							Service: &port.Service,
+						}
+						if nil != fnCbk {
+							fnCbk(sts)
+						}
+						streams = append(streams, sts)
+					}
 				}
-				streams = append(streams, sts)
 			}
+		} else {
+			log.Println(err)
 		}
 	}
 	log.Printf("Found %d  Real Time Streaming Protocol (RTSP)\n", len(streams))

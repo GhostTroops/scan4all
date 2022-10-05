@@ -8,6 +8,7 @@ import (
 	"github.com/hktalent/scan4all/lib/util"
 	"io"
 	"log"
+	"os/exec"
 )
 
 type PortsStr string
@@ -30,7 +31,7 @@ type Masscan struct {
 }
 
 func New() *Masscan {
-	return &Masscan{SystemPath: "masscan"}
+	return &Masscan{}
 }
 
 func (m *Masscan) SetSystemPath(systemPath string) {
@@ -67,7 +68,15 @@ func (m *Masscan) Run(fnCbk func(*models.Host)) error {
 	if m.Target != "" {
 		m.Args = append(m.Args, string(m.Target))
 	}
-	util.AsynCmd(func(line string) {
+	if m.SystemPath == "" {
+		s01, err := exec.LookPath("masscan")
+		if err != nil {
+			log.Println("exec.LookPath ", err)
+		} else {
+			m.SystemPath = SystemPathStr(s01)
+		}
+	}
+	err := util.AsynCmd(func(line string) {
 		x1, err := m.ParseLine(line)
 		if nil != err {
 			log.Println(err)
@@ -87,7 +96,7 @@ func (m *Masscan) Run(fnCbk func(*models.Host)) error {
 			}
 		}
 	}, string(m.SystemPath), m.Args...)
-	return nil
+	return err
 }
 
 // parse line

@@ -5,6 +5,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"gorm.io/gorm/logger"
 	"log"
 	"os"
@@ -38,8 +39,10 @@ func Close() {
 func InitModle(x ...interface{}) {
 	GDbUtil.Migrator.AutoMigrate(x...)
 }
-
 func GetDb() *gorm.DB {
+	return InitDb()
+}
+func InitDb() *gorm.DB {
 	if nil != dbCC {
 		return dbCC
 	}
@@ -140,17 +143,15 @@ func CloseCur(xx1 *gorm.DB) {
 // 指定id更新T类型mod数据
 // 通用,update
 // 指定id更新T类型mod数据
-func Update[T any](mod *T, id interface{}, idName string) int64 {
-	xxxD := GetSession().Table(GetTableName(*mod)).Model(mod)
-	InitModle(mod)
-	if "" == idName {
-		idName = "id"
-	}
-	rst := xxxD.Where(idName+" = ?", id).Updates(mod)
-	if 0 >= rst.RowsAffected && nil != rst.Error {
+func Update[T any](mod *T, query string, args ...interface{}) int64 {
+	var t1 *T = mod
+	xxxD := dbCC.Table(GetTableName(mod)).Model(&t1)
+	xxxD.AutoMigrate(t1)
+	rst := xxxD.Where(query, args...).Updates(mod)
+	xxxD.Commit()
+	if 0 >= rst.RowsAffected {
 		log.Println(rst.Error)
 	}
-	defer CloseCur(rst)
 	return rst.RowsAffected
 }
 
@@ -165,6 +166,22 @@ func Update[T any](mod *T, id interface{}, idName string) int64 {
 //	}
 //	return rst.RowsAffected
 //}
+
+// 更新失败再插入新数据，确保只有一条数据
+func UpInsert[T any](mod *T, query string, args ...interface{}) int64 {
+	// 在冲突时，更新除主键以外的所有列
+	if 1 > Update[T](mod, query, args...) { // &&
+		if 1 > Create[T](mod) {
+			xx1 := dbCC.Clauses(clause.OnConflict(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "addr"}}, // key colume
+				UpdateAll: true})).Create(mod)
+			return xx1.RowsAffected
+		} else {
+			return 1
+		}
+	}
+	return 1
+}
 
 // 通用,insert
 func Create[T any](mod *T) int64 {

@@ -40,7 +40,7 @@ var MassScanTarget = util.EngineFuncFactory(func(evt *models.EventData, args ...
 	ms := New()
 	ms.Evt = evt
 	ms.Target = TargetStr(ip)
-	ms.Rate = "10000"
+	ms.Rate = "5000"
 	ms.Ports = "0-65535" // -p-  , "-p-"
 	ms.Args = []string{
 		//"--banners",

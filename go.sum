@@ -510,6 +510,8 @@ github.com/hktalent/PipelineHttp v0.0.0-20221004080931-279351b9fb96 h1:8++Z/n334
 github.com/hktalent/PipelineHttp v0.0.0-20221004080931-279351b9fb96/go.mod h1:ob6ATP4M9FiqTRzyALSDox3kc6+xnTgzKuIT+rmKyeE=
 github.com/hktalent/go-utils v0.0.0-20221004021941-7e10e0fb13ea h1:vuxZbB9vAwBi0Uj4F5GOfVtsi5E9MFX07EkCKypVu9M=
 github.com/hktalent/go-utils v0.0.0-20221004021941-7e10e0fb13ea/go.mod h1:9E0C0K+/zzyJ+VqFx1llC3y7+mGgW3toLoyMQnlNXhw=
+github.com/hktalent/go-utils v0.0.0-20221004095234-2e23f13b429d h1:z1IUP4hqn0LGgs78bU2gSlna92/p+RlB0MSZ+RxSmCo=
+github.com/hktalent/go-utils v0.0.0-20221004095234-2e23f13b429d/go.mod h1:Du0lF0ZtTONXpWydjmnsL71He+zlimYLmTmAZta19ZA=
 github.com/hktalent/goSqlite_gorm v1.1.1 h1:kRqNFqAOtECWsUu5nBftCYFJ8MAhEHgjj2A2JOydXp0=
 github.com/hktalent/goSqlite_gorm v1.1.1/go.mod h1:KbxDn4W3dakhiX9eFzZ/sEAuJwKS7h42Xi3aaqU1IjE=
 github.com/hktalent/jarm-go v0.0.0-20220918133110-7801447b6267 h1:eH9QDUO5zwn34BLweSdpTdNcxHD/GXxxLDEG7gaR4OQ=
