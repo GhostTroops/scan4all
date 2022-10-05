@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-var DbCC *gorm.DB
+var dbCC *gorm.DB
 var DbName = "db/mydbfile"
 
 /*
@@ -112,9 +112,9 @@ SELECT count(1) from (SELECT template_id,count(1) cnt from vul_results  group by
 // ./tools/Check_CVE_2020_26134 -config="/Users/51pwn/MyWork/mybugbounty/allDomains.txt"
 // 获取Gorm db连接、操作对象
 //func GetDb(dst ...interface{}) *gorm.DB {
-//	if nil != DbCC {
-//		log.Println("DbCC not is nil, DbName = ", DbName)
-//		return DbCC
+//	if nil != dbCC {
+//		log.Println("dbCC not is nil, DbName = ", DbName)
+//		return dbCC
 //	}
 //	szDf := DbName
 //	if 1 < len(dst) {
@@ -155,9 +155,9 @@ SELECT count(1) from (SELECT template_id,count(1) cnt from vul_results  group by
 //	// PrepareStmt: true,打开预编译 提高效率
 //	db, err := gorm.Open(dbO, config1)
 //	if err == nil {
-//		DbCC = db
+//		dbCC = db
 //		// https://gorm.io/zh_CN/docs/connecting_to_the_database.html
-//		db1, _ := DbCC.DB()
+//		db1, _ := dbCC.DB()
 //		// Ping
 //		db1.Ping()
 //		//db1.SetConnMaxLifetime(time.Minute * 3)
@@ -175,13 +175,13 @@ SELECT count(1) from (SELECT template_id,count(1) cnt from vul_results  group by
 //	} else {
 //		log.Println(err)
 //	}
-//	return DbCC
+//	return dbCC
 //}
 
 // 通用
 // 获取T类型mod表名
 func GetTableName[T any](mod T) string {
-	stmt := &gorm.Statement{DB: DbCC.WithContext(context.Background())}
+	stmt := &gorm.Statement{DB: dbCC.WithContext(context.Background())}
 	stmt.Parse(&mod)
 	return stmt.Schema.Table
 }
@@ -210,7 +210,7 @@ func AutoMigrate[T any](mod *T) {
 		return
 	}
 	MD[s1] = true
-	DbCC.AutoMigrate(mod)
+	dbCC.AutoMigrate(mod)
 }
 
 // go tool pprof -seconds=120 -http=:9999 http://65.49.202.211:8080/debug/pprof/heap
@@ -258,7 +258,7 @@ func DoSql(szSql string, args ...interface{}) int64 {
 
 // 通用,insert
 func Create[T any](mod *T) int64 {
-	xxxD := DbCC.WithContext(context.Background()).Table(GetTableName(*mod)).Model(mod).Session(&gorm.Session{PrepareStmt: true})
+	xxxD := dbCC.WithContext(context.Background()).Table(GetTableName(*mod)).Model(mod).Session(&gorm.Session{PrepareStmt: true})
 	AutoMigrate(mod)
 	rst := xxxD.Create(mod)
 	if 0 >= rst.RowsAffected && nil != rst.Error {
@@ -274,7 +274,7 @@ func Create[T any](mod *T) int64 {
 // 对T表，mod类型表，args 的where求count
 func GetCount[T any](mod T, args ...interface{}) int64 {
 	var n int64
-	x1 := DbCC.WithContext(context.Background()).Model(&mod).Session(&gorm.Session{PrepareStmt: true})
+	x1 := dbCC.WithContext(context.Background()).Model(&mod).Session(&gorm.Session{PrepareStmt: true})
 	if 0 < len(args) {
 		x1.Where(args[0], args[1:]...).Count(&n)
 	} else {
@@ -287,7 +287,7 @@ func GetCount[T any](mod T, args ...interface{}) int64 {
 // 通用
 // 查询返回T类型、表一条数据
 func GetOne[T any](rst *T, args ...interface{}) *T {
-	xxxD := DbCC.Table(GetTableName(*rst)).Model(rst).WithContext(context.Background()).Session(&gorm.Session{PrepareStmt: true})
+	xxxD := dbCC.Table(GetTableName(*rst)).Model(rst).WithContext(context.Background()).Session(&gorm.Session{PrepareStmt: true})
 	//xxxD.AutoMigrate(rst)
 	rst1 := xxxD.First(rst, args...)
 	if 0 == rst1.RowsAffected && nil != rst1.Error {
@@ -299,7 +299,7 @@ func GetOne[T any](rst *T, args ...interface{}) *T {
 }
 
 func GetSession() *gorm.DB {
-	return DbCC.WithContext(context.Background()).Session(&gorm.Session{PrepareStmt: true})
+	return dbCC.WithContext(context.Background()).Session(&gorm.Session{PrepareStmt: true})
 }
 
 // 通用
@@ -347,7 +347,7 @@ func GetSubQueryList[T1, T2, T3 any](mode T1, preLd T3, aRst []T2, nPageSize int
 // 通过泛型调用,支持多个模型调用
 // T1 继承了T2，存在包含关系
 func GetRmtsvLists[T1, T2 any](g *gin.Context, mode T1, aRst []T2, conds ...interface{}) {
-	//rst := DbCC.Model(&mode).Limit(10000).Find(&aRst)
+	//rst := dbCC.Model(&mode).Limit(10000).Find(&aRst)
 	aRst = GetSubQueryLists(mode, "", aRst, 1000, 0, conds...)
 	if nil != aRst && 0 < len(aRst) {
 		g.JSON(http.StatusOK, aRst)

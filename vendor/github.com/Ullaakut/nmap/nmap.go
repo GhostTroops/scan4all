@@ -157,9 +157,6 @@ func (s *Scanner) RunAsync() error {
 	}
 
 	go func() {
-		s.cmd.Wait()
-	}()
-	go func() {
 		<-s.ctx.Done()
 		_ = s.cmd.Process.Kill()
 	}()
