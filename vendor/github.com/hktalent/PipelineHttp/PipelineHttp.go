@@ -130,8 +130,8 @@ func (r *PipelineHttp) SetCtx(ctx context.Context) {
 }
 
 // https://github.com/golang/go/issues/23427
-func (r *PipelineHttp) GetTransport() *http.Transport {
-	tr := &http.Transport{
+func (r *PipelineHttp) GetTransport() http.RoundTripper {
+	var tr http.RoundTripper = &http.Transport{
 		Proxy:                 http.ProxyFromEnvironment,
 		DialContext:           r.Dial,
 		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS10},
@@ -236,6 +236,8 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 	if !r.UseHttp2 && nil != resp && resp.StatusCode == http.StatusSwitchingProtocols {
 		r.UseHttp2 = true
 		r.Client = r.GetRawClient4Http2()
+		r.DoGetWithClient4SetHd(r.Client, szUrl, method, postBody, fnCbk, setHd, bCloseBody)
+		return
 	}
 	fnCbk(resp, err, szUrl)
 }

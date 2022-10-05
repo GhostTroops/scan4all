@@ -402,6 +402,9 @@ github.com/go-routeros/routeros/proto
 # github.com/go-sql-driver/mysql v1.6.0
 ## explicit; go 1.10
 github.com/go-sql-driver/mysql
+# github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0
+## explicit; go 1.13
+github.com/go-task/slim-sprig
 # github.com/goburrow/cache v0.1.4
 ## explicit; go 1.13
 github.com/goburrow/cache
@@ -462,6 +465,10 @@ github.com/golang/glog
 # github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 ## explicit
 github.com/golang/groupcache/lru
+# github.com/golang/mock v1.6.0
+## explicit; go 1.11
+github.com/golang/mock/mockgen
+github.com/golang/mock/mockgen/model
 # github.com/golang/protobuf v1.5.2
 ## explicit; go 1.9
 github.com/golang/protobuf/proto
@@ -563,7 +570,7 @@ github.com/hashicorp/hcl/json/token
 # github.com/hbakhtiyor/strsim v0.0.0-20190107154042-4d2bbb273edf
 ## explicit
 github.com/hbakhtiyor/strsim
-# github.com/hktalent/PipelineHttp v0.0.0-20221004080931-279351b9fb96
+# github.com/hktalent/PipelineHttp v0.0.0-20221005112256-2ebdd38b820b
 ## explicit; go 1.18
 github.com/hktalent/PipelineHttp
 # github.com/hktalent/go-utils v0.0.0-20221004095234-2e23f13b429d
@@ -718,6 +725,23 @@ github.com/logrusorgru/aurora
 # github.com/lor00x/goldap v0.0.0-20180618054307-a546dffdd1a3
 ## explicit
 github.com/lor00x/goldap/message
+# github.com/lucas-clemente/quic-go v0.29.1
+## explicit; go 1.18
+github.com/lucas-clemente/quic-go
+github.com/lucas-clemente/quic-go/http3
+github.com/lucas-clemente/quic-go/internal/ackhandler
+github.com/lucas-clemente/quic-go/internal/congestion
+github.com/lucas-clemente/quic-go/internal/flowcontrol
+github.com/lucas-clemente/quic-go/internal/handshake
+github.com/lucas-clemente/quic-go/internal/logutils
+github.com/lucas-clemente/quic-go/internal/protocol
+github.com/lucas-clemente/quic-go/internal/qerr
+github.com/lucas-clemente/quic-go/internal/qtls
+github.com/lucas-clemente/quic-go/internal/utils
+github.com/lucas-clemente/quic-go/internal/utils/linkedlist
+github.com/lucas-clemente/quic-go/internal/wire
+github.com/lucas-clemente/quic-go/logging
+github.com/lucas-clemente/quic-go/quicvarint
 # github.com/lufia/plan9stats v0.0.0-20220913051719-115f729f3c8c
 ## explicit; go 1.16
 github.com/lufia/plan9stats
@@ -733,6 +757,15 @@ github.com/mailru/easyjson
 github.com/mailru/easyjson/buffer
 github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
+# github.com/marten-seemann/qpack v0.2.1
+## explicit; go 1.14
+github.com/marten-seemann/qpack
+# github.com/marten-seemann/qtls-go1-18 v0.1.2
+## explicit; go 1.18
+github.com/marten-seemann/qtls-go1-18
+# github.com/marten-seemann/qtls-go1-19 v0.1.0
+## explicit; go 1.19
+github.com/marten-seemann/qtls-go1-19
 # github.com/masterzen/simplexml v0.0.0-20190410153822-31eea3082786
 ## explicit
 github.com/masterzen/simplexml/dom
@@ -787,6 +820,13 @@ github.com/montanaflynn/stats
 # github.com/nwaples/rardecode v1.1.3
 ## explicit
 github.com/nwaples/rardecode
+# github.com/nxadm/tail v1.4.8
+## explicit; go 1.13
+github.com/nxadm/tail
+github.com/nxadm/tail/ratelimiter
+github.com/nxadm/tail/util
+github.com/nxadm/tail/watch
+github.com/nxadm/tail/winfile
 # github.com/olekukonko/tablewriter v0.0.5
 ## explicit; go 1.12
 github.com/olekukonko/tablewriter
@@ -795,6 +835,31 @@ github.com/olekukonko/tablewriter
 github.com/olivere/elastic
 github.com/olivere/elastic/config
 github.com/olivere/elastic/uritemplates
+# github.com/onsi/ginkgo v1.16.5
+## explicit; go 1.16
+github.com/onsi/ginkgo/config
+github.com/onsi/ginkgo/formatter
+github.com/onsi/ginkgo/ginkgo
+github.com/onsi/ginkgo/ginkgo/convert
+github.com/onsi/ginkgo/ginkgo/interrupthandler
+github.com/onsi/ginkgo/ginkgo/nodot
+github.com/onsi/ginkgo/ginkgo/outline
+github.com/onsi/ginkgo/ginkgo/testrunner
+github.com/onsi/ginkgo/ginkgo/testsuite
+github.com/onsi/ginkgo/ginkgo/watch
+github.com/onsi/ginkgo/internal/codelocation
+github.com/onsi/ginkgo/internal/containernode
+github.com/onsi/ginkgo/internal/failer
+github.com/onsi/ginkgo/internal/leafnodes
+github.com/onsi/ginkgo/internal/remote
+github.com/onsi/ginkgo/internal/spec
+github.com/onsi/ginkgo/internal/spec_iterator
+github.com/onsi/ginkgo/internal/writer
+github.com/onsi/ginkgo/reporters
+github.com/onsi/ginkgo/reporters/stenographer
+github.com/onsi/ginkgo/reporters/stenographer/support/go-colorable
+github.com/onsi/ginkgo/reporters/stenographer/support/go-isatty
+github.com/onsi/ginkgo/types
 # github.com/openrdap/rdap v0.9.1-0.20191017185644-af93e7ef17b7
 ## explicit; go 1.12
 github.com/openrdap/rdap
@@ -1346,14 +1411,17 @@ go.uber.org/zap/zapcore
 goftp.io/server/v2
 goftp.io/server/v2/driver/file
 goftp.io/server/v2/ratelimit
-# golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
+# golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
 ## explicit; go 1.17
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/chacha20
 golang.org/x/crypto/chacha20poly1305
+golang.org/x/crypto/cryptobyte
+golang.org/x/crypto/cryptobyte/asn1
 golang.org/x/crypto/curve25519
 golang.org/x/crypto/curve25519/internal/field
 golang.org/x/crypto/ed25519
+golang.org/x/crypto/hkdf
 golang.org/x/crypto/internal/alias
 golang.org/x/crypto/internal/poly1305
 golang.org/x/crypto/md4
@@ -1366,13 +1434,17 @@ golang.org/x/crypto/sha3
 golang.org/x/crypto/ssh
 golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/exp v0.0.0-20221002003631-540bb7301a08
+# golang.org/x/exp v0.0.0-20221004215720-b9f4876ce741
 ## explicit; go 1.18
+golang.org/x/exp/constraints
 golang.org/x/exp/rand
 # golang.org/x/mod v0.6.0-dev.0.20220922195421-2adab6b8c60e
 ## explicit; go 1.17
+golang.org/x/mod/internal/lazyregexp
+golang.org/x/mod/modfile
+golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20221002022538-bcab6841153b
+# golang.org/x/net v0.0.0-20221004154528-8021a29435af
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -1443,16 +1515,22 @@ golang.org/x/text/width
 golang.org/x/time/rate
 # golang.org/x/tools v0.1.12
 ## explicit; go 1.18
+golang.org/x/tools/go/ast/astutil
+golang.org/x/tools/go/ast/inspector
 golang.org/x/tools/go/gcexportdata
 golang.org/x/tools/go/internal/gcimporter
 golang.org/x/tools/go/internal/packagesdriver
 golang.org/x/tools/go/internal/pkgbits
 golang.org/x/tools/go/packages
+golang.org/x/tools/imports
 golang.org/x/tools/internal/event
 golang.org/x/tools/internal/event/core
 golang.org/x/tools/internal/event/keys
 golang.org/x/tools/internal/event/label
+golang.org/x/tools/internal/fastwalk
 golang.org/x/tools/internal/gocommand
+golang.org/x/tools/internal/gopathwalk
+golang.org/x/tools/internal/imports
 golang.org/x/tools/internal/packagesinternal
 golang.org/x/tools/internal/typeparams
 golang.org/x/tools/internal/typesinternal
@@ -1519,6 +1597,9 @@ gopkg.in/ini.v1
 # gopkg.in/irc.v3 v3.1.4
 ## explicit; go 1.13
 gopkg.in/irc.v3
+# gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7
+## explicit
+gopkg.in/tomb.v1
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
