@@ -23,6 +23,7 @@ jobs:
       - name: Install Dependences
         run: |
           brew install libpcap upx
+          chmod +x .github/workflows/upx.sh
 #          git submodule update --init --recursive --remote
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
@@ -49,6 +50,7 @@ jobs:
       - name: Install Dependences
         run: |
           sudo apt install -yy libpcap-dev upx gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          chmod +x .github/workflows/upx.sh
 #          git submodule update --init --recursive --remote
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
