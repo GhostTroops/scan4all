@@ -100,7 +100,7 @@
     "FollowRedirects": false,
     "MaxRedirects": 3
   },
-  "enableEsSv": false,
+  "enableEsSv": true,
   "CheckWeakPassword": false,
   "esthread": 8,
   "hydrathread": 64,
