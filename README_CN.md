@@ -254,4 +254,5 @@ https://github.com/heartshare/go-wafw00f
 
 git submodule add --force  https://github.com/hktalent/nuclei-templates.git config/nuclei-templates
 git submodule update --init --recursive
+ /usr/bin/git -c protocol.version=2 submodule update --init --force --recursive
 -->
