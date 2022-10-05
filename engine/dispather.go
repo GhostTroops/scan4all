@@ -12,6 +12,7 @@ import (
 )
 
 // passive 被动模式
+// https://github.com/projectdiscovery/tlsx
 var (
 	CaseScanFunc = map[int]util.EngineFuncType{
 		ScanType_SSLInfo:         nil,                        // 01- SSL信息分析，并对域名信息进行收集、进入下一步流程
