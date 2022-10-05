@@ -8,4 +8,4 @@
 
 set -ex
 find .
-upx dist/goreleaser*/goreleaser*
+upx dist/*/scan4all*
