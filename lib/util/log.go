@@ -38,14 +38,30 @@ func SendLog(szUrl, szVulType, Msg, Payload string) {
 
 // 专门发送改造后的引擎函数执行结果
 func SendEngineLog(evt *models.EventData, nCurType int, data ...interface{}) {
-	v := &SimpleVulResult{
-		Url:      evt.Task.ScanWeb,
-		VulKind:  string(Scan4all),
-		ScanType: nCurType,
-		ScanData: data,
+	if nil != data && 0 < len(data) {
+		v := &SimpleVulResult{
+			Url:      evt.Task.ScanWeb,
+			VulKind:  string(Scan4all),
+			ScanType: nCurType,
+			ScanData: data,
+		}
+		SendAnyData(v, Scan4all)
+		writeoutput(v)
 	}
-	SendAnyData(v, Scan4all)
-	writeoutput(v)
+}
+
+// 专门发送改造后的引擎函数执行结果
+func SendEngineLog4Url(Url string, nCurType int, data ...interface{}) {
+	if nil != data && 0 < len(data) {
+		v := &SimpleVulResult{
+			Url:      Url,
+			VulKind:  string(Scan4all),
+			ScanType: nCurType,
+			ScanData: data,
+		}
+		SendAnyData(v, Scan4all)
+		writeoutput(v)
+	}
 }
 
 func writeoutput(v interface{}) {

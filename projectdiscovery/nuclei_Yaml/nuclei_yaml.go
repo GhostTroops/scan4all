@@ -1,8 +1,10 @@
 package nuclei_Yaml
 
 import (
+	"C"
 	"bytes"
 	"encoding/json"
+	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
 	runner2 "github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
 	"github.com/projectdiscovery/fileutil"
@@ -23,8 +25,21 @@ var (
 	cfgFile string
 )
 
+// 基于工厂方法构建
+var RunNucleiEngin = util.EngineFuncFactory(func(evt *models.EventData, args ...interface{}) {
+	var bf bytes.Buffer = bytes.Buffer{}
+	bf.WriteString(evt.Task.ScanWeb + "\n")
+	var nucleiDone = make(chan bool, 1)
+	var xx1 = make(chan *runner2.Runner, 1)
+	opts := map[string]interface{}{}
+	go RunNuclei(&bf, nucleiDone, &opts, xx1)
+	<-nucleiDone
+	close(xx1)
+})
+
 // 优化，不是http协议的就不走http，提高效率
 // 多实例运行还是存在问题，会出现nuclei 挂起的问题
+// export RunNucleiP
 func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, outNuclei chan<- *runner2.Runner) {
 	if !util.GetValAsBool("enableNuclei") {
 		outNuclei <- nil
@@ -111,6 +126,15 @@ func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, 
 
 var someMapMutex = sync.RWMutex{}
 
+// https://stackoverflow.com/questions/70192715/qt-shared-c-library-exported-from-golang
+// https://github.com/golang/go/issues/26204
+/*
+LIBS += -L$${PWD}\shared -lCalc
+go build -buildmode c-shared -o calcLib.a calcLib.go
+gcc -o calc.exe calc.c calcLib.a
+go build -gccgoflags="-static-libgo" hello.go
+*/
+// export RunNuclei
 func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, outNuclei chan<- *runner2.Runner) {
 	options := &types.Options{}
 	defer func() {

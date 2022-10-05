@@ -11,7 +11,7 @@ import (
 	"runtime"
 )
 
-const Version = `2.7.9`
+var Version = `2.7.9`
 
 var MyName = "scan4all"
 

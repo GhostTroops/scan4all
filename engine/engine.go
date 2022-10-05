@@ -31,7 +31,6 @@ func NewEngine(c *context.Context, pool int) *Engine {
 		return G_Engine
 	}
 	G_Engine = &Engine{Context: c, Wg: util.Wg, Pool: pool, EventData: make(chan *models.EventData, pool)}
-
 	p, err := ants.NewPoolWithFunc(pool, func(i interface{}) {
 		defer G_Engine.Wg.Done()
 		G_Engine.DoEvent(i.(*models.EventData))

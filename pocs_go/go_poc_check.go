@@ -2,6 +2,8 @@ package pocs_go
 
 import (
 	"fmt"
+	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
+	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/brute"
 	"github.com/hktalent/scan4all/lib/Smuggling"
 	"github.com/hktalent/scan4all/lib/util"
@@ -32,6 +34,13 @@ import (
 	"net/url"
 	"strings"
 )
+
+// 基于工厂方法构建
+var POCcheck4Engin = util.EngineFuncFactory(func(evt *models.EventData, args ...interface{}) {
+	_, fileFuzzTechnologies := brute.FileFuzz(evt.Task.ScanWeb, 200, 100, "")
+	pocs := POCcheck(fileFuzzTechnologies, evt.Task.ScanWeb, evt.Task.ScanWeb, true)
+	util.SendEngineLog(evt, Const.ScanType_GoPoc, pocs)
+})
 
 // 需优化：相同都目标，相同都检测只做一次
 func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool) []string {
@@ -300,7 +309,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 	}
 	// 发送结果
 	if 0 < len(technologies) {
-		util.SendAnyData(&map[string]interface{}{"Urls": []string{URL, finalURL}, "technologies": technologies}, util.Scan4all)
+		util.SendEngineLog4Url(finalURL, Const.ScanType_GoPoc, &map[string]interface{}{"Urls": []string{URL, finalURL}, "technologies": technologies}, util.Scan4all)
 	}
 	return technologies
 }

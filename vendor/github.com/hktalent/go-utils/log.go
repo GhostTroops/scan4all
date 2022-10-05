@@ -32,10 +32,14 @@ func SendLog(szUrl, szVulType, Msg, Payload string) {
 		Msg:     strings.TrimSpace(Msg) + " " + szVulType,
 	}
 	SendAnyData(v, Scan4all)
-	writeoutput(fmt.Sprintf("%+v", v))
+	Writeoutput(v)
 }
 
-func writeoutput(szLog string) {
+func Writeoutput(v interface{}) {
+	if 1 > len(Output) {
+		return
+	}
+	szLog := fmt.Sprintf("%+v", v)
 	f, err := os.OpenFile(Output, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Printf("Could not create output fiale '%s': %s\n", Output, err)

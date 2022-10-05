@@ -1,4 +1,4 @@
-package util
+package go_utils
 
 import (
 	"bufio"
@@ -23,7 +23,6 @@ type Cmd struct {
 func (cmd *Cmd) Command(name string, arg ...string) *Cmd {
 	cmd.Cmd = exec.Command(name, arg...)
 	cmd.stdin, _ = cmd.Cmd.StdinPipe()
-	//cmd.stdin.Write([]byte("\n\n"))
 	return cmd
 }
 
@@ -83,51 +82,38 @@ func (r *Cmd) AsynCmd(fnCbk func(line string), szCmd string, args ...string) err
 	if nil != err {
 		return err
 	}
-	done := make(chan struct{}, 2)
-	var fnSc1 = func(bs *bufio.Scanner) {
+	//stderr, err := cmd.StderrPipe()
+	//if err != nil {
+	//	return err
+	//}
+
+	scanner := bufio.NewScanner(cmdReader)
+	done := make(chan struct{}, 1)
+	go func() {
 		defer func() {
 			done <- struct{}{}
 		}()
-		for bs.Scan() {
+		for scanner.Scan() {
 			select {
 			case <-Ctx_global.Done():
 				cmd.Exit()
 				return
 			default:
-				fnCbk(bs.Text())
+				fnCbk(scanner.Text())
 			}
 
 		}
-	}
-	var bDoErr = false
-	if bDoErr {
-		stderr, err := cmd.StderrPipe()
-		if err != nil {
-			return err
-		}
-		scanner1 := bufio.NewScanner(stderr)
-		go fnSc1(scanner1)
-	}
-	//cmd.stdin.Close()
-	//go io.Copy(io.Discard, stderr)
-	scanner := bufio.NewScanner(cmdReader)
-	go fnSc1(scanner)
+	}()
 	err = cmd.Start()
 	if err != nil {
 		return err
 	}
-	err = cmd.Wait()
 	<-done
-	if bDoErr {
-		<-done
-	}
+	err = cmd.Wait()
 	return err
 }
 
 // 异步执行命令
 func AsynCmd(fnCbk func(line string), szCmd string, args ...string) error {
-	c1 := new(Cmd)
-	err := c1.AsynCmd(fnCbk, szCmd, args...)
-	c1.Exit()
-	return err
+	return new(Cmd).AsynCmd(fnCbk, szCmd, args...)
 }

@@ -566,7 +566,7 @@ github.com/hbakhtiyor/strsim
 # github.com/hktalent/PipelineHttp v0.0.0-20221004080931-279351b9fb96
 ## explicit; go 1.18
 github.com/hktalent/PipelineHttp
-# github.com/hktalent/go-utils v0.0.0-20221004021941-7e10e0fb13ea
+# github.com/hktalent/go-utils v0.0.0-20221004095234-2e23f13b429d
 ## explicit; go 1.18
 github.com/hktalent/go-utils
 # github.com/hktalent/goSqlite_gorm v1.1.1

@@ -3,9 +3,6 @@ package main
 import (
 	"embed"
 	"fmt"
-	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
-	"github.com/hktalent/goSqlite_gorm/pkg/models"
-	"github.com/hktalent/scan4all/engine"
 	"github.com/hktalent/scan4all/lib/api"
 	"github.com/hktalent/scan4all/lib/util"
 	"log"
@@ -34,7 +31,7 @@ func main() {
 	} else {
 		Version = util.Version
 	}
-	engine.Dispather(&models.Target4Chan{ScanWeb: "127.0.0.1", ScanType: Const.ScanType_Masscan})
+
 	szTip := ""
 	if util.GetValAsBool("enablDevDebug") {
 		// debug 优化时启用///////////////////////

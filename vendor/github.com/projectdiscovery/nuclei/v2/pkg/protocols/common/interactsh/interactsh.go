@@ -247,32 +247,36 @@ func (c *Client) URL() string {
 	atomic.CompareAndSwapUint32(&c.generated, 0, 1)
 	return c.interactsh.URL()
 }
+func (c *Client) Close2() {
+	c.IsClosed = true
+	if nil != c.interactions {
+		c.interactions.Clear()
+		c.interactions.Stop()
+		c.interactions = nil
+	}
+	if nil != c.requests {
+		c.requests.Clear()
+		c.requests.Stop()
+		c.requests = nil
+	}
+	if nil != c.matchedTemplates {
+		c.matchedTemplates.Clear()
+		c.matchedTemplates.Stop()
+		c.matchedTemplates = nil
+	}
+	if nil != c.interactshURLs {
+		c.interactshURLs.Clear()
+		c.interactshURLs.Stop()
+		c.interactshURLs = nil
+	}
+}
 
 // Close closes the interactsh clients after waiting for cooldown period.
 func (c *Client) Close() bool {
-	c.IsClosed = true
-	defer func() {
-		if nil != c.interactions {
-			c.interactions.Clear()
-			c.interactions.Stop()
-			c.interactions = nil
-		}
-		if nil != c.requests {
-			c.requests.Clear()
-			c.requests.Stop()
-			c.requests = nil
-		}
-		if nil != c.matchedTemplates {
-			c.matchedTemplates.Clear()
-			c.matchedTemplates.Stop()
-			c.matchedTemplates = nil
-		}
-		if nil != c.interactshURLs {
-			c.interactshURLs.Clear()
-			c.interactshURLs.Stop()
-			c.interactshURLs = nil
-		}
-	}()
+	//go func() {
+	//	<-time.After(time.Second * (60 + 1))
+	//	c.Close2()
+	//}()
 	if c.cooldownDuration > 0 && atomic.LoadUint32(&c.generated) == 1 {
 		time.Sleep(c.cooldownDuration)
 	}

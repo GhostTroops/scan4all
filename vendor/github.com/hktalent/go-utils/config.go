@@ -13,6 +13,7 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"os/exec"
 	"reflect"
@@ -37,7 +38,7 @@ type Config4scanAllModel struct {
 
 var Config4scanAll = Config4scanAllModel{}
 
-// 所有配置信息，内存缓存
+// 配置缓存
 var mData = map[string]interface{}{}
 var (
 	UrlPrecise      = "UrlPrecise"
@@ -108,7 +109,6 @@ func GetValAsInt(key string, nDefault int) int {
 	} else if reflect.ValueOf(s).Kind() == reflect.Float64 {
 		return int(s.(float64))
 	}
-
 	return nDefault
 }
 func GetValAsFloat64(key string, nDefault float64) float64 {
@@ -130,6 +130,7 @@ func GetValAsInt64(key string, nDefault int64) int64 {
 	return nDefault
 }
 
+// 临时文件
 var TmpFile = map[string][]*os.File{}
 
 // 临时结果文件，例如 nmap
@@ -274,6 +275,15 @@ func InitConfigFile() {
 	noRpt = GetMemoryCache(5000, noRpt)
 }
 
+// 初始化配置文件信息，这个必须先执行
+func Init2() {
+	LoadCoinfig(nil)
+	Fuzzthreads = GetValAsInt("Fuzzthreads", 32)
+	EnableHoneyportDetection = GetValAsBool("EnableHoneyportDetection")
+
+	noRpt = GetMemoryCache(5000, noRpt)
+}
+
 var G_Options interface{}
 
 func GetNmap() string {
@@ -385,10 +395,11 @@ func Init1(config *embed.FS) {
 				}
 			}
 		} else {
-			log.Println("InitConfigFile:", err)
+			log.Println("Init1:", err)
 		}
 	}
 	InitConfigFile()
+	Init2()
 	log.Println("init config files is over .")
 }
 
@@ -407,7 +418,7 @@ func GetSha1(a ...interface{}) string {
 }
 
 var Abs404 = "/scan4all404"
-var defaultInteractionDuration time.Duration = 60 * time.Second
+var defaultInteractionDuration time.Duration = 180 * time.Second
 
 func TestRepeat(a ...interface{}) bool {
 	if nil == noRpt {
@@ -437,10 +448,17 @@ func TestRepeat4Save(key string, a ...interface{}) (interface{}, bool) {
 // 关闭cache
 func CloseCache() {
 	if nil != noRpt {
-		log.Println("start clear noRpt cahe")
+		log.Println("start clear noRpt cache")
 		noRpt.Clear()
 		noRpt.Stop()
 		noRpt = nil
+	}
+
+	if nil != clientHttpCc {
+		CloseAllHttpClient()
+		clientHttpCc.Clear()
+		clientHttpCc.Stop()
+		clientHttpCc = nil
 	}
 }
 
@@ -461,10 +479,23 @@ func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 			return r01, err, ok
 		}
 	}
+	sz404 := szUrl + Abs404
+	client := GetClient(sz404)
+	if nil != client {
+		client.Client.Timeout = 5
+		//log.Printf("%v %s \n", client, sz404)
+		var x05 *http.Transport = client.Client.Transport.(*http.Transport)
+		if nil != x05 {
+			x05.DisableKeepAlives = true
+		}
+	}
 
-	r01, err = HttpRequset(szUrl+Abs404, "GET", "", false, map[string]string{"Connection": "close"})
+	log.Println("start test ", sz404)
+	r01, err = HttpRequset(sz404, "GET", "", false, map[string]string{"Connection": "close"})
 	ok = err == nil && nil != r01 && 404 == r01.StatusCode
 	noRpt.Set(key, []interface{}{r01, err, ok}, defaultInteractionDuration)
+	//client.Client.Timeout = 10
+	log.Println("end test ", sz404)
 	return r01, err, ok
 }
 func TestIs404Page(szUrl string) (page *Page, r01 *Response, err error, ok bool) {

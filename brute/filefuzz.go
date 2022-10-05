@@ -4,6 +4,8 @@ import (
 	"context"
 	_ "embed"
 	"github.com/antlabs/strsim"
+	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
+	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
 	"log"
 	"net/url"
@@ -139,6 +141,12 @@ func init() {
 // 随机10个字符串
 var RandStr4Cookie = util.RandStringRunes(10)
 
+// 基于工厂方法构建
+var FileFuzz4Engin = util.EngineFuncFactory(func(evt *models.EventData, args ...interface{}) {
+	filePaths, fileFuzzTechnologies := FileFuzz(evt.Task.ScanWeb, 200, 100, "")
+	util.SendEngineLog(evt, Const.ScanType_WebDirScan, filePaths, fileFuzzTechnologies)
+})
+
 // 重写了fuzz：优化流程、优化算法、修复线程安全bug、增加智能功能
 //  两次  ioutil.ReadAll(resp.Body)，第二次就会 Read返回EOF error
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
@@ -149,7 +157,6 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	if eableFileFuzz || util.TestRepeat(u, "FileFuzz") {
 		return []string{}, []string{}
 	}
-
 	//log.Println("start file fuzz", u)
 	var (
 		//path404               = RandStr // 绝对404页面路径

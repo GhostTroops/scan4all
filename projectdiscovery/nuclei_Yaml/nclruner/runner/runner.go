@@ -286,6 +286,13 @@ func createReportingOptions(options *types.Options) (*reporting.Options, error) 
 	return reportingOptions, nil
 }
 
+func (r *Runner) Close2() {
+	if nil != r.interactsh {
+		//r.interactsh.Close()// 不能加
+		r.interactsh.Close2()
+	}
+}
+
 // Close releases all the resources and cleans up
 func (r *Runner) Close() {
 	if r.output != nil {
@@ -301,6 +308,7 @@ func (r *Runner) Close() {
 	if r.pprofServer != nil {
 		_ = r.pprofServer.Shutdown(context.Background())
 	}
+
 	//if r.interactsh != nil {
 	//	r.interactsh.Close()
 	//}
@@ -317,14 +325,15 @@ func (r *Runner) Close() {
 	if nil != r.pprofServer {
 		r.pprofServer.Close()
 	}
-
+	//<-time.After(time.Second * 61)
+	//if nil != r.interactsh{
+	//	r.interactsh.Close()
+	//}
 }
 
 // RunEnumeration sets up the input layer for giving input nuclei.
 // binary and runs the actual enumeration
 func (r *Runner) RunEnumeration() error {
-	defer r.Close()
-
 	// If user asked for new templates to be executed, collect the list from the templates' directory.
 	if r.options.NewTemplates {
 		templatesLoaded, err := r.readNewTemplatesFile()
@@ -435,15 +444,8 @@ func (r *Runner) RunEnumeration() error {
 	}
 	r.progress.Stop()
 
-	if r.issuesClient != nil {
-		r.issuesClient.Close()
-	}
-
 	if !results.Load() {
 		gologger.Info().Msgf("No results found. Better luck next time!")
-	}
-	if r.browser != nil {
-		r.browser.Close()
 	}
 	return err
 }
