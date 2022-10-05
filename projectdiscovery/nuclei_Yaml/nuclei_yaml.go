@@ -147,7 +147,8 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 	}
 
 	readConfig(options)
-	options.Targets = strings.Split(strings.TrimSpace(buf.String()), "\n")
+	s001 := strings.TrimSpace(buf.String())
+	options.Targets = strings.Split(s001, "\n")
 	log.Printf("options.Targets = %+v", options.Targets)
 	/////////////////////////////////////
 	options.Verbose = false
@@ -187,7 +188,10 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 		outNuclei <- nil
 		return
 	}
-	defer nucleiRunner.Close()
+	util.RegDelayCbk(s001, func() {
+		nucleiRunner.Close2()
+		nucleiRunner.Close()
+	}, nil, 0, 50)
 	//data, _ := json.Marshal(options)
 	//log.Printf("%+v", string(data))
 	outNuclei <- nucleiRunner
@@ -198,6 +202,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 			gologger.Fatal().Msgf("Could not run nuclei: %s\n", err)
 		}
 	}
+
 }
 func readConfig(options *types.Options) {
 	pwd, _ := os.Getwd()
