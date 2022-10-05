@@ -2,10 +2,6 @@ package models
 
 import (
 	"encoding/xml"
-	"github.com/asaskevich/govalidator"
-	"github.com/projectdiscovery/dnsx/libs/dnsx"
-	"log"
-	"net/url"
 	"regexp"
 )
 
@@ -83,51 +79,10 @@ type EventData struct {
 	//SubDomains2Ips *map[string]map[string]map[int]map[string]string // 所有子域名 -> ip ->port -> port info
 }
 
-var (
-	dnsclient *dnsx.DNSX
-)
-
-func init() {
-	dnsOptions := dnsx.DefaultOptions
-	dnsOptions.MaxRetries = 3
-	dnsOptions.Hostsfile = true
-	var err error
-	dnsclient, err = dnsx.New(dnsOptions)
-	if nil != err {
-		log.Println("dnsx.New(dnsOptions) ", err)
-	}
-}
-
-// 目标：url、dns（域名）、ip
-//  转换、输出ip
+// 目标转ip
 func (r *EventData) Target2Ip() []string {
-	var a []string
-	t := r.Task.ScanWeb
-	if govalidator.IsCIDR(t) {
-		a = append(a, t)
-	} else if govalidator.IsIP(t) {
-		a = append(a, t)
-	} else if govalidator.IsDNSName(t) {
-		if nil != dnsclient {
-			if ips, err := dnsclient.Lookup(t); nil == err {
-				a = append(a, ips...)
-			}
-		}
-	} else if govalidator.IsURL(t) {
-		if oU1, err := url.Parse(r.Task.ScanWeb); nil == err && nil != oU1 {
-			t = oU1.Hostname()
-			if "" == t {
-				t = r.Task.ScanWeb
-			}
-			if nil != dnsclient {
-				if ips, err := dnsclient.Lookup(t); nil == err {
-					a = append(a, ips...)
-				}
-			}
-		}
-	}
 
-	return a
+	return []string{}
 }
 
 // 获取ip的正则表达式
