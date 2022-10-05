@@ -1,6 +1,0 @@
-[submodule "nuclei-templates"]
-	path = nuclei-templates
-	szUrl = git@github.com:hktalent/nuclei-templates.git
-[submodule "config/nuclei-templates"]
-	path = config/nuclei-templates
-	szUrl = http://github.com/hktalent/nuclei-templates

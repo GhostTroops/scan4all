@@ -21,7 +21,7 @@ var config embed.FS
 var Version string
 
 func main() {
-	//os.Args = []string{"", "-host", "http://127.0.0.1", "-v"}
+	//os.Args = []string{"", "-host", "http://192.168.0.109", "-v"}
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	util.DoInit(&config)
 	// set version
