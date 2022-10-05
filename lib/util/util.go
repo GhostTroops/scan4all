@@ -2,7 +2,9 @@ package util
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/codegangsta/inject"
@@ -97,6 +99,7 @@ func GetClient(szUrl string) *PipelineHttp.PipelineHttp {
 
 	client = PipelineHttp.NewPipelineHttp()
 	mUrls[oU.Host] = ""
+	clientHttpCc.Delete(oU.Host)
 	clientHttpCc.Set(oU.Host, client, defaultInteractionDuration)
 	return client
 }
@@ -381,4 +384,14 @@ func ScannerToReader(scanner *bufio.Scanner) io.Reader {
 	}()
 
 	return reader
+}
+
+// 纯粹发送数据到目标机器
+func SendData2Url(szUrl string, data1 interface{}, m1 *map[string]string, fnCbk func(resp *http.Response, err error, szU string)) {
+	data, _ := json.Marshal(data1)
+	log.Println("logs EsUrl = ", EsUrl)
+	c1 := GetClient(szUrl)
+	c1.DoGetWithClient4SetHd(c1.Client, szUrl, "POST", bytes.NewReader(data), fnCbk, func() map[string]string {
+		return *m1
+	}, true)
 }

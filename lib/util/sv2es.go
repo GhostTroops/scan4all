@@ -1,12 +1,10 @@
 package util
 
 import (
-	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/hktalent/PipelineHttp"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -77,8 +75,6 @@ func SendAData[T any](k string, data []T, szType ESaveType) {
 	}
 }
 
-var pphLog = PipelineHttp.NewPipelineHttp()
-
 // 发送数据到ES
 func SendReq(data1 interface{}, id string, szType ESaveType) {
 	DoSyncFunc(func() {
@@ -86,14 +82,17 @@ func SendReq(data1 interface{}, id string, szType ESaveType) {
 			return
 		}
 		//log.Println("enableEsSv = ", enableEsSv, " id= ", id, " type = ", szType)
-		data, _ := json.Marshal(data1)
 		nThreads <- struct{}{}
 		defer func() {
 			<-nThreads
 		}()
 		szUrl := fmt.Sprintf(EsUrl, szType, url.QueryEscape(id))
 		log.Println("logs EsUrl = ", EsUrl)
-		pphLog.DoGetWithClient4SetHd(nil, szUrl, "POST", bytes.NewReader(data), func(resp *http.Response, err error, szU string) {
+		m1 := map[string]string{
+			"User-Agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15",
+			"Content-Type": "application/json;charset=UTF-8",
+		}
+		SendData2Url(szUrl, data1, &m1, func(resp *http.Response, err error, szU string) {
 			if nil != err {
 				log.Println("pphLog.DoGetWithClient4SetHd ", err)
 			} else {
@@ -104,12 +103,6 @@ func SendReq(data1 interface{}, id string, szType ESaveType) {
 					Log(err)
 				}
 			}
-		}, func() map[string]string {
-			m1 := map[string]string{
-				"User-Agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15",
-				"Content-Type": "application/json;charset=UTF-8",
-			}
-			return m1
-		}, true)
+		})
 	})
 }

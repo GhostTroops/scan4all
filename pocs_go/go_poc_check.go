@@ -9,6 +9,7 @@ import (
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pocs_go/Springboot"
 	"github.com/hktalent/scan4all/pocs_go/ThinkPHP"
+	"github.com/hktalent/scan4all/pocs_go/VMware/vCenter"
 	"github.com/hktalent/scan4all/pocs_go/apache"
 	"github.com/hktalent/scan4all/pocs_go/confluence"
 	"github.com/hktalent/scan4all/pocs_go/f5"
@@ -88,6 +89,19 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			a, err := ms.CheckDCom(hostname)
 			if nil != err && 0 < len(a) {
 				technologies = append(technologies, fmt.Sprintf("microsoft port 135 Dcom Oxid:%s", hostname))
+			}
+		case "vmware-vcenter":
+			if vCenter.Check_CVE_2021_21985(finalURL) {
+				technologies = append(technologies, fmt.Sprintf("CVE-2021-21985 RCE:%s", hostname))
+			}
+			if s, ok := vCenter.CheckVul001(finalURL); ok {
+				technologies = append(technologies, fmt.Sprintf("found vmware RCE,shell:%s", s))
+			}
+			if s, ok := vCenter.CheckVul002(finalURL); ok {
+				technologies = append(technologies, fmt.Sprintf("found vmware RCE,shell:%s", s))
+			}
+			if s, ok := vCenter.CheckVul003(finalURL); ok {
+				technologies = append(technologies, fmt.Sprintf("found vmware RCE,shell:%s", s))
 			}
 		case "microsoft-ds":
 			key, err := ms.SmbGhostScan(hostname)

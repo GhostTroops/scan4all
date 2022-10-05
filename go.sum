@@ -514,6 +514,10 @@ github.com/hktalent/PipelineHttp v0.0.0-20221004080931-279351b9fb96 h1:8++Z/n334
 github.com/hktalent/PipelineHttp v0.0.0-20221004080931-279351b9fb96/go.mod h1:ob6ATP4M9FiqTRzyALSDox3kc6+xnTgzKuIT+rmKyeE=
 github.com/hktalent/PipelineHttp v0.0.0-20221005112256-2ebdd38b820b h1:S+mVjk0jfAnzT5ypZ65iQq4jjvStt0ggkfnhHoidliY=
 github.com/hktalent/PipelineHttp v0.0.0-20221005112256-2ebdd38b820b/go.mod h1:ncw1+ugTc5GPQLUHHI7uWrgW2KWBppDBWwwjC984QJg=
+github.com/hktalent/PipelineHttp v0.0.0-20221005141854-655e41c6acad h1:NFVuThP+NaYXkd8fRXd3DNt02ZiTr2OdBDIF/M1ZmWE=
+github.com/hktalent/PipelineHttp v0.0.0-20221005141854-655e41c6acad/go.mod h1:ncw1+ugTc5GPQLUHHI7uWrgW2KWBppDBWwwjC984QJg=
+github.com/hktalent/PipelineHttp v0.0.0-20221005170636-4c4c7c3108ea h1:riOxhSWDEbwbNFgCxBUkOsTYhZte/I+6Khf9Pab7uxU=
+github.com/hktalent/PipelineHttp v0.0.0-20221005170636-4c4c7c3108ea/go.mod h1:ncw1+ugTc5GPQLUHHI7uWrgW2KWBppDBWwwjC984QJg=
 github.com/hktalent/go-utils v0.0.0-20221004021941-7e10e0fb13ea h1:vuxZbB9vAwBi0Uj4F5GOfVtsi5E9MFX07EkCKypVu9M=
 github.com/hktalent/go-utils v0.0.0-20221004021941-7e10e0fb13ea/go.mod h1:9E0C0K+/zzyJ+VqFx1llC3y7+mGgW3toLoyMQnlNXhw=
 github.com/hktalent/go-utils v0.0.0-20221004095234-2e23f13b429d h1:z1IUP4hqn0LGgs78bU2gSlna92/p+RlB0MSZ+RxSmCo=
