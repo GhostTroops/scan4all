@@ -251,4 +251,6 @@ export GOPRIVATE=github.com/hktalent
 go env |grep GOPRIVATE
 
 https://github.com/heartshare/go-wafw00f
+
+git submodule add http://github.com/hktalent/nuclei-templates config/nuclei-templates
 -->
