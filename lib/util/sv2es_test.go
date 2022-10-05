@@ -1,6 +1,8 @@
 package util
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestSendReq(t *testing.T) {
 	DoInit(nil)

@@ -94,9 +94,9 @@ func (r *PipelineHttp) httpDataIO(framerCbk func(*http2.Frame, *error) bool, w i
 }
 
 // 传输对象配置
-func (r *PipelineHttp) GetTransport4http2() *http2.Transport {
+func (r *PipelineHttp) GetTransport4http2() http.RoundTripper {
 	if r.UseHttp2 {
-		tr := &http2.Transport{
+		var tr http.RoundTripper = &http2.Transport{
 			//TLSClientConfig: r.tlsConfig(),
 			DialTLS:                    r.dialT(r.Buf),
 			DisableCompression:         false,
