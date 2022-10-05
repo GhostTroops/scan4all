@@ -6,7 +6,6 @@ import (
 	"github.com/chromedp/cdproto/fetch"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
-	"github.com/chromedp/chromedp/device"
 	"github.com/chromedp/chromedp/kb"
 	"io/ioutil"
 	"log"
@@ -83,7 +82,7 @@ func (r *MyChromedp) fnInit() {
 		chromedp.NoFirstRun,
 		chromedp.NoDefaultBrowserCheck,
 		chromedp.NoSandbox,
-		chromedp.Headless,
+		//chromedp.Headless,
 		chromedp.Flag("disable-default-apps", true),
 		chromedp.Flag("disable-extensions", true),
 		chromedp.Flag("disable-popup-blocking", true),
@@ -109,13 +108,13 @@ func (r *MyChromedp) Setheaders(headers *map[string]interface{}) *[]chromedp.Act
 	//chromedp.Text(`#result`, res, chromedp.ByID, chromedp.NodeVisible),
 }
 
-func (r *MyChromedp) DoUrl(szUrl string, head *map[string]interface{}, timeout *time.Duration) error {
-	err, _ := r.DoUrlWithFlg(szUrl, head, timeout, true)
+func (r *MyChromedp) DoUrl(szUrl string, head *map[string]interface{}, timeout *time.Duration, fnSend func() *chromedp.Tasks) error {
+	err, _ := r.DoUrlWithFlg(szUrl, head, timeout, true, fnSend)
 	return err
 }
 
 // 启动一个tab运行url
-func (r *MyChromedp) DoUrlWithFlg(szUrl string, head *map[string]interface{}, timeout *time.Duration, bAutoClose bool) (err error, cancel context.CancelFunc) {
+func (r *MyChromedp) DoUrlWithFlg(szUrl string, head *map[string]interface{}, timeout *time.Duration, bAutoClose bool, fnSend func() *chromedp.Tasks) (err error, cancel context.CancelFunc) {
 	if nil == timeout {
 		n9 := 15 * time.Second
 		timeout = &n9
@@ -134,15 +133,21 @@ func (r *MyChromedp) DoUrlWithFlg(szUrl string, head *map[string]interface{}, ti
 
 	var title string
 	//var b1, b2 []byte
-	a := []chromedp.Action{chromedp.Emulate(device.IPadMini), fetch.Enable()}
+	// chromedp.Emulate(device.IPadMini), fetch.Enable()
+	a := []chromedp.Action{chromedp.Navigate(szUrl)}
+	if nil != fnSend {
+		a = append(a, *fnSend()...)
+	}
 	a = append(a, *r.Setheaders(head)...)
-	a = append(a, chromedp.Navigate(szUrl),
+	a = append(a,
 		chromedp.WaitVisible("body", chromedp.ByQuery),
 		chromedp.Title(&title),
 		//chromedp.Evaluate(`Object.keys(window);`, &res),
 		//chromedp.CaptureScreenshot(&b1),
-		chromedp.Emulate(device.Reset))
+		//chromedp.Emulate(device.Reset),
+	)
 	if err := chromedp.Run(taskCtx, a...); err != nil {
+		log.Println("chromedp.Run: ", err)
 		return err, cancel
 	}
 
