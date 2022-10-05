@@ -7,4 +7,5 @@
 #done
 
 set -ex
+find .
 upx dist/goreleaser*/goreleaser*
