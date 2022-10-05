@@ -252,5 +252,6 @@ go env |grep GOPRIVATE
 
 https://github.com/heartshare/go-wafw00f
 
-git submodule add http://github.com/hktalent/nuclei-templates config/nuclei-templates
+git submodule add --force  https://github.com/hktalent/nuclei-templates.git config/nuclei-templates
+git submodule update --init --recursive
 -->
