@@ -111,7 +111,7 @@ func init() {
 					})
 				default:
 					util.DoDelayClear()
-					util.DoSleep()
+					//util.DoSleep()
 				}
 			}
 		}()
