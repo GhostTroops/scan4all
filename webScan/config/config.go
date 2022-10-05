@@ -39,7 +39,6 @@ type ExpJson struct {
 type ConfigJson struct {
 	Exploit struct {
 		Path string `json:"Path"`
-		Logs string `json:"Logs"`
 	} `json:"Exploit"`
 }
 
