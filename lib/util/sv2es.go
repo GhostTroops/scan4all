@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/hktalent/PipelineHttp"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -76,6 +77,8 @@ func SendAData[T any](k string, data []T, szType ESaveType) {
 	}
 }
 
+var pphLog = PipelineHttp.NewPipelineHttp()
+
 // 发送数据到ES
 func SendReq(data1 interface{}, id string, szType ESaveType) {
 	DoSyncFunc(func() {
@@ -88,47 +91,25 @@ func SendReq(data1 interface{}, id string, szType ESaveType) {
 		defer func() {
 			<-nThreads
 		}()
-		//log.Println("EsUrl = ", EsUrl)
-		url := fmt.Sprintf(EsUrl, szType, url.QueryEscape(id))
-		//log.Println("url = ", url)
-		req, err := http.NewRequest("POST", url, bytes.NewReader(data))
-		if err != nil {
-			Log(fmt.Sprintf("%s error %v", id, err))
-			return
-		}
-		// 取消全局复用连接
-		// tr := http.Transport{DisableKeepAlives: true}
-		// client := http.Client{Transport: &tr}
-		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15")
-		req.Header.Add("Content-Type", "application/json;charset=UTF-8")
-		// keep-alive
-		req.Header.Add("Connection", "close")
-		req.Close = true
-
-		resp, err := http.DefaultClient.Do(req)
-		//log.Println("url = ", url)
-		if resp != nil {
-			defer func() {
-				err := resp.Body.Close() // resp 可能为 nil，不能读取 Body
-				if nil != err {
-					Log(fmt.Sprintf("%s error %v", id, err))
+		szUrl := fmt.Sprintf(EsUrl, szType, url.QueryEscape(id))
+		log.Println("logs EsUrl = ", EsUrl)
+		pphLog.DoGetWithClient4SetHd(nil, szUrl, "POST", bytes.NewReader(data), func(resp *http.Response, err error, szU string) {
+			if nil != err {
+				log.Println("pphLog.DoGetWithClient4SetHd ", err)
+			} else {
+				body, err := ioutil.ReadAll(resp.Body)
+				if nil == err && 0 < len(body) {
+					Log("Es save result ", string(body))
+				} else {
+					Log(err)
 				}
-			}()
-		}
-		if err != nil {
-			Log(fmt.Sprintf("%s error %v", id, err))
-			return
-		}
-
-		body, err := ioutil.ReadAll(resp.Body)
-		if nil == err && 0 < len(body) {
-			//Log("Es save result ", string(body))
-		} else {
-			Log(err)
-		}
-		//_, err = io.Copy(ioutil.Discard, resp.Body) // 手动丢弃读取完毕的数据
-		// json.NewDecoder(resp.Body).Decode(&data)
-		// req.Body.Close()
-		// go http.Post(resUrl, "application/json",, post_body)
+			}
+		}, func() map[string]string {
+			m1 := map[string]string{
+				"User-Agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15",
+				"Content-Type": "application/json;charset=UTF-8",
+			}
+			return m1
+		}, true)
 	})
 }
