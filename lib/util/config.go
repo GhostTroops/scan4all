@@ -13,7 +13,6 @@ import (
 	"io/ioutil"
 	"log"
 	"math/rand"
-	"net/http"
 	"os"
 	"os/exec"
 	"reflect"
@@ -441,20 +440,31 @@ func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 	sz404 := szUrl + Abs404
 	client := GetClient(sz404)
 	if nil != client {
-		client.Client.Timeout = 5
+		//client.Client.Timeout = 500
+		//client.ErrCount = 0
+		//client.ErrLimit = 9999
 		//log.Printf("%v %s \n", client, sz404)
-		var x05 *http.Transport = client.Client.Transport.(*http.Transport)
-		if nil != x05 {
-			x05.DisableKeepAlives = true
-		}
 	}
 
-	log.Println("start test ", sz404)
-	r01, err = HttpRequset(sz404, "GET", "", false, map[string]string{"Connection": "close"})
+	//log.Println("start test ", sz404)
+	var mh1 map[string]string
+	if strings.HasPrefix(sz404, "http://") {
+		mh1 = map[string]string{
+			//"Connection":   "close",
+			"Content-Type": "",
+		}
+	}
+	r01, err = HttpRequset(sz404, "GET", "", false, mh1)
 	ok = err == nil && nil != r01 && 404 == r01.StatusCode
+	if nil != err {
+		CloseHttpClient(sz404)
+		//log.Println(sz404, err)
+	} else {
+		log.Printf("%d %s %s\n", r01.StatusCode, r01.Protocol, sz404)
+	}
 	noRpt.Set(key, []interface{}{r01, err, ok}, defaultInteractionDuration)
 	//client.Client.Timeout = 10
-	log.Println("end test ", sz404)
+	//log.Println("end test ", sz404)
 	return r01, err, ok
 }
 func TestIs404Page(szUrl string) (page *Page, r01 *Response, err error, ok bool) {

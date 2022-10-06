@@ -8,9 +8,10 @@ type Response struct {
 	StatusCode    int
 	Body          string
 	Header        *http.Header // 不用负责对象，引用，节约内存开销
-	ContentLength int
-	RequestUrl    string
-	Location      string
+	ContentLength int          `json:"content_length"`
+	RequestUrl    string       `json:"request_url"`
+	Location      string       `json:"location"`
+	Protocol      string       `json:"protocol"`
 }
 
 // fuzz请求返回的结果

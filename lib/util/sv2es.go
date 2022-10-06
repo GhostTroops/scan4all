@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
@@ -87,12 +88,14 @@ func SendReq(data1 interface{}, id string, szType ESaveType) {
 			<-nThreads
 		}()
 		szUrl := fmt.Sprintf(EsUrl, szType, url.QueryEscape(id))
-		log.Println("logs EsUrl = ", EsUrl)
+		//log.Println("logs EsUrl = ", EsUrl)
 		m1 := map[string]string{
 			"User-Agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15",
 			"Content-Type": "application/json;charset=UTF-8",
 		}
-		SendData2Url(szUrl, data1, &m1, func(resp *http.Response, err error, szU string) {
+		c1 := GetClient(szUrl, map[string]interface{}{"UseHttp2": true})
+		data, _ := json.Marshal(data1)
+		c1.DoGetWithClient4SetHd(c1.GetClient4Http2(), szUrl, "POST", bytes.NewReader(data), func(resp *http.Response, err error, szU string) {
 			if nil != err {
 				log.Println("pphLog.DoGetWithClient4SetHd ", err)
 			} else {
@@ -103,6 +106,8 @@ func SendReq(data1 interface{}, id string, szType ESaveType) {
 					Log(err)
 				}
 			}
-		})
+		}, func() map[string]string {
+			return m1
+		}, true)
 	})
 }

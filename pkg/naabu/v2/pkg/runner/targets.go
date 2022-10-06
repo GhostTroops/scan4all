@@ -264,8 +264,16 @@ func (r *Runner) PreProcessTargets() error {
 	wg.Wait()
 	return nil
 }
-
 func Add2Naabubuffer(target string) {
+	if strings.Contains(target, "://") {
+		Add2Naabubuffer_1(target)
+	} else {
+		Add2Naabubuffer_1("https://" + target)
+		Add2Naabubuffer_1("http://" + target)
+	}
+}
+
+func Add2Naabubuffer_1(target string) {
 	// fix no http://
 	if -1 == strings.Index(target, "://") {
 		target = "http://" + target

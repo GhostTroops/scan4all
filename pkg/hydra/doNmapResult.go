@@ -59,11 +59,17 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 		for _, x := range ps {
 			if "open" == x.SelectElement("state").Attr[0].Value {
 				ip := x1
+				sz1 := GetAttr(x.Attr, "protocol")
+				if "tcp" != sz1 {
+					continue
+				}
 				szPort := GetAttr(x.Attr, "portid")
 				port, _ := strconv.Atoi(szPort)
 				service := strings.ToLower(GetAttr(x.SelectElement("service").Attr, "name"))
 				//bf.Write([]byte(fmt.Sprintf("%s:%s\n", ip, szPort)))
 				szUlr := fmt.Sprintf("http://%s:%s\n", ip, szPort)
+				bf.Write([]byte(szUlr))
+				szUlr = fmt.Sprintf("https://%s:%s\n", ip, szPort)
 				bf.Write([]byte(szUlr))
 
 				// 存储结果到其他地方

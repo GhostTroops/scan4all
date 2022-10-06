@@ -3419,7 +3419,10 @@ $metadata
 2022.sql
 2022.sql.tar.gz
 2022.sql.zip
+2022.tar
+2022.tar.bz2
 2022.tar.gz
+2022.tgz
 2022.txt.gz
 2022.zip
 2022_dump.sql
@@ -10923,6 +10926,7 @@ components/login.ascx
 components/raiz0worm_1618449492.php
 compose.sh
 composer
+composer-bx.json
 composer.json
 composer.lock
 composer.phar
@@ -23347,6 +23351,7 @@ public/web/css/add//index.css
 public/web/js/add/com.js
 public_html
 public_html.sql
+public_html/
 public_html/.env
 public_html/robots.txt
 public_root/.env
@@ -26621,6 +26626,9 @@ systemsoft
 systemstatus.xml
 sysuser
 sz.php
+szUrl
+szUrl.jsp
+szUrl.php
 szeredi
 szewo
 sánchez
@@ -27943,13 +27951,10 @@ ur-admin/
 urban
 uresk
 uri
-szUrl
-szUrl.jsp
-szUrl.php
-url_1.sql
-url_2.sql
 urlList.
 urlList.txt.gz
+url_1.sql
+url_2.sql
 urlmem-app/.env
 urlogy
 urls.py
@@ -30604,4 +30609,4 @@ zzz.php
 带回显执行cmd.jsp
 灭天远程管理.jsp
 灭天远程管理.jsp~
-内网渗透探测out.jsp".t.jsp!.gitignore
+内网渗透探测out.jsp".t.jsp
