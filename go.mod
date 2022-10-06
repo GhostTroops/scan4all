@@ -101,7 +101,7 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/gorilla/websocket v1.5.0
 	github.com/gosnmp/gosnmp v1.35.0
-	github.com/hktalent/PipelineHttp v0.0.0-20221005170636-4c4c7c3108ea
+	github.com/hktalent/PipelineHttp v0.0.0-20221006120713-f0d2d692285e
 	github.com/hktalent/goSqlite_gorm v1.1.1
 	github.com/hktalent/jarm-go v0.0.0-20220918133110-7801447b6267
 	github.com/huin/asn1ber v0.0.0-20120622192748-af09f62e6358
@@ -314,7 +314,7 @@ require (
 	go.uber.org/zap v1.23.0 // indirect
 	goftp.io/server/v2 v2.0.0 // indirect
 	golang.org/x/exp v0.0.0-20221004215720-b9f4876ce741 // indirect
-	golang.org/x/mod v0.6.0-dev.0.20220922195421-2adab6b8c60e // indirect
+	golang.org/x/mod v0.6.0-dev.0.20221005201717-2666ed6287c1 // indirect
 	golang.org/x/sync v0.0.0-20220907140024-f12130a52804 // indirect
 	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035 // indirect
 	golang.org/x/tools v0.1.12 // indirect

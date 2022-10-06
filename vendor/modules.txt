@@ -570,7 +570,7 @@ github.com/hashicorp/hcl/json/token
 # github.com/hbakhtiyor/strsim v0.0.0-20190107154042-4d2bbb273edf
 ## explicit
 github.com/hbakhtiyor/strsim
-# github.com/hktalent/PipelineHttp v0.0.0-20221005170636-4c4c7c3108ea
+# github.com/hktalent/PipelineHttp v0.0.0-20221006120713-f0d2d692285e
 ## explicit; go 1.18
 github.com/hktalent/PipelineHttp
 # github.com/hktalent/go-utils v0.0.0-20221004095234-2e23f13b429d
@@ -1438,7 +1438,7 @@ golang.org/x/crypto/ssh/terminal
 ## explicit; go 1.18
 golang.org/x/exp/constraints
 golang.org/x/exp/rand
-# golang.org/x/mod v0.6.0-dev.0.20220922195421-2adab6b8c60e
+# golang.org/x/mod v0.6.0-dev.0.20221005201717-2666ed6287c1
 ## explicit; go 1.17
 golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/modfile

@@ -90,10 +90,11 @@ func (r *Runner) Httpxrun() error {
 		}
 		if util.GetValAsBool("enableMultNuclei") {
 			go nuclei_Yaml.RunNucleiP(&httpxrunner.Naabubuffer, nucleiDone, &opts, xx1)
-		} else {
+			<-nucleiDone
+		} else if util.GetValAsBool("enableNuclei") {
 			go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone, &opts, xx1)
+			<-nucleiDone
 		}
-		<-nucleiDone
 	})
 	// 指纹去重复 请求路径
 	if "" != fingerprint.FgDictFile {

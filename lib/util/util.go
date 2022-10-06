@@ -24,6 +24,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -70,13 +71,13 @@ func init() {
 	})
 }
 
-var mUrls = make(map[string]string)
+var mUrls sync.Map
 
 func GetClient4Cc(szUrl string) *PipelineHttp.PipelineHttp {
 	InitCHcc()
 	oU, err := url.Parse(szUrl)
 	if nil == err {
-		if o := clientHttpCc.Get(oU.Host); nil != o {
+		if o := clientHttpCc.Get(oU.Scheme + oU.Host); nil != o {
 			if v, ok := o.Value().(*PipelineHttp.PipelineHttp); ok {
 				return v
 			}
@@ -86,7 +87,10 @@ func GetClient4Cc(szUrl string) *PipelineHttp.PipelineHttp {
 	}
 	return nil
 }
-func GetClient(szUrl string) *PipelineHttp.PipelineHttp {
+
+//var G_hc *http.Client
+
+func GetClient(szUrl string, pms ...map[string]interface{}) *PipelineHttp.PipelineHttp {
 	oU, err := url.Parse(szUrl)
 	if nil != err {
 		log.Printf("GetClient url:%s url.Parse err:%v\n", szUrl, err)
@@ -96,11 +100,23 @@ func GetClient(szUrl string) *PipelineHttp.PipelineHttp {
 	if nil != client {
 		return client
 	}
-
-	client = PipelineHttp.NewPipelineHttp()
-	mUrls[oU.Host] = ""
-	clientHttpCc.Delete(oU.Host)
-	clientHttpCc.Set(oU.Host, client, defaultInteractionDuration)
+	if 0 == len(pms) {
+		pms = []map[string]interface{}{
+			map[string]interface{}{
+				"max_idle_conns_per_host": 50,
+				"max_conns_per_host":      50,
+				"max_idle_conns":          50,
+			},
+		}
+	}
+	client = PipelineHttp.NewPipelineHttp(pms...)
+	//if nil == G_hc {
+	//	G_hc = client.GetClient(nil)
+	//}
+	//client.Client = G_hc
+	mUrls.Store(oU.Host, "")
+	clientHttpCc.Delete(oU.Scheme + oU.Host)
+	clientHttpCc.Set(oU.Scheme+oU.Host, client, defaultInteractionDuration)
 	return client
 }
 
@@ -110,13 +126,17 @@ func CloseHttpClient(szUrl string) {
 	if nil != client {
 		client.Close()
 	}
-	clientHttpCc.Delete(oU.Host)
+	clientHttpCc.Delete(oU.Scheme + oU.Host)
 }
 
 func CloseAllHttpClient() {
-	for k, _ := range mUrls {
-		CloseHttpClient("http://" + k)
-	}
+	mUrls.Range(func(k, value any) bool {
+		if s, ok := k.(string); ok {
+			CloseHttpClient("http://" + s)
+			CloseHttpClient("https://" + s)
+		}
+		return true
+	})
 }
 
 // 数组去重
@@ -158,8 +178,8 @@ func GetResponse(username string, password string, urlstring string, method stri
 	if nil == client {
 		return nil, "", "", errors.New(urlstring + " client is nil")
 	}
-	client.SetCtx(Ctx_global)
-	if !isredirect {
+	//client.SetCtx(Ctx_global)
+	if !isredirect && nil != client.Client {
 		client.Client.CheckRedirect = nil
 	}
 	client.DoGetWithClient4SetHd(client.Client, urlstring, strings.ToUpper(method), strings.NewReader(postdata), func(resp *http.Response, err1 error, szU string) {
@@ -167,8 +187,8 @@ func GetResponse(username string, password string, urlstring string, method stri
 			if nil != resp {
 				io.Copy(ioutil.Discard, resp.Body)
 			}
-			log.Printf("%s %v", urlstring, err1)
-			resp1, reqbody, location, err = &Response{"999", 999, "", nil, 0, "", ""}, "", "", err1
+			//log.Printf("%s %v", urlstring, err1)
+			resp1, reqbody, location, err = &Response{"999", 999, "", nil, 0, "", "", ""}, "", "", err1
 		} else {
 			if body, err1 := ioutil.ReadAll(resp.Body); err1 == nil {
 				reqbody = string(body)
@@ -176,7 +196,7 @@ func GetResponse(username string, password string, urlstring string, method stri
 			if relocation, err1 := resp.Location(); err1 == nil {
 				location = relocation.String()
 			}
-			resp1, reqbody, location, err = &Response{resp.Status, resp.StatusCode, reqbody, &resp.Header, len(reqbody), resp.Request.URL.String(), location}, reqbody, location, nil
+			resp1, reqbody, location, err = &Response{resp.Status, resp.StatusCode, reqbody, &resp.Header, len(reqbody), resp.Request.URL.String(), location, resp.Proto}, reqbody, location, nil
 		}
 	}, func() map[string]string {
 		hd001 := map[string]string{}
@@ -389,7 +409,6 @@ func ScannerToReader(scanner *bufio.Scanner) io.Reader {
 // 纯粹发送数据到目标机器
 func SendData2Url(szUrl string, data1 interface{}, m1 *map[string]string, fnCbk func(resp *http.Response, err error, szU string)) {
 	data, _ := json.Marshal(data1)
-	log.Println("logs EsUrl = ", EsUrl)
 	c1 := GetClient(szUrl)
 	c1.DoGetWithClient4SetHd(c1.Client, szUrl, "POST", bytes.NewReader(data), fnCbk, func() map[string]string {
 		return *m1

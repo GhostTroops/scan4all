@@ -165,7 +165,11 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		path         []string     // 成功页面路径
 	)
 	url404, url404req, err, ok := util.TestIs404Page(u) //reqPage(u + path404)
-	if err == nil && ok {
+	if err == nil && ok && nil != url404req {
+		// 升级协议
+		if "" != url404req.Protocol && !strings.Contains(url404req.Protocol, "HTTP/1.") {
+			u = "https://" + u01.Host + "/"
+		}
 		go util.CheckHeader(url404req.Header, u)
 		// 跳过当前目标所有的fuzz,后续所有的fuzz都无意义了
 		if 200 == url404.StatusCode || 301 == url404.StatusCode || 302 == url404.StatusCode {
@@ -195,6 +199,9 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	var async_technologies = make(chan []string, util.Fuzzthreads*2)
 	// 字典长度的 70% 的错误
 	var MaxErrorTimes int32 = int32(float32(len(filedic)) * 0.7)
+	if strings.HasPrefix(url404req.Protocol, "HTTP/2") || strings.HasPrefix(url404req.Protocol, "HTTP/3") {
+		MaxErrorTimes = int32(len(filedic))
+	}
 	//defer func() {
 	//	close(ch)
 	//	close(async_data)

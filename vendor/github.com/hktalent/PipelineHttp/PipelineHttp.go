@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"io"
 	"log"
 	"net"
@@ -16,41 +17,47 @@ import (
 )
 
 type PipelineHttp struct {
-	Timeout               time.Duration
-	KeepAlive             time.Duration
-	MaxIdleConns          int
-	MaxIdleConnsPerHost   int
-	IdleConnTimeout       time.Duration
-	TLSHandshakeTimeout   time.Duration
-	ExpectContinueTimeout time.Duration
-	Client                *http.Client
-	Ctx                   context.Context
-	StopAll               context.CancelFunc
-	IsClosed              bool
-	ErrLimit              int // 错误次数统计，失败就停止
-	ErrCount              int // 错误次数统计，失败就停止
-	SetHeader             func() map[string]string
-	Buf                   *bytes.Buffer // http2 client framer message
-	UseHttp2              bool
-	TestHttp              bool
+	Timeout               time.Duration            `json:"timeout"`
+	KeepAlive             time.Duration            `json:"keep_alive"`
+	MaxIdleConns          int                      `json:"max_idle_conns"`
+	MaxIdleConnsPerHost   int                      `json:"max_idle_conns_per_host"`
+	MaxConnsPerHost       int                      `json:"max_conns_per_host"`
+	IdleConnTimeout       time.Duration            `json:"idle_conn_timeout"`
+	TLSHandshakeTimeout   time.Duration            `json:"tls_handshake_timeout"`
+	ExpectContinueTimeout time.Duration            `json:"expect_continue_timeout"`
+	ResponseHeaderTimeout time.Duration            `json:"response_header_timeout"`
+	Client                *http.Client             `json:"client"`
+	Ctx                   context.Context          `json:"ctx"`
+	StopAll               context.CancelFunc       `json:"stop_all"`
+	IsClosed              bool                     `json:"is_closed"`
+	ErrLimit              int                      `json:"err_limit"` // 错误次数统计，失败就停止
+	ErrCount              int                      `json:"err_count"` // 错误次数统计，失败就停止
+	SetHeader             func() map[string]string `json:"set_header"`
+	Buf                   *bytes.Buffer            `json:"buf"` // http2 client framer message
+	UseHttp2              bool                     `json:"use_http_2"`
+	TestHttp              bool                     `json:"test_http"`
+	ReTry                 int                      `json:"re_try"` // 连接超时重试
 }
 
-func NewPipelineHttp() *PipelineHttp {
+func NewPipelineHttp(args ...map[string]interface{}) *PipelineHttp {
 	x1 := &PipelineHttp{
 		UseHttp2:              false,
 		TestHttp:              false,
 		Buf:                   &bytes.Buffer{},
-		Timeout:               30 * time.Second, // 拨号、连接
-		KeepAlive:             10 * time.Second, // 默认值（当前为 15 秒）发送保持活动探测。
-		MaxIdleConns:          0,                // MaxIdleConns controls the maximum number of idle (keep-alive) connections across all hosts. Zero means no limit.
-		IdleConnTimeout:       0,                // 不限制
-		TLSHandshakeTimeout:   20 * time.Second, // TLSHandshakeTimeout specifies the maximum amount of time waiting to wait for a TLS handshake. Zero means no timeout.
-		ExpectContinueTimeout: 0,                // 零表示没有超时，并导致正文立即发送，无需等待服务器批准
-		MaxIdleConnsPerHost:   3000,             // MaxIdleConnsPerHost, if non-zero, controls the maximum idle (keep-alive) connections to keep per-host. If zero, DefaultMaxIdleConnsPerHost is used.
-		ErrLimit:              10,               // 相同目标，累计错误10次就退出
+		Timeout:               60 * time.Second,      // 拨号、连接
+		KeepAlive:             60 * 60 * time.Second, // 默认值（当前为 15 秒）发送保持活动探测。
+		MaxIdleConns:          500,                   // MaxIdleConns controls the maximum number of idle (keep-alive) connections across all hosts. Zero means no limit.
+		IdleConnTimeout:       180,                   // 不限制
+		ResponseHeaderTimeout: 60 * time.Second,      // response
+		TLSHandshakeTimeout:   60 * time.Second,      // TLSHandshakeTimeout specifies the maximum amount of time waiting to wait for a TLS handshake. Zero means no timeout.
+		ExpectContinueTimeout: 60,                    // 零表示没有超时，并导致正文立即发送，无需等待服务器批准
+		MaxIdleConnsPerHost:   500,                   // MaxIdleConnsPerHost, if non-zero, controls the maximum idle (keep-alive) connections to keep per-host. If zero, DefaultMaxIdleConnsPerHost is used.
+		MaxConnsPerHost:       500,                   //
+		ErrLimit:              10,                    // 相同目标，累计错误10次就退出
 		ErrCount:              0,
 		IsClosed:              false,
 		SetHeader:             nil,
+		ReTry:                 3,
 	}
 	if x1.UseHttp2 {
 		x1.Client = x1.GetClient4Http2()
@@ -58,89 +65,57 @@ func NewPipelineHttp() *PipelineHttp {
 		x1.Client = x1.GetClient(nil)
 	}
 	x1.SetCtx(context.Background())
+	if nil != args && 0 < len(args) {
+		for _, x := range args {
+			if data, err := json.Marshal(x); nil == err {
+				json.Unmarshal(data, x1)
+			}
+		}
+	}
 	//http.DefaultTransport.(*http.Transport).MaxIdleConns = x1.MaxIdleConns
 	//http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = x1.MaxIdleConnsPerHost
 	return x1
 }
 
-/*
-	if err != nil {
-	    return nil, err
+// https://cloud.tencent.com/developer/article/1529840
+// https://zhuanlan.zhihu.com/p/451642373
+func (r *PipelineHttp) Dial(ctx context.Context, network, addr string) (conn net.Conn, err error) {
+	for i := 0; i < r.ReTry; i++ {
+		conn, err = (&net.Dialer{
+			Timeout:   r.Timeout,
+			KeepAlive: r.KeepAlive,
+			//Control:   r.Control,
+			DualStack: true,
+		}).DialContext(ctx, network, addr)
+		if err == nil {
+			break
+		}
 	}
-
-	sa := &syscall.SockaddrInet4{
-	    Port: tcpAddr.Port,
-	    Addr: [4]byte{tcpAddr.IP[0], tcpAddr.IP[1], tcpAddr.IP[2], tcpAddr.IP[3]},
-	}
-
-fd, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_STREAM, syscall.IPPROTO_TCP)
-
-	if err != nil {
-	    return nil, err
-	}
-
-err = syscall.SetsockoptInt(fd, syscall.IPPROTO_IP, syscall.IP_TOS, 128)
-
-	if err != nil {
-	    return nil, err
-	}
-
-err = syscall.Connect(fd, sa)
-
-	if err != nil {
-	    return nil, err
-	}
-
-file := os.NewFile(uintptr(fd), "")
-conn, err := net.FileConn(file)
-
-	if err != nil {
-	    return nil, err
-	}
-
-return conn, nil
-*/
-func (r *PipelineHttp) Dial(ctx context.Context, network, addr string) (net.Conn, error) {
-	conn, err := (&net.Dialer{
-		Timeout:   r.Timeout,
-		KeepAlive: r.KeepAlive,
-		//Control:   r.Control,
-		//DualStack: true,
-	}).DialContext(ctx, network, addr)
-	if err != nil {
-		return nil, err
-	}
-
-	//tcpConn, ok := conn.(*net.TCPConn)
-	//if !ok {
-	//	err = errors.New("conn is not tcp")
-	//	return nil, err
-	//}
-	//
-	//f, err := tcpConn.File()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//internet.ApplyInboundSocketOptions("tcp", f.Fd())
-
-	return conn, nil
+	return conn, err
 }
 func (r *PipelineHttp) SetCtx(ctx context.Context) {
 	r.Ctx, r.StopAll = context.WithCancel(ctx)
 }
 
 // https://github.com/golang/go/issues/23427
+// https://cloud.tencent.com/developer/article/1529840
+// https://romatic.net/post/go_net_errors/
+// https://www.jianshu.com/p/2e5a7317be38
 func (r *PipelineHttp) GetTransport() http.RoundTripper {
 	var tr http.RoundTripper = &http.Transport{
-		Proxy:                 http.ProxyFromEnvironment,
-		DialContext:           r.Dial,
-		TLSClientConfig:       &tls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS10},
-		DisableKeepAlives:     false,
-		MaxIdleConns:          r.MaxIdleConns,
-		IdleConnTimeout:       r.IdleConnTimeout,
-		TLSHandshakeTimeout:   r.TLSHandshakeTimeout,
-		ExpectContinueTimeout: r.ExpectContinueTimeout,
-		MaxIdleConnsPerHost:   r.MaxIdleConnsPerHost,
+		Proxy:                  http.ProxyFromEnvironment,
+		DialContext:            r.Dial,
+		TLSClientConfig:        &tls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS10, Renegotiation: tls.RenegotiateOnceAsClient},
+		ForceAttemptHTTP2:      true,
+		MaxResponseHeaderBytes: 4096,                    //net/http default is 10Mb
+		DisableKeepAlives:      false,                   // false 才会复用连接 https://blog.csdn.net/qq_21514303/article/details/87794750
+		MaxIdleConns:           r.MaxIdleConns,          // 是长连接在关闭之前，连接池对所有host的最大链接数量
+		IdleConnTimeout:        r.IdleConnTimeout,       // 连接最大空闲时间，超过这个时间就会被关闭
+		TLSHandshakeTimeout:    r.TLSHandshakeTimeout,   // 限制TLS握手使用的时间
+		ExpectContinueTimeout:  r.ExpectContinueTimeout, // 限制客户端在发送一个包含：100-continue的http报文头后，等待收到一个go-ahead响应报文所用的时间。在1.6中，此设置对HTTP/2无效。（在1.6.2中提供了一个特定的封装DefaultTransport）
+		MaxIdleConnsPerHost:    r.MaxIdleConnsPerHost,   // 连接池对每个host的最大链接数量(MaxIdleConnsPerHost <= MaxIdleConns,如果客户端只需要访问一个host，那么最好将MaxIdleConnsPerHost与MaxIdleConns设置为相同，这样逻辑更加清晰)
+		MaxConnsPerHost:        r.MaxConnsPerHost,
+		ResponseHeaderTimeout:  r.ResponseHeaderTimeout, // 限制读取响应报文头使用的时间
 	}
 	return tr
 }
@@ -151,7 +126,7 @@ func (r *PipelineHttp) GetClient(tr http.RoundTripper) *http.Client {
 	}
 	c := &http.Client{
 		Transport: tr,
-		//Timeout:   0, // 超时为零表示没有超时
+		Timeout:   r.Timeout, // 超时为零表示没有超时
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse /* 不进入重定向 */
 		},
@@ -171,6 +146,13 @@ func (r *PipelineHttp) DoGetWithClient4SetHdNoCloseBody(client *http.Client, szU
 	r.DoGetWithClient4SetHd(client, szUrl, method, postBody, fnCbk, nil, false)
 }
 
+func (r *PipelineHttp) CloseResponse(resp *http.Response) {
+	if nil != resp {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}
+}
+
 // application/x-www-form-urlencoded
 // multipart/form-data
 // text/plain
@@ -185,14 +167,14 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 	}
 	req, err := http.NewRequest(method, szUrl, postBody)
 	if nil == err {
-		if !r.UseHttp2 && !r.TestHttp {
+		if !r.UseHttp2 && !r.TestHttp && strings.HasPrefix(szUrl, "https://") {
 			req.Header.Set("Connection", "Upgrade, HTTP2-Settings")
 			req.Header.Set("Upgrade", "h2c")
 			req.Header.Set("HTTP2-Settings", "AAMAAABkAARAAAAAAAIAAAAA")
 		} else {
 			req.Header.Set("Connection", "keep-alive")
 		}
-		req.Close = true // 避免 Read返回EOF error
+		//req.Close = true // 避免 Read返回EOF error
 		var fnShk func() map[string]string
 		if nil != setHd {
 			fnShk = setHd
@@ -211,7 +193,7 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 	}
 	n1 := client.Timeout
 	if 0 == n1 {
-		n1 = 10
+		n1 = 50
 	}
 	ctx, cc := context.WithTimeout(r.Ctx, n1*r.Timeout)
 	defer cc()
@@ -219,7 +201,7 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 
 	resp, err := client.Do(req)
 	if bCloseBody && resp != nil {
-		defer resp.Body.Close() // resp 可能为 nil，不能读取 Body
+		defer r.CloseResponse(resp) // resp 可能为 nil，不能读取 Body
 	}
 	if nil != err {
 		r.ErrCount++
@@ -229,17 +211,20 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 		r.Close()
 	}
 	if nil != err && rNohost.MatchString(err.Error()) {
-		log.Println(err)
+		log.Println(szUrl, err)
 		r.Close()
 		return
 	}
 	if !r.UseHttp2 && nil != resp && resp.StatusCode == http.StatusSwitchingProtocols {
 		if resp != nil {
-			resp.Body.Close() // resp 可能为 nil，不能读取 Body
+			r.CloseResponse(resp)
 		}
 		r.UseHttp2 = true
 		r.Client = r.GetRawClient4Http2()
-		r.DoGetWithClient4SetHd(r.Client, szUrl, method, postBody, fnCbk, setHd, bCloseBody)
+		oU7, _ := url.Parse(szUrl)
+		szUrl09 := "https://" + oU7.Host + oU7.Path
+		r.ErrLimit = 99999999
+		r.DoGetWithClient4SetHd(r.Client, szUrl09, method, postBody, fnCbk, setHd, bCloseBody)
 		return
 	}
 	fnCbk(resp, err, szUrl)
@@ -270,11 +255,13 @@ func (r *PipelineHttp) testHttp2(szUrl001 string) {
 		oU7, _ := url.Parse(szUrl001)
 		szUrl09 := "https://" + oU7.Host + oU7.Path
 		r.DoGetWithClient(c1, szUrl09, "GET", nil, func(resp *http.Response, err error, szU string) {
-			if nil != resp && (resp.Proto == "HTTP/2.0" || resp.StatusCode == http.StatusSwitchingProtocols) {
+			if nil != resp && (strings.HasPrefix(resp.Proto, "HTTP/2") || strings.HasPrefix(resp.Proto, "HTTP/3") || resp.StatusCode == http.StatusSwitchingProtocols) {
+				r.CloseResponse(resp)
 				if nil != r.Client {
 					r.Client.CloseIdleConnections()
 				}
 				r.Client = c1
+				r.ErrLimit = 99999999
 			} else {
 				r.UseHttp2 = false
 			}
@@ -297,6 +284,7 @@ func (r *PipelineHttp) doDirsPrivate(szUrl string, dirs []string, nThread int, f
 	szUrl = oUrl.Scheme + "://" + oUrl.Host
 	var wg sync.WaitGroup
 	var client *http.Client
+	r.testHttp2(szUrl)
 	if r.UseHttp2 {
 		client = r.GetClient4Http2()
 	} else {
