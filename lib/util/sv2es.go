@@ -94,6 +94,9 @@ func SendReq(data1 interface{}, id string, szType ESaveType) {
 			"Content-Type": "application/json;charset=UTF-8",
 		}
 		c1 := GetClient(szUrl, map[string]interface{}{"UseHttp2": true})
+		c1.ErrLimit = 10000
+		c1.ErrCount = 0
+		c1.UseHttp2 = true
 		data, _ := json.Marshal(data1)
 		c1.DoGetWithClient4SetHd(c1.GetClient4Http2(), szUrl, "POST", bytes.NewReader(data), func(resp *http.Response, err error, szU string) {
 			if nil != err {
