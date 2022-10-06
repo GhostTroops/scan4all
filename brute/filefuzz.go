@@ -237,6 +237,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		}
 	}()
 	log.Printf("wait for file fuzz(dicts:%d) %s \r", len(filedic), u)
+	var lst200 *util.Response
 	for _, payload := range filedic {
 		// 接收到停止信号
 		if atomic.LoadInt32(&errorTimes) >= MaxErrorTimes {
@@ -279,9 +280,14 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 						client.ErrLimit = 999999
 					}
 					if fuzzPage, req, err := reqPage(szUrl); err == nil && nil != req && 0 < len(req.Body) {
-						//if 200 == req.StatusCode {
-						//log.Printf("%d : %s \n", req.StatusCode, szUrl)
-						//}
+						if 200 == req.StatusCode {
+							if nil == lst200 {
+								lst200 = req
+							} else if lst200.Body == req.Body { // 无意义的 200
+								continue
+							}
+							//log.Printf("%d : %s \n", req.StatusCode, szUrl)
+						}
 						go util.CheckHeader(req.Header, u)
 						// 02-状态码和req1相同，且与req1相似度>9.5，关闭所有fuzz
 						fXsd := strsim.Compare(url404req.Body, req.Body)
