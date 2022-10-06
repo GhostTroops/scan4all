@@ -106,6 +106,7 @@ func GetClient(szUrl string, pms ...map[string]interface{}) *PipelineHttp.Pipeli
 				"max_idle_conns_per_host": 50,
 				"max_conns_per_host":      50,
 				"max_idle_conns":          50,
+				"err_limit":               90000,
 			},
 		}
 	}
