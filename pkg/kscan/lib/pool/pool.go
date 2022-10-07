@@ -40,11 +40,11 @@ func NewWorker(f func(interface{}) interface{}) *Worker {
 	}
 }
 
-var enablDevDebug bool
+var enableDevDebug bool
 
 func init() {
 	util.RegInitFunc(func() {
-		enablDevDebug = util.GetValAsBool("enablDevDebug")
+		enableDevDebug = util.GetValAsBool("enableDevDebug")
 	})
 }
 
@@ -106,7 +106,7 @@ func (p *Pool) work() {
 		//设置工作内容
 		f := NewWorker(p.Function)
 		//开始工作，输出工作结果
-		//if enablDevDebug {
+		//if enableDevDebug {
 		fmt.Printf(" hydra: %v\r", param)
 		//}
 		out, err := f.Run(param)
