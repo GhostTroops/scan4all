@@ -147,6 +147,7 @@ func (x1 *Engine) Running() {
 func init() {
 	//log.Println("engineImp.go run")
 	lib.GConfigServer.OnClient = true
+	lib.MyHub.FnClose()
 	util.RegInitFunc4Hd(func() {
 		x1 := NewEngine(&util.Ctx_global, util.GetValAsInt("ScanPoolSize", 5000))
 		go x1.Running()
