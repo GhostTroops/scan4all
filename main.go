@@ -23,6 +23,8 @@ var Version string
 func main() {
 	//os.Args = []string{"", "-host", "http://192.168.0.109", "-v"}
 	//os.Args = []string{"", "-host", "http://127.0.0.1", "-v"}
+	//os.Args = []string{"", "-list", "7b8fa7a85f9f6ae6f9178504d2202666fb8dc772.xml", "-v"}
+
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	util.DoInit(&config)
 	// set version

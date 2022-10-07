@@ -105,7 +105,7 @@ func SendReq(data1 interface{}, id string, szType ESaveType) {
 				body, err := ioutil.ReadAll(resp.Body)
 				if nil == err && 0 < len(body) {
 					Log("Es save result ", string(body))
-				} else {
+				} else if nil != err {
 					Log(err)
 				}
 			}

@@ -190,12 +190,12 @@ func (r *Runner) DoTargets() (bool, error) {
 				s009 = "/config/doNmapScanWin.bat "
 			}
 			x := util.SzPwd + s009 + r.targetsFile + " " + tempInput1.Name()
-			log.Println(x)
+			//log.Println(x)
 			ss, err := util.DoCmd(strings.Split(x, " ")...)
 			s0 := tempInput1.Name()
 			if nil == err {
 				if "" != ss {
-					log.Println(ss, "\n")
+					//	log.Println(ss, "\n")
 				}
 				if util.FileExists(s0) {
 					//data, err := tempInput1.Stat()

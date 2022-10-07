@@ -273,7 +273,7 @@ func ParseOptions() *Options {
 	options.OutputMatchString = ""
 	options.OutputMatchRegex = ""
 	options.OutputExtractRegex = ""
-	options.OutputFilterStatusCode = ""
+	options.OutputFilterStatusCode = "400,404,500"
 	options.OutputFilterContentLength = ""
 	options.OutputFilterLinesCount = ""
 	options.OutputFilterWordsCount = ""

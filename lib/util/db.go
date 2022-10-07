@@ -72,7 +72,7 @@ func InitDb(dst ...interface{}) *gorm.DB {
 			log.Println("sqlite db init Connection failed", err)
 		}
 	} else {
-		log.Println(err)
+		//log.Println(err)
 	}
 	return dbCC
 }

@@ -154,7 +154,7 @@ func (r *MyChromedp) DoUrlWithFlg(szUrl string, head *map[string]interface{}, ti
 	//if err := ioutil.WriteFile("screenshot1.png", b1, 0o644); err != nil {
 	//	log.Fatal(err)
 	//}
-	log.Println(title)
+	//log.Println(title)
 	//c1 := chromedp.FromContext(taskCtx)
 	return nil, cancel
 }

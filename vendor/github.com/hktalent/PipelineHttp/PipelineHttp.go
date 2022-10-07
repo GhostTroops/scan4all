@@ -40,20 +40,22 @@ type PipelineHttp struct {
 }
 
 func NewPipelineHttp(args ...map[string]interface{}) *PipelineHttp {
+	nTimeout := 60
+	nIdle := 500
 	x1 := &PipelineHttp{
 		UseHttp2:              false,
 		TestHttp:              false,
 		Buf:                   &bytes.Buffer{},
-		Timeout:               60 * time.Second,      // 拨号、连接
-		KeepAlive:             60 * 60 * time.Second, // 默认值（当前为 15 秒）发送保持活动探测。
-		MaxIdleConns:          500,                   // MaxIdleConns controls the maximum number of idle (keep-alive) connections across all hosts. Zero means no limit.
-		IdleConnTimeout:       180,                   // 不限制
-		ResponseHeaderTimeout: 60 * time.Second,      // response
-		TLSHandshakeTimeout:   60 * time.Second,      // TLSHandshakeTimeout specifies the maximum amount of time waiting to wait for a TLS handshake. Zero means no timeout.
-		ExpectContinueTimeout: 60,                    // 零表示没有超时，并导致正文立即发送，无需等待服务器批准
-		MaxIdleConnsPerHost:   500,                   // MaxIdleConnsPerHost, if non-zero, controls the maximum idle (keep-alive) connections to keep per-host. If zero, DefaultMaxIdleConnsPerHost is used.
-		MaxConnsPerHost:       500,                   //
-		ErrLimit:              10,                    // 相同目标，累计错误10次就退出
+		Timeout:               time.Duration(nTimeout) * time.Second, // 拨号、连接
+		KeepAlive:             time.Duration(nTimeout) * time.Second, // 默认值（当前为 15 秒）发送保持活动探测。
+		MaxIdleConns:          nIdle,                                 // MaxIdleConns controls the maximum number of idle (keep-alive) connections across all hosts. Zero means no limit.
+		IdleConnTimeout:       180,                                   // 不限制
+		ResponseHeaderTimeout: time.Duration(nTimeout) * time.Second, // response
+		TLSHandshakeTimeout:   time.Duration(nTimeout) * time.Second, // TLSHandshakeTimeout specifies the maximum amount of time waiting to wait for a TLS handshake. Zero means no timeout.
+		ExpectContinueTimeout: 0,                                     // 零表示没有超时，并导致正文立即发送，无需等待服务器批准
+		MaxIdleConnsPerHost:   nIdle,                                 // MaxIdleConnsPerHost, if non-zero, controls the maximum idle (keep-alive) connections to keep per-host. If zero, DefaultMaxIdleConnsPerHost is used.
+		MaxConnsPerHost:       nIdle,                                 //
+		ErrLimit:              10,                                    // 相同目标，累计错误10次就退出
 		ErrCount:              0,
 		IsClosed:              false,
 		SetHeader:             nil,
@@ -87,8 +89,16 @@ func (r *PipelineHttp) Dial(ctx context.Context, network, addr string) (conn net
 			//Control:   r.Control,
 			DualStack: true,
 		}).DialContext(ctx, network, addr)
+
 		if err == nil {
+			conn.SetReadDeadline(time.Now().Add(r.Timeout))
+			//one := make([]byte, 0)
+			//conn.SetReadDeadline(time.Now())
+			//if _, err := conn.Read(one); err != io.EOF {
 			break
+			//}else{
+			//	conn.SetReadDeadline(time.Now().Add(r.Timeout * 10))
+			//}
 		}
 	}
 	return conn, err
@@ -103,10 +113,10 @@ func (r *PipelineHttp) SetCtx(ctx context.Context) {
 // https://www.jianshu.com/p/2e5a7317be38
 func (r *PipelineHttp) GetTransport() http.RoundTripper {
 	var tr http.RoundTripper = &http.Transport{
-		Proxy:                  http.ProxyFromEnvironment,
-		DialContext:            r.Dial,
-		TLSClientConfig:        &tls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS10, Renegotiation: tls.RenegotiateOnceAsClient},
-		ForceAttemptHTTP2:      true,
+		Proxy:           http.ProxyFromEnvironment,
+		DialContext:     r.Dial,
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS10, Renegotiation: tls.RenegotiateOnceAsClient},
+		//ForceAttemptHTTP2:      true,                    // 不能加
 		MaxResponseHeaderBytes: 4096,                    //net/http default is 10Mb
 		DisableKeepAlives:      false,                   // false 才会复用连接 https://blog.csdn.net/qq_21514303/article/details/87794750
 		MaxIdleConns:           r.MaxIdleConns,          // 是长连接在关闭之前，连接池对所有host的最大链接数量
@@ -211,7 +221,7 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 		r.Close()
 	}
 	if nil != err && rNohost.MatchString(err.Error()) {
-		log.Println(szUrl, err)
+		//log.Println(szUrl, err)
 		r.Close()
 		return
 	}
