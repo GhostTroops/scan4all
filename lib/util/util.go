@@ -37,7 +37,7 @@ var (
 
 const (
 	// Distributed API Server，服务器
-	G_Server = "https://DAS.51pwn.com"
+	G_Server = "https://das.51pwn.com"
 )
 
 // http密码爆破
