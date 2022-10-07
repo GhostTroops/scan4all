@@ -132,6 +132,12 @@ func init() {
 			}
 		}
 		//regs = append(regs, ret...)
+		// 基于工厂方法构建
+		util.EngineFuncFactory(Const.ScanType_WebDirScan, func(evt *models.EventData, args ...interface{}) {
+			filePaths, fileFuzzTechnologies := FileFuzz(evt.Task.ScanWeb, 200, 100, "")
+			util.SendEngineLog(evt, Const.ScanType_WebDirScan, filePaths, fileFuzzTechnologies)
+		})
+
 	})
 }
 
@@ -143,12 +149,6 @@ func init() {
 
 // 随机10个字符串
 var RandStr4Cookie = util.RandStringRunes(10)
-
-// 基于工厂方法构建
-var FileFuzz4Engin = util.EngineFuncFactory(func(evt *models.EventData, args ...interface{}) {
-	filePaths, fileFuzzTechnologies := FileFuzz(evt.Task.ScanWeb, 200, 100, "")
-	util.SendEngineLog(evt, Const.ScanType_WebDirScan, filePaths, fileFuzzTechnologies)
-})
 
 type FuzzData struct {
 	Path *[]string

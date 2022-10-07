@@ -7,6 +7,7 @@ import (
 	"github.com/hktalent/scan4all/brute"
 	"github.com/hktalent/scan4all/lib/Smuggling"
 	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"github.com/hktalent/scan4all/pocs_go/Springboot"
 	"github.com/hktalent/scan4all/pocs_go/ThinkPHP"
 	"github.com/hktalent/scan4all/pocs_go/VMware/vCenter"
@@ -33,15 +34,9 @@ import (
 	"github.com/hktalent/scan4all/pocs_go/zentao"
 	"log"
 	"net/url"
+	"strconv"
 	"strings"
 )
-
-// 基于工厂方法构建
-var POCcheck4Engin = util.EngineFuncFactory(func(evt *models.EventData, args ...interface{}) {
-	_, fileFuzzTechnologies := brute.FileFuzz(evt.Task.ScanWeb, 200, 100, "")
-	pocs := POCcheck(fileFuzzTechnologies, evt.Task.ScanWeb, evt.Task.ScanWeb, true)
-	util.SendEngineLog(evt, Const.ScanType_GoPoc, pocs)
-})
 
 // 需优化：相同都目标，相同都检测只做一次
 func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool) []string {
@@ -326,4 +321,24 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 		util.SendEngineLog4Url(finalURL, Const.ScanType_GoPoc, &map[string]interface{}{"Urls": []string{URL, finalURL}, "technologies": technologies}, util.Scan4all)
 	}
 	return technologies
+}
+
+func init() {
+	util.RegInitFunc(func() {
+		// 基于工厂方法构建
+		util.EngineFuncFactory(Const.ScanType_GoPoc, func(evt *models.EventData, args ...interface{}) {
+			_, fileFuzzTechnologies := brute.FileFuzz(evt.Task.ScanWeb, 200, 100, "")
+			resp1, reqbody, _, err := util.GetResponse("", "", evt.Task.ScanWeb, "GET", "", false, nil)
+			if nil == err && nil != resp1 {
+				a, _ := fingerprint.FingerScan(*resp1.Header, []byte(reqbody), "", evt.Task.ScanWeb, strconv.Itoa(resp1.StatusCode))
+				if 0 < len(a) {
+					fileFuzzTechnologies = append(fileFuzzTechnologies, a...)
+				}
+			}
+			util.SendEvent(evt, Const.ScanType_Nmap, Const.ScanType_Masscan)
+			// 一旦开启nmap等，其他的结果，将在其他流程中反馈，并做防止重复的处理
+			pocs := POCcheck(fileFuzzTechnologies, evt.Task.ScanWeb, evt.Task.ScanWeb, true)
+			util.SendEngineLog(evt, Const.ScanType_GoPoc, pocs)
+		})
+	})
 }

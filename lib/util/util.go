@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/base64"
+	"encoding/gob"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"github.com/corpix/uarand"
 	"github.com/hbakhtiyor/strsim"
 	"github.com/hktalent/PipelineHttp"
+	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"github.com/karlseguin/ccache"
 	"io"
 	"io/ioutil"
@@ -414,4 +416,33 @@ func SendData2Url(szUrl string, data1 interface{}, m1 *map[string]string, fnCbk 
 	c1.DoGetWithClient4SetHd(c1.Client, szUrl, "POST", bytes.NewReader(data), fnCbk, func() map[string]string {
 		return *m1
 	}, true)
+}
+
+func DeepCopy(src, dist interface{}) (err error) {
+	buf := bytes.Buffer{}
+	if err = gob.NewEncoder(&buf).Encode(src); err != nil {
+		return
+	}
+	return gob.NewDecoder(&buf).Decode(dist)
+}
+
+type EngineFuncType func(evt *models.EventData, args ...interface{})
+
+// 工厂方法
+//   便于同一、规范引擎调用的方法、参数约束
+var EngineFuncFactory func(nT int64, fnCbk interface{})
+
+// 全局引擎
+var G_Engine interface{}
+var SendEvent func(evt *models.EventData, argsTypes ...int64)
+
+// 反射调用
+func Invoke(iFunc interface{}, args ...interface{}) {
+	if nil != args && 0 < len(args) {
+		in := inject.New()
+		for _, i := range args {
+			in.Map(i)
+		}
+		in.Invoke(iFunc)
+	}
 }

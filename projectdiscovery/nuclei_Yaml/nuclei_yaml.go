@@ -4,6 +4,7 @@ import (
 	"C"
 	"bytes"
 	"encoding/json"
+	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
 	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
 	runner2 "github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
@@ -24,18 +25,6 @@ import (
 var (
 	cfgFile string
 )
-
-// 基于工厂方法构建
-var RunNucleiEngin = util.EngineFuncFactory(func(evt *models.EventData, args ...interface{}) {
-	var bf bytes.Buffer = bytes.Buffer{}
-	bf.WriteString(evt.Task.ScanWeb + "\n")
-	var nucleiDone = make(chan bool, 1)
-	var xx1 = make(chan *runner2.Runner, 1)
-	opts := map[string]interface{}{}
-	go RunNuclei(&bf, nucleiDone, &opts, xx1)
-	<-nucleiDone
-	close(xx1)
-})
 
 // 优化，不是http协议的就不走http，提高效率
 // 多实例运行还是存在问题，会出现nuclei 挂起的问题
@@ -487,3 +476,20 @@ func cleanupOldResumeFiles() {
 //		currentFlag.Group(groupName)
 //	}
 //}
+
+func init() {
+	util.RegInitFunc(func() {
+		//log.Println("nuclei_yaml.go init start")
+		// 基于工厂方法构建
+		util.EngineFuncFactory(Const.ScanType_WebVulsScan, func(evt *models.EventData, args ...interface{}) {
+			var bf bytes.Buffer = bytes.Buffer{}
+			bf.WriteString(evt.Task.ScanWeb + "\n")
+			var nucleiDone = make(chan bool, 1)
+			var xx1 = make(chan *runner2.Runner, 1)
+			opts := map[string]interface{}{}
+			go RunNuclei(&bf, nucleiDone, &opts, xx1)
+			<-nucleiDone
+			close(xx1)
+		})
+	})
+}

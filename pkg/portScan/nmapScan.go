@@ -11,6 +11,25 @@ import (
 	"time"
 )
 
+func init() {
+	util.RegInitFunc(func() {
+		// 基于工厂方法构建
+		util.EngineFuncFactory(Const.ScanType_Nmap, func(evt *models.EventData, args ...interface{}) {
+			var Targets []string = args[0].([]string)
+			var Ports []string = args[1].([]string)
+			x1 := &Scanner{Targets: Targets, Ports: Ports}
+			var streams []*Stream
+			_, err := x1.Scan(func(s *Stream) {
+				streams = append(streams, s)
+			})
+			if nil != err {
+				log.Println("nmap scan is error ", err)
+			}
+			util.SendEngineLog(evt, Const.ScanType_Nmap, streams)
+		})
+	})
+}
+
 // Stream represents a camera's RTSP stream
 type Stream struct {
 	Device   string   `json:"device"`
@@ -31,21 +50,6 @@ type Scanner struct {
 	Targets []string
 	Ports   []string
 }
-
-// 基于工厂方法构建
-var DoNmap = util.EngineFuncFactory(func(evt *models.EventData, args ...interface{}) {
-	var Targets []string = args[0].([]string)
-	var Ports []string = args[1].([]string)
-	x1 := &Scanner{Targets: Targets, Ports: Ports}
-	var streams []*Stream
-	_, err := x1.Scan(func(s *Stream) {
-		streams = append(streams, s)
-	})
-	if nil != err {
-		log.Println("nmap scan is error ", err)
-	}
-	util.SendEngineLog(evt, Const.ScanType_Nmap, streams)
-})
 
 // Scan scans the target networks and tries to find RTSP streams within them.
 //

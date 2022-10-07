@@ -11,7 +11,7 @@ import (
 
 // cat $HOME/MyWork/scan4all/pkg/ksubdomain/*.go|grep "github.com/boy-hack/ksubdomain"|sed 's/"//g'|sort -u|uniq|xargs -I % go get %
 func DoSubfinder(a []string, out chan string, done chan bool) {
-	if "true" == util.GetVal("EnableKsubdomain") {
+	if util.GetValAsBool("EnableKsubdomain") {
 		s1 := util.GetVal("KsubdomainRegxp")
 		if "" != s1 {
 			r1, err := regexp.Compile(s1)
