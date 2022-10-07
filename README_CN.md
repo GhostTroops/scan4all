@@ -1,4 +1,4 @@
-[![Tweet](https://img.shields.io/twitter/url/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
+[![Tweet](https://img.shields.io/twitter/szUrl/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
 <p align="center">
    <a href="/README.md">README_EN</a> •
    <a href="/static/Installation.md">编译/安装/运行</a> •
@@ -43,7 +43,7 @@ Vulnerabilities Scan；15000+PoC漏洞扫描；[ 23 ] 种应用弱口令爆破�
   * Tomcat
   * Jboss
   * Winrm(wsman)
-  * POP3
+  * POP3/POP3S
 - 默认开启http密码智能爆破，需要 HTTP 密码时才会自动启动，无需人工干预
 - 检测系统是否存在 nmap ，存在通过 priorityNmap=true 启用 nmap 进行快速扫描，默认开启，优化过的 nmap 参数比 masscan 快
   使用 nmap 的弊端：网络不好的是否，因为流量网络包过大可能会导致结果不全
@@ -173,6 +173,8 @@ http://127.0.0.1:9200/nmap_index/_doc/_search?q=_id:192.168.0.111
 - 使用前请自行安装nmap
 <a href=https://github.com/hktalent/scan4all/discussions>使用帮助</a>
 ```bash
+export GOPRIVATE=github.com/hktalent
+go env |grep GOPRIVATE
 go build
 # 精准扫描 url列表 UrlPrecise=true
 UrlPrecise=true ./scan4all -l xx.txt
@@ -205,6 +207,11 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</a>
 
 # 变更日志
+- 2022-10-03 Pro版本：
+   * 优化了fuzz，http2.0下测试18秒可以完成6万的扫描，同时合并、去除冗余的结果
+   * 优化：所有的web扫描前，均做有效检测，避免无效扫描，提升了效率
+   * 增加了若干go-poc
+   * 实现了分布式功能server端功能，分布式客户端实现了部分被动扫描模式的封装、重构
 - 2022-07-28 为 nuclei 添加 substr、 aes_cbc DSL 函数<a href="https://github.com/projectdiscovery/nuclei/releases/tag/v2.7.7">nuclei v2.7.7</a>
 - 2022-08-03 fixed nuclei Multiple instances cache goroutine leaks PR<a href=https://github.com/projectdiscovery/nuclei/issues/2386>#2386</a>
 - 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/issues/2301>#2301</a> 并发多实例的bug
@@ -242,3 +249,15 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |
 | --- | --- | --- | --- | --- |
 |<img src=https://github.com/hktalent/myhktools/blob/master/md/wc.png>|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/zfb.png>|[paypal](https://www.paypal.me/pwned2019) **miracletalent@gmail.com**|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/BTC.png>|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/BCH.jpg>|
+
+
+<!--
+export GOPRIVATE=github.com/hktalent
+go env |grep GOPRIVATE
+
+https://github.com/heartshare/go-wafw00f
+
+git submodule add --force  https://github.com/hktalent/nuclei-templates.git config/nuclei-templates
+git submodule update --init --recursive
+ /usr/bin/git -c protocol.version=2 submodule update --init --force --recursive
+-->
