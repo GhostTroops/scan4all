@@ -20,7 +20,7 @@ const (
 	EnableClose     = false // 打开自动关闭ws功能，默认不关闭，长链接提高性能
 )
 
-// Client is a middleman between the websocket connection and the hub.
+// Client is a middleman between the websocket connection and the Hub.
 type Client struct {
 	hub *Hub
 	// The websocket connection.
@@ -33,7 +33,7 @@ type Client struct {
 func (c *Client) readPump() {
 	defer func() {
 		c.conn.Close()
-		//c.hub.FnClose()
+		//c.Hub.FnClose()
 		//close(c.send) // 不能关闭，否则会导致异常退出
 	}()
 	c.conn.SetReadLimit(int64(SizeLimit))
@@ -64,7 +64,7 @@ func (c *Client) writePump() {
 	defer func() {
 		ticker.Stop()
 		//c.conn.Close()
-		//c.hub.FnClose()
+		//c.Hub.FnClose()
 	}()
 	for {
 		select {

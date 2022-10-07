@@ -3,7 +3,6 @@ package util
 import (
 	"context"
 	"fmt"
-	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"net/http"
 	"os"
 	"regexp"
@@ -128,18 +127,10 @@ func CheckHeader(header *http.Header, szUrl string) {
 				a1 = append(a1, "shiro")
 			}
 			if 0 < len(a1) && os.Getenv("NoPOC") != "true" {
-				PocCheck_pipe <- &PocCheck{Wappalyzertechnologies: &a1, URL: szUrl, FinalURL: szUrl, Checklog4j: false}
+				if !TestRepeat(a1, szUrl, szUrl, "header") {
+					PocCheck_pipe <- &PocCheck{Wappalyzertechnologies: &a1, URL: szUrl, FinalURL: szUrl, Checklog4j: false}
+				}
 			}
 		}
 	})
-}
-
-type EngineFuncType func(evt *models.EventData, args ...interface{})
-
-// 工厂方法
-//   便于同一、规范引擎调用的方法、参数约束
-func EngineFuncFactory(fnCbk EngineFuncType) EngineFuncType {
-	return func(evt *models.EventData, args ...interface{}) {
-		fnCbk(evt, args...)
-	}
 }

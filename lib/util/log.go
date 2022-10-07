@@ -5,6 +5,7 @@ import (
 	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 )
 
@@ -14,14 +15,14 @@ var NoColor bool
 var Output = ""
 
 //// 调用方法名作为插件名
-//func GetPluginName(defaultVal string) string {
-//	pc, _, _, ok := runtime.Caller(1)
-//	details := runtime.FuncForPC(pc)
-//	if ok && details != nil {
-//		return details.Name()
-//	}
-//	return defaultVal
-//}
+func GetPluginName(defaultVal string) string {
+	pc, _, _, ok := runtime.Caller(1)
+	details := runtime.FuncForPC(pc)
+	if ok && details != nil {
+		return details.Name()
+	}
+	return defaultVal
+}
 
 // 1、优化代码，统一结果输出，便于维护
 func SendLog(szUrl, szVulType, Msg, Payload string) {
@@ -37,7 +38,7 @@ func SendLog(szUrl, szVulType, Msg, Payload string) {
 }
 
 // 专门发送改造后的引擎函数执行结果
-func SendEngineLog(evt *models.EventData, nCurType int, data ...interface{}) {
+func SendEngineLog(evt *models.EventData, nCurType int64, data ...interface{}) {
 	if nil != data && 0 < len(data) {
 		v := &SimpleVulResult{
 			Url:      evt.Task.ScanWeb,
@@ -45,13 +46,18 @@ func SendEngineLog(evt *models.EventData, nCurType int, data ...interface{}) {
 			ScanType: nCurType,
 			ScanData: data,
 		}
-		SendAnyData(v, Scan4all)
-		writeoutput(v)
+		s := GetEsType(nCurType)
+		if "" != s {
+			SendAnyData(v, s)
+			writeoutput(v)
+		} else {
+			log.Printf("SendEngineLog can not find type %d\n", nCurType)
+		}
 	}
 }
 
 // 专门发送改造后的引擎函数执行结果
-func SendEngineLog4Url(Url string, nCurType int, data ...interface{}) {
+func SendEngineLog4Url(Url string, nCurType int64, data ...interface{}) {
 	if nil != data && 0 < len(data) {
 		v := &SimpleVulResult{
 			Url:      Url,

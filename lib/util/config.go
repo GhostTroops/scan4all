@@ -20,6 +20,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -378,8 +379,11 @@ func GetSha1(a ...interface{}) string {
 
 var Abs404 = "/scan4all404"
 var defaultInteractionDuration time.Duration = 180 * time.Second
+var LoRpt sync.Mutex
 
 func TestRepeat(a ...interface{}) bool {
+	LoRpt.Lock()
+	defer LoRpt.Unlock()
 	if nil == noRpt {
 		return false
 	}
@@ -486,19 +490,43 @@ func TestIs404Page(szUrl string) (page *Page, r01 *Response, err error, ok bool)
 }
 
 var fnInit []func()
+var fnInitHd []func()
 
+// 注册解决初始化控制顺序问题
 func RegInitFunc(cbk func()) {
 	fnInit = append(fnInit, cbk)
+}
+
+func RegInitFunc4Hd(cbk func()) {
+	fnInitHd = append(fnInitHd, cbk)
 }
 
 // 所有初始化的总入口
 func DoInit(config *embed.FS) {
 	Init1(config)
 	rand.Seed(time.Now().UnixNano())
+	//	log.Println("start init for fnInitHd ", len(fnInitHd))
+	//	for _, x := range fnInitHd {
+	//		x()
+	//	}
+	//	fnInitHd = nil
+	//	for {
+	//		switch {
+	//		case nil == EngineFuncFactory:
+	//			time.Sleep(1 * time.Second)
+	//			log.Println("wait EngineFuncFactory")
+	//		default:
+	//			goto GoGo01
+	//		}
+	//	}
+	//GoGo01:
+	//	log.Println("start init for fnInit ", len(fnInit))
+	fnInit = append(fnInitHd, fnInit...)
 	for _, x := range fnInit {
 		x()
 	}
 	fnInit = nil
+	fnInitHd = nil
 }
 
 func RemoveDuplication_map(arr []string) []string {

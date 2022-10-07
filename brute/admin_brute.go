@@ -11,6 +11,14 @@ import (
 
 var SkipAdminBrute bool
 
+var UserReg = regexp.MustCompile(`(?i)<input.*?name=['"]([^'"]*(name|user|uid|login|mail|log|account)[^'"]*).*?>`)
+var PswdReg = regexp.MustCompile(`(?i)<input.*?name=['"]([^'"]*(pass|pwd|word|mima|password|mm)[^'"]*).*?>`)
+var actionReg = regexp.MustCompile(`<form.*?action=['"](.*?)['"]`)
+
+/*
+loginMailbox
+loginPassword
+*/
 func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl string, ismd5 bool) {
 	usernamekey = "username"
 	passwordkey = "password"
@@ -37,25 +45,15 @@ func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl
 				return "", "", "", false
 			}
 		}
-		usernamelist := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?name[\w\[\]]*?|[\w\[\]]*?Name[\w\[\]]*?|[\w\[\]]*?user[\w\[\]]*?|[\w\[\]]*?User[\w\[\]]*?|[\w\[\]]*?USER[\w\[\]]*?)['"].*?>`).FindStringSubmatch(req.Body)
+		usernamelist := UserReg.FindStringSubmatch(req.Body)
 		if usernamelist != nil {
 			usernamekey = usernamelist[len(usernamelist)-1:][0]
-		} else {
-			usernamelist2 := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?log[\w\[\]]*?|[\w\[\]]*?Log[\w\[\]]*?|[\w\[\]]*?LoG[\w\[\]]*?|[\w\[\]]*?LOG[\w\[\]]*?|[\w\[\]]*?account[\w\[\]]*?|[\w\[\]]*?Account[\w\[\]]*?)['"].*?>`).FindStringSubmatch(req.Body)
-			if usernamelist2 != nil {
-				usernamekey = usernamelist2[len(usernamelist2)-1:][0]
-			}
 		}
-		passlist := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?pass[\w\[\]]*?|[\w\[\]]*?Pass[\w\[\]]*?|[\w\[\]]*?PASS[\w\[\]]*?|[\w\[\]]*?pwd[\w\[\]]*?|[\w\[\]]*?Pwd[\w\[\]]*?|[\w\[\]]*?PWD[\w\[\]]*?)['"].*?>`).FindStringSubmatch(req.Body)
+		passlist := PswdReg.FindStringSubmatch(req.Body)
 		if passlist != nil {
 			passwordkey = passlist[len(passlist)-1:][0]
-		} else {
-			passlist2 := regexp.MustCompile(`<input.*?name=['"]([\w\[\]]*?mima[\w\[\]]*?|[\w\[\]]*?word[\w\[\]]*?)['"].*?>`).FindStringSubmatch(req.Body)
-			if passlist2 != nil {
-				passwordkey = passlist2[len(passlist2)-1:][0]
-			}
 		}
-		domainlist := regexp.MustCompile(`<form.*?action=['"](.*?)['"]`).FindStringSubmatch(req.Body)
+		domainlist := actionReg.FindStringSubmatch(req.Body)
 		if domainlist != nil {
 			if action, err := url.Parse(strings.TrimSpace(domainlist[len(domainlist)-1:][0])); err == nil {
 				loginurl = u.ResolveReference(action).String()
@@ -71,6 +69,8 @@ func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl
 	}
 	return usernamekey, passwordkey, loginurl, ismd5
 }
+
+var LocationReg = regexp.MustCompile(`(.*?);`)
 
 func Admin_brute(u string) (username string, password string, loginurl string) {
 	if SkipAdminBrute {
@@ -100,7 +100,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 		case 301, 302, 307, 308:
 			falseis302 = true
 			if strings.Contains(adminfalseurl.Location, ";") {
-				adminfalseurl.Location = regexp.MustCompile(`(.*);`).FindString(adminfalseurl.Location)
+				adminfalseurl.Location = LocationReg.FindString(adminfalseurl.Location)
 			}
 			adminfalse302location = adminfalseurl.Location
 		case 401:
@@ -124,7 +124,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 		case 301, 302, 307, 308:
 			falseis302 = true
 			if strings.Contains(testfalseurl.Location, ";") {
-				testfalseurl.Location = regexp.MustCompile(`(.*);`).FindString(testfalseurl.Location)
+				testfalseurl.Location = LocationReg.FindString(testfalseurl.Location)
 			}
 			testfalse302location = testfalseurl.Location
 		case 401:
@@ -173,7 +173,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 				}
 				if falseis302 {
 					if strings.Contains(req.Location, ";") {
-						req.Location = regexp.MustCompile(`(.*);`).FindString(req.Location)
+						req.Location = LocationReg.FindString(req.Location)
 					}
 					if req.Location != adminfalse302location && req.Location != testfalse302location {
 						sucesstestdata := fmt.Sprintf("%s=%s&%s=Qweasd123zxc", usernamekey, user, passwordkey)

@@ -221,7 +221,7 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 		r.Close()
 	}
 	if nil != err && rNohost.MatchString(err.Error()) {
-		//log.Println(szUrl, err)
+		log.Println(szUrl, err)
 		r.Close()
 		return
 	}

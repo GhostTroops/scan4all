@@ -11,13 +11,13 @@ var wsupgrader = websocket.Upgrader{
 	WriteBufferSize: SizeLimit,
 }
 
-var hub *Hub
+var MyHub *Hub
 
 // 初始化单实例
 func init() {
 	if !GConfigServer.OnClient {
-		hub = NewHub()
-		go hub.run()
+		MyHub = NewHub()
+		go MyHub.run()
 	}
 }
 
@@ -31,7 +31,7 @@ func Wshandler(w http.ResponseWriter, r *http.Request) {
 		DoLog("set websocket upgrade", err, nil)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan *ResponseData, 256)}
+	client := &Client{hub: MyHub, conn: conn, send: make(chan *ResponseData, 256)}
 	go client.writePump()
 	go client.readPump()
 }

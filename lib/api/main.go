@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	_ "github.com/hktalent/scan4all/engine"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/hydra"
 	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"

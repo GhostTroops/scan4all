@@ -36,7 +36,7 @@ func Init() {
 	}
 }
 
-// 保存 nuclei 结果
+// 只保存 nuclei类型的 结果
 func SaveRsult4Ws(id string, m11 *map[string]interface{}, g1 *gin.Context, h *Hub, client *Client) {
 	var resultEvent = output.ResultEvent{}
 	//fmt.Printf("%+v", m11)

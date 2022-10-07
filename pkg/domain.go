@@ -46,34 +46,35 @@ func doAppends(a []string, s []string) []string {
 }
 
 func doSub(s string) (aRst []string, err1 error) {
+	if !util.GetValAsBool(util.EnableSubfinder) {
+		return
+	}
 	bSend := false
 	if "*." == s[:2] {
-		EnableSubfinder := util.GetVal(util.EnableSubfinder)
-		if "" != EnableSubfinder {
-			var out = make(chan string, 1000)
-			var close chan bool
-			go subfinder.DoSubfinder([]string{s[2:]}, out, close)
-		Close:
-			for {
-				select {
-				case <-util.Ctx_global.Done():
-					return
-				case <-close:
-					break Close
-				case ok := <-out:
-					if "" != ok {
-						aRst = append(aRst, ok)
-						//fmt.Println("out ===> ", ok)
-					}
-				default:
-					util.DoSleep()
+		var out = make(chan string, 1000)
+		var close chan bool
+		go subfinder.DoSubfinder([]string{s[2:]}, out, close)
+	Close:
+		for {
+			select {
+			case <-util.Ctx_global.Done():
+				return
+			case <-close:
+				break Close
+			case ok := <-out:
+				if "" != ok {
+					aRst = append(aRst, ok)
+					//fmt.Println("out ===> ", ok)
 				}
+			default:
+				util.DoSleep()
 			}
-			bSend = true
-		} else {
-			aRst = append(aRst, s[2:])
 		}
+		bSend = true
+	} else {
+		aRst = append(aRst, s[2:])
 	}
+
 	if bSend {
 		util.SendAData[string](s[:2], aRst, util.Subfinder)
 	}

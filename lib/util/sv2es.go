@@ -17,17 +17,6 @@ var nThreads chan struct{}
 var EsUrl string
 var enableEsSv bool
 
-type ESaveType string
-
-const (
-	Naabu     ESaveType = "naabu"
-	Httpx     ESaveType = "httpx"
-	Hydra     ESaveType = "hydra"
-	Nmap      ESaveType = "nmap"
-	Scan4all  ESaveType = "scan4all"
-	Subfinder ESaveType = "subfinder"
-)
-
 func initEs() {
 	enableEsSv = GetValAsBool("enableEsSv")
 	EsUrl = GetValByDefault("EsUrl", "https://127.0.0.1:8081/%s_index/_doc/%s")
@@ -49,7 +38,7 @@ type SimpleVulResult struct {
 	VulType  string        `json:"vulType"`   // 漏洞类型
 	Payload  string        `json:"payload"`   // 攻击、检测一类的结果时，当前的payload
 	Msg      string        `json:"msg"`       // 其他消息
-	ScanType int           `json:"scan_type"` // 扫描类型
+	ScanType int64         `json:"scan_type"` // 扫描类型
 	ScanData []interface{} `json:"scan_data"` // 扫描结果，例如 masscan端口扫描、nmap
 }
 
@@ -77,6 +66,9 @@ func SendAData[T any](k string, data []T, szType ESaveType) {
 }
 
 // 发送数据到ES
+//  data1数据
+//  id 数据计算出来的id
+//  szType 类型，决定 es不通的索引分类
 func SendReq(data1 interface{}, id string, szType ESaveType) {
 	DoSyncFunc(func() {
 		if !enableEsSv {

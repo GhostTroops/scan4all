@@ -41,13 +41,22 @@ func A2s(o interface{}) string {
 
 // 保存任务结果
 func SaveRsult(g *gin.Context) {
-	id := g.Param("id") // task id
+	id := g.Param("id")       // task id
+	szType := g.Param("type") // task id
+	if "" != szType {
+	}
 	m11 := map[string]interface{}{}
 	err := g.BindJSON(&m11)
 	if nil != err {
 		log.Println("SaveRsult bind error:", err)
+		g.JSON(400, err.Error())
+		return
 	}
-	SaveRsult4Ws(id, &m11, g, nil, nil)
+	if 0 < len(m11) {
+		SaveRsult4Ws(id, &m11, g, nil, nil)
+	} else {
+		g.JSON(200, "ok")
+	}
 }
 
 // 分布式引擎节点查询任务
@@ -206,7 +215,7 @@ func SendFg(g *gin.Context) {
 	if err := g.BindJSON(msg); nil != err {
 		log.Println(err)
 	} else {
-		hub.ReceveEventData <- *msg
+		MyHub.ReceveEventData <- *msg
 		g.JSON(200, "ok")
 	}
 }
