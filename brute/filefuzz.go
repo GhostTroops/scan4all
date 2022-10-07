@@ -147,6 +147,11 @@ var FileFuzz4Engin = util.EngineFuncFactory(func(evt *models.EventData, args ...
 	util.SendEngineLog(evt, Const.ScanType_WebDirScan, filePaths, fileFuzzTechnologies)
 })
 
+type FuzzData struct {
+	Path *[]string
+	Req  *util.Page
+}
+
 // 重写了fuzz：优化流程、优化算法、修复线程安全bug、增加智能功能
 //  两次  ioutil.ReadAll(resp.Body)，第二次就会 Read返回EOF error
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
@@ -195,7 +200,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	// 控制 fuzz 线程数
 	var ch = make(chan struct{}, util.Fuzzthreads)
 	// 异步接收结果
-	var async_data = make(chan []string, util.Fuzzthreads*2)
+	var async_data = make(chan *FuzzData, util.Fuzzthreads*2)
 	var async_technologies = make(chan []string, util.Fuzzthreads*2)
 	// 字典长度的 70% 的错误
 	var MaxErrorTimes int32 = int32(float32(len(filedic)) * 0.7)
@@ -209,6 +214,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	//}()
 	//log.Printf("start fuzz: %s for", u)
 	nStop := 400
+	var lst200 *util.Response
 	go func() {
 		for {
 			select {
@@ -216,7 +222,10 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 				return
 			case x1, ok := <-async_data:
 				if ok {
-					path = append(path, x1...)
+					if lst200 == nil || x1.Req.Resqonse.Body != lst200.Body {
+						path = append(path, (*x1.Path)...)
+					}
+					lst200 = x1.Req.Resqonse
 					if len(path) > nStop {
 						stop() //发停止指令
 						atomic.AddInt32(&errorTimes, MaxErrorTimes)
@@ -237,7 +246,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 		}
 	}()
 	log.Printf("wait for file fuzz(dicts:%d) %s \r", len(filedic), u)
-	var lst200 *util.Response
+
 	for _, payload := range filedic {
 		// 接收到停止信号
 		if atomic.LoadInt32(&errorTimes) >= MaxErrorTimes {
@@ -315,7 +324,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 								a11 := ByPass403(&u, &payload, &wg)
 								// 表示 ByPass403 成功了, 结果、控制台输出点什么？
 								if 0 < len(a11) {
-									async_data <- a11
+									async_data <- &FuzzData{Path: &a11, Req: fuzzPage}
 								}
 							}
 							return
@@ -339,7 +348,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 							path1 = append(path1, *fuzzPage.Url)
 						}
 						if 0 < len(path1) {
-							async_data <- path1
+							async_data <- &FuzzData{Path: &path1, Req: fuzzPage}
 						}
 						if 0 < len(technologies1) {
 							async_technologies <- technologies1
@@ -360,7 +369,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	}
 	// 默认情况等待所有结束
 	wg.Wait()
-	log.Printf("fuzz is over: %s\n", u)
+	log.Printf("fuzz is over: %s found:\n%s\n", u, strings.Join(path, "\n"))
 	technologies = util.SliceRemoveDuplicates(technologies)
 	path = util.SliceRemoveDuplicates(path)
 	stop() //发停止指令

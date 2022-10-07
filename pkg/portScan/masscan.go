@@ -79,7 +79,7 @@ func (m *Masscan) Run(fnCbk func(*models.Host)) error {
 	err := util.AsynCmd(func(line string) {
 		x1, err := m.ParseLine(line)
 		if nil != err {
-			log.Println(err)
+			//log.Println(err)
 			return
 		}
 		for _, i := range x1 {

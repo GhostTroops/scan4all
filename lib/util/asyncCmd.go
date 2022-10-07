@@ -3,7 +3,6 @@ package util
 import (
 	"bufio"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 	"time"
@@ -77,7 +76,7 @@ func (r *Cmd) WriteInput(args ...string) {
 
 func (r *Cmd) AsynCmd(fnCbk func(line string), szCmd string, args ...string) error {
 	cmd := r.Command(szCmd, args...)
-	log.Println(cmd.Args)
+	//log.Println(cmd.Args)
 	var err error
 	cmdReader, err := cmd.StdoutPipe()
 	if nil != err {

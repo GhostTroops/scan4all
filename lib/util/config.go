@@ -113,7 +113,7 @@ var TmpFile = map[string][]*os.File{}
 func GetTempFile(t string) *os.File {
 	tempInput, err := ioutil.TempFile("", "scan4all-out*")
 	if err != nil {
-		log.Println(err)
+		//log.Println(err)
 		return nil
 	} else {
 		if t1, ok := TmpFile[t]; ok {
@@ -438,29 +438,29 @@ func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 		}
 	}
 	sz404 := szUrl + Abs404
-	client := GetClient(sz404)
-	if nil != client {
-		//client.Client.Timeout = 500
-		//client.ErrCount = 0
-		//client.ErrLimit = 9999
-		//log.Printf("%v %s \n", client, sz404)
-	}
+	//client := GetClient(sz404)
+	//if nil != client {
+	//	client.Client.Timeout = 500
+	//	client.ErrCount = 0
+	//	//client.ErrLimit = 9999
+	//	//log.Printf("%v %s \n", client, sz404)
+	//}
 
 	//log.Println("start test ", sz404)
 	var mh1 map[string]string
-	if strings.HasPrefix(sz404, "http://") {
-		mh1 = map[string]string{
-			//"Connection":   "close",
-			"Content-Type": "",
-		}
-	}
+	//if strings.HasPrefix(sz404, "http://") {
+	//	mh1 = map[string]string{
+	//		//"Connection":   "close",
+	//		"Content-Type": "",
+	//	}
+	//}
 	r01, err = HttpRequset(sz404, "GET", "", false, mh1)
 	ok = err == nil && nil != r01 && 404 == r01.StatusCode
 	if nil != err {
 		CloseHttpClient(sz404)
 		//log.Println(sz404, err)
 	} else {
-		log.Printf("%d %s %s\n", r01.StatusCode, r01.Protocol, sz404)
+		//log.Printf("%d %s %s\n", r01.StatusCode, r01.Protocol, sz404)
 	}
 	noRpt.Set(key, []interface{}{r01, err, ok}, defaultInteractionDuration)
 	//client.Client.Timeout = 10
