@@ -212,7 +212,7 @@ func readConfig(options *types.Options) {
 
 	options.Authors = []string{}
 	options.Tags = []string{}
-	options.ExcludeTags = []string{"fuzz"}
+	options.ExcludeTags = []string{} // "fuzz"
 	options.IncludeTags = []string{}
 	options.IncludeIds = []string{}
 	options.ExcludeIds = []string{}

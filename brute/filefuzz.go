@@ -205,8 +205,8 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	// 异步接收结果
 	var async_data = make(chan *FuzzData, util.Fuzzthreads*2)
 	var async_technologies = make(chan []string, util.Fuzzthreads*2)
-	// 字典长度的 70% 的错误
-	var MaxErrorTimes int32 = int32(float32(len(filedic)) * 0.7)
+	// 字典长度的 30% 的错误
+	var MaxErrorTimes int32 = int32(float32(len(filedic)) * 0.3)
 	if strings.HasPrefix(url404req.Protocol, "HTTP/2") || strings.HasPrefix(url404req.Protocol, "HTTP/3") {
 		MaxErrorTimes = int32(len(filedic))
 	}
