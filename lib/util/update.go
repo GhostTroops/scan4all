@@ -31,7 +31,7 @@ func UpdateScan4allVersionToLatest(verbose bool) error {
 		Command: command,
 		Store: &githubUpdateStore.Store{
 			Owner:   "hktalent",
-			Repo:    "scan4all",
+			Repo:    "Scan4all_Pro",
 			Version: Version,
 		},
 	}
