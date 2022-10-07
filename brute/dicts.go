@@ -17,7 +17,12 @@ var (
 	top100pass       = []string{}   // top 100 密码，用于 http爆破
 	weblogicuserpass = []UserPass{} // weblogic user pass 字典
 	filedic          = []string{}   // fuzz字典
+	SelfHd           = []string{}
 )
+
+// by waf
+//go:embed dicts/selfHd.txt
+var selfHds string
 
 // http 爆破user
 //go:embed dicts/httpuser.txt
@@ -66,6 +71,7 @@ var basicusers []string
 
 func init() {
 	util.RegInitFunc(func() {
+		SelfHd = append(SelfHd, CvtLines(util.GetVal4File("SelfHd", selfHds))...)
 		tomcatuserpass = CvtUps(util.GetVal4File("tomcatuserpass", szTomcatuserpass))
 		jbossuserpass = CvtUps(util.GetVal4File("jbossuserpass", szJbossuserpass))
 		weblogicuserpass = CvtUps(util.GetVal4File("weblogicuserpass", szWeblogicuserpass))
@@ -74,4 +80,14 @@ func init() {
 		basicusers = strings.Split(strings.TrimSpace(util.GetVal4File("httpuser", httpass)), "\n")
 		top100pass = append(top100pass, strings.Split(strings.TrimSpace(util.GetVal4File("httpass", httpass)), "\n")...)
 	})
+}
+
+func ByWafHd(m1 *map[string]string) *map[string]string {
+	if util.GetValAsBool("enableByWaf") {
+		sz127 := "127.0.0.1"
+		for _, k := range SelfHd {
+			(*m1)[k] = sz127
+		}
+	}
+	return m1
 }

@@ -44,7 +44,7 @@ func InitGeneral() int {
 			ret = append(ret, "/"+prefix[i]+suffix[j])
 		}
 	}
-	eableFileFuzz = !util.GetValAsBool("enablFileFuzz")
+	eableFileFuzz = !util.GetValAsBool("enableFileFuzz")
 	return len(ret)
 }
 
@@ -62,6 +62,9 @@ func reqPage(u string) (*util.Page, *util.Response, error) {
 	header["Accept"] = "*/*"
 	header["Connection"] = "close"
 	header["Pragma"] = "no-cache"
+	// by WAF
+	header = *ByWafHd(&header)
+
 	// fuzz check Shiro CVE_2016_4437
 	header["Cookie"] = "JSESSIONID=" + RandStr4Cookie + ";rememberMe=123"
 	if req, err := util.HttpRequset(u, method, "", false, header); err == nil && nil != req && nil != req.Header {

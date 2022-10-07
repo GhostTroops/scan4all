@@ -74,7 +74,7 @@
   "priorityNmap": true,
   "noScan": false,
   "enableMultNuclei": false,
-  "enableNuclei": false,
+  "enableNuclei": true,
   "nuclei": {
     "Severities":  [5,4,3],
     "RateLimit": 150,
@@ -87,9 +87,10 @@
     "HeadlessTemplateThreads": 10,
     "ReportingConfig": "config/nuclei_esConfig.yaml"
   },
-  "enablDevDebug": true,
-  "enablEmbedYaml": true,
-  "enablFileFuzz": true,
+  "enableByWaf": true,
+  "enableDevDebug": true,
+  "enableEmbedYaml": true,
+  "enableFileFuzz": true,
   "httpx": {
     "Pipeline": false,
     "HTTP2Probe": false,

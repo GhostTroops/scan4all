@@ -35,7 +35,7 @@ func main() {
 	}
 
 	szTip := ""
-	if util.GetValAsBool("enablDevDebug") {
+	if util.GetValAsBool("enableDevDebug") {
 		// debug 优化时启用///////////////////////
 		go func() {
 			szTip = "Since you started http://127.0.0.1:6060/debug/pprof/ with -debug, close the program with: control + C"
