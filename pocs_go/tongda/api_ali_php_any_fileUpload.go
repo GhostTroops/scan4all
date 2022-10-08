@@ -1,7 +1,7 @@
 package tongda
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/ProScan4all/lib/util"
 )
 
 //version 通达 OA V11.8 api.ali.php 任意文件上传

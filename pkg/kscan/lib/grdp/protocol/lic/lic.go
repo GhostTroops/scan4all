@@ -3,7 +3,7 @@ package lic
 import (
 	"io"
 
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/core"
+	"github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp/core"
 )
 
 const (

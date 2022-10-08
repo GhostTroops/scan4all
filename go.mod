@@ -1,4 +1,4 @@
-module github.com/hktalent/scan4all
+module github.com/hktalent/ProScan4all
 
 go 1.18
 
@@ -93,7 +93,6 @@ require (
 	github.com/dgraph-io/badger v1.6.2
 	github.com/dlclark/regexp2 v1.7.0
 	github.com/emersion/go-message v0.16.0
-	github.com/fsnotify/fsnotify v1.5.4
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/go-routeros/routeros v0.0.0-20210123142807-2a44d57c6730
 	github.com/go-sql-driver/mysql v1.6.0
@@ -181,6 +180,7 @@ require (
 	github.com/emersion/go-textwrapper v0.0.0-20200911093747-65d896831594 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
 	github.com/fortytw2/leaktest v1.3.0 // indirect
+	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/getsentry/sentry-go v0.13.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.8.1 // indirect

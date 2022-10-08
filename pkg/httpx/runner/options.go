@@ -1,12 +1,12 @@
 package runner
 
 import (
-	"github.com/hktalent/scan4all/pkg/httpx/common/customheader"
-	"github.com/hktalent/scan4all/pkg/httpx/common/customlist"
-	customport "github.com/hktalent/scan4all/pkg/httpx/common/customports"
-	fileutilz "github.com/hktalent/scan4all/pkg/httpx/common/fileutil"
-	"github.com/hktalent/scan4all/pkg/httpx/common/slice"
-	"github.com/hktalent/scan4all/pkg/httpx/common/stringz"
+	"github.com/hktalent/ProScan4all/pkg/httpx/common/customheader"
+	"github.com/hktalent/ProScan4all/pkg/httpx/common/customlist"
+	customport "github.com/hktalent/ProScan4all/pkg/httpx/common/customports"
+	fileutilz "github.com/hktalent/ProScan4all/pkg/httpx/common/fileutil"
+	"github.com/hktalent/ProScan4all/pkg/httpx/common/slice"
+	"github.com/hktalent/ProScan4all/pkg/httpx/common/stringz"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goconfig"
 	"github.com/projectdiscovery/goflags"
@@ -27,6 +27,7 @@ const (
 	DefaultOutputDirectory = "output"
 )
 
+type NormalizedStringSlice []string
 type scanOptions struct {
 	Methods                   []string
 	StoreResponseDirectory    string
@@ -215,10 +216,10 @@ type Options struct {
 	Stream                    bool
 	SkipDedupe                bool
 	ProbeAllIPS               bool
-	Resolvers                 goflags.NormalizedStringSlice
+	Resolvers                 NormalizedStringSlice
 	Favicon                   bool
-	OutputFilterFavicon       goflags.NormalizedStringSlice
-	OutputMatchFavicon        goflags.NormalizedStringSlice
+	OutputFilterFavicon       NormalizedStringSlice
+	OutputMatchFavicon        NormalizedStringSlice
 	LeaveDefaultPorts         bool
 	OutputLinesCount          bool
 	OutputMatchLinesCount     string

@@ -8,11 +8,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/ammario/ipisp/v2"
-	"github.com/hktalent/scan4all/brute"
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg/fingerprint"
-	"github.com/hktalent/scan4all/pocs_go"
-	"github.com/hktalent/scan4all/pocs_yml"
+	"github.com/hktalent/ProScan4all/brute"
+	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/ProScan4all/pkg/fingerprint"
+	"github.com/hktalent/ProScan4all/pocs_go"
+	"github.com/hktalent/ProScan4all/pocs_yml"
 	"io"
 	"io/ioutil"
 	"log"
@@ -31,7 +31,7 @@ import (
 	"time"
 
 	"github.com/bluele/gcache"
-	"github.com/hktalent/scan4all/pkg/httpx/common/hashes"
+	"github.com/hktalent/ProScan4all/pkg/httpx/common/hashes"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/clistats"
@@ -40,12 +40,12 @@ import (
 	"github.com/projectdiscovery/stringsutil"
 	"github.com/projectdiscovery/urlutil"
 
-	customport "github.com/hktalent/scan4all/pkg/httpx/common/customports"
-	fileutilz "github.com/hktalent/scan4all/pkg/httpx/common/fileutil"
-	"github.com/hktalent/scan4all/pkg/httpx/common/httputilz"
-	"github.com/hktalent/scan4all/pkg/httpx/common/httpx"
-	"github.com/hktalent/scan4all/pkg/httpx/common/slice"
-	"github.com/hktalent/scan4all/pkg/httpx/common/stringz"
+	customport "github.com/hktalent/ProScan4all/pkg/httpx/common/customports"
+	fileutilz "github.com/hktalent/ProScan4all/pkg/httpx/common/fileutil"
+	"github.com/hktalent/ProScan4all/pkg/httpx/common/httputilz"
+	"github.com/hktalent/ProScan4all/pkg/httpx/common/httpx"
+	"github.com/hktalent/ProScan4all/pkg/httpx/common/slice"
+	"github.com/hktalent/ProScan4all/pkg/httpx/common/stringz"
 	// automatic fd max increase if running as root
 	_ "github.com/projectdiscovery/fdmax/autofdmax"
 	"github.com/projectdiscovery/fileutil"
@@ -859,7 +859,7 @@ retry:
 			return Result{Input: origInput}
 		}
 		domain = parts[0]
-		//util "github.com/hktalent/scan4all/pkg"
+		//util "github.com/hktalent/ProScan4all/pkg"
 		//util.Convert2Domains(domain)
 		customHost = parts[1]
 	}

@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/hktalent/ProScan4all/pkg/httpx/common/stringz"
 	"github.com/projectdiscovery/fileutil"
-	"github.com/hktalent/scan4all/pkg/httpx/common/stringz"
 )
 
 // HasStdin determines if the user has piped input

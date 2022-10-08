@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/ProScan4all/lib/util"
 	"log"
 	"net/url"
 	"strings"

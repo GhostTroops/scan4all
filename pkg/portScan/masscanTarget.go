@@ -1,9 +1,9 @@
 package portScan
 
 import (
+	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
 	"github.com/hktalent/goSqlite_gorm/pkg/models"
-	"github.com/hktalent/scan4all/lib/util"
 	"log"
 	"strings"
 )

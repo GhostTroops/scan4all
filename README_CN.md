@@ -128,9 +128,9 @@ mkdir ~/MyWork/;cd ~/MyWork/;git clone  https://github.com/hktalent/log4j-scan
 
 # 如何安装
 download from
-<a href=https://github.com/hktalent/scan4all/releases>Releases</a>
+<a href=https://github.com/hktalent/ProScan4all/releases>Releases</a>
 ```bash
-go install github.com/hktalent/scan4all@2.6.9
+go install github.com/hktalent/ProScan4all@2.6.9
 scan4all -h
 ```
 # 如何使用
@@ -171,7 +171,7 @@ http://127.0.0.1:9200/nmap_index/_doc/_search?q=_id:192.168.0.111
 
 ```
 - 使用前请自行安装nmap
-<a href=https://github.com/hktalent/scan4all/discussions>使用帮助</a>
+<a href=https://github.com/hktalent/ProScan4all/discussions>使用帮助</a>
 ```bash
 export GOPRIVATE=github.com/hktalent
 go env |grep GOPRIVATE
@@ -204,7 +204,7 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 # Q & A
 - how use Cookie?
 - libpcap related question
-more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</a>
+more see: <a href=https://github.com/hktalent/ProScan4all/discussions>discussions</a>
 
 # 变更日志
 - 2022-10-03 Pro版本：
@@ -239,11 +239,11 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 # 交流群(微信、QQ、Tg)
 | Wechat | Or | QQchat | Or | Tg |
 | --- |--- |--- |--- |--- |
-|<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/wcq.JPG>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/qqc.jpg>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/tg.jpg>|
+|<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/wcq.JPG>||<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/qqc.jpg>||<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/tg.jpg>|
 
 
 ## 💖Star
-[![Stargazers over time](https://starchart.cc/hktalent/scan4all.svg)](https://starchart.cc/hktalent/scan4all)
+[![Stargazers over time](https://starchart.cc/hktalent/ProScan4all.svg)](https://starchart.cc/hktalent/ProScan4all)
 
 # Donation
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |

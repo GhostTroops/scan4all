@@ -3,8 +3,8 @@ package pdu
 import (
 	"bytes"
 
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/core"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/glog"
+	"github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp/core"
+	"github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp/glog"
 )
 
 /**
