@@ -30266,6 +30266,7 @@ phvayv.php
 phvayvv.php
 phymyadmin
 phymyadmin/
+/vendor/htmlawed/htmlawed/htmLawedTest.php
 physican/login.do
 /login.do
 phystech
