@@ -102,11 +102,9 @@ func (e *Engine) DoEvent(ed *models.EventData) {
 
 func (x1 *Engine) Running() {
 	// 异步启动一个线程处理检测，避免
-	util.Wg.Add(1)
 	go func() {
 		defer func() {
 			x1.Close()
-			util.Wg.Done()
 		}()
 		//nMax := 120 // 等xxx秒都没有消息进入就退出
 		//nCnt := 0
