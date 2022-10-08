@@ -6,7 +6,7 @@
 * 2、mkdir ~/MyWork;cd ~/MyWork
   * 2.1 config目录及相关配置文件
   下载release程序运行，首次运行非自动生成config目录及相关配置文件，或者：  
-  git clone http://github.com/hktalent/scan4all
+  git clone http://github.com/hktalent/ProScan4all
   
 * 3、cd ~/MyWork/scan4all
 * 4、运行下面的代码，自动获取docker，并启动docker服务，端口9200

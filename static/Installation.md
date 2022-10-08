@@ -2,7 +2,7 @@
 
 ```sh
 sudo apt install -y libpcap-dev golang git
-git clone https://github.com/hktalent/scan4all.git
+git clone https://github.com/hktalent/ProScan4all.git
 cd scan4all
 go build
 ```
@@ -25,7 +25,7 @@ brew install libpcap
 ```
 
 2.前往
-[https://github.com/hktalent/scan4all/releases/](https://github.com/hktalent/scan4all/releases/)
+[https://github.com/hktalent/ProScan4all/releases/](https://github.com/hktalent/ProScan4all/releases/)
 下载scan4all最新版运行:
 
 ## 运行时动态库版本问题

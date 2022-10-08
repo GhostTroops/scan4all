@@ -127,9 +127,9 @@ mkdir ~/MyWork/;cd ~/MyWork/;git clone https://github.com/hktalent/log4j-scan
 
 # how to install
 download from
-<a href=https://github.com/hktalent/scan4all/releases>Releases</a>
+<a href=https://github.com/hktalent/ProScan4all/releases>Releases</a>
 ```bash
-go install github.com/hktalent/scan4all@2.6.9
+go install github.com/hktalent/ProScan4all@2.6.9
 scan4all -h
 ````
 # how to use
@@ -146,7 +146,7 @@ where 92.168.0.111 is the target to query
 
 ````
 - Please install nmap by yourself before use
-  <a href=https://github.com/hktalent/scan4all/discussions>Using Help</a>
+  <a href=https://github.com/hktalent/ProScan4all/discussions>Using Help</a>
 ```bash
 go build
 # Precise scan szUrl list UrlPrecise=true
@@ -169,7 +169,7 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 - how use Cookie?
 - libpcap related question
 
-more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</a>
+more see: <a href=https://github.com/hktalent/ProScan4all/discussions>discussions</a>
 
 # Changelog
 - 2022-07-28 Added substr and aes_cbc dsl helper by me <a href="https://github.com/projectdiscovery/nuclei/releases/tag/v2.7.7">nuclei v2.7.7</a>
@@ -193,11 +193,11 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 # Communication group (WeChat, QQ，Tg)
 | Wechat | Or | QQchat | Or | Tg |
 | --- |--- |--- |--- |--- |
-|<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/wcq.JPG>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/qqc.jpg>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/tg.jpg>|
+|<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/wcq.JPG>||<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/qqc.jpg>||<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/tg.jpg>|
 
 
 ## 💖Star
-[![Stargazers over time](https://starchart.cc/hktalent/scan4all.svg)](https://starchart.cc/hktalent/scan4all)
+[![Stargazers over time](https://starchart.cc/hktalent/ProScan4all.svg)](https://starchart.cc/hktalent/ProScan4all)
 
 # Donation
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |

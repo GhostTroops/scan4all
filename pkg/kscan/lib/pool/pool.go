@@ -3,9 +3,9 @@ package pool
 import (
 	"errors"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/misc"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/smap"
+	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/ProScan4all/pkg/kscan/lib/misc"
+	"github.com/hktalent/ProScan4all/pkg/kscan/lib/smap"
 	"io"
 	"log"
 	"sync"

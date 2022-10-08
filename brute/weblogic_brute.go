@@ -2,7 +2,7 @@ package brute
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/ProScan4all/lib/util"
 )
 
 // weblogic默认的登陆尝试次数为5次，

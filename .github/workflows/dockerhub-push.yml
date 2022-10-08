@@ -17,7 +17,7 @@ jobs:
       - name: Get Github tag
         id: meta
         run: |
-          echo "::set-output name=tag::$(curl --silent "https://api.github.com/repos/hktalent/scan4all/releases/latest" | jq -r .tag_name)"
+          echo "::set-output name=tag::$(curl --silent "https://api.github.com/repos/hktalent/ProScan4all/releases/latest" | jq -r .tag_name)"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -37,4 +37,4 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: hktalent/scan4all:latest,hktalent/scan4all:${{ steps.meta.outputs.tag }}
+          tags: hktalent/ProScan4all:latest,hktalent/ProScan4all:${{ steps.meta.outputs.tag }}

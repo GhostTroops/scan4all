@@ -1,10 +1,10 @@
 package engine
 
 import (
+	"github.com/hktalent/ProScan4all/pkg/portScan"
 	"github.com/hktalent/goSqlite_gorm/lib"
 	. "github.com/hktalent/goSqlite_gorm/lib/scan/Const"
 	"github.com/hktalent/goSqlite_gorm/pkg/models"
-	"github.com/hktalent/scan4all/pkg/portScan"
 )
 
 // 扫描任务分发
