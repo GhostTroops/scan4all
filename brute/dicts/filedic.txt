@@ -1,6 +1,7 @@
 !
 !.gitignore
 !.htaccess
+/vendor/htmlawed/htmlawed/htmLawedTest.php
 !.htpasswd
 !_archives
 !_images
