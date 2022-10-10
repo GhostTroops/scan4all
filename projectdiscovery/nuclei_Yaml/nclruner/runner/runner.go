@@ -6,6 +6,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/blang/semver"
+	"github.com/logrusorgru/aurora"
+	"github.com/pkg/errors"
+	"github.com/projectdiscovery/nuclei/v2/pkg/utils/ratelimit"
+	"go.uber.org/atomic"
 	"io/ioutil"
 	"net/http"
 	_ "net/http/pprof"
@@ -14,13 +19,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blang/semver"
-	"github.com/logrusorgru/aurora"
-	"github.com/pkg/errors"
-	"go.uber.org/atomic"
-	"go.uber.org/ratelimit"
-
-	"github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/colorizer"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog"
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog/config"
@@ -50,6 +48,8 @@ import (
 	yamlwrapper "github.com/projectdiscovery/nuclei/v2/pkg/utils/yaml"
 	"github.com/projectdiscovery/retryablehttp-go"
 	"github.com/projectdiscovery/stringsutil"
+
+	"github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/colorizer"
 )
 
 // Runner is a client for running the enumeration process.
@@ -65,7 +65,7 @@ type Runner struct {
 	issuesClient      *reporting.Client
 	hmapInputProvider *hybrid.Input
 	browser           *engine.Browser
-	ratelimiter       ratelimit.Limiter
+	ratelimiter       *ratelimit.Limiter
 	hostErrors        hosterrorscache.CacheInterface
 	resumeCfg         *types.ResumeCfg
 	pprofServer       *http.Server
@@ -243,11 +243,13 @@ func New(options *types.Options) (*Runner, error) {
 	}
 
 	if options.RateLimitMinute > 0 {
-		runner.ratelimiter = ratelimit.New(options.RateLimitMinute, ratelimit.Per(60*time.Second))
+		//runner.ratelimiter = ratelimit.New(options.RateLimitMinute, ratelimit.Per(60*time.Second))
+		runner.ratelimiter = ratelimit.New(context.Background(), options.RateLimitMinute, time.Minute)
 	} else if options.RateLimit > 0 {
-		runner.ratelimiter = ratelimit.New(options.RateLimit)
+		//runner.ratelimiter = ratelimit.New(options.RateLimit)
+		runner.ratelimiter = ratelimit.New(context.Background(), options.RateLimit, time.Second)
 	} else {
-		runner.ratelimiter = ratelimit.NewUnlimited()
+		runner.ratelimiter = ratelimit.NewUnlimited(context.Background())
 	}
 	return runner, nil
 }

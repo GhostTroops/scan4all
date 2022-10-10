@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"git.mills.io/prologic/smtpd"
@@ -83,6 +84,8 @@ func (h *SMTPServer) ListenAndServe(tlsConfig *tls.Config, smtpAlive, smtpsAlive
 
 // defaultHandler is a handler for default collaborator requests
 func (h *SMTPServer) defaultHandler(remoteAddr net.Addr, from string, to []string, data []byte) error {
+	atomic.AddUint64(&h.options.Stats.Smtp, 1)
+
 	var uniqueID, fullID string
 
 	dataString := string(data)

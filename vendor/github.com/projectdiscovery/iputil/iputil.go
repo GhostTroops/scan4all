@@ -10,8 +10,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/projectdiscovery/mapcidr"
+	"github.com/projectdiscovery/stringsutil"
+	"go.uber.org/multierr"
 )
 
 // IsIP checks if a string is either IP version 4 or 6. Alias for `net.ParseIP`
@@ -28,15 +29,45 @@ func IsPort(str string) bool {
 }
 
 // IsIPv4 checks if the string is an IP version 4.
-func IsIPv4(str string) bool {
-	ip := net.ParseIP(str)
-	return ip != nil && strings.Contains(str, ".")
+func IsIPv4(ips ...interface{}) bool {
+	for _, ip := range ips {
+		switch ipv := ip.(type) {
+		case string:
+			parsedIP := net.ParseIP(ipv)
+			isIP4 := parsedIP != nil && parsedIP.To4() != nil && stringsutil.ContainsAny(ipv, ".")
+			if !isIP4 {
+				return false
+			}
+		case net.IP:
+			isIP4 := ipv != nil && ipv.To4() != nil && stringsutil.ContainsAny(ipv.String(), ".")
+			if !isIP4 {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 // IsIPv6 checks if the string is an IP version 6.
-func IsIPv6(str string) bool {
-	ip := net.ParseIP(str)
-	return ip != nil && strings.Contains(str, ":")
+func IsIPv6(ips ...interface{}) bool {
+	for _, ip := range ips {
+		switch ipv := ip.(type) {
+		case string:
+			parsedIP := net.ParseIP(ipv)
+			isIP6 := parsedIP != nil && parsedIP.To16() != nil && stringsutil.ContainsAny(ipv, ":")
+			if !isIP6 {
+				return false
+			}
+		case net.IP:
+			isIP6 := ipv != nil && ipv.To16() != nil && stringsutil.ContainsAny(ipv.String(), ":")
+			if !isIP6 {
+				return false
+			}
+		}
+	}
+
+	return true
 }
 
 // IsCIDR checks if the string is an valid CIDR notiation (IPV4 & IPV6)
@@ -63,13 +94,18 @@ func CountIPsInCIDR(includeBase, includeBroadcast bool, cidr string) int64 {
 
 // ToCidr converts a cidr string to net.IPNet pointer
 func ToCidr(item string) *net.IPNet {
-	if IsIP(item) {
+	if IsIPv4(item) {
 		item += "/32"
+	} else if IsIPv6(item) {
+		item += "/128"
 	}
 	if IsCIDR(item) {
 		_, ipnet, _ := net.ParseCIDR(item)
+		// a few ip4 might be expressed as ip6, therefore perform a double conversion
+		_, ipnet, _ = net.ParseCIDR(ipnet.String())
 		return ipnet
 	}
+
 	return nil
 }
 
@@ -171,7 +207,7 @@ func GetBindableAddress(port int, ips ...string) (string, error) {
 		// check if we can listen on tcp
 		l, err := net.Listen("tcp", ipPort)
 		if err != nil {
-			errs = multierror.Append(errs, err)
+			errs = multierr.Append(errs, err)
 			continue
 		}
 		l.Close()
@@ -182,7 +218,7 @@ func GetBindableAddress(port int, ips ...string) (string, error) {
 		// check if we can listen on udp
 		lu, err := net.ListenUDP("udp", &udpAddr)
 		if err != nil {
-			errs = multierror.Append(errs, err)
+			errs = multierr.Append(errs, err)
 			continue
 		}
 		lu.Close()

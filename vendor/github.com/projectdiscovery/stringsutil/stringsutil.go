@@ -8,30 +8,41 @@ import (
 // https://www.dotnetperls.com/between-before-after-go
 
 // Between extracts the string between a and b
-func Between(value string, a string, b string) string {
-	return Before(After(value, a), b)
+// returns value as is and error if a or b are not found
+func Between(value string, a string, b string) (string, error) {
+	after, err := After(value, a)
+	if err != nil {
+		return value, err
+	}
+	final, err := Before(after, b)
+	if err != nil {
+		return value, err
+	}
+	return final, nil
 }
 
 // Before extracts the string before a from value
-func Before(value string, a string) string {
+// returns value as is and error if a is not found
+func Before(value string, a string) (string, error) {
 	pos := strings.Index(value, a)
 	if pos == -1 {
-		return ""
+		return value, fmt.Errorf("%s not found in %s", a, value)
 	}
-	return value[0:pos]
+	return value[0:pos], nil
 }
 
 // After extracts the string after a from value
-func After(value string, a string) string {
+// returns value as is and error if a is not found
+func After(value string, a string) (string, error) {
 	pos := strings.Index(value, a)
 	if pos == -1 {
-		return ""
+		return value, fmt.Errorf("%s not found in %s", a, value)
 	}
 	adjustedPos := pos + len(a)
 	if adjustedPos >= len(value) {
-		return ""
+		return value, fmt.Errorf("After: %s is not long enough to contain %s", value, a)
 	}
-	return value[adjustedPos:]
+	return value[adjustedPos:], nil
 }
 
 // HasPrefixAny checks if the string starts with any specified prefix

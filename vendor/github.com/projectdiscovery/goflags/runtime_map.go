@@ -35,7 +35,11 @@ func (runtimeMap *RuntimeMap) Set(value string) error {
 	if runtimeMap.kv == nil {
 		runtimeMap.kv = make(map[string]interface{})
 	}
-	k, v := stringsutil.Before(value, kvSep), stringsutil.After(value, kvSep)
+	var k, v string
+	if idxSep := strings.Index(value, kvSep); idxSep > 0 {
+		k = value[:idxSep]
+		v = value[idxSep+1:]
+	}
 	// note:
 	// - inserting multiple times the same key will override the previous value
 	// - empty string is legitimate value

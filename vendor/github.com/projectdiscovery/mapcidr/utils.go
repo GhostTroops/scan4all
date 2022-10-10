@@ -1,6 +1,8 @@
 package mapcidr
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"net"
 	"strings"
 )
@@ -60,4 +62,12 @@ func IsBaseIP(IP string) bool {
 func IsBroadcastIP(IP string) bool {
 	ipParsed := net.ParseIP(IP)
 	return ipParsed != nil && ipParsed.To4() != nil && strings.HasSuffix(IP, ".255")
+}
+
+func RandomHex(n int, suffix []byte) (string, error) {
+	bytes := make([]byte, n)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(append(bytes, suffix...)), nil
 }

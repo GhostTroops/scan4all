@@ -103,7 +103,7 @@ github.com/apex/log
 # github.com/asaskevich/govalidator v0.0.0-20210307081110-f21760c49a8d
 ## explicit; go 1.13
 github.com/asaskevich/govalidator
-# github.com/aws/aws-sdk-go v1.44.100
+# github.com/aws/aws-sdk-go v1.44.113
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -382,7 +382,7 @@ github.com/go-playground/universal-translator
 # github.com/go-playground/validator/v10 v10.11.1
 ## explicit; go 1.13
 github.com/go-playground/validator/v10
-# github.com/go-rod/rod v0.109.3
+# github.com/go-rod/rod v0.111.0
 ## explicit; go 1.16
 github.com/go-rod/rod
 github.com/go-rod/rod/lib/assets
@@ -570,6 +570,9 @@ github.com/hashicorp/hcl/json/token
 # github.com/hbakhtiyor/strsim v0.0.0-20190107154042-4d2bbb273edf
 ## explicit
 github.com/hbakhtiyor/strsim
+# github.com/hdm/jarm-go v0.0.7
+## explicit; go 1.15
+github.com/hdm/jarm-go
 # github.com/hktalent/PipelineHttp v0.0.0-20221007051907-72402204b668
 ## explicit; go 1.18
 github.com/hktalent/PipelineHttp
@@ -690,7 +693,6 @@ github.com/klauspost/compress/fse
 github.com/klauspost/compress/huff0
 github.com/klauspost/compress/internal/cpuinfo
 github.com/klauspost/compress/internal/snapref
-github.com/klauspost/compress/zlib
 github.com/klauspost/compress/zstd
 github.com/klauspost/compress/zstd/internal/xxhash
 # github.com/klauspost/cpuid/v2 v2.1.1
@@ -748,6 +750,10 @@ github.com/lufia/plan9stats
 # github.com/lunixbochs/struc v0.0.0-20200707160740-784aaebc1d40
 ## explicit; go 1.12
 github.com/lunixbochs/struc
+# github.com/mackerelio/go-osstat v0.2.3
+## explicit; go 1.18
+github.com/mackerelio/go-osstat/cpu
+github.com/mackerelio/go-osstat/network
 # github.com/magiconair/properties v1.8.6
 ## explicit; go 1.13
 github.com/magiconair/properties
@@ -916,10 +922,10 @@ github.com/projectdiscovery/clistats
 # github.com/projectdiscovery/cryptoutil v1.0.0
 ## explicit; go 1.16
 github.com/projectdiscovery/cryptoutil
-# github.com/projectdiscovery/dnsx v1.1.0
+# github.com/projectdiscovery/dnsx v1.1.1
 ## explicit; go 1.17
 github.com/projectdiscovery/dnsx/libs/dnsx
-# github.com/projectdiscovery/fastdialer v0.0.16-0.20220609092737-7e3c7dcecf16
+# github.com/projectdiscovery/fastdialer v0.0.17
 ## explicit; go 1.14
 github.com/projectdiscovery/fastdialer/fastdialer
 # github.com/projectdiscovery/fdmax v0.0.3
@@ -938,7 +944,7 @@ github.com/projectdiscovery/folderutil
 # github.com/projectdiscovery/goconfig v0.0.0-20210804090219-f893ccd0c69c
 ## explicit; go 1.14
 github.com/projectdiscovery/goconfig
-# github.com/projectdiscovery/goflags v0.0.8-0.20220610073650-5d31a8c159e3
+# github.com/projectdiscovery/goflags v0.1.1
 ## explicit; go 1.17
 github.com/projectdiscovery/goflags
 # github.com/projectdiscovery/gologger v1.1.4
@@ -955,7 +961,7 @@ github.com/projectdiscovery/hmap/store/hybrid
 # github.com/projectdiscovery/httputil v0.0.0-20210913064028-815c8db933ff
 ## explicit; go 1.14
 github.com/projectdiscovery/httputil
-# github.com/projectdiscovery/interactsh v1.0.6
+# github.com/projectdiscovery/interactsh v1.0.7
 ## explicit; go 1.17
 github.com/projectdiscovery/interactsh/pkg/client
 github.com/projectdiscovery/interactsh/pkg/filewatcher
@@ -964,14 +970,14 @@ github.com/projectdiscovery/interactsh/pkg/server
 github.com/projectdiscovery/interactsh/pkg/server/acme
 github.com/projectdiscovery/interactsh/pkg/settings
 github.com/projectdiscovery/interactsh/pkg/storage
-# github.com/projectdiscovery/ipranger v0.0.3-0.20210831161617-ac80efae0961
+# github.com/projectdiscovery/ipranger v0.0.3
 ## explicit; go 1.14
 github.com/projectdiscovery/ipranger
-# github.com/projectdiscovery/iputil v0.0.0-20220620153941-036d511e4097
+# github.com/projectdiscovery/iputil v0.0.0-20220712175312-b9406f31cdd8
 ## explicit; go 1.14
 github.com/projectdiscovery/iputil
-# github.com/projectdiscovery/mapcidr v1.0.0
-## explicit; go 1.17
+# github.com/projectdiscovery/mapcidr v1.0.2
+## explicit; go 1.18
 github.com/projectdiscovery/mapcidr
 # github.com/projectdiscovery/networkpolicy v0.0.2-0.20220925181336-68b15b6cbe8c
 ## explicit; go 1.14
@@ -979,8 +985,8 @@ github.com/projectdiscovery/networkpolicy
 # github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220726130814-981d44a34f84
 ## explicit; go 1.16
 github.com/projectdiscovery/nuclei-updatecheck-api/client
-# github.com/projectdiscovery/nuclei/v2 v2.7.7
-## explicit; go 1.17
+# github.com/projectdiscovery/nuclei/v2 v2.7.8
+## explicit; go 1.18
 github.com/projectdiscovery/nuclei/v2/internal/colorizer
 github.com/projectdiscovery/nuclei/v2/pkg/catalog
 github.com/projectdiscovery/nuclei/v2/pkg/catalog/config
@@ -1004,6 +1010,7 @@ github.com/projectdiscovery/nuclei/v2/pkg/projectfile
 github.com/projectdiscovery/nuclei/v2/pkg/protocols
 github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/automaticscan
 github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/compare
+github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/contextargs
 github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/executer
 github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/expressions
 github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/generators
@@ -1054,6 +1061,7 @@ github.com/projectdiscovery/nuclei/v2/pkg/templates/cache
 github.com/projectdiscovery/nuclei/v2/pkg/templates/types
 github.com/projectdiscovery/nuclei/v2/pkg/types
 github.com/projectdiscovery/nuclei/v2/pkg/utils
+github.com/projectdiscovery/nuclei/v2/pkg/utils/ratelimit
 github.com/projectdiscovery/nuclei/v2/pkg/utils/stats
 github.com/projectdiscovery/nuclei/v2/pkg/utils/yaml
 github.com/projectdiscovery/nuclei/v2/pkg/workflows
@@ -1066,7 +1074,7 @@ github.com/projectdiscovery/rawhttp/proxy
 # github.com/projectdiscovery/reflectutil v0.0.0-20210804085554-4d90952bf92f
 ## explicit; go 1.16
 github.com/projectdiscovery/reflectutil
-# github.com/projectdiscovery/retryabledns v1.0.13
+# github.com/projectdiscovery/retryabledns v1.0.15
 ## explicit; go 1.14
 github.com/projectdiscovery/retryabledns
 github.com/projectdiscovery/retryabledns/doh
@@ -1077,10 +1085,10 @@ github.com/projectdiscovery/retryablehttp-go
 # github.com/projectdiscovery/sliceutil v0.0.0-20220925163201-df5373fb648e
 ## explicit; go 1.16
 github.com/projectdiscovery/sliceutil
-# github.com/projectdiscovery/stringsutil v0.0.0-20220712170325-48c50c332cb4
+# github.com/projectdiscovery/stringsutil v0.0.1
 ## explicit; go 1.16
 github.com/projectdiscovery/stringsutil
-# github.com/projectdiscovery/subfinder/v2 v2.5.2
+# github.com/projectdiscovery/subfinder/v2 v2.5.3
 ## explicit; go 1.17
 github.com/projectdiscovery/subfinder/v2/pkg/passive
 github.com/projectdiscovery/subfinder/v2/pkg/resolve
@@ -1119,8 +1127,21 @@ github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatcrowd
 github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/threatminer
 github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/virustotal
 github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/waybackarchive
+github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/whoisxmlapi
 github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeye
 github.com/projectdiscovery/subfinder/v2/pkg/subscraping/sources/zoomeyeapi
+# github.com/projectdiscovery/tlsx v0.0.8
+## explicit; go 1.18
+github.com/projectdiscovery/tlsx/pkg/connpool
+github.com/projectdiscovery/tlsx/pkg/output/stats
+github.com/projectdiscovery/tlsx/pkg/tlsx
+github.com/projectdiscovery/tlsx/pkg/tlsx/auto
+github.com/projectdiscovery/tlsx/pkg/tlsx/clients
+github.com/projectdiscovery/tlsx/pkg/tlsx/jarm
+github.com/projectdiscovery/tlsx/pkg/tlsx/openssl
+github.com/projectdiscovery/tlsx/pkg/tlsx/tls
+github.com/projectdiscovery/tlsx/pkg/tlsx/ztls
+github.com/projectdiscovery/tlsx/pkg/tlsx/ztls/ja3
 # github.com/projectdiscovery/uncover v0.0.5
 ## explicit; go 1.17
 github.com/projectdiscovery/uncover/runner
@@ -1132,7 +1153,7 @@ github.com/projectdiscovery/uncover/uncover/agent/shodanidb
 # github.com/projectdiscovery/urlutil v0.0.0-20220606114420-c8511bedff3f
 ## explicit; go 1.16
 github.com/projectdiscovery/urlutil
-# github.com/projectdiscovery/wappalyzergo v0.0.59
+# github.com/projectdiscovery/wappalyzergo v0.0.62
 ## explicit; go 1.16
 github.com/projectdiscovery/wappalyzergo
 # github.com/projectdiscovery/yamldoc-go v1.0.3-0.20211126104922-00d2c6bb43b6
@@ -1187,6 +1208,13 @@ github.com/simonnilsson/ask
 # github.com/sirupsen/logrus v1.9.0
 ## explicit; go 1.13
 github.com/sirupsen/logrus
+# github.com/spacemonkeygo/openssl v0.0.0-20181017203307-c2dcc5cca94a
+## explicit
+github.com/spacemonkeygo/openssl
+github.com/spacemonkeygo/openssl/utils
+# github.com/spacemonkeygo/spacelog v0.0.0-20180420211403-2296661a0572
+## explicit
+github.com/spacemonkeygo/spacelog
 # github.com/spaolacci/murmur3 v1.1.0
 ## explicit
 github.com/spaolacci/murmur3
@@ -1437,6 +1465,7 @@ golang.org/x/crypto/ssh/terminal
 # golang.org/x/exp v0.0.0-20221006183845-316c7553db56
 ## explicit; go 1.18
 golang.org/x/exp/constraints
+golang.org/x/exp/maps
 golang.org/x/exp/rand
 # golang.org/x/mod v0.6.0-dev.0.20221005201717-2666ed6287c1
 ## explicit; go 1.17

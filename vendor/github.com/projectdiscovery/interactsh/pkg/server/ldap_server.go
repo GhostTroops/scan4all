@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	ldap "github.com/Mzack9999/ldapserver"
@@ -70,6 +71,8 @@ func (ldapServer *LDAPServer) ListenAndServe(tlsConfig *tls.Config, ldapAlive ch
 
 // handleBind is a handler for bind requests
 func (ldapServer *LDAPServer) handleBind(w ldap.ResponseWriter, m *ldap.Message) {
+	atomic.AddUint64(&ldapServer.options.Stats.Ldap, 1)
+
 	r := m.GetBindRequest()
 	res := ldap.NewBindResponse(ldap.LDAPResultSuccess)
 	var message strings.Builder
@@ -89,6 +92,8 @@ func (ldapServer *LDAPServer) handleBind(w ldap.ResponseWriter, m *ldap.Message)
 
 // handleSearch is a handler for search requests
 func (ldapServer *LDAPServer) handleSearch(w ldap.ResponseWriter, m *ldap.Message) {
+	atomic.AddUint64(&ldapServer.options.Stats.Ldap, 1)
+
 	var uniqueID, fullID string
 
 	host := m.Client.Addr().String()
@@ -167,6 +172,8 @@ func (ldapServer *LDAPServer) handleInteraction(uniqueID, fullID, reqString, hos
 
 // handleAbandon is a handler for abandon requests
 func (ldapServer *LDAPServer) handleAbandon(w ldap.ResponseWriter, m *ldap.Message) {
+	atomic.AddUint64(&ldapServer.options.Stats.Ldap, 1)
+
 	r := m.GetAbandonRequest()
 	var message strings.Builder
 	message.WriteString("Type=Abandon\n")
@@ -185,6 +192,8 @@ func (ldapServer *LDAPServer) handleAbandon(w ldap.ResponseWriter, m *ldap.Messa
 
 // handleNotFound is a handler for not matched routes requests
 func (ldapServer *LDAPServer) handleNotFound(w ldap.ResponseWriter, m *ldap.Message) {
+	atomic.AddUint64(&ldapServer.options.Stats.Ldap, 1)
+
 	var message strings.Builder
 	message.WriteString(fmt.Sprintf("Type=%s\n", m.String()))
 
@@ -209,6 +218,8 @@ func (ldapServer *LDAPServer) handleNotFound(w ldap.ResponseWriter, m *ldap.Mess
 
 // handleCompare is a handler for compare requests
 func (ldapServer *LDAPServer) handleCompare(w ldap.ResponseWriter, m *ldap.Message) {
+	atomic.AddUint64(&ldapServer.options.Stats.Ldap, 1)
+
 	r := m.GetCompareRequest()
 	var message strings.Builder
 	message.WriteString("Type=Compare\n")
@@ -228,6 +239,8 @@ func (ldapServer *LDAPServer) handleCompare(w ldap.ResponseWriter, m *ldap.Messa
 
 // handleCompare is a handler for compare requests
 func (ldapServer *LDAPServer) handleAdd(w ldap.ResponseWriter, m *ldap.Message) {
+	atomic.AddUint64(&ldapServer.options.Stats.Ldap, 1)
+
 	r := m.GetAddRequest()
 	var message strings.Builder
 	message.WriteString("Type=Add\n")
@@ -251,6 +264,8 @@ func (ldapServer *LDAPServer) handleAdd(w ldap.ResponseWriter, m *ldap.Message) 
 
 // handleDelete is a handler for delete requests
 func (ldapServer *LDAPServer) handleDelete(w ldap.ResponseWriter, m *ldap.Message) {
+	atomic.AddUint64(&ldapServer.options.Stats.Ldap, 1)
+
 	r := m.GetCompareRequest()
 	var message strings.Builder
 	message.WriteString("Type=Delete\n")
@@ -269,6 +284,8 @@ func (ldapServer *LDAPServer) handleDelete(w ldap.ResponseWriter, m *ldap.Messag
 
 // handleModify is a handler for delete requests
 func (ldapServer *LDAPServer) handleModify(w ldap.ResponseWriter, m *ldap.Message) {
+	atomic.AddUint64(&ldapServer.options.Stats.Ldap, 1)
+
 	r := m.GetModifyRequest()
 	var message strings.Builder
 	message.WriteString("Type=Modify\n")
@@ -306,6 +323,8 @@ func (ldapServer *LDAPServer) handleModify(w ldap.ResponseWriter, m *ldap.Messag
 
 // handleStartTLS is a handler for startTLS requests
 func (ldapServer *LDAPServer) handleStartTLS(w ldap.ResponseWriter, m *ldap.Message) {
+	atomic.AddUint64(&ldapServer.options.Stats.Ldap, 1)
+
 	var message strings.Builder
 	message.WriteString("Type=StartTLS\n")
 
@@ -335,6 +354,8 @@ func (ldapServer *LDAPServer) handleStartTLS(w ldap.ResponseWriter, m *ldap.Mess
 
 // handleWhoAmI is a handler for whoami requests
 func (ldapServer *LDAPServer) handleWhoAmI(w ldap.ResponseWriter, m *ldap.Message) {
+	atomic.AddUint64(&ldapServer.options.Stats.Ldap, 1)
+
 	var message strings.Builder
 	message.WriteString("Type=WhoAmI\n")
 
@@ -351,6 +372,8 @@ func (ldapServer *LDAPServer) handleWhoAmI(w ldap.ResponseWriter, m *ldap.Messag
 
 // handleExtended is a handler for generic extended requests
 func (ldapServer *LDAPServer) handleExtended(w ldap.ResponseWriter, m *ldap.Message) {
+	atomic.AddUint64(&ldapServer.options.Stats.Ldap, 1)
+
 	r := m.GetExtendedRequest()
 
 	var message strings.Builder

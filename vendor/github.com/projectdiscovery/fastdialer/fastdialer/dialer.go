@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/projectdiscovery/cryptoutil"
 	"github.com/projectdiscovery/hmap/store/hybrid"
@@ -15,6 +16,7 @@ import (
 	"github.com/projectdiscovery/networkpolicy"
 	retryabledns "github.com/projectdiscovery/retryabledns"
 	ztls "github.com/zmap/zcrypto/tls"
+	"golang.org/x/net/proxy"
 )
 
 // Dialer structure containing data information
@@ -25,6 +27,7 @@ type Dialer struct {
 	dialerHistory *hybrid.HybridMap
 	dialerTLSData *hybrid.HybridMap
 	dialer        *net.Dialer
+	proxyDialer   *proxy.Dialer
 	networkpolicy *networkpolicy.NetworkPolicy
 }
 
@@ -79,7 +82,10 @@ func NewDialer(options Options) (*Dialer, error) {
 		// nolint:errcheck // if they cannot be loaded it's not a hard failure
 		loadHostsFile(hm)
 	}
-	dnsclient := retryabledns.New(resolvers, options.MaxRetries)
+	dnsclient, err := retryabledns.New(resolvers, options.MaxRetries)
+	if err != nil {
+		return nil, err
+	}
 
 	var npOptions networkpolicy.Options
 	// Populate deny list if necessary
@@ -92,7 +98,7 @@ func NewDialer(options Options) (*Dialer, error) {
 		return nil, err
 	}
 
-	return &Dialer{dnsclient: dnsclient, hm: hm, dialerHistory: dialerHistory, dialerTLSData: dialerTLSData, dialer: dialer, options: &options, networkpolicy: np}, nil
+	return &Dialer{dnsclient: dnsclient, hm: hm, dialerHistory: dialerHistory, dialerTLSData: dialerTLSData, dialer: dialer, proxyDialer: options.ProxyDialer, options: &options, networkpolicy: np}, nil
 }
 
 // Dial function compatible with net/http
@@ -226,7 +232,32 @@ func (d *Dialer) dial(ctx context.Context, network, address string, shouldUseTLS
 			}
 			conn, err = ztls.DialWithDialer(d.dialer, network, hostPort, ztlsconfigCopy)
 		} else {
-			conn, err = d.dialer.DialContext(ctx, network, hostPort)
+			if d.proxyDialer != nil {
+				dialer := *d.proxyDialer
+				// timeout not working for socks5 proxy dialer
+				// tying to handle it here
+				connectionCh := make(chan net.Conn, 1)
+				errCh := make(chan error, 1)
+				go func() {
+					conn, err = dialer.Dial(network, hostPort)
+					if err != nil {
+						errCh <- err
+						return
+					}
+					connectionCh <- conn
+				}()
+				// using timer as time.After is not recovered gy GC
+				dialerTime := time.NewTimer(d.options.DialerTimeout)
+				defer dialerTime.Stop()
+				select {
+				case <-dialerTime.C:
+					return nil, fmt.Errorf("timeout after %v", d.options.DialerTimeout)
+				case conn = <-connectionCh:
+				case err = <-errCh:
+				}
+			} else {
+				conn, err = d.dialer.DialContext(ctx, network, hostPort)
+			}
 		}
 		if err == nil {
 			if d.options.WithDialerHistory && d.dialerHistory != nil {
@@ -234,6 +265,9 @@ func (d *Dialer) dial(ctx context.Context, network, address string, shouldUseTLS
 				if setErr != nil {
 					return nil, setErr
 				}
+			}
+			if d.options.OnDialCallback != nil {
+				d.options.OnDialCallback(hostname, ip)
 			}
 			if d.options.WithTLSData && shouldUseTLS {
 				if connTLS, ok := conn.(*tls.Conn); ok {
@@ -367,8 +401,10 @@ func (d *Dialer) GetDNSData(hostname string) (*retryabledns.DNSData, error) {
 		if data == nil {
 			return nil, ResolveHostError
 		}
-		b, _ := data.Marshal()
-		err = d.hm.Set(hostname, b)
+		if len(data.A)+len(data.AAAA) > 0 {
+			b, _ := data.Marshal()
+			err = d.hm.Set(hostname, b)
+		}
 		if err != nil {
 			return nil, err
 		}

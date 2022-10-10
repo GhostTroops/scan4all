@@ -11,7 +11,9 @@ import (
 	"net/http/httptest"
 	"net/http/httputil"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -71,7 +73,9 @@ func NewHTTPServer(options *Options) (*HTTPServer, error) {
 	router.Handle("/register", server.corsMiddleware(server.authMiddleware(http.HandlerFunc(server.registerHandler))))
 	router.Handle("/deregister", server.corsMiddleware(server.authMiddleware(http.HandlerFunc(server.deregisterHandler))))
 	router.Handle("/poll", server.corsMiddleware(server.authMiddleware(http.HandlerFunc(server.pollHandler))))
-	router.Handle("/metrics", server.corsMiddleware(server.authMiddleware(http.HandlerFunc(server.metricsHandler))))
+	if server.options.EnableMetrics {
+		router.Handle("/metrics", server.corsMiddleware(server.authMiddleware(http.HandlerFunc(server.metricsHandler))))
+	}
 	server.tlsserver = http.Server{Addr: options.ListenIP + fmt.Sprintf(":%d", options.HttpsPort), Handler: router, ErrorLog: log.New(&noopLogger{}, "", 0)}
 	server.nontlsserver = http.Server{Addr: options.ListenIP + fmt.Sprintf(":%d", options.HttpPort), Handler: router, ErrorLog: log.New(&noopLogger{}, "", 0)}
 	return server, nil
@@ -219,6 +223,8 @@ You should investigate the sites where these interactions were generated from, a
 
 // defaultHandler is a handler for default collaborator requests
 func (h *HTTPServer) defaultHandler(w http.ResponseWriter, req *http.Request) {
+	atomic.AddUint64(&h.options.Stats.Http, 1)
+
 	reflection := h.options.URLReflection(req.Host)
 	// use first domain as default (todo: should be extracted from certificate)
 	var domain string
@@ -255,7 +261,42 @@ func (h *HTTPServer) defaultHandler(w http.ResponseWriter, req *http.Request) {
 		fmt.Fprintf(w, "<data>%s</data>", reflection)
 		w.Header().Set("Content-Type", "application/xml")
 	} else {
+		if h.options.DynamicResp && len(req.URL.Query()) > 0 {
+			writeResponseFromDynamicRequest(w, req)
+			return
+		}
 		fmt.Fprintf(w, "<html><head></head><body>%s</body></html>", reflection)
+	}
+}
+
+// writeResponseFromDynamicRequest writes a response to http.ResponseWriter
+// based on dynamic data from HTTP URL Query parameters.
+//
+// The following parameters are supported -
+// 	body (response body)
+// 	header (response header)
+// 	status (response status code)
+// 	delay (response time)
+func writeResponseFromDynamicRequest(w http.ResponseWriter, req *http.Request) {
+	values := req.URL.Query()
+
+	if headers := values["header"]; len(headers) > 0 {
+		for _, header := range headers {
+			if headerParts := strings.SplitN(header, ":", 2); len(headerParts) == 2 {
+				w.Header().Add(headerParts[0], headerParts[1])
+			}
+		}
+	}
+	if delay := values.Get("delay"); delay != "" {
+		parsed, _ := strconv.Atoi(delay)
+		time.Sleep(time.Duration(parsed) * time.Second)
+	}
+	if status := values.Get("status"); status != "" {
+		parsed, _ := strconv.Atoi(status)
+		w.WriteHeader(parsed)
+	}
+	if body := values.Get("body"); body != "" {
+		_, _ = w.Write([]byte(body))
 	}
 }
 
@@ -271,6 +312,8 @@ type RegisterRequest struct {
 
 // registerHandler is a handler for client register requests
 func (h *HTTPServer) registerHandler(w http.ResponseWriter, req *http.Request) {
+	atomic.AddInt64(&h.options.Stats.Sessions, 1)
+
 	r := &RegisterRequest{}
 	if err := jsoniter.NewDecoder(req.Body).Decode(r); err != nil {
 		gologger.Warning().Msgf("Could not decode json body: %s\n", err)
@@ -297,6 +340,8 @@ type DeregisterRequest struct {
 
 // deregisterHandler is a handler for client deregister requests
 func (h *HTTPServer) deregisterHandler(w http.ResponseWriter, req *http.Request) {
+	atomic.AddInt64(&h.options.Stats.Sessions, -1)
+
 	r := &DeregisterRequest{}
 	if err := jsoniter.NewDecoder(req.Body).Decode(r); err != nil {
 		gologger.Warning().Msgf("Could not decode json body: %s\n", err)
@@ -407,9 +452,13 @@ func (h *HTTPServer) checkToken(req *http.Request) bool {
 
 // metricsHandler is a handler for /metrics endpoint
 func (h *HTTPServer) metricsHandler(w http.ResponseWriter, req *http.Request) {
-	metrics := h.options.Storage.GetCacheMetrics()
+	interactMetrics := h.options.Stats
+	interactMetrics.Cache = GetCacheMetrics(h.options)
+	interactMetrics.Cpu = GetCpuMetrics()
+	interactMetrics.Memory = GetMemoryMetrics()
+	interactMetrics.Network = GetNetworkMetrics()
 
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
-	_ = jsoniter.NewEncoder(w).Encode(metrics)
+	_ = jsoniter.NewEncoder(w).Encode(interactMetrics)
 }
