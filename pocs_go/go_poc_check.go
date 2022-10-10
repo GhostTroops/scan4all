@@ -98,6 +98,8 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if s, ok := vCenter.CheckVul003(finalURL); ok {
 				technologies = append(technologies, fmt.Sprintf("found vmware RCE,shell:%s", s))
 			}
+			vCenter.DoCheckCVE_2022_22954(finalURL)
+			vCenter.DoCheck(finalURL)
 		case "microsoft-ds":
 			key, err := ms.SmbGhostScan(hostname)
 			if nil == err && key {

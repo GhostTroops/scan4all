@@ -87,7 +87,6 @@ func DoSyncFunc(cbk func()) {
 func CheckShiroCookie(header *http.Header) int {
 	var SetCookieAll string
 	if nil != header {
-		//if hd, ok := header["Set-Cookie"]; ok {
 		for i := range (*header)["Set-Cookie"] {
 			SetCookieAll += (*header)["Set-Cookie"][i]
 		}

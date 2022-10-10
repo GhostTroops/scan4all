@@ -446,3 +446,27 @@ func Invoke(iFunc interface{}, args ...interface{}) {
 		in.Invoke(iFunc)
 	}
 }
+
+func DoGet(szUrl string, hd map[string]string) (resp *http.Response, err error) {
+	if c1 := GetClient(szUrl); nil != c1 {
+		c1.DoGetWithClient4SetHd(nil, szUrl, "GET", nil, func(resp1 *http.Response, err1 error, szU string) {
+			resp = resp1
+			err = err1
+		}, func() map[string]string {
+			return hd
+		}, false)
+	}
+	return resp, err
+}
+
+func DoPost(szUrl string, hd map[string]string, data io.Reader) (resp *http.Response, err error) {
+	if c1 := GetClient(szUrl); nil != c1 {
+		c1.DoGetWithClient4SetHd(nil, szUrl, "POST", data, func(resp1 *http.Response, err1 error, szU string) {
+			resp = resp1
+			err = err1
+		}, func() map[string]string {
+			return hd
+		}, false)
+	}
+	return resp, err
+}
