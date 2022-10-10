@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -75,6 +76,8 @@ func (h *FTPServer) Close() {
 }
 
 func (h *FTPServer) recordInteraction(remoteAddress, data string) {
+	atomic.AddUint64(&h.options.Stats.Ftp, 1)
+
 	if data == "" {
 		return
 	}

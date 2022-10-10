@@ -51,8 +51,12 @@ type Options struct {
 	Normalize  func(string) string
 }
 
-func toStringSlice(value string, options Options) ([]string, error) {
+// ToStringSlice converts a value to string slice based on options
+func ToStringSlice(value string, options Options) ([]string, error) {
 	var result []string
+	if options.IsEmpty == nil && options.IsFromFile == nil && options.Normalize == nil {
+		return []string{value}, nil
+	}
 
 	addPartToResult := func(part string) {
 		if !options.IsEmpty(part) {
@@ -103,6 +107,10 @@ func toStringSlice(value string, options Options) ([]string, error) {
 
 func isEmpty(s string) bool {
 	return strings.TrimSpace(s) == ""
+}
+
+func isFromFile(_ string) bool {
+	return true
 }
 
 func normalizeTrailingParts(s string) string {

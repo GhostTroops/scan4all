@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
@@ -83,9 +84,14 @@ func (h *SMBServer) ListenAndServe(smbAlive chan bool) error {
 	// This fetches the content at each change.
 	go func() {
 		for data := range ch {
+			atomic.AddUint64(&h.options.Stats.Smb, 1)
 			for searchTerm, extractAfter := range smbMonitorList {
 				if strings.Contains(data, searchTerm) {
-					smbData := stringsutil.After(data, extractAfter)
+					smbData, err := stringsutil.After(data, extractAfter)
+					if err != nil {
+						gologger.Warning().Msgf("Could not get smb interaction: %s\n", err)
+						continue
+					}
 
 					// Correlation id doesn't apply here, we skip encryption
 					interaction := &Interaction{

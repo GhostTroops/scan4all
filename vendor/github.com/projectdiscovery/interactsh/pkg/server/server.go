@@ -60,7 +60,7 @@ type Options struct {
 	// Hostmaster is the hostmaster email for the server.
 	Hostmasters []string
 	// Storage is a storage for interaction data storage
-	Storage *storage.Storage
+	Storage storage.Storage
 	// Auth requires client to authenticate
 	Auth bool
 	// HTTPIndex is the http index file for server
@@ -85,12 +85,23 @@ type Options struct {
 	CertificatePath string
 	// Private Key Path
 	PrivateKeyPath string
+	// CustomRecords is a file containing custom DNS records
+	CustomRecords string
 	// HTTP header containing origin IP
 	OriginIPHeader string
 	// Version is the version of interactsh server
 	Version string
+	// DiskStorage enables storing interactions on disk
+	DiskStorage bool
+	// DiskStoragePath defines the disk storage location
+	DiskStoragePath string
+	// DynamicResp enables dynamic HTTP response
+	DynamicResp bool
+	// EnableMetrics enables metrics endpoint
+	EnableMetrics bool
 
 	ACMEStore *acme.Provider
+	Stats     *Metrics
 }
 
 func (options *Options) GetIdLength() int {

@@ -19,3 +19,10 @@ archives:
       format_overrides:
           - goos: windows
             format: zip
+
+announce:
+  slack:
+    enabled: true
+    channel: '#release'
+    username: GoReleaser
+    message_template: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'

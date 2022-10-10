@@ -11,6 +11,7 @@ import (
 	runner2 "github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
 	"github.com/hktalent/ProScan4all/webScan"
 	"github.com/projectdiscovery/fileutil"
+	"github.com/projectdiscovery/iputil"
 	"github.com/projectdiscovery/retryablehttp-go"
 	"log"
 	"net"
@@ -31,7 +32,6 @@ import (
 	"github.com/projectdiscovery/clistats"
 	"github.com/projectdiscovery/dnsx/libs/dnsx"
 	"github.com/projectdiscovery/gologger"
-	"github.com/projectdiscovery/ipranger"
 	"github.com/projectdiscovery/mapcidr"
 	"github.com/projectdiscovery/uncover/uncover/agent/shodanidb"
 	"github.com/remeh/sizedwaitgroup"
@@ -339,7 +339,7 @@ func (r *Runner) RunEnumeration() error {
 		// shrinks the ips to the minimum amount of cidr
 		var targets []*net.IPNet
 		r.scanner.IPRanger.Hosts.Scan(func(k, v []byte) error {
-			targets = append(targets, ipranger.ToCidr(string(k)))
+			targets = append(targets, iputil.ToCidr(string(k)))
 			return nil
 		})
 		targets, _ = mapcidr.CoalesceCIDRs(targets)
@@ -589,6 +589,7 @@ func (r *Runner) handleOutput() {
 	// ports to the output file.
 	if r.options.Output != "" {
 		output = r.options.Output
+		util.Output = output
 
 		// create path if not existing
 		outputFolder := filepath.Dir(output)

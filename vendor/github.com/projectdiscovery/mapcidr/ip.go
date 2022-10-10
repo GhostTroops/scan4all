@@ -5,12 +5,17 @@ package mapcidr
 import (
 	"bytes"
 	"encoding/binary"
+	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 	"net"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/projectdiscovery/stringsutil"
 )
 
 const (
@@ -866,4 +871,190 @@ func ToIP4(host string) (string, error) {
 // FmtIP4MappedIP6 prints an ip4-mapped as ip6 with ip6 format
 func FmtIP4MappedIP6(ip6 net.IP) string {
 	return fmt.Sprintf("00:00:00:00:00:ffff:%02x%02x:%02x%02x", ip6[12], ip6[13], ip6[14], ip6[15])
+}
+
+func FmtIP4MappedIP6Short(ip6 net.IP) string {
+	return fmt.Sprintf("::ffff:%02x%02x:%02x%02x", ip6[12], ip6[13], ip6[14], ip6[15])
+}
+
+func FmtIp6(ip net.IP, short bool) (string, error) {
+	// check if it's ip6
+	if ip6 := ip.To16(); ip6 != nil {
+		// check if it's ip4, then return ip4-mapped-ip6
+		if ip.To4() != nil {
+			if short {
+				return FmtIP4MappedIP6Short(ip6), nil
+			}
+			return FmtIP4MappedIP6(ip6), nil
+		}
+		// otherwise return ip6 directly
+		return ip6.String(), nil
+	}
+	return "", fmt.Errorf("%s can't be expressed as ipv6", ip.String())
+}
+
+func FixedPad(ip net.IP, padding int) string {
+	parts := strings.Split(ip.String(), ".")
+	var format bytes.Buffer
+	format.WriteString("%#0" + fmt.Sprint(padding) + "s")
+	format.WriteString(".%#0" + fmt.Sprint(padding) + "s")
+	format.WriteString(".%#0" + fmt.Sprint(padding) + "s")
+	format.WriteString(".%#0" + fmt.Sprint(padding) + "s")
+	return fmt.Sprintf(format.String(), parts[0], parts[1], parts[2], parts[3])
+}
+
+func IncrementalPad(ip net.IP, padding int) []string {
+	parts := strings.Split(ip.String(), ".")
+	var ips []string
+	for p1 := 0; p1 < padding; p1++ {
+		for p2 := 0; p2 < padding; p2++ {
+			for p3 := 0; p3 < padding; p3++ {
+				for p4 := 0; p4 < padding; p4++ {
+					var format bytes.Buffer
+					format.WriteString("%#0" + fmt.Sprint(p1) + "s")
+					format.WriteString(".%#0" + fmt.Sprint(p2) + "s")
+					format.WriteString(".%#0" + fmt.Sprint(p3) + "s")
+					format.WriteString(".%#0" + fmt.Sprint(p4) + "s")
+					alteredIP := fmt.Sprintf(format.String(), parts[0], parts[1], parts[2], parts[3])
+					ips = append(ips, alteredIP)
+				}
+			}
+		}
+	}
+	return ips
+}
+
+func AlterIP(ip string, formats []string, zeroPadN int, zeroPadPermutation bool) []string {
+	var alteredIPs []string
+
+	for _, format := range formats {
+		standardIP := net.ParseIP(ip)
+		switch format {
+		case "1":
+			// Dotted-decimal notation
+			// standard formatting x.x.x.x or xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx
+			alteredIPs = append(alteredIPs, standardIP.String())
+		case "2":
+			// 0-optimized dotted-decimal notation
+			// the 0 value segments of an IP address can be ommitted (eg. 127.0.0.1 => 127.1)
+			// regex for zeroes with dot 0000.
+			var reZeroesWithDot = regexp.MustCompile(`(?m)[0]+\.`)
+			// regex for .0000
+			var reDotWithZeroes = regexp.MustCompile(`(?m)\.[0^]+$`)
+			// suppress 0000.
+			alteredIP := reZeroesWithDot.ReplaceAllString(standardIP.String(), "")
+			// suppress .0000
+			alteredIP = reDotWithZeroes.ReplaceAllString(alteredIP, "")
+			alteredIPs = append(alteredIPs, alteredIP)
+		case "3":
+			// Octal notation (leading zeroes are required):
+			// eg: 127.0.0.1 => 0177.0.0.01
+			alteredIP := fmt.Sprintf("%#04o.%#o.%#o.%#o", standardIP[12], standardIP[13], standardIP[14], standardIP[15])
+			alteredIPs = append(alteredIPs, alteredIP)
+		case "4":
+			// Hexadecimal notation
+			// 127.0.0.1 => 0x7f.0x0.0x0.0x1
+			// 127.0.0.1 => 0x7f000001
+			// 127.0.0.1 => 0xaaaaaaaaaaaaaaaa7f000001 (random prefix)
+			alteredIPWithDots := fmt.Sprintf("%#x.%#x.%#x.%#x", standardIP[12], standardIP[13], standardIP[14], standardIP[15])
+			alteredIPWithZeroX := fmt.Sprintf("0x%s", hex.EncodeToString(standardIP[12:]))
+			alteredIPWithRandomPrefixHex, _ := RandomHex(5, standardIP[12:])
+			alteredIPWithRandomPrefix := fmt.Sprintf("0x%s", alteredIPWithRandomPrefixHex)
+			alteredIPs = append(alteredIPs, alteredIPWithDots, alteredIPWithZeroX, alteredIPWithRandomPrefix)
+		case "5":
+			// Decimal notation a.k.a dword notation
+			// 127.0.0.1 => 2130706433
+			bigIP, _, _ := IPToInteger(standardIP)
+			alteredIPs = append(alteredIPs, bigIP.String())
+		case "6":
+			// Binary notation#
+			// 127.0.0.1 => 01111111000000000000000000000001
+			// converts to int
+			bigIP, _, _ := IPToInteger(standardIP)
+			// then to binary
+			alteredIP := fmt.Sprintf("%b", bigIP)
+			alteredIPs = append(alteredIPs, alteredIP)
+		case "7":
+			// Mixed notation
+			// Ipv4 only
+			alteredIP := fmt.Sprintf("%#x.%d.%#o.%#x", standardIP[12], standardIP[13], standardIP[14], standardIP[15])
+			alteredIPs = append(alteredIPs, alteredIP)
+		case "8":
+			// IPv6 format
+			// 0000000000000:0000:0000:0000:0000:00000000000000:0000:1 => ::1
+			// 0000:0000:0000:0000:0000:0000:0000:0001 => ::1
+			// 0:0:0:0:0:0:0:1 => ::1
+			// 0:0:0:0::0:0:1 => ::1
+			// The standard library already applies zero compression + suppression
+			// convert the ip to ip6 if possible, implicitly performs zero compression
+			// on native ipv6 addresses
+			ip6, err := FmtIp6(standardIP, true)
+			if err == nil {
+				alteredIPs = append(alteredIPs, ip6)
+			}
+		case "9":
+			// URL-encoded IP address
+			// 127.0.0.1 => %31%32%37%2E%30%2E%30%2E%31
+			// ::1 => %3A%3A%31
+			alteredIP := escape(ip)
+			alteredIPs = append(alteredIPs, alteredIP)
+		case "10":
+			// 0-Padding - prepend a random amount of zeroes to the ip parts
+			// 127.0.0.1 => 0127.00.00.01
+			// IPv4 only
+			if zeroPadPermutation {
+				alteredIPs = append(alteredIPs, IncrementalPad(standardIP, zeroPadN)...)
+			} else {
+				alteredIPs = append(alteredIPs, FixedPad(standardIP, zeroPadN))
+			}
+		case "11":
+			// Ip Overflow - Attempts to express the ip as overflow of the last octect
+			// 127.0.1.0 => 127.0.256
+			// IPv4 only
+			alteredIP, err := overflowLastOctect(standardIP)
+			if err == nil {
+				alteredIPs = append(alteredIPs, alteredIP)
+			}
+		}
+	}
+
+	return alteredIPs
+}
+
+// overflowLastOctect squeeze together the last two octects into one
+func overflowLastOctect(ip net.IP) (string, error) {
+	parts := stringsutil.SplitAny(ip.String(), ".")
+	if len(parts) != 4 {
+		return "", errors.New("invalid ipv4")
+	}
+	part2, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return "", err
+	}
+	part3, err := strconv.Atoi(parts[3])
+	if err != nil {
+		return "", err
+	}
+	if part3 == 0 {
+		part3 = 255
+	} else {
+		return "", errors.New("can't convert to overflow ip")
+	}
+	return fmt.Sprintf("%s.%s.%d", parts[0], parts[1], part2+part3), nil
+}
+
+/*
+The intent here is to get the CIDR range from the IP range.
+This function will return the sorted list of CIDR ranges.
+*/
+func GetCIDRFromIPRange(firstIP, lastIP net.IP) ([]*net.IPNet, error) {
+	// check if range is valid or not
+	if bytes.Compare(firstIP, lastIP) > 0 {
+		return nil, fmt.Errorf("start IP:%s must be less than End IP:%s", firstIP, lastIP)
+	}
+	cidrs := rangeToCIDRs(firstIP, lastIP)
+	sort.Slice(cidrs, func(i, j int) bool {
+		return bytes.Compare(cidrs[i].IP, cidrs[j].IP) < 0
+	})
+	return cidrs, nil
 }

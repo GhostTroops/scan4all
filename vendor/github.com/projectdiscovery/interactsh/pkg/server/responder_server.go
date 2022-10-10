@@ -84,7 +84,11 @@ func (h *ResponderServer) ListenAndServe(responderAlive chan bool) error {
 		for data := range ch {
 			for searchTerm, extractAfter := range responderMonitorList {
 				if strings.Contains(data, searchTerm) {
-					responderData := stringsutil.After(data, extractAfter)
+					responderData, err := stringsutil.After(data, extractAfter)
+					if err != nil {
+						gologger.Warning().Msgf("Could not get responder interaction: %s\n", err)
+						continue
+					}
 
 					// Correlation id doesn't apply here, we skip encryption
 					interaction := &Interaction{

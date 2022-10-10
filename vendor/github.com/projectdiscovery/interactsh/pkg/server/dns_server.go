@@ -5,24 +5,29 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"os"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/miekg/dns"
+	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/stringsutil"
+	"gopkg.in/yaml.v3"
 )
 
 // DNSServer is a DNS server instance that listens on port 53.
 type DNSServer struct {
-	options    *Options
-	mxDomains  map[string]string
-	nsDomains  map[string][]string
-	ipAddress  net.IP
-	timeToLive uint32
-	server     *dns.Server
-	TxtRecord  string // used for ACME verification
+	options       *Options
+	mxDomains     map[string]string
+	nsDomains     map[string][]string
+	ipAddress     net.IP
+	timeToLive    uint32
+	server        *dns.Server
+	customRecords *customDNSRecords
+	TxtRecord     string // used for ACME verification
 }
 
 // NewDNSServer returns a new DNS server.
@@ -39,15 +44,15 @@ func NewDNSServer(network string, options *Options) *DNSServer {
 		ns1Domain := fmt.Sprintf("ns1.%s", dotdomain)
 		ns2Domain := fmt.Sprintf("ns2.%s", dotdomain)
 		nsDomains[dotdomain] = []string{ns1Domain, ns2Domain}
-
 	}
 
 	server := &DNSServer{
-		options:    options,
-		ipAddress:  net.ParseIP(options.IPAddress),
-		mxDomains:  mxDomains,
-		nsDomains:  nsDomains,
-		timeToLive: 3600,
+		options:       options,
+		ipAddress:     net.ParseIP(options.IPAddress),
+		mxDomains:     mxDomains,
+		nsDomains:     nsDomains,
+		timeToLive:    3600,
+		customRecords: newCustomDNSRecordsServer(options.CustomRecords),
 	}
 	server.server = &dns.Server{
 		Addr:    options.ListenIP + fmt.Sprintf(":%d", options.DnsPort),
@@ -73,6 +78,8 @@ const (
 
 // ServeDNS is the default handler for DNS queries.
 func (h *DNSServer) ServeDNS(w dns.ResponseWriter, r *dns.Msg) {
+	atomic.AddUint64(&h.options.Stats.Dns, 1)
+
 	m := new(dns.Msg)
 	m.SetReply(r)
 	m.Authoritative = true
@@ -153,36 +160,27 @@ func (h *DNSServer) handleACMETXTChallenge(zone string, m *dns.Msg) error {
 func (h *DNSServer) handleACNAMEANY(zone string, m *dns.Msg) {
 	nsHeader := dns.RR_Header{Name: zone, Rrtype: dns.TypeNS, Class: dns.ClassINET, Ttl: h.timeToLive}
 
-	resultFunction := func(zone string, ipAddress net.IP) {
-		m.Answer = append(m.Answer, &dns.A{Hdr: dns.RR_Header{Name: zone, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: h.timeToLive}, A: ipAddress})
-		dotDomains := []string{zone, dns.Fqdn(h.options.Domains[0])}
-		for _, dotDomain := range dotDomains {
-			if nsDomains, ok := h.nsDomains[dotDomain]; ok {
-				for _, nsDomain := range nsDomains {
-					m.Ns = append(m.Ns, &dns.NS{Hdr: nsHeader, Ns: nsDomain})
-					m.Extra = append(m.Extra, &dns.A{Hdr: dns.RR_Header{Name: nsDomain, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: h.timeToLive}, A: h.ipAddress})
-				}
-				return
-			}
-		}
-	}
-
-	dotDomain := dns.Fqdn(h.options.Domains[0])
-	for _, domain := range h.options.Domains {
-		configuredDotDomain := dns.Fqdn(domain)
-		if dns.Fqdn(domain) == zone {
-			dotDomain = configuredDotDomain
-			break
-		}
-	}
-
+	// If we have a custom record serve it, or default IP
+	record := h.customRecords.checkCustomResponse(zone)
 	switch {
-	case strings.EqualFold(zone, "aws"+dotDomain):
-		resultFunction(zone, net.ParseIP("169.254.169.254"))
-	case strings.EqualFold(zone, "alibaba"+dotDomain):
-		resultFunction(zone, net.ParseIP("100.100.100.200"))
+	case record != "":
+		h.resultFunction(nsHeader, zone, net.ParseIP(record), m)
 	default:
-		resultFunction(zone, h.ipAddress)
+		h.resultFunction(nsHeader, zone, h.ipAddress, m)
+	}
+}
+
+func (h *DNSServer) resultFunction(nsHeader dns.RR_Header, zone string, ipAddress net.IP, m *dns.Msg) {
+	m.Answer = append(m.Answer, &dns.A{Hdr: dns.RR_Header{Name: zone, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: h.timeToLive}, A: ipAddress})
+	dotDomains := []string{zone, dns.Fqdn(h.options.Domains[0])}
+	for _, dotDomain := range dotDomains {
+		if nsDomains, ok := h.nsDomains[dotDomain]; ok {
+			for _, nsDomain := range nsDomains {
+				m.Ns = append(m.Ns, &dns.NS{Hdr: nsHeader, Ns: nsDomain})
+				m.Extra = append(m.Extra, &dns.A{Hdr: dns.RR_Header{Name: nsDomain, Rrtype: dns.TypeA, Class: dns.ClassINET, Ttl: h.timeToLive}, A: h.ipAddress})
+			}
+			return
+		}
 	}
 }
 
@@ -331,4 +329,58 @@ func (h *DNSServer) handleInteraction(domain string, w dns.ResponseWriter, r *dn
 			}
 		}
 	}
+}
+
+// customDNSRecords is a server for custom dns records
+type customDNSRecords struct {
+	records map[string]string
+}
+
+// defaultCustomRecords is the list of default custom DNS records
+var defaultCustomRecords = map[string]string{
+	"aws":       "169.254.169.254",
+	"alibaba":   "100.100.100.200",
+	"localhost": "127.0.0.1",
+	"oracle":    "192.0.0.192",
+}
+
+func newCustomDNSRecordsServer(input string) *customDNSRecords {
+	server := &customDNSRecords{records: make(map[string]string)}
+	for k, v := range defaultCustomRecords {
+		server.records[k] = v
+	}
+	if input != "" {
+		if err := server.readRecordsFromFile(input); err != nil {
+			gologger.Error().Msgf("Could not read custom DNS records: %s", err)
+		}
+	}
+	return server
+}
+
+func (c *customDNSRecords) readRecordsFromFile(input string) error {
+	file, err := os.Open(input)
+	if err != nil {
+		return errors.Wrap(err, "could not open file")
+	}
+	defer file.Close()
+
+	var data map[string]string
+	if err := yaml.NewDecoder(file).Decode(&data); err != nil {
+		return errors.Wrap(err, "could not decode file")
+	}
+	for k, v := range data {
+		c.records[strings.ToLower(k)] = v
+	}
+	return nil
+}
+
+func (c *customDNSRecords) checkCustomResponse(zone string) string {
+	parts := strings.SplitN(zone, ".", 2)
+	if len(parts) != 2 {
+		return ""
+	}
+	if value, ok := c.records[strings.ToLower(parts[0])]; ok {
+		return value
+	}
+	return ""
 }

@@ -1,6 +1,7 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"log"
@@ -8,8 +9,6 @@ import (
 	"runtime"
 	"strings"
 )
-
-var NoColor bool
 
 // out filename
 var Output = ""
@@ -74,7 +73,13 @@ func writeoutput(v interface{}) {
 	if 1 > len(Output) {
 		return
 	}
-	szLog := fmt.Sprintf("%+v", v)
+	var szLog string
+	if strings.HasSuffix(Output, ".csv") {
+		data, _ := json.Marshal(v)
+		szLog = string(data)
+	} else {
+		szLog = fmt.Sprintf("%+v", v)
+	}
 	f, err := os.OpenFile(Output, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Printf("Could not create output fiale '%s': %s\n", Output, err)

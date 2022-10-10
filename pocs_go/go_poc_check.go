@@ -40,7 +40,14 @@ import (
 
 // 需优化：相同都目标，相同都检测只做一次
 func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, checklog4j bool) []string {
-	u01, _ := url.Parse(finalURL)
+	if strings.HasPrefix(finalURL, "http") {
+		finalURL = "http://" + finalURL
+	}
+	u01, err := url.Parse(finalURL)
+	if nil != err {
+		log.Println(finalURL, err)
+		return []string{}
+	}
 	if util.TestRepeat(wappalyzertechnologies, u01.Host, u01.Host, checklog4j) {
 		return []string{}
 	}

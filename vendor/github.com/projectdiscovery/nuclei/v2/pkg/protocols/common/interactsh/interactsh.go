@@ -45,7 +45,10 @@ type Client struct {
 	pollDuration     time.Duration
 	cooldownDuration time.Duration
 
-	hostname       string
+	dataMutex *sync.RWMutex
+
+	hostname string
+
 	firstTimeGroup sync.Once
 	generated      uint32 // decide to wait if we have a generated url
 	matched        bool
@@ -59,7 +62,7 @@ var (
 
 const (
 	stopAtFirstMatchAttribute = "stop-at-first-match"
-	templateIdAttribute = "template-id"
+	templateIdAttribute       = "template-id"
 )
 
 // Options contains configuration options for interactsh nuclei integration.
@@ -125,6 +128,7 @@ func New(options *Options) (*Client, error) {
 		requests:         cache,
 		pollDuration:     options.PollDuration,
 		cooldownDuration: options.CooldownPeriod,
+		dataMutex:        &sync.RWMutex{},
 	}
 	return interactClient, nil
 }
@@ -163,7 +167,10 @@ func (c *Client) firstTimeInitializeClient() error {
 	interactURL := interactsh.URL()
 	interactDomain := interactURL[strings.Index(interactURL, ".")+1:]
 	gologger.Info().Msgf("Using Interactsh Server: %s", interactDomain)
+
+	c.dataMutex.Lock()
 	c.hostname = interactDomain
+	c.dataMutex.Unlock()
 
 	interactsh.StartPolling(c.pollDuration, func(interaction *server.Interaction) {
 		item := c.requests.Get(interaction.UniqueID)
@@ -273,10 +280,6 @@ func (c *Client) Close2() {
 
 // Close closes the interactsh clients after waiting for cooldown period.
 func (c *Client) Close() bool {
-	//go func() {
-	//	<-time.After(time.Second * (60 + 1))
-	//	c.Close2()
-	//}()
 	if c.cooldownDuration > 0 && atomic.LoadUint32(&c.generated) == 1 {
 		time.Sleep(c.cooldownDuration)
 	}
@@ -464,4 +467,11 @@ func hash(templateID, host string) string {
 	h.Write([]byte(templateID))
 	h.Write([]byte(host))
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+func (c *Client) getInteractServerHostname() string {
+	c.dataMutex.RLock()
+	defer c.dataMutex.RUnlock()
+
+	return c.hostname
 }
