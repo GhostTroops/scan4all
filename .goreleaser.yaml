@@ -28,5 +28,8 @@ changelog:
   sort: asc
   filters:
     exclude:
+      - db/GeoIP2-City.mmdb.zip
+      - testLeak.sh
+      - xxx.csv
       - '^docs:'
       - '^testnmanp:'
