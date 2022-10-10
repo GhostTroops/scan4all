@@ -3,6 +3,7 @@ package brute
 import (
 	"context"
 	_ "embed"
+	"fmt"
 	"github.com/antlabs/strsim"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
@@ -219,11 +220,15 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	//log.Printf("start fuzz: %s for", u)
 	nStop := 400
 	var lst200 *util.Response
+	t001 := time.NewTicker(3 * time.Second)
+	var nCnt int32 = 0
 	go func() {
 		for {
 			select {
 			case <-ctx2.Done():
 				return
+			case <-t001.C:
+				fmt.Printf("(ok/total:%5d/%5d) (errs/limitErr:%3d/%3d) %s\r", nCnt, len(filedic), errorTimes, MaxErrorTimes, u)
 			case x1, ok := <-async_data:
 				if ok {
 					if lst200 == nil || x1.Req.Resqonse.Body != lst200.Body {
@@ -266,6 +271,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 				wg.Done() // 控制所有线程结束
 				<-ch      // 并发控制
 			}()
+			atomic.AddInt32(&nCnt, 1)
 			for {
 				select {
 				case <-ctx.Done(): // 00-捕获所有线程关闭信号，并退出，close for all
