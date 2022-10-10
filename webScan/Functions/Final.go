@@ -134,9 +134,7 @@ func final_ALLurl_ALLJson(urllist *[]string) {
 		//results := make(chan bool, size+1)
 		jobs_url := make(chan string, size+1)
 		for i := 0; i < Configs.UserObject.ThreadNum; i++ {
-			util.Wg.Add(1)
 			util.DoSyncFunc(func() {
-				defer util.Wg.Done()
 				All_url_ALLjson(jobs_url, allresult)
 			})
 		}
