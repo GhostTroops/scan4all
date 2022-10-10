@@ -29,3 +29,10 @@ git add config/nuclei-templates pocs_yml/ymlFiles vendor
 git add vendor
 git status
 go build
+
+wget -c https://raw.githubusercontent.com/righel/ms-exchange-version-nse/main/ms-exchange-versions-dict.json
+wget -c https://raw.githubusercontent.com/righel/ms-exchange-version-nse/main/ms-exchange-unique-versions-dict.json
+wget -c https://raw.githubusercontent.com/righel/ms-exchange-version-nse/main/ms-exchange-versions-cves-dict.json
+mv ms-exchange-versions-dict.json $HOME/MyWork/scan4all/pkg/fingerprint/dicts/
+mv ms-exchange-unique-versions-dict.json $HOME/MyWork/scan4all/pkg/fingerprint/dicts/
+mv ms-exchange-versions-cves-dict.json $HOME/MyWork/scan4all/pkg/fingerprint/dicts/

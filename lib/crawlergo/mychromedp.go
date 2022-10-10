@@ -88,7 +88,9 @@ func (r *MyChromedp) fnInit() {
 		chromedp.Flag("disable-popup-blocking", true),
 		chromedp.Flag("disable-prompt-on-repost", true),
 		chromedp.Flag("user-data-dir", dir),
-		chromedp.Flag("blink-settings", "imagesEnabled=false"),
+		chromedp.Flag("blink-settings", true),
+		chromedp.Flag("enable-quic", "imagesEnabled=false"),
+		chromedp.Flag("quic-version", "h3-23"),
 		chromedp.DisableGPU,
 		chromedp.UserDataDir(dir),
 	}

@@ -60,8 +60,9 @@ func reqPage(u string) (*util.Page, *util.Response, error) {
 	}
 	header := make(map[string]string)
 	header["Accept"] = "*/*"
-	header["Connection"] = "close"
-	header["Pragma"] = "no-cache"
+	header["upgrade-insecure-requests"] = "1"
+	//header["Connection"] = "close"
+	//header["Pragma"] = "no-cache"
 	// by WAF
 	header = *ByWafHd(&header)
 

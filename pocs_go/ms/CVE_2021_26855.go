@@ -1,14 +1,14 @@
 package ms
 
 import (
-	"crypto/tls"
 	"encoding/base64"
 	"fmt"
+	"github.com/hktalent/ProScan4all/lib/util"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
-	"time"
 )
 
 // 返回路径
@@ -21,10 +21,6 @@ func InitPaths() []string {
 	}
 	return a1
 }
-
-/*
-
- */
 
 // check CVE-2021-26855
 //
@@ -41,26 +37,31 @@ func InitPaths() []string {
 // add Microsoft Exchange Server Remote Code Execution Vulnerability CVE-2021-26855 finder
 // https://www.msb365.blog/?p=4099
 func CheckCVE_2021_26855(target string) string {
+	if oU, err := url.Parse(target); err == nil {
+		if oU.Scheme != "" && oU.Host != "" {
+			target = oU.Scheme + "://" + oU.Host
+		} else {
+			target = "https://" + target
+		}
+	}
 	//fmt.Println("check... "+target)
-	targetUrl := "https://" + target + "/owa/auth/temp.js"
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	targetUrl := target + "/owa/auth/temp.js"
+	szRst := ""
+	if c1 := util.GetClient(targetUrl); c1 != nil {
+		c1.DoGetWithClient4SetHd(nil, targetUrl, "GET", nil, func(resp *http.Response, err error, szU string) {
+			if nil != err {
+				return
+			}
+			body, _ := ioutil.ReadAll(resp.Body)
+			if strings.Contains(string(body), "NegotiateSecurityContext") {
+				szRst = fmt.Sprintf("%s IsVUL CVE-2021-26855\n", target)
+			}
+		}, func() map[string]string {
+			return map[string]string{"Cookie": "X-AnonResource=true; X-AnonResource-Backend=localhost/ecp/default.flt?~3; X-BEResource=localhost/owa/auth/logon.aspx?~3;"}
+		}, true)
 	}
-	client := &http.Client{Transport: tr, Timeout: time.Duration(3 * time.Second)}
-	req, _ := http.NewRequest("GET", targetUrl, nil)
-	req.Header.Add("Cookie", "X-AnonResource=true; X-AnonResource-Backend=localhost/ecp/default.flt?~3; X-BEResource=localhost/owa/auth/logon.aspx?~3;")
-	resp, err2 := client.Do(req)
-	if nil != err2 {
-		return ""
-	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
 
-	if strings.Contains(string(body), "NegotiateSecurityContext") {
-		s1 := fmt.Sprintf("%s IsVUL CVE-2021-26855\n", target)
-		return s1
-	}
-	return ""
+	return szRst
 }
 
 // add EXCHANGE Finder
@@ -118,35 +119,37 @@ func Negotiate() []byte {
 	return ret
 }
 
+var (
+	reg1 = regexp.MustCompile(`[^NTLM].+;Negotiate\z`)
+	reg2 = regexp.MustCompile(`[^\s].+[^;Negotiate]`)
+	reg3 = regexp.MustCompile(`(\x03\x00.)(.+?)(\x05\x00)`)
+	reg4 = regexp.MustCompile(`\x03\x00.|\x05|\x00`)
+	reg5 = regexp.MustCompile(`(\x04\x00.)(.+?)(\x03\x00)`)
+	reg6 = regexp.MustCompile(`\x04\x00.|\x03|\x00`)
+)
+
 //ntlm type2 fqdn
 func Ntlminfo(targetUrl string) (fqdn string, domain string) {
 	//var fqdn string
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	client := &http.Client{Transport: tr, Timeout: time.Duration(3 * time.Second)}
-
-	req, _ := http.NewRequest("GET", targetUrl, nil)
-	req.Header.Add("Authorization", fmt.Sprintf("NTLM %s", base64.StdEncoding.EncodeToString(Negotiate())))
-	req.Header.Add("Accept", "text/xml")
-	resp, err := client.Do(req)
-	if nil != err {
-		return
-	}
-	reg1 := regexp.MustCompile(`[^NTLM].+;Negotiate\z`)
-	reg2 := regexp.MustCompile(`[^\s].+[^;Negotiate]`)
-	reg3 := regexp.MustCompile(`(\x03\x00.)(.+?)(\x05\x00)`)
-	reg4 := regexp.MustCompile(`\x03\x00.|\x05|\x00`)
-	reg5 := regexp.MustCompile(`(\x04\x00.)(.+?)(\x03\x00)`)
-	reg6 := regexp.MustCompile(`\x04\x00.|\x03|\x00`)
-
-	for _, values := range resp.Header {
-		type2 := reg2.FindString(reg1.FindString(strings.Join(values, ";")))
-		if type2 != "" {
-			decodeBytes, _ := base64.StdEncoding.DecodeString(reg2.FindString(type2))
-			fqdn = reg4.ReplaceAllString(reg3.FindString(string(decodeBytes)), "")
-			domain = reg6.ReplaceAllString(reg5.FindString(string(decodeBytes)), "")
-		}
+	if c1 := util.GetClient(targetUrl); c1 != nil {
+		c1.DoGetWithClient4SetHd(nil, targetUrl, "GET", nil, func(resp *http.Response, err error, szU string) {
+			if nil != err {
+				return
+			}
+			for _, values := range resp.Header {
+				type2 := reg2.FindString(reg1.FindString(strings.Join(values, ";")))
+				if type2 != "" {
+					decodeBytes, _ := base64.StdEncoding.DecodeString(reg2.FindString(type2))
+					fqdn = reg4.ReplaceAllString(reg3.FindString(string(decodeBytes)), "")
+					domain = reg6.ReplaceAllString(reg5.FindString(string(decodeBytes)), "")
+				}
+			}
+		}, func() map[string]string {
+			return map[string]string{
+				"Accept":        "text/xml",
+				"Authorization": fmt.Sprintf("NTLM %s", base64.StdEncoding.EncodeToString(Negotiate())),
+			}
+		}, true)
 	}
 	return
 }

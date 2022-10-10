@@ -28,7 +28,7 @@ func StrContains(s1, s2 string) bool {
 	return strings.Contains(strings.ToLower(s1), strings.ToLower(s2))
 }
 
-var noRpt *ccache.Cache
+var NoRpt *ccache.Cache
 
 type Config4scanAllModel struct {
 	EsUlr           string `json:"EsUlr"`
@@ -241,7 +241,7 @@ func Init2() {
 	EnableHoneyportDetection = GetValAsBool("EnableHoneyportDetection")
 	initEs()
 
-	noRpt = GetMemoryCache(5000, noRpt)
+	NoRpt = GetMemoryCache(5000, NoRpt)
 }
 
 var G_Options interface{}
@@ -383,25 +383,25 @@ var LoRpt sync.Mutex
 func TestRepeat(a ...interface{}) bool {
 	LoRpt.Lock()
 	defer LoRpt.Unlock()
-	if nil == noRpt {
+	if nil == NoRpt {
 		return false
 	}
 	k := GetSha1(a...)
-	x1 := noRpt.Get(k)
+	x1 := NoRpt.Get(k)
 	if nil == x1 {
-		noRpt.Set(k, true, defaultInteractionDuration)
+		NoRpt.Set(k, true, defaultInteractionDuration)
 		return false
 	}
 	return true
 }
 
 func TestRepeat4Save(key string, a ...interface{}) (interface{}, bool) {
-	if nil == noRpt {
+	if nil == NoRpt {
 		return nil, false
 	}
-	x1 := noRpt.Get(key)
+	x1 := NoRpt.Get(key)
 	if nil == x1 {
-		noRpt.Set(key, a, defaultInteractionDuration)
+		NoRpt.Set(key, a, defaultInteractionDuration)
 		return nil, false
 	}
 	return x1.Value(), true
@@ -409,10 +409,10 @@ func TestRepeat4Save(key string, a ...interface{}) (interface{}, bool) {
 
 // 关闭cache
 func CloseCache() {
-	if nil != noRpt {
-		noRpt.Clear()
-		noRpt.Stop()
-		noRpt = nil
+	if nil != NoRpt {
+		NoRpt.Clear()
+		NoRpt.Stop()
+		NoRpt = nil
 	}
 
 	if nil != clientHttpCc {
@@ -423,22 +423,31 @@ func CloseCache() {
 	}
 }
 
+func GetObjFromNoRpt[T any](key string) T {
+	x1 := NoRpt.Get(key)
+	if nil != x1 {
+		if a1, ok := x1.Value().(T); ok {
+			return a1
+		}
+	}
+	var x2 T
+	return x2
+}
+
 // 绝对404检测
 // 相同 url 本实例中只检测一次
 func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 	key := "TestIs404" + szUrl
-	x1 := noRpt.Get(key)
-	if nil != x1 {
-		if a1, ok := x1.Value().([]interface{}); ok {
-			r01 = a1[0].(*Response)
-			if nil == a1[1] {
-				err = nil
-			} else {
-				err = a1[1].(error)
-			}
-			ok = a1[2].(bool)
-			return r01, err, ok
+	a1 := GetObjFromNoRpt[[]interface{}](key)
+	if nil != a1 {
+		r01 = a1[0].(*Response)
+		if nil == a1[1] {
+			err = nil
+		} else {
+			err = a1[1].(error)
 		}
+		ok = a1[2].(bool)
+		return r01, err, ok
 	}
 	sz404 := szUrl + Abs404
 	//client := GetClient(sz404)
@@ -465,10 +474,14 @@ func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 	} else {
 		//log.Printf("%d %s %s\n", r01.StatusCode, r01.Protocol, sz404)
 	}
-	noRpt.Set(key, []interface{}{r01, err, ok}, defaultInteractionDuration)
+	SetNoRpt(key, []interface{}{r01, err, ok})
 	//client.Client.Timeout = 10
 	//log.Println("end test ", sz404)
 	return r01, err, ok
+}
+
+func SetNoRpt(key string, data interface{}) {
+	NoRpt.Set(key, data, defaultInteractionDuration)
 }
 func TestIs404Page(szUrl string) (page *Page, r01 *Response, err error, ok bool) {
 	r01, err, ok = TestIs404(szUrl)

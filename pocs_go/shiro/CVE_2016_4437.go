@@ -8,6 +8,7 @@ import (
 	_ "embed"
 	"encoding/base64"
 	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/ProScan4all/pkg/checker"
 	uuid "github.com/satori/go.uuid"
 	"io"
 	"log"
@@ -88,4 +89,19 @@ func CVE_2016_4437(u string) (key string) {
 		}
 	}
 	return ""
+}
+
+func init() {
+	util.RegInitFunc(func() {
+		// CheckShiroCookie
+		// 检查 cookie
+		// Shiro CVE_2016_4437 cookie
+		// 其他POC cookie同一检查入口
+		checker.GetInstance(checker.ReqHeader).RegCheckFunc(func(r *checker.CheckerTools, args ...interface{}) {
+			a := r.GetHead(args[0], "Set-Cookie")
+			if nil != a && 0 < len(a) {
+				//return len(DeleteMe.FindAllStringIndex(SetCookieAll, -1))
+			}
+		})
+	})
 }
