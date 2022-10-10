@@ -12,3 +12,7 @@ go build
 
 #rm -rf vendor/github.com/hktalent/goSqlite_gorm
 #ln -s $HOME/MyWork/goSqlite_gorm $PWD/vendor/github.com/hktalent/goSqlite_gorm
+
+git log --oneline --decorate
+git log --oneline --decorate 2.8.3
+git log --oneline --decorate 2.8.2..2.8.3
