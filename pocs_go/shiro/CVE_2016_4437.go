@@ -96,7 +96,8 @@ func init() {
 		// 检查 cookie
 		// Shiro CVE_2016_4437 cookie
 		// 其他POC cookie同一检查入口
-		util.GetInstance(util.ReqHeader).RegCheckFunc(func(r *util.CheckerTools, args ...interface{}) {
+		// 第一个参数header，第二个为 url
+		util.RegHeaderCheckFunc(func(r *util.CheckerTools, args ...interface{}) {
 			a := r.GetHead(args[0], "Set-Cookie")
 			if nil != a && 0 < len(a) {
 				//return len(DeleteMe.FindAllStringIndex(SetCookieAll, -1))

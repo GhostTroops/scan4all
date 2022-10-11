@@ -30,5 +30,8 @@ func init() {
 				util.SendLog(fmt.Sprintf("%v", i), "leak", strings.Join(a, "\n"), "")
 			}
 		})
+		//util.RegHeaderCheckFunc(func(r *util.CheckerTools, i ...interface{}) {
+		//
+		//})
 	})
 }

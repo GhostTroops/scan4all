@@ -9,7 +9,9 @@ import (
 	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
 	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"log"
+	"mime"
 	"net/url"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"sync"
@@ -158,6 +160,8 @@ type FuzzData struct {
 	Req  *util.Page
 }
 
+var r001 = regexp.MustCompile(`\.(aac)|(abw)|(arc)|(avif)|(avi)|(azw)|(bin)|(bmp)|(bz)|(bz2)|(cda)|(csh)|(css)|(csv)|(doc)|(docx)|(eot)|(epub)|(gz)|(gif)|(ico)|(ics)|(jar)|(jpeg)|(jpg)|(js)|(json)|(jsonld)|(mid)|(midi)|(mjs)|(mp3)|(mp4)|(mpeg)|(mpkg)|(odp)|(ods)|(odt)|(oga)|(ogv)|(ogx)|(opus)|(otf)|(png)|(pdf)|(php)|(ppt)|(pptx)|(rar)|(rtf)|(sh)|(svg)|(tar)|(tif)|(tiff)|(ts)|(ttf)|(txt)|(vsd)|(wav)|(weba)|(webm)|(webp)|(woff)|(woff2)|(xhtml)|(xls)|(xlsx)|(xml)|(xul)|(zip)|(3gp)|(3g2)|(7z)$`)
+
 // 重写了fuzz：优化流程、优化算法、修复线程安全bug、增加智能功能
 //  两次  ioutil.ReadAll(resp.Body)，第二次就会 Read返回EOF error
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
@@ -212,6 +216,9 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	var MaxErrorTimes int32 = int32(util.GetValAsInt("MaxErrorTimes", 50)) //int32(float32(len(filedic)) * 0.005)
 	if strings.HasPrefix(url404req.Protocol, "HTTP/2") || strings.HasPrefix(url404req.Protocol, "HTTP/3") {
 		MaxErrorTimes = int32(len(filedic))
+	}
+	if c1 := util.GetClient(u, map[string]interface{}{"Timeout": 15 * time.Second, "ErrLimit": MaxErrorTimes}); nil != c1 {
+		util.PutClientCc(u, c1)
 	}
 	//defer func() {
 	//	close(ch)
@@ -304,6 +311,18 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 							} else if lst200.Body == req.Body { // 无意义的 200
 								continue
 							}
+							if oU1, err := url.Parse(szUrl); nil == err {
+								a50 := r001.FindStringSubmatch(oU1.Path)
+								if 0 < len(a50) {
+									s2 := mime.TypeByExtension(filepath.Ext(a50[0]))
+									ct := (*req).Header.Get("Content-Type")
+									if "" != ct && "" != s2 && strings.Contains(ct, s2) {
+										continue
+									}
+								}
+							}
+
+							mime.TypeByExtension(".jpg")
 							//log.Printf("%d : %s \n", req.StatusCode, szUrl)
 						}
 						go util.CheckHeader(req.Header, u)

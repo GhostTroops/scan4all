@@ -89,6 +89,12 @@ func GetClient4Cc(szUrl string) *PipelineHttp.PipelineHttp {
 	}
 	return nil
 }
+func PutClientCc(szUrl string, c *PipelineHttp.PipelineHttp) {
+	CloseHttpClient(szUrl)
+	oU, _ := url.Parse(szUrl)
+	clientHttpCc.Delete(oU.Scheme + oU.Host)
+	clientHttpCc.Set(oU.Scheme+oU.Host, c, defaultInteractionDuration)
+}
 
 //var G_hc *http.Client
 

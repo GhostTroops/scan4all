@@ -1,13 +1,12 @@
 package main
 
 import (
-	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
 	"log"
-	"sync"
+	"mime"
 )
 
 func main() {
+	log.Println(mime.TypeByExtension(".jsp"))
 	//
 	//data, err := ioutil.ReadFile("/Users/51pwn/MyWork/TestPoc/JRMPListener.ser")
 	//if nil == err {
@@ -24,22 +23,22 @@ func main() {
 	//		log.Println(resp.StatusCode)
 	//	}
 	//})
-	var Wg = sync.WaitGroup{}
-	// 单独测试没有问题
-	for i := 33; i < 8082; i++ {
-		Wg.Add(1)
-		go func(n int) {
-			defer Wg.Done()
-			s1 := fmt.Sprintf("http://127.0.0.1:%d/scan4all", n)
-			if resp, err := util.HttpRequset(s1, "GET", "", false, nil); nil == err {
-				log.Println(resp.StatusCode, s1)
-			} else {
-				if n == 8081 {
-					log.Println(err)
-				}
-			}
-		}(i)
-
-	}
-	Wg.Wait()
+	//var Wg = sync.WaitGroup{}
+	//// 单独测试没有问题
+	//for i := 33; i < 8082; i++ {
+	//	Wg.Add(1)
+	//	go func(n int) {
+	//		defer Wg.Done()
+	//		s1 := fmt.Sprintf("http://127.0.0.1:%d/scan4all", n)
+	//		if resp, err := util.HttpRequset(s1, "GET", "", false, nil); nil == err {
+	//			log.Println(resp.StatusCode, s1)
+	//		} else {
+	//			if n == 8081 {
+	//				log.Println(err)
+	//			}
+	//		}
+	//	}(i)
+	//
+	//}
+	//Wg.Wait()
 }
