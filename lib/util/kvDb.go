@@ -49,7 +49,6 @@ func (r *KvDbOp) Init(szDb string) error {
 	opts.LevelSizeMultiplier = 20
 	db, err := badger.Open(opts)
 	if nil != err {
-
 		log.Printf("Init2 k-v db cannot open multiple processes at the same time, or please delete the %s directory and try again: %v", szDb, err)
 		return err
 	}

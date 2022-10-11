@@ -39,7 +39,7 @@ func InitDb(dst ...interface{}) *gorm.DB {
 		log.Println("dbCC not is nil, DbName = ", DbName)
 		return dbCC
 	}
-	szDf := DbName
+	szDf := SzPwd + "/" + DbName
 	if 1 < len(dst) {
 		szDf = dst[1].(string)
 	}
@@ -93,7 +93,7 @@ func Update[T any](mod *T, query string, args ...interface{}) int64 {
 	xxxD.AutoMigrate(t1)
 	rst := xxxD.Where(query, args...).Updates(mod)
 	xxxD.Commit()
-	if 0 >= rst.RowsAffected {
+	if 0 >= rst.RowsAffected && nil != rst.Error {
 		log.Println(rst.Error)
 	}
 	return rst.RowsAffected
@@ -103,7 +103,7 @@ func Update[T any](mod *T, query string, args ...interface{}) int64 {
 func UpInsert[T any](mod *T, query string, args ...interface{}) int64 {
 	// 在冲突时，更新除主键以外的所有列
 	if 1 > Update[T](mod, query, args...) { // &&
-		if 1 > Create[T](mod) {
+		if 1 > Create[T](*mod) {
 			xx1 := dbCC.Clauses(clause.OnConflict(clause.OnConflict{
 				Columns:   []clause.Column{{Name: "addr"}}, // key colume
 				UpdateAll: true})).Create(mod)
@@ -116,15 +116,17 @@ func UpInsert[T any](mod *T, query string, args ...interface{}) int64 {
 }
 
 // 通用,insert
-func Create[T any](mod *T) int64 {
-	xxxD := dbCC.Table(GetTableName(*mod)).Model(mod)
-	xxxD.AutoMigrate(mod)
-	rst := xxxD.Create(mod)
-	rst.Commit()
-	if 0 >= rst.RowsAffected {
-		log.Println(rst.Error)
+func Create[T any](mod ...T) int64 {
+	n := int64(0)
+	for _, k := range mod {
+		xxxD := dbCC.Table(GetTableName(k)).Model(k)
+		xxxD.AutoMigrate(k)
+		rst := xxxD.Create(&k)
+		n = n + rst.RowsAffected
+		rst.Commit()
 	}
-	return rst.RowsAffected
+
+	return n
 }
 
 // 通用
@@ -168,6 +170,14 @@ func GetSubQueryLists[T1, T2 any](mode T1, preLd string, aRst []T2, nPageSize in
 		dbCC.Model(&mode).Limit(nPageSize).Offset(Offset*nPageSize).Order("updated_at DESC").Find(&aRst, conds...)
 	}
 	return &aRst
+}
+
+// 单表查询
+func Query4Lists[T any](query string, conds ...interface{}) *[]T {
+	var t1 T
+	var t2 []T
+	dbCC.Model(t1).Where(query, conds...).Find(&t2)
+	return &t2
 }
 
 // 通用

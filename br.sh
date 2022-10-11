@@ -1,3 +1,3 @@
 go build -o scan4all main.go
-./scan4all -host http://192.168.0.109 -o xxx.csv -v
+./scan4all -host https://www.sina.com.cn/ -o xxx.csv -v
 

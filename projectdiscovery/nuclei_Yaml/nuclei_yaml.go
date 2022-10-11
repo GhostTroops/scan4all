@@ -217,7 +217,7 @@ func readConfig(options *types.Options) {
 	options.IncludeIds = []string{}
 	options.ExcludeIds = []string{}
 	options.IncludeTemplates = []string{}
-	options.ExcludedTemplates = []string{}
+	options.ExcludedTemplates = []string{"config/nuclei-templates/token-spray"}
 
 	options.Output = ""
 	options.StoreResponse = false

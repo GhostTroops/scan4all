@@ -54,6 +54,12 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 
 	m1 := make(map[string][][]string)
 	for _, n := range xmlquery.Find(doc, "//host") {
+		hostName := n.SelectElements("hostnames/hostname")
+		var aDns []string
+		for _, x := range hostName {
+			aDns = append(aDns, GetAttr(x.Attr, "name"))
+		}
+
 		x1 := n.SelectElement("address").Attr[0].Value
 		ps := n.SelectElements("ports/port")
 		for _, x := range ps {
@@ -67,10 +73,6 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 				port, _ := strconv.Atoi(szPort)
 				service := strings.ToLower(GetAttr(x.SelectElement("service").Attr, "name"))
 				//bf.Write([]byte(fmt.Sprintf("%s:%s\n", ip, szPort)))
-				szUlr := fmt.Sprintf("http://%s:%s\n", ip, szPort)
-				bf.Write([]byte(szUlr))
-				szUlr = fmt.Sprintf("https://%s:%s\n", ip, szPort)
-				bf.Write([]byte(szUlr))
 
 				// 存储结果到其他地方
 				//x9 := AuthInfo{IPAddr: ip, Port: port, Protocol: service}
@@ -82,27 +84,33 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 					}
 					m1[ip] = append(xx09, []string{szPort, service})
 				}
-				if os.Getenv("NoPOC") != "true" {
-					if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
-						util.PocCheck_pipe <- &util.PocCheck{
-							Wappalyzertechnologies: &[]string{service},
-							URL:                    szUlr,
-							FinalURL:               szUlr,
-							Checklog4j:             false,
-						}
-					} else if "8291" == szPort { // CVE_2018_14847
-						util.PocCheck_pipe <- &util.PocCheck{
-							Wappalyzertechnologies: &[]string{"RouterOS"},
-							URL:                    szUlr,
-							FinalURL:               szUlr,
-							Checklog4j:             false,
-						}
-					} else if "2181" == szPort {
-						util.PocCheck_pipe <- &util.PocCheck{
-							Wappalyzertechnologies: &[]string{"ZookeeperUnauthority"},
-							URL:                    szUlr,
-							FinalURL:               szUlr,
-							Checklog4j:             false,
+				// 这里应当还原域名，否则无法正常访问
+				for _, dnsJ := range aDns {
+					szUlr := fmt.Sprintf("http://%s:%s\nhttps://%s:%s\n", dnsJ, szPort, dnsJ, szPort)
+					bf.Write([]byte(szUlr))
+
+					if os.Getenv("NoPOC") != "true" {
+						if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
+							util.PocCheck_pipe <- &util.PocCheck{
+								Wappalyzertechnologies: &[]string{service},
+								URL:                    szUlr,
+								FinalURL:               szUlr,
+								Checklog4j:             false,
+							}
+						} else if "8291" == szPort { // CVE_2018_14847
+							util.PocCheck_pipe <- &util.PocCheck{
+								Wappalyzertechnologies: &[]string{"RouterOS"},
+								URL:                    szUlr,
+								FinalURL:               szUlr,
+								Checklog4j:             false,
+							}
+						} else if "2181" == szPort {
+							util.PocCheck_pipe <- &util.PocCheck{
+								Wappalyzertechnologies: &[]string{"ZookeeperUnauthority"},
+								URL:                    szUlr,
+								FinalURL:               szUlr,
+								Checklog4j:             false,
+							}
 						}
 					}
 				}

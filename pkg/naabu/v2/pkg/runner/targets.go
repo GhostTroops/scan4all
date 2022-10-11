@@ -10,6 +10,7 @@ import (
 	"github.com/hktalent/ProScan4all/pkg/hydra"
 	"github.com/hktalent/ProScan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/hktalent/ProScan4all/pkg/naabu/v2/pkg/scan"
+	"github.com/hktalent/ProScan4all/projectdiscovery/dnsxx"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/iputil"
 	"github.com/remeh/sizedwaitgroup"
@@ -136,7 +137,7 @@ func (r *Runner) DoTargets() (bool, error) {
 		if govalidator.IsURL(x) {
 			if x1, err := url.Parse(strings.TrimSpace(x)); nil == err {
 				if govalidator.IsDNSName(x) {
-					aR = append(aR, r.DoDns2Ips(x1.Hostname())...)
+					aR = append(aR, r.DoDns2Ips(x)...)
 					a1 := r.DoSsl(x)
 					if 0 < len(a1) {
 						for _, j := range a1 {
@@ -284,6 +285,10 @@ func Add2Naabubuffer_1(target string) {
 		return
 	}
 	util.PutAny[string](k1, target)
+	// 缓存一下域名和ip的关系
+	if oU, err := url.Parse(target); nil == err && oU.Hostname() != "" {
+		dnsxx.DoGetDnsInfos(oU.Hostname())
+	}
 	Naabubuffer.Write([]byte(target))
 }
 
@@ -383,7 +388,7 @@ func (r *Runner) DoDns(target string) {
 }
 
 func (r *Runner) resolveFQDN(target string) ([]string, error) {
-	ips, err := r.host2ips(target)
+	ips, err := r.Host2ips(target)
 	if err != nil {
 		return []string{}, err
 	}

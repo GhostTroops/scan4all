@@ -86,7 +86,7 @@ func StudyErrPageAI(req *util.Response, page *util.Page, fingerprintsTag string)
 			}
 			// 学些匹配，不重复再记录
 			if bRst, _ := CheckRepeat(data); !bRst {
-				util.Create[ErrPage](data)
+				util.Create[ErrPage](*data)
 			}
 		}
 	})
@@ -125,7 +125,7 @@ func CheckIsErrPageAI(req *util.Response, page *util.Page) bool {
 		for _, x := range page404Title {
 			// 异常页面标题检测成功
 			if 0 < len(data.Title) && (util.StrContains(x, data.Title) || util.StrContains(data.Title, x)) || 0 < len(data.Body) && util.StrContains(data.Body, x) {
-				util.Create[ErrPage](data)
+				util.Create[ErrPage](*data)
 				return true
 			}
 			u01, err := url.Parse(strings.TrimSpace(*page.Url))
