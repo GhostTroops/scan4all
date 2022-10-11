@@ -8,6 +8,8 @@ import (
 	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"github.com/panjf2000/ants/v2"
 	"log"
+	"os"
+	"os/signal"
 	"sync"
 )
 
@@ -106,6 +108,8 @@ func (x1 *Engine) Running() {
 		defer func() {
 			x1.Close()
 		}()
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt)
 		//nMax := 120 // 等xxx秒都没有消息进入就退出
 		//nCnt := 0
 		for {
@@ -113,6 +117,9 @@ func (x1 *Engine) Running() {
 			case <-util.Ctx_global.Done():
 				close(util.PocCheck_pipe)
 				return
+			case <-c:
+				util.DoCbk("exit")
+				os.Exit(1)
 			case x2 := <-x1.EventData: // 各种扫描的控制
 				if nil != x2 && nil != x2.EventData {
 					x1.Wg.Add(1)
@@ -134,7 +141,7 @@ func (x1 *Engine) Running() {
 					}(x1)
 				}
 			default:
-				util.DoDelayClear()
+				util.DoDelayClear(x1.Wg) // panic: sync: WaitGroup misuse: Add called concurrently with Wait
 				//util.DoSleep()
 			}
 		}
@@ -147,7 +154,11 @@ func init() {
 	lib.GConfigServer.OnClient = true
 	lib.MyHub.FnClose()
 	util.RegInitFunc4Hd(func() {
-		x1 := NewEngine(&util.Ctx_global, util.GetValAsInt("ScanPoolSize", 5000))
-		go x1.Running()
+		// 下面的变量 不能移动到DoSyncFunc，否则全局变量将影响后续的init，导致无效的内存
+		NewEngine(&util.Ctx_global, util.GetValAsInt("ScanPoolSize", 5000))
+
+		util.DoSyncFunc(func() {
+			util.G_Engine.(*Engine).Running()
+		})
 	})
 }

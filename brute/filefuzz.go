@@ -140,6 +140,7 @@ func init() {
 			util.SendEngineLog(evt, Const.ScanType_WebDirScan, filePaths, fileFuzzTechnologies)
 		})
 
+		// 注册一个
 	})
 }
 
@@ -208,7 +209,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	var async_data = make(chan *FuzzData, util.Fuzzthreads*2)
 	var async_technologies = make(chan []string, util.Fuzzthreads*2)
 	// 字典长度的 30% 的错误
-	var MaxErrorTimes int32 = int32(float32(len(filedic)) * 0.3)
+	var MaxErrorTimes int32 = int32(util.GetValAsInt("MaxErrorTimes", 50)) //int32(float32(len(filedic)) * 0.005)
 	if strings.HasPrefix(url404req.Protocol, "HTTP/2") || strings.HasPrefix(url404req.Protocol, "HTTP/3") {
 		MaxErrorTimes = int32(len(filedic))
 	}
@@ -228,7 +229,10 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 			case <-ctx2.Done():
 				return
 			case <-t001.C:
-				fmt.Printf("(ok/total:%5d/%5d) (errs/limitErr:%3d/%3d) %s\r", nCnt, len(filedic), errorTimes, MaxErrorTimes, u)
+				fmt.Printf("file fuzz(ok/total:%5d/%5d) (errs/limitErr:%3d/%3d) %s\r", nCnt, len(filedic), errorTimes, MaxErrorTimes, u)
+				if errorTimes >= MaxErrorTimes {
+					stop()
+				}
 			case x1, ok := <-async_data:
 				if ok {
 					if lst200 == nil || x1.Req.Resqonse.Body != lst200.Body {
@@ -293,11 +297,6 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 						szUrl = u + payload[1:]
 					}
 					//log.Printf("start fuzz: [%s]", szUrl)
-					client := util.GetClient(szUrl)
-					if nil != client {
-						client.ErrCount = 0
-						client.ErrLimit = 999999
-					}
 					if fuzzPage, req, err := reqPage(szUrl); err == nil && nil != req && 0 < len(req.Body) {
 						if 200 == req.StatusCode {
 							if nil == lst200 {

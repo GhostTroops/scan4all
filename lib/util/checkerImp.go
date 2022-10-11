@@ -1,7 +1,8 @@
-package checker
+package util
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
+	"io"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -28,15 +29,20 @@ type CheckerTools struct {
 }
 
 func GetInstance(name string) *CheckerTools {
-	return util.GetObjFromNoRpt[*CheckerTools](name)
+	return GetObjFromNoRpt[*CheckerTools](name)
+}
+
+// 注册body处理
+func RegResponsCheckFunc(cbk ...func(*CheckerTools, ...interface{})) {
+	GetInstance(RespBody).RegCheckFunc(cbk...)
 }
 
 // 构建一个检查器
 func New(name string) *CheckerTools {
-	ct := util.GetObjFromNoRpt[*CheckerTools](name)
+	ct := GetObjFromNoRpt[*CheckerTools](name)
 	if nil == ct {
 		ct = &CheckerTools{Name: name}
-		util.SetNoRpt(name, ct)
+		SetNoRpt(name, ct)
 	}
 	return ct
 }
@@ -46,9 +52,28 @@ func (r *CheckerTools) RegCheckFunc(fnChk ...func(*CheckerTools, ...interface{})
 	r.checkFunc = append(r.checkFunc, fnChk...)
 }
 
+// 获取 限流后的 body 数据
+func (r *CheckerTools) GetBodyStr(a ...interface{}) string {
+	if nil == a || 0 == len(a) || nil == a[0] {
+		return ""
+	}
+	if s1, ok := a[0].(string); ok {
+		return s1
+	} else if s1, ok := a[0].([]byte); ok {
+		return string(s1)
+	} else if s1, ok := a[0].(io.ReadCloser); ok {
+		if data, err := io.ReadAll(s1); err == nil {
+			s1.Close()
+			return string(data)
+		}
+	}
+	return ""
+}
+
 // 检查
 func (r *CheckerTools) Check(parm ...interface{}) {
 	for _, f := range r.checkFunc {
+		log.Printf("Check %+v\n", parm)
 		f(r, parm...)
 	}
 }
@@ -76,13 +101,23 @@ func (r *CheckerTools) GetHead(p interface{}, key string) []string {
 
 // 头部检查，传入不同形态的头，函数根据需要处理
 func CheckRespHeader(parm ...interface{}) {
-	if x1 := GetInstance(keys[0]); nil != x1 {
+	if x1 := GetInstance(RespHeader); nil != x1 {
 		x1.Check(parm...)
 	}
 }
 
+// 检查 response 对象
+//  1、包括头的检查
+//  2、包括body的检查
+func CheckResp(szU string, resp ...*http.Response) {
+	for _, r := range resp {
+		CheckRespHeader(&r.Header, szU)
+		GetInstance(RespBody).Check(&r, szU)
+	}
+}
+
 func init() {
-	util.RegInitFunc(func() {
+	RegInitFunc(func() {
 		for _, k := range keys {
 			New(k)
 		}

@@ -64,13 +64,19 @@ func DoSleep() {
 }
 
 // 延时清理
-func DoDelayClear() {
+func DoDelayClear(Wg1 ...*sync.WaitGroup) {
+	var wg2 *sync.WaitGroup
+	if 0 < len(Wg1) && nil != Wg1[0] {
+		wg2 = Wg1[0]
+	} else {
+		wg2 = Wg
+	}
 	IsDo <- struct{}{}
-	Wg.Add(1)
+	wg2.Add(1)
 	go func() {
 		defer func() {
 			<-IsDo
-			Wg.Done()
+			wg2.Done()
 		}()
 		nN := time.Now().Unix()
 		delayClear.Range(func(key, value any) bool {

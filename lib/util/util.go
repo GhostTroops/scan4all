@@ -176,6 +176,12 @@ func MergeParms2Obj(obj interface{}, args ...interface{}) interface{} {
 	return obj
 }
 
+// 返回限流的reader
+func GetLimitReader(i *http.Response) io.ReadCloser {
+	CheckResp(i.Request.URL.String(), i)
+	return io.NopCloser(&io.LimitedReader{R: i.Body, N: int64(GetValAsInt("LimitReader", 819200))})
+}
+
 func GetResponse(username string, password string, urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (resp1 *Response, reqbody, location string, err error) {
 	client := GetClient(urlstring)
 	if nil == client {
@@ -188,12 +194,13 @@ func GetResponse(username string, password string, urlstring string, method stri
 	client.DoGetWithClient4SetHd(client.Client, urlstring, strings.ToUpper(method), strings.NewReader(postdata), func(resp *http.Response, err1 error, szU string) {
 		if err1 != nil {
 			if nil != resp {
-				io.Copy(ioutil.Discard, resp.Body)
+				defer resp.Body.Close()
+				//io.Copy(ioutil.Discard, resp.Body)
 			}
 			//log.Printf("%s %v", urlstring, err1)
 			resp1, reqbody, location, err = &Response{"999", 999, "", nil, 0, "", "", ""}, "", "", err1
 		} else {
-			if body, err1 := ioutil.ReadAll(resp.Body); err1 == nil {
+			if body, err1 := ioutil.ReadAll(GetLimitReader(resp)); err1 == nil {
 				reqbody = string(body)
 			}
 			if relocation, err1 := resp.Location(); err1 == nil {
@@ -413,7 +420,12 @@ func ScannerToReader(scanner *bufio.Scanner) io.Reader {
 func SendData2Url(szUrl string, data1 interface{}, m1 *map[string]string, fnCbk func(resp *http.Response, err error, szU string)) {
 	data, _ := json.Marshal(data1)
 	c1 := GetClient(szUrl)
-	c1.DoGetWithClient4SetHd(c1.Client, szUrl, "POST", bytes.NewReader(data), fnCbk, func() map[string]string {
+	c1.DoGetWithClient4SetHd(c1.Client, szUrl, "POST", bytes.NewReader(data), func(resp1 *http.Response, err error, szU string) {
+		if nil != resp1 {
+			resp1.Body = GetLimitReader(resp1)
+		}
+		fnCbk(resp1, err, szU)
+	}, func() map[string]string {
 		return *m1
 	}, true)
 }
@@ -450,6 +462,9 @@ func Invoke(iFunc interface{}, args ...interface{}) {
 func DoGet(szUrl string, hd map[string]string) (resp *http.Response, err error) {
 	if c1 := GetClient(szUrl); nil != c1 {
 		c1.DoGetWithClient4SetHd(nil, szUrl, "GET", nil, func(resp1 *http.Response, err1 error, szU string) {
+			if nil != resp1 {
+				resp1.Body = GetLimitReader(resp1)
+			}
 			resp = resp1
 			err = err1
 		}, func() map[string]string {
@@ -462,6 +477,9 @@ func DoGet(szUrl string, hd map[string]string) (resp *http.Response, err error) 
 func DoPost(szUrl string, hd map[string]string, data io.Reader) (resp *http.Response, err error) {
 	if c1 := GetClient(szUrl); nil != c1 {
 		c1.DoGetWithClient4SetHd(nil, szUrl, "POST", data, func(resp1 *http.Response, err1 error, szU string) {
+			if nil != resp1 {
+				resp1.Body = GetLimitReader(resp1)
+			}
 			resp = resp1
 			err = err1
 		}, func() map[string]string {
