@@ -37,6 +37,11 @@ func RegResponsCheckFunc(cbk ...func(*CheckerTools, ...interface{})) {
 	GetInstance(RespBody).RegCheckFunc(cbk...)
 }
 
+// 注册body处理
+func RegHeaderCheckFunc(cbk ...func(*CheckerTools, ...interface{})) {
+	GetInstance(ReqHeader).RegCheckFunc(cbk...)
+}
+
 // 构建一个检查器
 func New(name string) *CheckerTools {
 	ct := GetObjFromNoRpt[*CheckerTools](name)
