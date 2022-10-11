@@ -1,14 +1,31 @@
 # This is an example .goreleaser.yml file with some sensible defaults.
 # Make sure to check the documentation at https://goreleaser.com
-before:
-  hooks:
+#before:
+#  hooks:
     # You may remove this if you don't use go modules.
-    - go mod tidy
+#    - go mod tidy
     # you may remove this if you don't need go generate
-    - go generate ./...
+#    - go generate ./...
+release:
+  # Repo in which the release will be created.
+  # Default is extracted from the origin remote URL or empty if its private hosted.
+  github:
+    owner: hktalent
+    name: scan4all_Pro
+
+  draft: false
+  replace_existing_draft: true
+  target_commitish: '{{ .Commit }}'
+  discussion_category_name: General
+  mode: replace
+  header: |
+    ##  ({{ .Date }})
+    Welcome to use and promote
+  footer: |
+    ## Thanks!
 builds:
   - env:
-      - CGO_ENABLED=0
+      - CGO_ENABLED=1
     goos:
       - linux
       - windows
@@ -18,6 +35,7 @@ archives:
       darwin: Darwin
       linux: Linux
       windows: Windows
+      arm64: arm64
       386: i386
       amd64: x86_64
 checksum:
