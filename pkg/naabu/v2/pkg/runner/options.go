@@ -128,7 +128,7 @@ func ParseOptions() *Options {
 		flagSet.StringVar(&options.CeyeApi, "ceyeapi", "", "ceye.io api key"),
 		flagSet.StringVar(&options.CeyeDomain, "ceyedomain", "", "ceye.io subdomain"),
 		flagSet.BoolVar(&options.NoPOC, "np", false, "Skip pocs_go check"),
-		flagSet.BoolVarP(&options.ScanAllIPS, "sa", "scan-all-ips", true, "scan all the IP's associated with DNS record"),
+		flagSet.BoolVarP(&options.ScanAllIPS, "sa", "scan-all-ips", false, "scan all the IP's associated with DNS record"),
 		flagSet.StringVarP(&options.ScanType, "s", "scan-type", SynScan, "type of port scan (SYN/CONNECT)"),
 		flagSet.StringVar(&options.SourceIP, "source-ip", "", "source ip"),
 		flagSet.BoolVarP(&options.InterfacesList, "il", "interface-list", false, "list available interfaces and public ip"),

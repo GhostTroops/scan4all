@@ -17,6 +17,7 @@ import (
 	"github.com/projectdiscovery/uncover/uncover"
 	"github.com/projectdiscovery/uncover/uncover/agent/censys"
 	"github.com/projectdiscovery/uncover/uncover/agent/fofa"
+	"github.com/projectdiscovery/uncover/uncover/agent/quake"
 	"github.com/projectdiscovery/uncover/uncover/agent/shodan"
 	"github.com/projectdiscovery/uncover/uncover/agent/shodanidb"
 	"go.uber.org/ratelimit"
@@ -46,17 +47,19 @@ func (r *Runner) Run(ctx context.Context, query ...string) error {
 		return errors.New("no keys provided")
 	}
 
-	var censysRateLimiter, fofaRateLimiter, shodanRateLimiter, shodanIdbRateLimiter ratelimit.Limiter
+	var censysRateLimiter, fofaRateLimiter, shodanRateLimiter, shodanIdbRateLimiter, quakeRatelimiter ratelimit.Limiter
 	if r.options.Delay > 0 {
 		censysRateLimiter = ratelimit.New(1, ratelimit.Per(r.options.delay))
 		fofaRateLimiter = ratelimit.New(1, ratelimit.Per(r.options.delay))
 		shodanRateLimiter = ratelimit.New(1, ratelimit.Per(r.options.delay))
 		shodanIdbRateLimiter = ratelimit.New(1024) // seems a reasonable upper limit
+		quakeRatelimiter = ratelimit.New(1, ratelimit.Per(r.options.delay))
 	} else {
 		censysRateLimiter = ratelimit.NewUnlimited()
 		fofaRateLimiter = ratelimit.NewUnlimited()
 		shodanRateLimiter = ratelimit.NewUnlimited()
 		shodanIdbRateLimiter = ratelimit.NewUnlimited()
+		quakeRatelimiter = ratelimit.NewUnlimited()
 	}
 
 	var agents []uncover.Agent
@@ -75,6 +78,8 @@ func (r *Runner) Run(ctx context.Context, query ...string) error {
 			agent, err = fofa.NewWithOptions(&uncover.AgentOptions{RateLimiter: fofaRateLimiter})
 		case "shodan-idb":
 			agent, err = shodanidb.NewWithOptions(&uncover.AgentOptions{RateLimiter: shodanIdbRateLimiter})
+		case "quake":
+			agent, err = quake.NewWithOptions(&uncover.AgentOptions{RateLimiter: quakeRatelimiter})
 		default:
 			err = errors.New("unknown agent type")
 		}
@@ -120,7 +125,7 @@ func (r *Runner) Run(ctx context.Context, query ...string) error {
 					gologger.Error().Label(agent.Name()).Msgf("empty keys\n")
 					return
 				}
-				session, err := uncover.NewSession(&keys, r.options.Timeout)
+				session, err := uncover.NewSession(&keys, r.options.Retries, r.options.Timeout)
 				if err != nil {
 					gologger.Error().Label(agent.Name()).Msgf("couldn't create new session: %s\n", err)
 				}

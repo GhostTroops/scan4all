@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
 	"runtime"
 	"runtime/debug"
 )
@@ -25,7 +24,7 @@ func main() {
 	//os.Args = []string{"", "-host", "http://192.168.0.109", "-v"}
 	//os.Args = []string{"", "-host", "http://127.0.0.1", "-v"}
 	//os.Args = []string{"", "-host", "https://www.sina.com.cn/", "-v", "-o", "xxx.csv"}
-	os.Args = []string{"", "-list", "list.txt", "-v"}
+	//os.Args = []string{"", "-list", "list.txt", "-v"}
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	util.DoInit(&config)

@@ -23,8 +23,8 @@ var (
 
 // Options contains the configuration options for tuning the enumeration process.
 type Options struct {
-	Query        goflags.FileStringSlice
-	Engine       goflags.FileNormalizedStringSlice
+	Query        goflags.StringSlice
+	Engine       goflags.StringSlice
 	ConfigFile   string
 	ProviderFile string
 	OutputFile   string
@@ -40,6 +40,7 @@ type Options struct {
 	Delay        int
 	delay        time.Duration
 	Provider     *Provider
+	Retries      int
 }
 
 // ParseOptions parses the command line flags provided by a user
@@ -50,8 +51,8 @@ func ParseOptions() *Options {
 	flagSet.SetDescription(`quickly discover exposed assets on the internet using multiple search engines.`)
 
 	flagSet.CreateGroup("input", "Input",
-		flagSet.FileStringSliceVarP(&options.Query, "query", "q", []string{}, "search query, supports: stdin,file,config input (example: -q 'example query', -q 'query.txt')"),
-		flagSet.FileNormalizedStringSliceVarP(&options.Engine, "engine", "e", []string{}, "search engine to query (shodan,shodan-idb,fofa,censys) (default shodan)"),
+		flagSet.StringSliceVarP(&options.Query, "query", "q", nil, "search query, supports: stdin,file,config input (example: -q 'example query', -q 'query.txt')", goflags.FileStringSliceOptions),
+		flagSet.StringSliceVarP(&options.Engine, "engine", "e", nil, "search engine to query (shodan,shodan-idb,fofa,censys,quake) (default shodan)", goflags.FileNormalizedStringSliceOptions),
 	)
 
 	flagSet.CreateGroup("config", "Config",
@@ -59,6 +60,7 @@ func ParseOptions() *Options {
 		flagSet.StringVar(&options.ConfigFile, "config", defaultConfigLocation, "flag configuration file"),
 		flagSet.IntVar(&options.Timeout, "timeout", 30, "timeout in seconds"),
 		flagSet.IntVar(&options.Delay, "delay", 1, "delay between requests in seconds (0 to disable)"),
+		flagSet.IntVar(&options.Retries, "retries", 1, "number of times to retry a failed request"),
 	)
 
 	flagSet.CreateGroup("output", "Output",

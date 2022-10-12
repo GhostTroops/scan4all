@@ -1,4 +1,5 @@
 {
+  "ldapServer": "ldap://docker.for.mac.localhost:1389/%s/#UpX34defineClass",
   "LimitReader": 819200,
   "OnClient": true,
   "ScanPoolSize":5000,
