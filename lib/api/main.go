@@ -17,6 +17,9 @@ import (
 // 逐步实现支持 多实例 接口 运行
 func StartScan(oOpts *map[string]interface{}) {
 	util.DoSyncFunc(func() {
+		//buf1 := bytes.Buffer{}
+		//opt001 := naabu.DoNaabu(&buf1)
+
 		options := naaburunner.ParseOptions()
 		if options.Update {
 			util.UpdateScan4allVersionToLatest(true)
@@ -83,7 +86,7 @@ func StartScan(oOpts *map[string]interface{}) {
 			}
 			gologger.Info().Msg("Port scan over,web scan starting")
 		}
-		err = naabuRunner.Httpxrun()
+		err = naabuRunner.Httpxrun(nil, nil)
 		if err != nil {
 			gologger.Fatal().Msgf("naabuRunner.Httpxrun Could not run httpRunner: %s\n", err)
 		}

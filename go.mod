@@ -27,7 +27,7 @@ require (
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/projectdiscovery/retryablehttp-go v1.0.3-0.20220604122435-c175fc8f2d4a
-	github.com/projectdiscovery/uncover v0.0.5
+	github.com/projectdiscovery/uncover v0.0.6
 	github.com/stretchr/testify v1.8.0
 )
 
@@ -38,12 +38,12 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/miekg/dns v1.1.50 // indirect
+	github.com/miekg/dns v1.1.50
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/projectdiscovery/hmap v0.0.2
-	github.com/projectdiscovery/retryabledns v1.0.15 // indirect
+	github.com/projectdiscovery/retryabledns v1.0.15
 	github.com/projectdiscovery/stringsutil v0.0.1
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/yl2chen/cidranger v1.0.2 // indirect
@@ -105,6 +105,7 @@ require (
 	github.com/hktalent/jarm-go v0.0.0-20220918133110-7801447b6267
 	github.com/huin/asn1ber v0.0.0-20120622192748-af09f62e6358
 	github.com/icodeface/tls v0.0.0-20190904083142-17aec93c60e5
+	github.com/jinzhu/copier v0.3.5
 	github.com/jlaffaye/ftp v0.1.0
 	github.com/karlseguin/ccache v2.0.3+incompatible
 	github.com/lcvvvv/gonmap v1.2.1
@@ -118,6 +119,7 @@ require (
 	github.com/panjf2000/ants/v2 v2.5.0
 	github.com/projectdiscovery/folderutil v0.0.0-20220523100846-d6161a49c221
 	github.com/projectdiscovery/iputil v0.0.0-20220712175312-b9406f31cdd8
+	github.com/projectdiscovery/naabu/v2 v2.1.0
 	github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220726130814-981d44a34f84
 	github.com/projectdiscovery/nuclei/v2 v2.7.8
 	github.com/projectdiscovery/subfinder/v2 v2.5.3

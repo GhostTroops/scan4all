@@ -12,6 +12,7 @@ import (
 	"github.com/hktalent/ProScan4all/webScan"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/iputil"
+	runner3 "github.com/projectdiscovery/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/retryablehttp-go"
 	"log"
 	"net"
@@ -53,8 +54,12 @@ type Runner struct {
 
 var Naabubuffer = bytes.Buffer{}
 
-func (r *Runner) Httpxrun() error {
-	httpxrunner.Naabubuffer = Naabubuffer
+func (r *Runner) Httpxrun(buf *bytes.Buffer, options *runner3.Options) error {
+	if nil != buf {
+		httpxrunner.Naabubuffer = *buf
+	} else {
+		httpxrunner.Naabubuffer = Naabubuffer
+	}
 	var nucleiDone = make(chan bool, 1)
 	Cookie := util.GetVal("Cookie")
 	if "" != Cookie {

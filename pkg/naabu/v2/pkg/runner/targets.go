@@ -440,6 +440,7 @@ func (r *Runner) resolveFQDN(target string) ([]string, error) {
 		hostIPS = append(hostIPS, initialHosts[0])
 	}
 
+	hostIPS = util.SliceRemoveDuplicates(hostIPS)
 	for _, hostIP := range hostIPS {
 		gologger.Debug().Msgf("Using host %s for enumeration\n", hostIP)
 		// dedupe all the hosts and also keep track of ip => host for the output - just append new hostname

@@ -2,4 +2,4 @@
 2、修复naabu、nmap扫描后使用ip继续走后续流程，导致无法正确访问目标的bug，https通常是限定只能域名访问的
 3、file fuzz针对
 aac、abw、arc、avif、avi、azw、bin、bmp、bz、bz2、cda、csh、css、csv、doc、docx、eot、epub、gz、gif、ico、ics、jar、jpeg、jpg、js、json、jsonld、mid、midi、mjs、mp3、mp4、mpeg、mpkg、odp、ods、odt、oga、ogv、ogx、opus、otf、png、pdf、php、ppt、pptx、rar、rtf、sh、svg、tar、tif、tiff、ts、ttf、txt、vsd、wav、weba、webm、webp、woff、woff2、xhtml、xls、xlsx、xml、xul、zip、3gp、3g2、7z
-的Content-Type:  进行类型识别，跳过无用的fuzz
+的Content-Type:  进行类型识别，跳过无用的fuzz,例如请求的是jpg，返回200的html

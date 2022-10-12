@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pkg/httpx/common/customheader"
 	"github.com/hktalent/ProScan4all/pkg/httpx/common/customlist"
 	customport "github.com/hktalent/ProScan4all/pkg/httpx/common/customports"
@@ -351,7 +352,7 @@ func ParseOptions() *Options {
 	//showBanner()
 
 	if options.Version {
-		gologger.Info().Msgf("Current Version: %s\n", Version)
+		gologger.Info().Msgf("Current Version: %s\n", util.Version)
 		os.Exit(0)
 	}
 

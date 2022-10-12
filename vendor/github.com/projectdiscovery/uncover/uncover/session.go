@@ -7,14 +7,16 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/projectdiscovery/retryablehttp-go"
 )
 
 type Session struct {
-	Keys   *Keys
-	Client *http.Client
+	Keys     *Keys
+	Client   *retryablehttp.Client
+	RetryMax int
 }
 
-func NewSession(keys *Keys, timeout int) (*Session, error) {
+func NewSession(keys *Keys, retryMax, timeout int) (*Session, error) {
 	Transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 100,
@@ -25,20 +27,25 @@ func NewSession(keys *Keys, timeout int) (*Session, error) {
 		Proxy:                 http.ProxyFromEnvironment,
 	}
 
-	client := &http.Client{
+	httpclient := &http.Client{
 		Transport: Transport,
 		Timeout:   time.Duration(timeout) * time.Second,
 	}
 
+	options := retryablehttp.Options{RetryMax: retryMax}
+	options.RetryWaitMax = time.Duration(timeout) * time.Second
+	client := retryablehttp.NewWithHTTPClient(httpclient, options)
+
 	session := &Session{
-		Client: client,
-		Keys:   keys,
+		Client:   client,
+		Keys:     keys,
+		RetryMax: retryMax,
 	}
 
 	return session, nil
 }
 
-func (s *Session) Do(request *http.Request) (*http.Response, error) {
+func (s *Session) Do(request *retryablehttp.Request) (*http.Response, error) {
 	request.Header.Set("Connection", "close")
 	resp, err := s.Client.Do(request)
 	if err != nil {
@@ -65,6 +72,5 @@ func (s *Session) Do(request *http.Request) (*http.Response, error) {
 	// 	StatusCode: 200,
 	// 	Body:       f,
 	// }
-
 	return resp, nil
 }

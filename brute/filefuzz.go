@@ -160,6 +160,7 @@ type FuzzData struct {
 	Req  *util.Page
 }
 
+// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 var r001 = regexp.MustCompile(`\.(aac)|(abw)|(arc)|(avif)|(avi)|(azw)|(bin)|(bmp)|(bz)|(bz2)|(cda)|(csh)|(css)|(csv)|(doc)|(docx)|(eot)|(epub)|(gz)|(gif)|(ico)|(ics)|(jar)|(jpeg)|(jpg)|(js)|(json)|(jsonld)|(mid)|(midi)|(mjs)|(mp3)|(mp4)|(mpeg)|(mpkg)|(odp)|(ods)|(odt)|(oga)|(ogv)|(ogx)|(opus)|(otf)|(png)|(pdf)|(php)|(ppt)|(pptx)|(rar)|(rtf)|(sh)|(svg)|(tar)|(tif)|(tiff)|(ts)|(ttf)|(txt)|(vsd)|(wav)|(weba)|(webm)|(webp)|(woff)|(woff2)|(xhtml)|(xls)|(xlsx)|(xml)|(xul)|(zip)|(3gp)|(3g2)|(7z)$`)
 
 // 重写了fuzz：优化流程、优化算法、修复线程安全bug、增加智能功能
@@ -397,9 +398,12 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	}
 	// 默认情况等待所有结束
 	wg.Wait()
-	log.Printf("fuzz is over: %s found:\n%s\n", u, strings.Join(path, "\n"))
+	if 0 < len(path) {
+		log.Printf("fuzz is over: %s found:\n%s\n", u, strings.Join(path, "\n"))
+		path = util.SliceRemoveDuplicates(path)
+	}
 	technologies = util.SliceRemoveDuplicates(technologies)
-	path = util.SliceRemoveDuplicates(path)
+
 	stop() //发停止指令
 	<-time.After(time.Second * 2)
 	stop2()
