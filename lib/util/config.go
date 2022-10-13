@@ -287,6 +287,7 @@ func doReadBuff(buf *bytes.Buffer) string {
 
 // 最佳的方法是将命令写到临时文件，并通过bash进行执行
 func DoCmd(args ...string) (string, error) {
+	log.Println("start run: " + strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout // 标准输出
@@ -434,9 +435,15 @@ func GetObjFromNoRpt[T any](key string) T {
 	return x2
 }
 
+func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
+	r01, err, ok = TestIsWeb01(szUrl)
+	ok = err == nil && nil != r01 && (404 == r01.StatusCode || 302 == r01.StatusCode)
+	return r01, err, ok
+}
+
 // 绝对404检测
 // 相同 url 本实例中只检测一次
-func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
+func TestIsWeb01(szUrl string) (r01 *Response, err error, ok bool) {
 	key := "TestIs404" + szUrl
 	a1 := GetObjFromNoRpt[[]interface{}](key)
 	if nil != a1 {
@@ -450,7 +457,15 @@ func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 		return r01, err, ok
 	}
 	sz404 := szUrl + Abs404
-	//client := GetClient(sz404)
+	client1 := GetClient(sz404, map[string]interface{}{
+		"Timeout":                    30 * 60,
+		"MaxIdleConns":               100,
+		"MaxIdleConnsPerHost":        2,
+		"DefaultMaxIdleConnsPerHost": 2,
+		"MaxConnsPerHost":            0,
+	})
+	PutClientCc(sz404, client1)
+
 	//if nil != client {
 	//	client.Client.Timeout = 500
 	//	client.ErrCount = 0
@@ -467,10 +482,10 @@ func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 	//	}
 	//}
 	r01, err = HttpRequset(sz404, "GET", "", false, mh1)
-	ok = err == nil && nil != r01 && 404 == r01.StatusCode
+	ok = err == nil && nil != r01 && (200 <= r01.StatusCode)
 	if nil != err {
 		CloseHttpClient(sz404)
-		//log.Println(sz404, err)
+		log.Println(sz404, err)
 	} else {
 		//log.Printf("%d %s %s\n", r01.StatusCode, r01.Protocol, sz404)
 	}

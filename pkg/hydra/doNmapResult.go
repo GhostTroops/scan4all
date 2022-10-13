@@ -59,8 +59,11 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 		for _, x := range hostName {
 			aDns = append(aDns, GetAttr(x.Attr, "name"))
 		}
-
 		x1 := n.SelectElement("address").Attr[0].Value
+		if 0 == len(aDns) {
+			aDns = append(aDns, x1)
+		}
+
 		ps := n.SelectElements("ports/port")
 		for _, x := range ps {
 			if "open" == x.SelectElement("state").Attr[0].Value {

@@ -139,6 +139,6 @@ func SaveRsult4Ws(id string, m11 *map[string]interface{}, g1 *gin.Context, h *Hu
 			log.Println(szE01)
 		}
 	} else {
-		log.Printf("vuls info cannot found event")
+		log.Printf("vuls info cannot found event: %+v", *m11)
 	}
 }

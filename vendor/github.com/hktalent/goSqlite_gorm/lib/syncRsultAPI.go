@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	util "github.com/hktalent/go-utils"
+	"github.com/hktalent/goSqlite_gorm/pkg/es7"
 	"log"
 	"net/http"
 	"strconv"
@@ -39,6 +40,8 @@ func A2s(o interface{}) string {
 	return ""
 }
 
+var xes = es7.NewEs7()
+
 // 保存任务结果
 func SaveRsult(g *gin.Context) {
 	id := g.Param("id")       // task id
@@ -53,7 +56,11 @@ func SaveRsult(g *gin.Context) {
 		return
 	}
 	if 0 < len(m11) {
-		SaveRsult4Ws(id, &m11, g, nil, nil)
+		s := xes.Create(m11, id)
+		if "" != s {
+			fmt.Println("xes.Create" + s)
+		}
+		//SaveRsult4Ws(id, &m11, g, nil, nil)
 	} else {
 		g.JSON(200, "ok")
 	}

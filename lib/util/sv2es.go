@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
+	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,6 +29,15 @@ func initEs() {
 	}
 }
 
+func init() {
+	RegInitFunc(func() {
+		// 保存数据也采用统一的线程池
+		EngineFuncFactory(Const.ScanType_SaveEs, func(evt *models.EventData, args ...interface{}) {
+			SendReq(args[0].(interface{}), args[1].(string), args[2].(ESaveType))
+		})
+	})
+}
+
 func Log(v ...any) {
 	log.Println(v...)
 }
@@ -44,15 +55,15 @@ type SimpleVulResult struct {
 
 // 一定得有全局得线程等待
 func SendAnyData(data interface{}, szType ESaveType) {
-	DoSyncFunc(func() {
+	if enableEsSv {
 		data1, _ := json.Marshal(data)
-		if 0 < len(data1) && enableEsSv {
+		if 0 < len(data1) {
 			hasher := sha1.New()
 			hasher.Write(data1)
 			k := hex.EncodeToString(hasher.Sum(nil))
-			SendReq(data, k, szType)
+			SendEvent(&models.EventData{EventType: Const.ScanType_SaveEs, EventData: []interface{}{data, k, szType}}, Const.ScanType_SaveEs)
 		}
-	})
+	}
 }
 
 // k is id
@@ -60,49 +71,49 @@ func SendAData[T any](k string, data []T, szType ESaveType) {
 	if 0 < len(data) && enableEsSv {
 		m2 := make(map[string]interface{})
 		m2[k] = data
-		SendReq(m2, k, szType)
-		log.Printf("%+v\n", data)
+		SendEvent(&models.EventData{EventType: Const.ScanType_SaveEs, EventData: []interface{}{m2, k, szType}}, Const.ScanType_SaveEs)
+		//SendReq(m2, k, szType)
+		//log.Printf("%+v\n", data)
 	}
 }
 
+// es 需要基于buffer，避免太频繁
 // 发送数据到ES
 //  data1数据
 //  id 数据计算出来的id
 //  szType 类型，决定 es不通的索引分类
 func SendReq(data1 interface{}, id string, szType ESaveType) {
-	DoSyncFunc(func() {
-		if !enableEsSv {
-			return
-		}
-		//log.Println("enableEsSv = ", enableEsSv, " id= ", id, " type = ", szType)
-		nThreads <- struct{}{}
-		defer func() {
-			<-nThreads
-		}()
-		szUrl := fmt.Sprintf(EsUrl, szType, url.QueryEscape(id))
-		//log.Println("logs EsUrl = ", EsUrl)
-		m1 := map[string]string{
-			"User-Agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15",
-			"Content-Type": "application/json;charset=UTF-8",
-		}
-		c1 := GetClient(szUrl, map[string]interface{}{"UseHttp2": true})
-		c1.ErrLimit = 10000
-		c1.ErrCount = 0
-		data, _ := json.Marshal(data1)
-		c1.DoGetWithClient4SetHd(c1.GetClient4Http2(), szUrl, "POST", bytes.NewReader(data), func(resp *http.Response, err error, szU string) {
-			if nil != err {
-				log.Println("pphLog.DoGetWithClient4SetHd ", err)
-			} else {
-				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
-				if nil == err && 0 < len(body) {
-					Log("Es save result ", string(body))
-				} else if nil != err {
-					Log(err)
-				}
+	if !enableEsSv {
+		return
+	}
+	//log.Println("enableEsSv = ", enableEsSv, " id= ", id, " type = ", szType)
+	nThreads <- struct{}{}
+	defer func() {
+		<-nThreads
+	}()
+	szUrl := fmt.Sprintf(EsUrl, szType, url.QueryEscape(id))
+	//log.Println("logs EsUrl = ", EsUrl)
+	m1 := map[string]string{
+		"User-Agent":   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.2 Safari/605.1.15",
+		"Content-Type": "application/json;charset=UTF-8",
+	}
+	c1 := GetClient(szUrl, map[string]interface{}{"UseHttp2": true})
+	c1.ErrLimit = 10000
+	c1.ErrCount = 0
+	data, _ := json.Marshal(data1)
+	c1.DoGetWithClient4SetHd(c1.GetClient4Http2(), szUrl, "POST", bytes.NewReader(data), func(resp *http.Response, err error, szU string) {
+		if nil != err {
+			log.Println("pphLog.DoGetWithClient4SetHd ", err)
+		} else {
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if nil == err && 0 < len(body) {
+				Log("Es save result ", string(body))
+			} else if nil != err {
+				Log(err)
 			}
-		}, func() map[string]string {
-			return m1
-		}, true)
-	})
+		}
+	}, func() map[string]string {
+		return m1
+	}, true)
 }

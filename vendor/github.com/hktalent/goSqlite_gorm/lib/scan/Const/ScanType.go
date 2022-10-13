@@ -20,6 +20,8 @@ const (
 	ScanType_WebDirScan                         // 14- dir爆破,Gobuster
 	ScanType_Naabu                              // 15- naabu
 	ScanType_Httpx                              // 16- httpx
+	ScanType_DNSx                               // 17- DNSX
+	ScanType_SaveEs                             // 18- Save Es
 )
 
 const (

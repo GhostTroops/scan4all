@@ -8,6 +8,7 @@ import (
 	"net/http"
 )
 
+// 在线测试http3 https://geekflare.com/tools/http3-test
 func (r *PipelineHttp) GetTransport4Http3() http.RoundTripper {
 	pool, err := x509.SystemCertPool()
 	if nil != err {
