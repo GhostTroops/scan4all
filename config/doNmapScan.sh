@@ -1,5 +1,5 @@
 #!/bin/bash
-XRate=5000
+XRate=2000
 function doMasScan {
     if [[ -f $1 ]] ; then
         # -F --top-ports=65535

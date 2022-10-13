@@ -79,7 +79,8 @@ func GetClient4Cc(szUrl string) *PipelineHttp.PipelineHttp {
 	InitCHcc()
 	oU, err := url.Parse(szUrl)
 	if nil == err {
-		if o := clientHttpCc.Get(oU.Scheme + oU.Host); nil != o {
+		// if o := clientHttpCc.Get(oU.Scheme + oU.Host); nil != o {
+		if o := clientHttpCc.Get("_ccClient"); nil != o && oU.Hostname() != "" {
 			if v, ok := o.Value().(*PipelineHttp.PipelineHttp); ok {
 				return v
 			}
@@ -125,7 +126,9 @@ func GetClient(szUrl string, pms ...map[string]interface{}) *PipelineHttp.Pipeli
 	//client.Client = G_hc
 	mUrls.Store(oU.Host, "")
 	clientHttpCc.Delete(oU.Scheme + oU.Host)
-	clientHttpCc.Set(oU.Scheme+oU.Host, client, defaultInteractionDuration)
+	//clientHttpCc.Set(oU.Scheme+oU.Host, client, defaultInteractionDuration)
+	clientHttpCc.Set("_ccClient", client, defaultInteractionDuration)
+
 	return client
 }
 
@@ -242,7 +245,7 @@ func HttpRequset(urlstring string, method string, postdata string, isredirect bo
 func TestIsWeb(a *[]string) (a1 *[]string, b *[]string) {
 	var aHttp, noHttp []string
 	for _, k := range *a {
-		if _, _, ok := TestIs404(k); ok {
+		if _, _, ok := TestIsWeb01(k); ok {
 			aHttp = append(aHttp, k)
 		} else {
 			noHttp = append(noHttp, k)

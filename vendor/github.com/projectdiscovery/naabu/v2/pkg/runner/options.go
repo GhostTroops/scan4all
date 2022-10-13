@@ -84,7 +84,7 @@ type Options struct {
 type OnResultCallback func(*result.HostResult)
 
 // ParseOptions parses the command line flags provided by a user
-func ParseOptions(args ...string) *Options {
+func ParseOptions() *Options {
 	options := &Options{}
 
 	flagSet := goflags.NewFlagSet()
@@ -171,11 +171,7 @@ func ParseOptions(args ...string) *Options {
 		flagSet.IntVarP(&options.StatsInterval, "stats-interval", "si", DefautStatsInterval, "number of seconds to wait between showing a statistics update"),
 	)
 
-	if 0 < len(args) {
-		_ = flagSet.CommandLine.Parse(args)
-	} else {
-		_ = flagSet.Parse()
-	}
+	_ = flagSet.Parse()
 
 	if options.HealthCheck {
 		gologger.Print().Msgf("%s\n", DoHealthCheck(options))

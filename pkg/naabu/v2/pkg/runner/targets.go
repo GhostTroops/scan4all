@@ -208,6 +208,7 @@ func (r *Runner) DoTargets() (bool, error) {
 						}(x99[0])
 					}
 					util.TmpFile[string(util.Naabu)] = []*os.File{tempInput1}
+					log.Println("start parse nmap xml result")
 					hydra.DoNmapRst(&Naabubuffer)
 					defer r.Close()
 					if "" != r.targetsFile {
