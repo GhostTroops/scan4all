@@ -79,8 +79,8 @@ func GetClient4Cc(szUrl string) *PipelineHttp.PipelineHttp {
 	InitCHcc()
 	oU, err := url.Parse(szUrl)
 	if nil == err {
-		// if o := clientHttpCc.Get(oU.Scheme + oU.Host); nil != o {
-		if o := clientHttpCc.Get("_ccClient"); nil != o && oU.Hostname() != "" {
+		if o := clientHttpCc.Get(oU.Host); nil != o {
+			//if o := clientHttpCc.Get("_ccClient"); nil != o && oU.Hostname() != "" {
 			if v, ok := o.Value().(*PipelineHttp.PipelineHttp); ok {
 				return v
 			}
@@ -126,8 +126,8 @@ func GetClient(szUrl string, pms ...map[string]interface{}) *PipelineHttp.Pipeli
 	//client.Client = G_hc
 	mUrls.Store(oU.Host, "")
 	clientHttpCc.Delete(oU.Scheme + oU.Host)
-	//clientHttpCc.Set(oU.Scheme+oU.Host, client, defaultInteractionDuration)
-	clientHttpCc.Set("_ccClient", client, defaultInteractionDuration)
+	clientHttpCc.Set(oU.Host, client, defaultInteractionDuration)
+	//clientHttpCc.Set("_ccClient", client, defaultInteractionDuration)
 
 	return client
 }

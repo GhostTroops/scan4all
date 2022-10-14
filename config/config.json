@@ -3,7 +3,7 @@
   "LimitReader": 819200,
   "OnClient": true,
   "ScanPoolSize":5000,
-  "JndiAddress": "https://rcejndi.51pwn.com",
+  "JndiAddress": "docker.for.mac.localhost:1389",
   "CeyeDomain": "scan4all.51pwn.com",
   "CacheName": ".DbCache",
   "autoRmCache": "true",
