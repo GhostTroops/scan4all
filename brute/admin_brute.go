@@ -212,3 +212,9 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 	}
 	return "", "", ""
 }
+
+func init() {
+	util.RegInitFunc(func() {
+		SkipAdminBrute = util.GetValAsBool("SkipAdminBrute")
+	})
+}

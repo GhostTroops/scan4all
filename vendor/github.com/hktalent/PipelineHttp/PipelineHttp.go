@@ -18,6 +18,9 @@ import (
 
 /*
 MaxConnsPerHost 控制单个Host的最大连接总数,该值默认是0，也就是不限制，连接池里的连接能用就用，不能用创建新连接
+MaxIdleConnsPerHost：优先设置这个，决定了对于单个Host需要维持的连接池大小。该值的合理确定，应该根据性能测试的结果调整。
+MaxIdleConns：客户端连接单个Host，不少于MaxIdleConnsPerHost大小，不然影响MaxIdleConnsPerHost控制的连接池；客户端连接 n 个Host，少于 n X MaxIdleConnsPerHost 会影响MaxIdleConnsPerHost控制的连接池（导致连接重建）。嫌麻烦，建议设置为0，不限制。
+MaxConnsPerHost：对于单个Host允许的最大连接数，包含IdleConns，所以一般大于等于MaxIdleConnsPerHost。设置为等于MaxIdleConnsPerHost，也就是尽可能复用连接池中的连接。另外设置过小，可能会导致并发下降，超过这个值会 block 请求，直到有空闲连接。（所以默认值是不限制的）
 */
 type PipelineHttp struct {
 	Timeout               time.Duration            `json:"timeout"`
@@ -208,9 +211,16 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 	if 0 == n1 {
 		n1 = 50
 	}
-	ctx, cc := context.WithTimeout(r.Ctx, n1*r.Timeout)
-	defer cc()
-	req = req.WithContext(ctx)
+	if req.Header.Get("User-Agent") == "" {
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36")
+	}
+	//if 0 < r.Timeout {
+	//	ctx, cc := context.WithTimeout(r.Ctx, n1*r.Timeout)
+	//	defer cc()
+	//	req = req.WithContext(ctx)
+	//} else {
+	req = req.WithContext(r.Ctx)
+	//}
 
 	resp, err := client.Do(req)
 	if bCloseBody && resp != nil {
