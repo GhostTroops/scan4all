@@ -537,14 +537,14 @@ func (r *Runner) RunEnumeration() {
 	// output routine
 	wgoutput := sizedwaitgroup.New(1)
 	wgoutput.Add()
-	output := make(chan Result)
+	output := make(chan Result, 200)
 	go func(output chan Result) {
 		defer wgoutput.Done()
 
 		var f *os.File
 		if r.options.Output != "" {
 			var err error
-			f, err = os.Create(r.options.Output)
+			f, err := os.OpenFile(r.options.Output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				gologger.Fatal().Msgf("Could not create output file '%s': %s\n", r.options.Output, err)
 			}
@@ -554,7 +554,6 @@ func (r *Runner) RunEnumeration() {
 			header := Result{}.CSVHeader()
 			//gologger.Silent().Msgf("%s\n", header)
 			if f != nil {
-				f.WriteString("\xEF\xBB\xBF")
 				//nolint:errcheck // this method needs a small refactor to reduce complexity
 				f.WriteString(header + "\n")
 			}

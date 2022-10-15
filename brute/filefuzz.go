@@ -432,10 +432,15 @@ BreakAll:
 	// 默认情况等待所有结束
 	wg.Wait()
 	if 0 < len(path) {
+		util.SendLog(u, "brute", strings.Join(path, "\n"), "")
+
 		log.Printf("fuzz is over: %s found:\n%s\n", u, strings.Join(path, "\n"))
 		path = util.SliceRemoveDuplicates(path)
 	}
 	technologies = util.SliceRemoveDuplicates(technologies)
+	if 0 < len(technologies) {
+		util.SendLog(u, "brute", strings.Join(technologies, "\n"), "")
+	}
 
 	stop() //发停止指令
 	<-time.After(time.Second * 2)

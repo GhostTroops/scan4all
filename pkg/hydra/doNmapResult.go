@@ -129,7 +129,9 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 					}
 				}
 
-				log.Printf("%s\t%d\t%s\n", ip, port, service)
+				s1 := fmt.Sprintf("%s\t%d\t%s\n", ip, port, service)
+				util.SendLog(ip, "nmap", s1, "")
+				log.Printf("%s", s1)
 			}
 		}
 	}
