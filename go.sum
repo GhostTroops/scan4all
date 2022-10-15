@@ -543,6 +543,8 @@ github.com/hktalent/PipelineHttp v0.0.0-20221013012646-f1b33c0f6f66 h1:D/PD14cl6
 github.com/hktalent/PipelineHttp v0.0.0-20221013012646-f1b33c0f6f66/go.mod h1:ncw1+ugTc5GPQLUHHI7uWrgW2KWBppDBWwwjC984QJg=
 github.com/hktalent/PipelineHttp v0.0.0-20221014032902-e7c54f476ebf h1:WPENZPWsMew6/WRc7V796QNIqUk1d0jDHK3GX1pdfm0=
 github.com/hktalent/PipelineHttp v0.0.0-20221014032902-e7c54f476ebf/go.mod h1:ncw1+ugTc5GPQLUHHI7uWrgW2KWBppDBWwwjC984QJg=
+github.com/hktalent/PipelineHttp v0.0.0-20221015015809-2e197a75e932 h1:CiB55uWqgG8DWPdaWmXod6Wu5GzoFUCOnzev0WCwVW4=
+github.com/hktalent/PipelineHttp v0.0.0-20221015015809-2e197a75e932/go.mod h1:ncw1+ugTc5GPQLUHHI7uWrgW2KWBppDBWwwjC984QJg=
 github.com/hktalent/go-utils v0.0.0-20221004095234-2e23f13b429d h1:z1IUP4hqn0LGgs78bU2gSlna92/p+RlB0MSZ+RxSmCo=
 github.com/hktalent/go-utils v0.0.0-20221004095234-2e23f13b429d/go.mod h1:Du0lF0ZtTONXpWydjmnsL71He+zlimYLmTmAZta19ZA=
 github.com/hktalent/go4Hacker v0.0.0-20220610050413-bb38dc39c4b9 h1:OAnRWLddVE6FPOeIHJcgDYWoQWpvh/F5w/1MEJikWIQ=

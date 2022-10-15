@@ -137,6 +137,9 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 
 	readConfig(options)
 	s001 := strings.TrimSpace(buf.String())
+	if "" == s001 {
+		return
+	}
 	a66 := strings.Split(s001, "\n")
 	x55, _ := util.TestIsWeb(&a66)
 	options.Targets = *x55

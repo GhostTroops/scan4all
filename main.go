@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
 	"runtime"
 	"runtime/debug"
 )
@@ -21,10 +22,11 @@ var config embed.FS
 var Version string
 
 func main() {
-	//os.Args = []string{"", "-host", "http://192.168.10.203", "-v"}
+	//os.Args = []string{"", "-host", "http://192.168.0.109", "-v"}
 	//os.Args = []string{"", "-host", "http://127.0.0.1", "-v"}
 	//os.Args = []string{"", "-host", "https://www.sina.com.cn/", "-v", "-o", "xxx.csv"}
 	//os.Args = []string{"", "-list", "list.txt", "-v"}
+	os.Args = []string{"", "-list", "./5701580f708064a329d2c2bca41727b4c13a3126.xml", "-v"}
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	util.DoInit(&config)

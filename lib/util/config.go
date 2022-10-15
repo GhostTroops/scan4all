@@ -444,6 +444,9 @@ func TestIs404(szUrl string) (r01 *Response, err error, ok bool) {
 // 绝对404检测
 // 相同 url 本实例中只检测一次
 func TestIsWeb01(szUrl string) (r01 *Response, err error, ok bool) {
+	if "" == szUrl {
+		return nil, nil, false
+	}
 	key := "TestIs404" + szUrl
 	a1 := GetObjFromNoRpt[[]interface{}](key)
 	if nil != a1 {

@@ -72,6 +72,7 @@ func getinput(inputurl string) (usernamekey string, passwordkey string, loginurl
 
 var LocationReg = regexp.MustCompile(`(.*?);`)
 
+// 登陆页面密码爆破
 func Admin_brute(u string) (username string, password string, loginurl string) {
 	if SkipAdminBrute {
 		return "", "", ""

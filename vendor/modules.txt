@@ -595,7 +595,7 @@ github.com/hbakhtiyor/strsim
 # github.com/hdm/jarm-go v0.0.7
 ## explicit; go 1.15
 github.com/hdm/jarm-go
-# github.com/hktalent/PipelineHttp v0.0.0-20221014032902-e7c54f476ebf
+# github.com/hktalent/PipelineHttp v0.0.0-20221015015809-2e197a75e932
 ## explicit; go 1.18
 github.com/hktalent/PipelineHttp
 # github.com/hktalent/go-utils v0.0.0-20221004095234-2e23f13b429d

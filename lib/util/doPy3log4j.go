@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"strings"
@@ -21,10 +22,13 @@ func DoLog4j(szUrl string) {
 		if "" == EsUrl {
 			EsUrl = GetValByDefault("esUrl", "http://127.0.0.1:9200/%s_index/_doc/%s")
 		}
-		oUrl, err := url.Parse(strings.TrimSpace(EsUrl))
+		// 避免parse错误
+		szEsUrl := fmt.Sprintf(EsUrl, "log4j", "xx01")
+		oUrl, err := url.Parse(strings.TrimSpace(szEsUrl))
 		if nil == err {
 			p1, err := os.Getwd()
 			if nil == err {
+				// 报告log4j结果的url
 				szU1 := oUrl.Scheme + "://" + oUrl.Host
 				if _, ok := log4jsv.Load(szU1); !ok {
 					log4jsv.Store(szU1, true)
