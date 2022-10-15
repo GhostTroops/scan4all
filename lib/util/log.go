@@ -87,4 +87,5 @@ func writeoutput(v interface{}) {
 	}
 	defer f.Close() //nolint
 	f.WriteString(szLog)
+
 }
