@@ -50,8 +50,16 @@ func Addfingerprints404(technologies []string, req *util.Response, oPage *util.P
 	return technologies
 }
 
-// 正常页面指纹处理
 func Addfingerprintsnormal(payload string, technologies []string, req *util.Response, fuzzPage *util.Page) []string {
+	a := Addfingerprintsnormal1(payload, []string{}, req, fuzzPage)
+	if 0 < len(a) {
+		util.PocCheck_pipe <- &util.PocCheck{Wappalyzertechnologies: &a, URL: req.RequestUrl, FinalURL: req.RequestUrl, Checklog4j: false}
+	}
+	return append(technologies, a...)
+}
+
+// 正常页面指纹处理
+func Addfingerprintsnormal1(payload string, technologies []string, req *util.Response, fuzzPage *util.Page) []string {
 	// StatusCode 200, 301, 302, 401, 500
 	switch payload {
 	case "/manager/html":
@@ -74,9 +82,9 @@ func Addfingerprintsnormal(payload string, technologies []string, req *util.Resp
 		if util.StrContains(req.Body, "/seeyon/common/") {
 			technologies = append(technologies, "seeyon")
 		}
-	case "/admin", "/admin-console", "/admin.asp", "/admin.aspx", "/admin.do", "/admin.html", "/admin.jsp", "/admin.php", "/admin/", "/admin/admin", "/admin/adminLogin.do", "/admin/checkLogin.do", "/admin/index.do", "/Admin/Login", "/admin/Login.aspx", "/admin/login.do", "/admin/menu", "/Adminer", "/adminer.php", "/administrator", "/adminLogin.do", "/checkLogin.do", "/doc/Page/login.asp", "/login", "/Login.aspx", "/login/login", "/login/Login.jsp", "/manage", "/manage/login.htm", "/management", "/manager", "/manager.aspx", "/manager.do", "/manager.jsp", "/manager.jspx", "/manager.php", "/memadmin/index.php", "/myadmin/login.php", "/Systems/", "/user-login.html", "/wp-login.php":
+	case "/admin", "/admin-console", "/admin.asp", "/admin.aspx", "/admin.do", "/admin.html", "/admin.jsp", "/admin.php", "/admin/", "/admin/admin", "/admin/adminLogin.do", "/admin/checkLogin.do", "/admin/index.do", "/Admin/Login", "/admin/Login.aspx", "/admin/login.do", "/admin/menu", "/Adminer", "/adminer.php", "/administrator", "/adminLogin.do", "/checkLogin.do", "/doc/Page/login.asp", "/login", "/Login.aspx", "/login/login", "/login/Login.jsp", "/Login.jsp", "/manage", "/manage/login.htm", "/management", "/manager", "/manager.aspx", "/manager.do", "/manager.jsp", "/manager.jspx", "/manager.php", "/memadmin/index.php", "/myadmin/login.php", "/Systems/", "/user-login.html", "/wp-login.php":
 		if reqlogin, err := util.HttpRequset(req.RequestUrl, "GET", "", true, nil); err == nil {
-			if util.StrContains(reqlogin.Body, "<input") && (util.StrContains(reqlogin.Body, "pass") || strings.Contains(reqlogin.Body, "Pass") || strings.Contains(reqlogin.Body, "PASS")) {
+			if util.StrContains(reqlogin.Body, "<input") && (util.StrContains(reqlogin.Body, "pass") || util.StrContains(reqlogin.Body, "type=\"password\"") || strings.Contains(reqlogin.Body, "Pass") || strings.Contains(reqlogin.Body, "PASS")) {
 				technologies = append(technologies, "AdminLoginPage")
 				username, password, loginurl := Admin_brute(req.RequestUrl)
 				if loginurl != "" {

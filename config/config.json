@@ -105,7 +105,7 @@
     "MaxRedirects": 3
   },
   "enableEsSv": true,
-  "CheckWeakPassword": false,
+  "CheckWeakPassword": true,
   "esthread": 8,
   "hydrathread": 64,
   "Fuzzthreads": 16,
@@ -116,5 +116,5 @@
     "Path": "./config/poc/",
     "Logs": "./logs/errror.log"
   },
-  "enableWebScan": false
+  "enableWebScan": true
 }
