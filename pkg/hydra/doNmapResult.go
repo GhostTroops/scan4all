@@ -89,30 +89,31 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 				}
 				// 这里应当还原域名，否则无法正常访问
 				for _, dnsJ := range aDns {
-					szUlr := fmt.Sprintf("http://%s:%s\nhttps://%s:%s\n", dnsJ, szPort, dnsJ, szPort)
-					bf.Write([]byte(szUlr))
-
-					if os.Getenv("NoPOC") != "true" {
-						if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
-							util.PocCheck_pipe <- &util.PocCheck{
-								Wappalyzertechnologies: &[]string{service},
-								URL:                    szUlr,
-								FinalURL:               szUlr,
-								Checklog4j:             false,
-							}
-						} else if "8291" == szPort { // CVE_2018_14847
-							util.PocCheck_pipe <- &util.PocCheck{
-								Wappalyzertechnologies: &[]string{"RouterOS"},
-								URL:                    szUlr,
-								FinalURL:               szUlr,
-								Checklog4j:             false,
-							}
-						} else if "2181" == szPort {
-							util.PocCheck_pipe <- &util.PocCheck{
-								Wappalyzertechnologies: &[]string{"ZookeeperUnauthority"},
-								URL:                    szUlr,
-								FinalURL:               szUlr,
-								Checklog4j:             false,
+					aszUlr := []string{fmt.Sprintf("https://%s:%s", dnsJ, szPort), fmt.Sprintf("http://%s:%s", dnsJ, szPort)}
+					for _, szUlr := range aszUlr {
+						bf.Write([]byte(szUlr + "\n"))
+						if os.Getenv("NoPOC") != "true" {
+							if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
+								util.PocCheck_pipe <- &util.PocCheck{
+									Wappalyzertechnologies: &[]string{service},
+									URL:                    szUlr,
+									FinalURL:               szUlr,
+									Checklog4j:             false,
+								}
+							} else if "8291" == szPort { // CVE_2018_14847
+								util.PocCheck_pipe <- &util.PocCheck{
+									Wappalyzertechnologies: &[]string{"RouterOS"},
+									URL:                    szUlr,
+									FinalURL:               szUlr,
+									Checklog4j:             false,
+								}
+							} else if "2181" == szPort {
+								util.PocCheck_pipe <- &util.PocCheck{
+									Wappalyzertechnologies: &[]string{"ZookeeperUnauthority"},
+									URL:                    szUlr,
+									FinalURL:               szUlr,
+									Checklog4j:             false,
+								}
 							}
 						}
 					}
@@ -142,16 +143,16 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 }
 
 // 处理使用者自己扫描的结果
+// 不能用异步，否则后续流程无法读取 buff
 func DoNmapWithFile(s string, bf *bytes.Buffer) bool {
 	if strings.HasSuffix(strings.ToLower(s), ".xml") {
-		util.DoSyncFunc(func() {
-			b, err := ioutil.ReadFile(s)
-			if nil == err && 0 < len(b) {
-				DoParseXml(string(b), bf)
-			} else {
-				log.Println("DoNmapWithFile: ", err)
-			}
-		})
+		b, err := ioutil.ReadFile(s)
+		if nil == err && 0 < len(b) {
+			DoParseXml(string(b), bf)
+		} else {
+			log.Println("DoNmapWithFile: ", err)
+		}
+
 		return true
 	}
 	return false

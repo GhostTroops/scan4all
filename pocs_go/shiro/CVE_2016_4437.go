@@ -60,7 +60,7 @@ func aES_GCM_Encrypt(key []byte, Content []byte) string {
 func getkeylen(u string, indexlen int, rememberMe string) (int, error) {
 	var header = make(map[string]string, 1)
 	header["Cookie"] = "rememberMe=" + rememberMe
-	if req, err := util.HttpRequset(u, "GET", "", false, header); err == nil {
+	if req, err := util.HttpRequset(u, "GET", "", false, header); err == nil && req != nil {
 		return util.CheckShiroCookie(req.Header), nil
 	}
 	return indexlen, nil

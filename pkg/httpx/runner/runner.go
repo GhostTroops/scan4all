@@ -1279,8 +1279,8 @@ retry:
 			return slice
 		}
 		// 登陆页面检测
-		if brute.CheckLoginPage(finalURL) {
-			technologies = append(technologies, "登录页面")
+		if brute.CheckLoginPage(finalURL, resp) {
+			technologies = append(technologies, "loginpage")
 			// 做一次 http
 			util.PocCheck_pipe <- &util.PocCheck{
 				Wappalyzertechnologies: &[]string{"httpCheckSmuggling"},

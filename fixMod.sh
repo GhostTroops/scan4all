@@ -20,3 +20,11 @@ ln -s $HOME/MyWork/goSqlite_gorm $PWD/vendor/github.com/hktalent/goSqlite_gorm
 
 go mod tidy;go mod vendor;
 go mod vendor;go vet
+
+# login 优先
+cat brute/dicts/filedic.txt|grep "\/[lL]ogin">x1.txt
+cat brute/dicts/filedic.txt|grep -v "\/[lL]ogin">x2.txt
+sort x1.txt >x11.txt
+sort x2.txt >x22.txt
+cat x11.txt x22.txt >brute/dicts/filedic.txt
+rm -rf x11.txt x22.txt x1.txt x2.txt

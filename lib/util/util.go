@@ -239,6 +239,9 @@ func GetResponse(username string, password string, urlstring string, method stri
 //  3、缓存命中需和请求的数据完全匹配
 func HttpRequset(urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
 	rsps, _, _, err := GetResponse("", "", urlstring, method, postdata, isredirect, headers)
+	if nil == err && nil == rsps {
+		err = errors.New("unknown err HttpRequset -> GetResponse " + urlstring)
+	}
 	return rsps, err
 }
 

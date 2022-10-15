@@ -268,7 +268,7 @@ func (r *Runner) PreProcessTargets() error {
 func Add2Naabubuffer(target string) {
 	if strings.Contains(target, "://") {
 		Add2Naabubuffer_1(target)
-	} else {
+	} else if !strings.HasPrefix(target, "http") {
 		Add2Naabubuffer_1("https://" + target)
 		Add2Naabubuffer_1("http://" + target)
 	}
