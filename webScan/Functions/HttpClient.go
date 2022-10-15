@@ -27,6 +27,9 @@ func Client(method string, url string, body io.Reader, Headers map[string]string
 	}
 	muxs.Unlock()
 	client := util.GetClient(url)
+	if nil == client.Client {
+		client.Client = client.GetClient(nil)
+	}
 
 	if redirects == "true" {
 		client.Client.CheckRedirect = nil

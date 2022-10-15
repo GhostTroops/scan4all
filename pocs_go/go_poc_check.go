@@ -243,7 +243,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 			if seeyon.BackdoorScan(URL) {
 				technologies = append(technologies, "exp-seeyon|Backdoor")
 			}
-		case "loginpage":
+		case "loginpage", "登陆页面", "AdminLoginPage":
 			username, password, loginurl := brute.Admin_brute(finalURL)
 			if loginurl != "" {
 				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))

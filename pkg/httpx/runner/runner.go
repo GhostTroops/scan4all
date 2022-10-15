@@ -1280,7 +1280,7 @@ retry:
 		}
 		// 登陆页面检测
 		if brute.CheckLoginPage(finalURL, resp) {
-			technologies = append(technologies, "loginpage")
+			technologies = append(technologies, "登陆页面")
 			// 做一次 http
 			util.PocCheck_pipe <- &util.PocCheck{
 				Wappalyzertechnologies: &[]string{"httpCheckSmuggling"},
@@ -1339,16 +1339,18 @@ retry:
 			filefuzzTechnologies = SliceRemoveDuplicates(filefuzzTechnologies)
 			// 取差集合
 			filefuzzTechnologies = difference(filefuzzTechnologies, technologies)
-			poctechnologies2 = pocs_go.POCcheck(filefuzzTechnologies, ul, finalURL, true) //通过敏感文件扫描获取到的指纹进行检测gopoc check
-			Vullist = append(Vullist, poctechnologies2...)
-			for _, technology := range filefuzzTechnologies {
-				pocYmlList2 := pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology)) //通过敏感文件扫描获取到的指纹进行检测ymlpoc check
-				Vullist = append(Vullist, pocYmlList2...)
+			if 0 < len(filefuzzTechnologies) {
+				poctechnologies2 = pocs_go.POCcheck(filefuzzTechnologies, ul, finalURL, true) //通过敏感文件扫描获取到的指纹进行检测gopoc check
+				Vullist = append(Vullist, poctechnologies2...)
+				for _, technology := range filefuzzTechnologies {
+					pocYmlList2 := pocs_yml.Check(ul, scanopts.CeyeApi, scanopts.CeyeDomain, r.options.HTTPProxy, strings.ToLower(technology)) //通过敏感文件扫描获取到的指纹进行检测ymlpoc check
+					Vullist = append(Vullist, pocYmlList2...)
+				}
+				// 输出加入敏感文件扫描 获取到的指纹
+				technologies = append(technologies, filefuzzTechnologies...)
+				// 指纹去重
+				technologies = SliceRemoveDuplicates(technologies)
 			}
-			// 输出加入敏感文件扫描 获取到的指纹
-			technologies = append(technologies, filefuzzTechnologies...)
-			// 指纹去重
-			technologies = SliceRemoveDuplicates(technologies)
 		}
 		if len(technologies) > 0 {
 			sort.Strings(technologies)

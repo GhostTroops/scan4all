@@ -121,6 +121,26 @@ func (r *Runner) DoSsl(target string) []string {
 	return []string{}
 }
 
+func (r *Runner) DoDns001(x string, aR []string) []string {
+	aR = append(aR, r.DoDns2Ips(x)...)
+	a1 := r.DoSsl(x)
+	if 1 < len(a1) { // 如果只有1个是没有意义的，说明和x一样
+		for _, j := range a1 {
+			if j == x {
+				continue
+			}
+			aR = append(aR, r.DoDns2Ips(j)...)
+		}
+		aR = append(aR, a1...)
+	}
+	if 1 == len(aR) { // 只有一个就直接用域名了，这样nmap的结果才能用
+		aR = []string{x}
+	} else {
+		aR = append(aR, x)
+	}
+	return aR
+}
+
 // target域名转多个ip处理
 func (r *Runner) DoTargets() (bool, error) {
 	data, err := ioutil.ReadFile(r.targetsFile)
@@ -134,18 +154,12 @@ func (r *Runner) DoTargets() (bool, error) {
 		if 3 > len(x) {
 			continue
 		}
-		if govalidator.IsURL(x) {
+		if govalidator.IsDNSName(x) {
+			aR = r.DoDns001(x, aR)
+		} else if govalidator.IsURL(x) {
 			if x1, err := url.Parse(strings.TrimSpace(x)); nil == err {
 				if govalidator.IsDNSName(x) {
-					aR = append(aR, r.DoDns2Ips(x)...)
-					a1 := r.DoSsl(x)
-					if 0 < len(a1) {
-						for _, j := range a1 {
-							aR = append(aR, r.DoDns2Ips(j)...)
-						}
-						aR = append(aR, a1...)
-						continue
-					}
+					aR = r.DoDns001(x, aR)
 				} else {
 					if "" == x1.Hostname() {
 						aR = append(aR, x)
@@ -154,17 +168,6 @@ func (r *Runner) DoTargets() (bool, error) {
 					}
 					continue
 				}
-			} else {
-				aR = append(aR, x)
-			}
-		} else if govalidator.IsDNSName(x) {
-			aR = append(aR, r.DoDns2Ips(x)...)
-			a1 := r.DoSsl(x)
-			if 0 < len(a1) {
-				for _, j := range a1 {
-					aR = append(aR, r.DoDns2Ips(j)...)
-				}
-				aR = append(aR, a1...)
 			}
 		}
 		aR = append(aR, x)

@@ -1,6 +1,8 @@
+/Login.jsp
+/login.jsp
 .*org/login
-../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log
 ../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log%00
+../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log
 ../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log
 ../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log%00
 ../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log
@@ -63,7 +65,6 @@
 /CFIDE/componentutils/login.cfm?_cf_containerID=blahblah'
 /Citrix/AccessPlatform/auth/clientscripts/login.js
 /Login.aspx
-/Login.jsp
 /Umbraco/Views/common/login.html
 /Umbraco/assets/img/login.jpg
 /_layouts/login.aspx
@@ -156,7 +157,6 @@
 /login.cfm
 /login.do
 /login.html
-/login.jsp
 /login.php
 /login.php3
 /login.php4
