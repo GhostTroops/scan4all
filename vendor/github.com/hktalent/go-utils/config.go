@@ -6,7 +6,6 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"github.com/fsnotify/fsnotify"
 	"github.com/karlseguin/ccache"
 	"github.com/spf13/viper"
 	"io/fs"
@@ -111,6 +110,20 @@ func GetValAsInt(key string, nDefault int) int {
 	}
 	return nDefault
 }
+
+func GetValAsArrString(key string) []string {
+	if o := GetAsAny(key); nil != o {
+		var a []string
+		if o1, ok := o.([]interface{}); ok {
+			for _, x := range o1 {
+				a = append(a, fmt.Sprintf("%v", x))
+			}
+		}
+		return a
+	}
+	return nil
+}
+
 func GetValAsFloat64(key string, nDefault float64) float64 {
 	s := GetAsAny(key)
 	if reflect.ValueOf(s).Kind() == reflect.Float64 {
@@ -226,6 +239,8 @@ func RandStringRunes(n int) string {
 	return string(b)
 }
 
+var ConfigChangeCbk func()
+
 // 加载配置文件
 func LoadCoinfig(config *viper.Viper) {
 	if nil == config {
@@ -259,12 +274,15 @@ func LoadCoinfig(config *viper.Viper) {
 		return
 	}
 	config.Unmarshal(&mData)
-	config.OnConfigChange(func(e fsnotify.Event) {
-		log.Println("Config file changed, now reLoad it: ", e.Name)
-		LoadCoinfig(config)
-	})
+	//config.OnConfigChange(func(e fsnotify.Event) {
+	//	log.Println("Config file changed, now reLoad it: ", e.Name)
+	//	LoadCoinfig(config)
+	//	if nil != ConfigChangeCbk {
+	//		ConfigChangeCbk()
+	//	}
+	//})
 	// 避免 hold
-	go config.WatchConfig()
+	//go config.WatchConfig()
 }
 
 // 初始化配置文件信息，这个必须先执行

@@ -6,6 +6,7 @@ import (
 	"github.com/hktalent/ProScan4all/lib/util"
 	_ "github.com/projectdiscovery/fdmax/autofdmax"
 	"github.com/projectdiscovery/gologger"
+	"github.com/projectdiscovery/naabu/v2/pkg/result"
 	"github.com/projectdiscovery/naabu/v2/pkg/runner"
 	"os"
 )
@@ -14,22 +15,23 @@ import (
 func DoNaabu(buf *bytes.Buffer) *runner.Options {
 	// options := runner.ParseOptions("-host", strings.Join(target, ","), "-v")
 	options := runner.ParseOptions(os.Args[1:]...)
+
+	options.OnResult = func(r1 *result.HostResult) {
+		// port
+		if nil != r1 {
+
+			for _, k := range r1.Ports {
+				buf.WriteString(fmt.Sprintf("http://%s:%d\nhttps://%s:%d\n", r1.Host, k, r1.Host, k))
+			}
+
+		} else {
+			buf.WriteString(fmt.Sprintf("http://%s\nhttps://%s\n", r1.Host, r1.Host))
+		}
+		//fmt.Printf("test %+v", out)
+	}
 	naabuRunner, err := runner.NewRunner(options)
 	if err != nil {
 		gologger.Fatal().Msgf("Could not create runner: %s\n", err)
-	}
-	naabuRunner.OutCbk = func(out ...interface{}) {
-		// port
-		if nil != out[2] {
-			if a, ok := out[2].([]string); ok {
-				for _, k := range a {
-					buf.WriteString(fmt.Sprintf("http://%s:%s\nhttps://%s:%s\n", out[0], k, out[0], k))
-				}
-			}
-		} else {
-			buf.WriteString(fmt.Sprintf("http://%s\nhttps://%s\n", out[0], out[0]))
-		}
-		//fmt.Printf("test %+v", out)
 	}
 	util.RegCbk("exit", func() {
 		naabuRunner.ShowScanResultOnExit()

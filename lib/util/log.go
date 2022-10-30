@@ -1,9 +1,10 @@
 package util
 
 import (
-	"encoding/json"
+	"bufio"
+	"encoding/csv"
 	"fmt"
-	"github.com/hktalent/goSqlite_gorm/pkg/models"
+	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"log"
 	"os"
 	"runtime"
@@ -69,23 +70,56 @@ func SendEngineLog4Url(Url string, nCurType int64, data ...interface{}) {
 	}
 }
 
-func writeoutput(v interface{}) {
+// 避免并发写磁盘导致堵塞
+var OutLogV chan interface{}
+
+// 基于缓存写日志
+func WriteLog2File(v1 interface{}) {
 	if 1 > len(Output) {
 		return
-	}
-	var szLog string
-	if strings.HasSuffix(Output, ".csv") {
-		data, _ := json.Marshal(v)
-		szLog = string(data)
-	} else {
-		szLog = fmt.Sprintf("%+v", v)
 	}
 	f, err := os.OpenFile(Output, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Printf("Could not create output fiale '%s': %s\n", Output, err)
 		return
 	}
-	defer f.Close() //nolint
-	f.WriteString(szLog)
+	defer f.Close()
+	var buf *bufio.Writer
+	var buf1 *csv.Writer
 
+	if strings.HasSuffix(Output, ".csv") {
+		buf1 = csv.NewWriter(f)
+	} else {
+		buf = bufio.NewWriter(f)
+	}
+	var fnWt = func(v interface{}) {
+
+		if nil != buf1 {
+			var a []string
+			buf1.Write(a)
+			buf1.Flush()
+		} else if nil != buf {
+			var szLog string
+			szLog = fmt.Sprintf("%+v", v)
+			buf.Write([]byte(szLog))
+			buf.Flush()
+		}
+	}
+	fnWt(v1)
+	n := len(OutLogV)
+	for i := 0; i < n; i++ {
+		fnWt(<-OutLogV)
+	}
+	fnWt = nil
+}
+
+// 日志写入异步队列
+func writeoutput(v interface{}) {
+	OutLogV <- v
+}
+
+func init() {
+	RegInitFunc(func() {
+		OutLogV = make(chan interface{}, 500)
+	})
 }

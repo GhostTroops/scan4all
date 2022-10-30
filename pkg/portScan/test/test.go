@@ -1,11 +1,11 @@
 package main
 
 import (
+	"github.com/hktalent/51pwnPlatform/lib"
+	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
 	"github.com/hktalent/ProScan4all/engine"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pkg/portScan"
-	"github.com/hktalent/goSqlite_gorm/lib"
-	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
 	"net/http"
 	"time"
 )
