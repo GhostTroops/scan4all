@@ -1,6 +1,7 @@
 package hydra
 
 import (
+	"fmt"
 	"github.com/hktalent/ProScan4all/pkg/hydra/oracle"
 	"github.com/hktalent/ProScan4all/pkg/kscan/lib/gotelnet"
 	"github.com/hktalent/ProScan4all/pkg/kscan/lib/misc"
@@ -134,6 +135,21 @@ func (c *Cracker) Run() {
 				return
 			}
 			c.authInfo.Auth = a
+			//开始工作，输出工作结果
+			//if enableDevDebug {
+			v := c.authInfo
+			//if v, ok := param.(hydra.AuthInfo); ok {
+			u001 := v.Auth.Username
+			if 15 > len(u001) {
+				u001 += strings.Repeat(" ", 15-len(u001))
+			}
+			u002 := v.Auth.Password
+			if 18 > len(u002) {
+				u002 += strings.Repeat(" ", 18-len(u002))
+			}
+			fmt.Printf(" hydra: %s %s %s \r", v.Protocol, u001, u002)
+			//}
+			//}
 			c.Pool.In <- *c.authInfo
 		}
 		//关闭信道
