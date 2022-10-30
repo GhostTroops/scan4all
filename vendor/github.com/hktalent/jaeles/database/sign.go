@@ -22,7 +22,7 @@ func CleanSigns() {
 
 // SelectSign select signature to gen request
 func SelectSign(signName string) []string {
-	var signs []models.Signature
+	var signs = []models.Signature{}
 	DB.Find(&signs)
 
 	if signName == "*" || signName == "" {

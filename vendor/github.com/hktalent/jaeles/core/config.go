@@ -16,7 +16,7 @@ import (
 // InitConfig init config
 func InitConfig(options *libs.Options) {
 	options.RootFolder = utils.NormalizePath(options.RootFolder)
-	options.Server.DBPath = path.Join(options.RootFolder, "sqlite3.db")
+	options.Server.DBPath = path.Join(options.RootFolder, "/db/sqlite3.db")
 	// init new root folder
 	if !utils.FolderExists(options.RootFolder) {
 		utils.InforF("Init new config at %v", options.RootFolder)
@@ -26,7 +26,7 @@ func InitConfig(options *libs.Options) {
 		UpdateSignature(*options)
 	}
 
-	configPath := path.Join(options.RootFolder, "config.yaml")
+	configPath := path.Join(options.RootFolder, "/config/config.yaml")
 	v := viper.New()
 	v.AddConfigPath(options.RootFolder)
 	v.SetConfigName("config")

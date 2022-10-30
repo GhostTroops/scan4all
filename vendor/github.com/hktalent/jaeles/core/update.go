@@ -12,7 +12,7 @@ import (
 
 // UpdatePlugins update latest UI and Plugins from default repo
 func UpdatePlugins(options libs.Options) {
-	pluginPath := path.Join(options.RootFolder, "plugins")
+	pluginPath := path.Join(options.RootFolder, "/config/plugins")
 	url := libs.UIREPO
 	utils.GoodF("Cloning Plugins from: %v", url)
 	if utils.FolderExists(pluginPath) {
@@ -33,7 +33,7 @@ func UpdatePlugins(options libs.Options) {
 
 // UpdateSignature update latest UI from UI repo
 func UpdateSignature(options libs.Options) {
-	signPath := path.Join(options.RootFolder, "base-signatures")
+	signPath := path.Join(options.RootFolder, "/config/jaeles-signatures")
 	url := libs.SIGNREPO
 	// in case we want to in private repo
 	if options.Config.Repo != "" {

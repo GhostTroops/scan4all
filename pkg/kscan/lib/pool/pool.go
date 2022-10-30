@@ -105,10 +105,6 @@ func (p *Pool) work() {
 		p.JobsList.Set(Tick, param)
 		//设置工作内容
 		f := NewWorker(p.Function)
-		//开始工作，输出工作结果
-		//if enableDevDebug {
-		fmt.Printf(" hydra: %v\r", param)
-		//}
 		out, err := f.Run(param)
 		//输出工作结果
 		p.Out <- out

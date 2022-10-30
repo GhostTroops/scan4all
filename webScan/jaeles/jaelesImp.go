@@ -28,17 +28,30 @@ import (
 //	RootCmd.AddCommand(scanCmd)
 //}
 
+func init() {
+	util.RegInitFunc(func() {
+		Options.ChunkLimit = math.MaxInt
+		Options.RootFolder = util.SzPwd + "/"
+		Options.Output = util.SzPwd + "/logs/"
+		Options.SignFolder = util.SzPwd + "/config/jaeles-signatures"
+		Options.ChunkRun = false     // 每个目标单独一个进程运行
+		Options.NoBackGround = false // 不转到后台，显示运行
+		utils.InitLog(&Options)
+		core.InitConfig(&Options)
+		InitDB()
+		Options.SelectedSigns = core.SelectSign("**")
+	})
+}
+
 // git@github.com:jaeles-project/jaeles-signatures.git
 // 这玩意没有 他自定义的yarm 等于0
 // urlFile 也将作为临时文件，输入
 func RunScan(urls []string, urlFile string) error {
-	util.Wg.Done()
-	Options.ChunkLimit = math.MaxInt
-	Options.RootFolder = util.SzPwd
-	Options.SignFolder = util.SzPwd + "/config/jaeles-signatures"
-	Options.ChunkRun = false     // 每个目标单独一个进程运行
-	Options.NoBackGround = false // 不转到后台，显示运行
-	Options.SelectedSigns = core.SelectSign("**")
+	defer util.Wg.Done()
+	if 0 == len(urls) {
+		return nil
+	}
+
 	// fmt.Println(os.Args)
 	//SelectSign()
 	// input as a file
