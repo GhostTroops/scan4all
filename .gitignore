@@ -5,6 +5,7 @@
 *.exe~
 *.dll
 *.so
+db/sqlite3.db
 *.dylib
 release
 .DbCache
