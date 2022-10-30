@@ -1,7 +1,7 @@
 package util
 
 import (
-	. "github.com/hktalent/goSqlite_gorm/lib/scan/Const"
+	. "github.com/hktalent/51pwnPlatform/lib/scan/Const"
 	"sync"
 )
 

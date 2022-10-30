@@ -4,10 +4,11 @@ import (
 	"C"
 	"bytes"
 	"encoding/json"
+	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
+	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
 	runner2 "github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
-	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
-	"github.com/hktalent/goSqlite_gorm/pkg/models"
+	"github.com/hktalent/ProScan4all/webScan/jaeles"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
@@ -142,6 +143,11 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 	}
 	a66 := strings.Split(s001, "\n")
 	x55, _ := util.TestIsWeb(&a66)
+
+	// 启动web扫描
+	util.Wg.Add(1)
+	go jaeles.RunScan(a66, "")
+
 	options.Targets = *x55
 	log.Printf("nuclei options.Targets = %+v\n", options.Targets)
 	/////////////////////////////////////

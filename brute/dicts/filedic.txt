@@ -7386,6 +7386,7 @@ $metadata
 /id/:id
 /id_dsa
 /id_dsa.ppk
+/_groupcache/
 /id_rsa
 /id_rsa.pub
 /iiasdmpwd/

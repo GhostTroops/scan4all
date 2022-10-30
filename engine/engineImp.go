@@ -2,10 +2,11 @@ package engine
 
 import (
 	"context"
+	"github.com/hktalent/51pwnPlatform/lib"
+	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pocs_go"
-	"github.com/hktalent/goSqlite_gorm/lib"
-	"github.com/hktalent/goSqlite_gorm/pkg/models"
+	"github.com/hktalent/jaeles/cmd"
 	"github.com/panjf2000/ants/v2"
 	"log"
 	"os"
@@ -37,7 +38,7 @@ func NewEngine(c *context.Context, pool int) *Engine {
 	p, err := ants.NewPoolWithFunc(pool, func(i interface{}) {
 		defer x1.Wg.Done()
 		x1.DoEvent(i.(*models.EventData))
-	})
+	}, ants.WithPreAlloc(true))
 	if nil != err {
 		log.Println("ants.NewPoolWithFunc is error: ", err)
 	}
@@ -67,6 +68,7 @@ func (e *Engine) Close() {
 	defer ants.Release()
 	e.PoolFunc.Release()
 	e.Wg.Wait()
+	cmd.CleanOutput()
 }
 
 // case 扫描使用的函数
@@ -120,6 +122,10 @@ func (x1 *Engine) Running() {
 			case <-c:
 				util.DoCbk("exit")
 				os.Exit(1)
+			case l1, ok := <-util.OutLogV:
+				if ok {
+					util.WriteLog2File(l1)
+				}
 			case x2 := <-x1.EventData: // 各种扫描的控制
 				if nil != x2 && nil != x2.EventData {
 					x1.Wg.Add(1)

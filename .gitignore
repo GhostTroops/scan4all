@@ -6,11 +6,14 @@
 *.dll
 *.so
 *.dylib
-scan4all
 release
 .DbCache
 scan4all_linux
 .DS_Store
+db/GeoIP2-City.mmdb.zip
+main
+scan4all
+config/rockyou.txt
 
 # Test binary, built with `go testnmanp -c`
 *.test

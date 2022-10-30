@@ -106,6 +106,7 @@
   },
   "enableEsSv": true,
   "CheckWeakPassword": true,
+  "jaelesThread": 8,
   "esthread": 8,
   "hydrathread": 64,
   "Fuzzthreads": 16,

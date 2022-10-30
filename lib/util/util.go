@@ -11,8 +11,8 @@ import (
 	"github.com/codegangsta/inject"
 	"github.com/corpix/uarand"
 	"github.com/hbakhtiyor/strsim"
+	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/PipelineHttp"
-	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"github.com/karlseguin/ccache"
 	"io"
 	"io/ioutil"
@@ -484,6 +484,34 @@ func DoGet(szUrl string, hd map[string]string) (resp *http.Response, err error) 
 		}, false)
 	}
 	return resp, err
+}
+
+// 检查目标漏洞
+// bAnd true 表示 aCheck全部匹配才有vul
+func DoCheckGet(szUrl string, aPath *[]string, aCheck *[]string, bAnd bool) (string, bool) {
+	if oU, err := url.Parse(szUrl); nil == err {
+		for _, k := range *aPath {
+			szU001 := oU.Scheme + "://" + oU.Host + k
+			if r1, err := DoGet(szU001, map[string]string{}); nil == err && nil != r1 {
+				if data, err := ioutil.ReadAll(r1.Body); nil == err {
+					s := strings.TrimSpace(string(data))
+					nC := 0
+					for _, x := range *aCheck {
+						if strings.Contains(s, x) {
+							if !bAnd {
+								return szU001, true
+							}
+							nC++
+						}
+					}
+					if nC == len(*aCheck) {
+						return szU001, true
+					}
+				}
+			}
+		}
+	}
+	return szUrl, false
 }
 
 func DoPost(szUrl string, hd map[string]string, data io.Reader) (resp *http.Response, err error) {

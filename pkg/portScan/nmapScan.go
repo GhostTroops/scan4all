@@ -3,9 +3,9 @@ package portScan
 import (
 	"context"
 	"github.com/Ullaakut/nmap"
+	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
+	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/goSqlite_gorm/lib/scan/Const"
-	"github.com/hktalent/goSqlite_gorm/pkg/models"
 	"io"
 	"log"
 	"time"
