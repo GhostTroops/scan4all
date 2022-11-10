@@ -105,6 +105,7 @@
     "MaxRedirects": 3
   },
   "enableEsSv": true,
+  "enableJaeles": false,
   "CheckWeakPassword": true,
   "jaelesThread": 8,
   "esthread": 8,
