@@ -1,4 +1,6 @@
-1、integrated jaeles，add new web PoCs 370，By default, nuclei is turned on and jaeles scanning is turned on
+https://github.com/psiinon/open-source-web-scanners
+
+1、add new web PoCs 370
 CRLF
 Dom-xss
 ErrorsAndVulns
