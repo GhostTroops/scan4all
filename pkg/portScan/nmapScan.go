@@ -13,7 +13,8 @@ import (
 
 func init() {
 	util.RegInitFunc(func() {
-		// 基于工厂方法构建
+		// 基于工厂方法构建，这里需要考虑策略，是出一条结果反馈一次，还是所有结果处理后统一反馈
+		// 当前：所有结果统一、一次反馈
 		util.EngineFuncFactory(Const.ScanType_Nmap, func(evt *models.EventData, args ...interface{}) {
 			var Targets []string = args[0].([]string)
 			var Ports []string = args[1].([]string)

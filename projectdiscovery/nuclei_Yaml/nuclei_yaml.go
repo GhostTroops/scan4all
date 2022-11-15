@@ -3,12 +3,12 @@ package nuclei_Yaml
 import (
 	"C"
 	"bytes"
-	"encoding/json"
 	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
 	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
 	runner2 "github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
 	"github.com/hktalent/ProScan4all/webScan/jaeles"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
 	"github.com/projectdiscovery/gologger"
@@ -23,6 +23,7 @@ import (
 	"time"
 )
 
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 var (
 	cfgFile string
 )

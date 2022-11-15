@@ -3,9 +3,14 @@ package util
 import (
 	"bufio"
 	"bytes"
+	"crypto"
+	crand "crypto/rand"
+	"crypto/rsa"
+	"crypto/sha1"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/gob"
-	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"github.com/codegangsta/inject"
@@ -527,4 +532,52 @@ func DoPost(szUrl string, hd map[string]string, data io.Reader) (resp *http.Resp
 		}, false)
 	}
 	return resp, err
+}
+
+// base64 解码
+func Base64Decode(s string) string {
+	rawDecodedText, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return ""
+	}
+	return string(rawDecodedText)
+}
+
+// 编码 base64
+func Base64Encode(s string) string {
+	return base64.StdEncoding.EncodeToString([]byte(s))
+}
+
+// 签名
+func RsaSignWithSha1(data []byte, keyBytes []byte) []byte {
+	//h := sha256.New()
+	//h.Write(data)
+	//hashed := h.Sum(nil)
+
+	h := sha1.New()
+	h.Write(data)
+	hashed := h.Sum(nil)
+
+	block, _ := pem.Decode(keyBytes)
+	if block == nil {
+		panic(errors.New("private key error"))
+	}
+	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		fmt.Println("ParsePKCS8PrivateKey err", err)
+		panic(err)
+	}
+
+	//signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hashed)
+	signature, err := rsa.SignPKCS1v15(crand.Reader, privateKey, crypto.SHA1, hashed)
+	if err != nil {
+		fmt.Printf("Error from signing: %s\n", err)
+		panic(err)
+	}
+
+	return signature
+}
+func GetSig(src string, prvKey []byte) string {
+	signData := RsaSignWithSha1([]byte(src), prvKey)
+	return strings.ReplaceAll(base64.StdEncoding.EncodeToString(signData), "\n", "")
 }

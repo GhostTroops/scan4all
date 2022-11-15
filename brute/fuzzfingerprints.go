@@ -1,7 +1,6 @@
 package brute
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"strings"

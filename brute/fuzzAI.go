@@ -2,16 +2,18 @@ package brute
 
 import (
 	_ "embed"
-	"encoding/json"
 	"github.com/antlabs/strsim"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pkg"
 	"github.com/hktalent/ProScan4all/pkg/fingerprint"
+	jsoniter "github.com/json-iterator/go"
 	"gorm.io/gorm"
 	"net/url"
 	"regexp"
 	"strings"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 异常页面数据库
 type ErrPage struct {

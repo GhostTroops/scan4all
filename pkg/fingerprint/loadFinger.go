@@ -1,9 +1,5 @@
 package fingerprint
 
-import (
-	"encoding/json"
-)
-
 type Packjson struct {
 	Fingerprint []*Fingerprint
 }

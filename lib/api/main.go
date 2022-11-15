@@ -1,11 +1,11 @@
 package api
 
 import (
-	"encoding/json"
 	_ "github.com/hktalent/ProScan4all/engine"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pkg/hydra"
 	naaburunner "github.com/hktalent/ProScan4all/pkg/naabu/v2/pkg/runner"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/gologger"
 	"io"
 	"io/ioutil"
@@ -13,6 +13,8 @@ import (
 	"os"
 	"runtime"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 逐步实现支持 多实例 接口 运行
 func StartScan(oOpts *map[string]interface{}) {
