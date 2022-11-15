@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/csv"
-	"encoding/json"
 	"fmt"
 	"github.com/ammario/ipisp/v2"
 	"github.com/hktalent/ProScan4all/brute"
@@ -13,6 +12,7 @@ import (
 	"github.com/hktalent/ProScan4all/pkg/fingerprint"
 	"github.com/hktalent/ProScan4all/pocs_go"
 	"github.com/hktalent/ProScan4all/pocs_yml"
+	jsoniter "github.com/json-iterator/go"
 	"io"
 	"io/ioutil"
 	"log"
@@ -60,6 +60,8 @@ import (
 	"github.com/remeh/sizedwaitgroup"
 	"go.uber.org/ratelimit"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // Runner is a client for running the enumeration process.
 type Runner struct {

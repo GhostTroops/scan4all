@@ -4,9 +4,9 @@ import (
 	"bufio"
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/blang/semver"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/nuclei/v2/pkg/utils/ratelimit"
@@ -51,6 +51,8 @@ import (
 
 	"github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/colorizer"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // Runner is a client for running the enumeration process.
 type Runner struct {

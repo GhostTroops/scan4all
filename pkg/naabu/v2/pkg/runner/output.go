@@ -3,7 +3,6 @@ package runner
 import (
 	"bufio"
 	"encoding/csv"
-	"encoding/json"
 	"fmt"
 	"io"
 	"reflect"

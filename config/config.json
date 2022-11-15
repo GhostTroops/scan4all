@@ -109,10 +109,12 @@
   "CheckWeakPassword": true,
   "jaelesThread": 8,
   "esthread": 8,
+  "LimitTask": 4,
   "hydrathread": 64,
   "Fuzzthreads": 16,
   "enableFingerTitleHeaderMd5Hex": false,
   "Cookie": "",
+  "DtServer":"https://127.0.0.1:8081/api/v1.0/syncResult/task/%d",
   "esUrl": "https://127.0.0.1:8081/%s_index/_doc/%s",
   "Exploit":{
     "Path": "./config/poc/",

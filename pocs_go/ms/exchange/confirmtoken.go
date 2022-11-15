@@ -1,11 +1,13 @@
 package exchange
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/hktalent/ProScan4all/lib/util"
+	jsoniter "github.com/json-iterator/go"
 	"strings"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func confirmtoken(target, token string) {
 	if !strings.Contains(target, "http") {

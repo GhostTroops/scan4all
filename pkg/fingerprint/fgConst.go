@@ -3,9 +3,9 @@ package fingerprint
 import (
 	"crypto/md5"
 	_ "embed"
-	"encoding/json"
 	"fmt"
 	"github.com/hktalent/ProScan4all/lib/util"
+	jsoniter "github.com/json-iterator/go"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const (
 	Reg_idMethod       int = 11515 // 识别方式：正则表达式 == regular

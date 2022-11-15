@@ -1,7 +1,6 @@
 package Funcs
 
 import (
-	"encoding/json"
 	"fmt"
 	Configs "github.com/hktalent/ProScan4all/webScan/config"
 	"io/ioutil"

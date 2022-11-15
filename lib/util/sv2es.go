@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
 	"github.com/hktalent/51pwnPlatform/pkg/models"

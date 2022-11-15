@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/cdproto/runtime"
@@ -10,6 +9,8 @@ import (
 	"log"
 	"net/http"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 const indexHTML = `<!doctype html>
 <html>

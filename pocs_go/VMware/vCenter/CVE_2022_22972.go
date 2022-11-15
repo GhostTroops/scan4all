@@ -2,13 +2,15 @@ package vCenter
 
 import (
 	"bytes"
-	"encoding/json"
 	"github.com/hktalent/ProScan4all/lib/util"
+	jsoniter "github.com/json-iterator/go"
 	"io/ioutil"
 	"net/url"
 	"regexp"
 	"strings"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // CVE-2022-31656
 // CVE-2022-22972

@@ -38,15 +38,15 @@ func init() {
 			if "" == ip {
 				return
 			}
-			//s1 := fmt.Sprintf("%x", ip)
+			// s1 := fmt.Sprintf("%x", ip)
 			ms := New()
 			ms.Evt = evt
 			ms.Target = TargetStr(ip)
 			ms.Rate = "5000"
 			ms.Ports = "0-65535" // -p-  , "-p-"
 			ms.Args = []string{
-				//"--banners",
-				//"-oX", s1 + ".xml",
+				// "--banners",
+				// "-oX", s1 + ".xml",
 				"--max-rate", string(ms.Rate),
 			}
 			util.MergeParms2Obj(&ms, args...)

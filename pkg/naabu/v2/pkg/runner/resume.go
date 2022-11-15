@@ -1,7 +1,6 @@
 package runner
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"

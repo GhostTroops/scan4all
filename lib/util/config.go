@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"embed"
-	"encoding/json"
 	"fmt"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/karlseguin/ccache"
 	"github.com/spf13/viper"
 	"io/fs"
@@ -23,6 +23,7 @@ import (
 	"time"
 )
 
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 var DefaultDns = []string{"114.114.114.114", "223.6.6.6"}
 
 // 字符串包含关系，且大小写不敏感
@@ -408,6 +409,18 @@ func TestRepeat4Save(key string, a ...interface{}) (interface{}, bool) {
 		return nil, false
 	}
 	return x1.Value(), true
+}
+
+// 生成uuid
+func GenUuid() string {
+	b := make([]byte, 16)
+	_, err := rand.Read(b)
+	if err != nil {
+		return ""
+	}
+	uuid := fmt.Sprintf("%x-%x-%x-%x-%x",
+		b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+	return uuid
 }
 
 // 关闭cache

@@ -3,13 +3,13 @@ package runner
 import (
 	"bytes"
 	"encoding/csv"
-	"encoding/json"
 	"fmt"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pkg/fingerprint"
 	"github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml"
 	runner2 "github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
 	"github.com/hktalent/ProScan4all/webScan"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/iputil"
 	runner3 "github.com/projectdiscovery/naabu/v2/pkg/runner"
@@ -38,6 +38,8 @@ import (
 	"github.com/remeh/sizedwaitgroup"
 	"go.uber.org/ratelimit"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // Runner is an instance of the port enumeration
 // client used to orchestrate the whole process.

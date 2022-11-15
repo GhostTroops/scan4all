@@ -2,13 +2,15 @@ package pkg
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/projectdiscovery/subfinder"
+	jsoniter "github.com/json-iterator/go"
 	"reflect"
 	"strings"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 判断s是否在数组a中
 // 支持任何类型，支持泛型

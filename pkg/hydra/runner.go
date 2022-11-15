@@ -1,14 +1,16 @@
 package hydra
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/hktalent/ProScan4all/lib/util"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/logrusorgru/aurora"
 	"log"
 	"strconv"
 	"strings"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func init() {
 	util.RegInitFunc(func() {
