@@ -1,0 +1,44 @@
+allow-list:
+  severity: []
+  tags: []
+deny-list:
+  severity: []
+  tags: []
+github:
+  base-url: ""
+  username: ""
+  owner: ""
+  token: ""
+  project-name: ""
+  issue-label: ""
+  severity-as-label: false
+gitlab:
+  base-url: ""
+  username: ""
+  token: ""
+  project-name: ""
+  issue-label: ""
+  severity-as-label: false
+jira:
+  cloud: false
+  update-existing: false
+  url: ""
+  account-id: ""
+  email: ""
+  token: ""
+  project-name: ""
+  issue-type: ""
+  severity-as-label: false
+markdown:
+  directory: ""
+sarif:
+  file: ""
+elasticsearch:
+  host: ""
+  ip: ""
+  port: 0
+  ssl: false
+  ssl-verification: false
+  username: ""
+  password: ""
+  index-name: ""

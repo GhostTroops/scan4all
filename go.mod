@@ -278,6 +278,7 @@ require (
 	github.com/hktalent/go-utils v0.0.0-20221022101117-e2abdad71ff5 // indirect
 	github.com/hktalent/goxml2json v0.0.0-20221020100654-3af6886de60c // indirect
 	github.com/hktalent/jaeles v1.0.1 // indirect
+	github.com/hktalent/kvDb v0.0.0-20221117003327-e25054351180 // indirect
 	github.com/hktalent/websocket v0.0.0-20220908204337-b4a81b861976 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
 	github.com/iancoleman/orderedmap v0.2.0 // indirect

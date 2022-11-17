@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  mywebapp:
+    image: ubuntu:latest
+    tty: true
+    restart: always
+    container_name: scan4all
+    volumes:
+      - ./tools:/tools
+      - ./config:/config
+    entrypoint:
+    - /bin/bash
+    - /tools/start.sh

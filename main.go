@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/hktalent/ProScan4all/lib/api"
 	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/ProScan4all/pkg/xcmd"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
@@ -31,6 +32,8 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	util.DoInit(&config)
+
+	xcmd.InitToolsFile()
 	// set version
 	if buildInfo, ok := debug.ReadBuildInfo(); ok {
 		util.Version = buildInfo.Main.Version

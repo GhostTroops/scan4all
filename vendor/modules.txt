@@ -730,6 +730,9 @@ github.com/hktalent/jaeles/utils
 # github.com/hktalent/jarm-go v0.0.0-20220918133110-7801447b6267
 ## explicit; go 1.18
 github.com/hktalent/jarm-go
+# github.com/hktalent/kvDb v0.0.0-20221117003327-e25054351180
+## explicit; go 1.18
+github.com/hktalent/kvDb
 # github.com/hktalent/websocket v0.0.0-20220908204337-b4a81b861976
 ## explicit; go 1.12
 github.com/hktalent/websocket

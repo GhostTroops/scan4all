@@ -62,7 +62,7 @@ func checkSmuggling4Poc(ClTePayload *[]string, nTimes int, r1 *Smuggling, r *soc
 */
 func DoCheckSmuggling(szUrl string, szBody string) {
 	for _, x := range payload {
-		util.Wg.Add(1)
+		util.Wg.Add()
 		go func(j Smuggling, szUrl string) {
 			defer util.Wg.Done()
 			if "" == szBody {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/asaskevich/govalidator"
 	"github.com/hktalent/51pwnPlatform/lib"
 	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
@@ -11,6 +12,7 @@ import (
 	"github.com/hktalent/jaeles/cmd"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/panjf2000/ants/v2"
+	"github.com/projectdiscovery/iputil"
 	"github.com/ulule/deepcopier"
 	"io/ioutil"
 	"log"
@@ -18,6 +20,7 @@ import (
 	"net/url"
 	"os"
 	"os/signal"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -107,8 +110,10 @@ func (e *Engine) GetTask(okTaskIds string) {
 	}, strings.NewReader(`{"Num":`+strconv.Itoa(e.SyTask)+`,"task_ids":"`+okTaskIds+`","node_id":"`+e.NodeId+`","task_num":`+strconv.Itoa(e.LimitTask)+`}`)); nil == err && nil != resp {
 		defer resp.Body.Close()
 		var n1 = models.EventData{}
+		var oTsk = map[string]interface{}{}
 		if data, err := ioutil.ReadAll(resp.Body); nil == err {
-			if err := json.Unmarshal(data, &n1); nil == err {
+			if err := json.Unmarshal(data, &oTsk); nil == err {
+
 				e.SendEvent(&n1, n1.EventType)
 			}
 		}
@@ -154,9 +159,56 @@ func (e *Engine) generateTaskId(s string) string {
 	return util.GetSha1(s)
 }
 
+var reTsk1 = regexp.MustCompile(`[\n]`)
+
+// 目标类型
+// 去除私有网络的扫描任务
+// 第一个私有网络，第二个是互联网目标
+func (e *Engine) FixTask(s string) (string, string) {
+	var a1, a2 []string
+	if a := reTsk1.Split(s, -1); 0 < len(a) {
+		for _, x := range a {
+			if iputil.IsCidrWithExpansion(x) {
+				x = strings.ReplaceAll(x, "-", "/")
+				if ip1, _, err := net.ParseCIDR(x); nil == err {
+					if ip1.IsPrivate() {
+						a1 = append(a1, x)
+					} else {
+						a2 = append(a2, x)
+					}
+				}
+			} else if ip1 := net.ParseIP(x); nil != ip1 {
+				if ip1.IsPrivate() {
+					a1 = append(a1, x)
+				} else {
+					a2 = append(a2, x)
+				}
+			} else if -1 < strings.Index(x, "://") {
+				if govalidator.IsDNSName(x) {
+					a2 = append(a2, x)
+				} else if oU, err := url.Parse(x); nil == err {
+					if ip1 := net.ParseIP(oU.Hostname()); nil != ip1 {
+						if ip1.IsPrivate() {
+							a1 = append(a1, x)
+						} else {
+							a2 = append(a2, x)
+						}
+					}
+				}
+			} else { // 域名的情况
+				a2 = append(a2, x)
+			}
+		}
+	}
+	return strings.Join(a1, "\n"), strings.Join(a2, "\n")
+}
+
 // 发送任务
+//  全局参数配置 + 扫描类型，细化扫描项目，由多个节点来分担不同子任务
+//  config：全局配置已经包含了扫描类型信息，开启、关闭各种类型扫描的参数，包含通过环境变量传递过来的控制
 //  只发送非私有网络的任务
 func (e *Engine) SendTask(s string) {
+	_, s = e.FixTask(s)
 	szUrl := fmt.Sprintf(e.DtServer, e.LimitTask)
 	if oU, err := url.Parse(szUrl); nil == err {
 		szUrl = strings.Join([]string{oU.Scheme, "://", oU.Host, "/api/v1.0/alipay_task"}, "")
@@ -165,9 +217,13 @@ func (e *Engine) SendTask(s string) {
 		szTaskId := e.generateTaskId(s)
 		szSendData = "task_id=" + szTaskId + "&" + "scan_web=" + sW
 		base64Str := util.GetSig(szSendData, prvKey)
-		m1 := map[string]string{"task_id": szTaskId, "op": "0", "data_sign": base64Str}
+		var oConf = map[string]interface{}{}
+		deepcopier.Copy(util.GetAllConfig()).To(&oConf)
+		delete(oConf, "DtServer")
+		delete(oConf, "esUrl")
+		delete(oConf, "Exploit")
+		m1 := map[string]interface{}{"task_id": szTaskId, "op": "0", "data_sign": base64Str, "config": oConf}
 		data, _ := json.Marshal(&m1)
-
 		if resp, err := util.DoPost(fmt.Sprintf(e.DtServer, e.LimitTask), map[string]string{
 			"Content-Type": "application/json",
 		}, bytes.NewReader(data)); nil == err && nil != resp {
@@ -214,7 +270,7 @@ func (e *Engine) DoCase(ed *models.EventData) util.EngineFuncType {
 func (e *Engine) SendEvent(evt *models.EventData, argsTypes ...int64) {
 	for _, i := range argsTypes {
 		var n1 = models.EventData{}
-		deepcopier.Copy(evt).To(n1)
+		deepcopier.Copy(evt).To(&n1)
 		n1.EventType = i
 		e.EventData <- &n1
 	}

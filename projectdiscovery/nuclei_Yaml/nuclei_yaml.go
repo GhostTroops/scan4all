@@ -146,7 +146,7 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 	x55, _ := util.TestIsWeb(&a66)
 
 	// 启动web扫描
-	util.Wg.Add(1)
+	util.Wg.Add()
 	if util.GetValAsBool("enableJaeles") {
 		go jaeles.RunScan(a66, "")
 	}

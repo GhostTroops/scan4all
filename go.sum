@@ -779,6 +779,8 @@ github.com/hktalent/jaeles v1.0.1 h1:kv3T1lVFTbUCaSaLLOM12DAblZVn9Pxv7oSBxZv145w
 github.com/hktalent/jaeles v1.0.1/go.mod h1:y3BGd22vPBKjLPMtKuTBp/aqq8Y7QattfSa5BlYwBx8=
 github.com/hktalent/jarm-go v0.0.0-20220918133110-7801447b6267 h1:eH9QDUO5zwn34BLweSdpTdNcxHD/GXxxLDEG7gaR4OQ=
 github.com/hktalent/jarm-go v0.0.0-20220918133110-7801447b6267/go.mod h1:4r72GiZnJx4nyoKOHbzu0/5NCuY01Yekue5zueaYUcs=
+github.com/hktalent/kvDb v0.0.0-20221117003327-e25054351180 h1:4pAG3KQLGK+xcxkv4D+k3qeuuDL2y8mxdMgiSK+INGM=
+github.com/hktalent/kvDb v0.0.0-20221117003327-e25054351180/go.mod h1:4UxWOL1c5/mnCC4vJzq3M98S2rYW0hBSmhIOhSYjnd8=
 github.com/hktalent/websocket v0.0.0-20220908204337-b4a81b861976 h1:oGE7u0adRuzpamtAkkOy65hevwyEtrszTAVz+USJz/k=
 github.com/hktalent/websocket v0.0.0-20220908204337-b4a81b861976/go.mod h1:bYeGvW6UTlOOHQSEjdwwDSF2e5OFA4qQtgHRitu5LSQ=
 github.com/hooklift/assert v0.1.0 h1:UZzFxx5dSb9aBtvMHTtnPuvFnBvcEhHTPb9+0+jpEjs=

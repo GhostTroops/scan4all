@@ -3,15 +3,15 @@ package util
 import (
 	"context"
 	"fmt"
+	"github.com/remeh/sizedwaitgroup"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 )
 
 // 全局线程控制
-var Wg *sync.WaitGroup = &sync.WaitGroup{}
+var Wg = sizedwaitgroup.New(32)
 
 // 全局控制
 var RootContext = context.Background()
@@ -65,7 +65,7 @@ func SetHeader4Map(m *map[string]string) {
 // 异步执行方法，只适合无返回值、或使用管道返回值的方法
 // 程序main整体等待
 func DoSyncFunc(cbk func()) {
-	Wg.Add(1)
+	Wg.Add()
 	go func() {
 		defer Wg.Done()
 		for {

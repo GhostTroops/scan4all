@@ -78,6 +78,9 @@ func GetVal(key string) string {
 	}
 	return ""
 }
+func GetAllConfig() *map[string]interface{} {
+	return &mData
+}
 
 // 获取interface
 func GetAsAny(key string) interface{} {
@@ -229,6 +232,12 @@ func LoadCoinfig(config *viper.Viper) {
 		return
 	}
 	config.Unmarshal(&mData)
+	// 合并环境中的设置
+	for k, _ := range mData {
+		if "" != os.Getenv(k) {
+			mData[k] = strings.TrimSpace(os.Getenv(k))
+		}
+	}
 	//config.OnConfigChange(func(e fsnotify.Event) {
 	//	log.Println("Config file changed, now reLoad it: ", e.Name)
 	//	LoadCoinfig(config)
