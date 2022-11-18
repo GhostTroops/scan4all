@@ -7,7 +7,6 @@ import (
 	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
 	runner2 "github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
-	"github.com/hktalent/ProScan4all/webScan/jaeles"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
@@ -147,9 +146,6 @@ func RunNuclei(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, o
 
 	// 启动web扫描
 	util.Wg.Add()
-	if util.GetValAsBool("enableJaeles") {
-		go jaeles.RunScan(a66, "")
-	}
 
 	options.Targets = *x55
 	log.Printf("nuclei options.Targets = %+v\n", options.Targets)

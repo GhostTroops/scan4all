@@ -3,6 +3,7 @@ package util
 import (
 	"context"
 	"fmt"
+	util "github.com/hktalent/go-utils"
 	"github.com/remeh/sizedwaitgroup"
 	"net/http"
 	"os"
@@ -11,7 +12,13 @@ import (
 )
 
 // 全局线程控制
-var Wg = sizedwaitgroup.New(32)
+var Wg *sizedwaitgroup.SizedWaitGroup
+
+func init() {
+	RegInitFunc4Hd(func() {
+		Wg = GetWg(util.GetValAsInt("WgThread", 64))
+	})
+}
 
 // 全局控制
 var RootContext = context.Background()
@@ -24,6 +31,11 @@ var DeleteMe = regexp.MustCompile("rememberMe=deleteMe")
 
 // 自定义http 头
 var CustomHeaders []string
+
+func GetWg(n int) *sizedwaitgroup.SizedWaitGroup {
+	x1 := sizedwaitgroup.New(n)
+	return &x1
+}
 
 /*
 X-Forwarded-Host: 127.0.0.1

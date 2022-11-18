@@ -459,7 +459,7 @@ type EngineFuncType func(evt *models.EventData, args ...interface{})
 
 // 工厂方法
 //   便于同一、规范引擎调用的方法、参数约束
-var EngineFuncFactory func(nT int64, fnCbk interface{})
+var EngineFuncFactory func(nT int64, fnCbk EngineFuncType)
 
 // 全局引擎
 var G_Engine interface{}

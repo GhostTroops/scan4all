@@ -26,7 +26,7 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 	util.RegInitFunc(func() {
 		Pwd, _ = os.Getwd()
-		ToolsPath = Pwd + "/../tools/"
+		ToolsPath = Pwd + "/tools/"
 		envParm["PWD"] = Pwd
 	})
 }

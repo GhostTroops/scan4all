@@ -24,7 +24,7 @@ var config embed.FS
 var Version string
 
 func main() {
-	os.Args = []string{"", "-host", "http://192.168.0.109", "-v"}
+	os.Args = []string{"", "-host", "http://127.0.0.1", "-v"}
 	//os.Args = []string{"", "-host", "http://127.0.0.1", "-v"}
 	//os.Args = []string{"", "-host", "https://www.sina.com.cn/", "-v", "-o", "xxx.csv"}
 	//os.Args = []string{"", "-list", "list.txt", "-v"}
