@@ -7,6 +7,8 @@
 *.so
 db/sqlite3.db
 *.dylib
+sqlite3.db
+tools/macOS
 release
 .DbCache
 scan4all_linux

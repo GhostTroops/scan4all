@@ -1,0 +1,2 @@
+config/rockyou.txt filter=lfs diff=lfs merge=lfs -text
+main filter=lfs diff=lfs merge=lfs -text

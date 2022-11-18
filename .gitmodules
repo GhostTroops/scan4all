@@ -3,4 +3,4 @@
   url = https://github.com/hktalent/nuclei-templates.git
 [submodule "config/jaeles-signatures"]
 	path = config/jaeles-signatures
-	url = https://github.com/hktalent/jaeles-signatures.git
+	url = https://github.com/jaeles-project/jaeles-signatures

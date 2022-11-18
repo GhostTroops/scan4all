@@ -13,6 +13,7 @@ import (
 	jsoniter "github.com/json-iterator/go"
 	"github.com/panjf2000/ants/v2"
 	"github.com/projectdiscovery/iputil"
+	"github.com/remeh/sizedwaitgroup"
 	"github.com/ulule/deepcopier"
 	"io/ioutil"
 	"log"
@@ -31,15 +32,15 @@ var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 引擎对象，全局单实例
 type Engine struct {
-	Context      *context.Context       // 上下文
-	Wg           *sync.WaitGroup        // Wg
-	Pool         int                    // 线程池
-	PoolFunc     *ants.PoolWithFunc     // 线程调用
-	EventData    chan *models.EventData // 数据队列
-	NodeId       string                 `json:"node_id"`    // 分布式引擎节点的id，除非系统更换，docker重制，否则始终一致
-	LimitTask    int                    `json:"limit_task"` // 当前节点任务并发数的限制
-	SyTask       int                    `json:"sy_task"`    // 剩余task
-	DtServer     string                 `json:"dt_server"`  // 获取任务、提交任务状态的server
+	Context      *context.Context               // 上下文
+	Wg           *sizedwaitgroup.SizedWaitGroup // Wg
+	Pool         int                            // 线程池
+	PoolFunc     *ants.PoolWithFunc             // 线程调用
+	EventData    chan *models.EventData         // 数据队列
+	NodeId       string                         `json:"node_id"`    // 分布式引擎节点的id，除非系统更换，docker重制，否则始终一致
+	LimitTask    int                            `json:"limit_task"` // 当前节点任务并发数的限制
+	SyTask       int                            `json:"sy_task"`    // 剩余task
+	DtServer     string                         `json:"dt_server"`  // 获取任务、提交任务状态的server
 	caseScanFunc sync.Map
 }
 
@@ -56,10 +57,9 @@ func NewEngine(c *context.Context, pool int) *Engine {
 	if nil != util.G_Engine {
 		return util.G_Engine.(*Engine)
 	}
-
 	x1 := &Engine{
 		Context:   c,
-		Wg:        &sync.WaitGroup{},
+		Wg:        util.GetWg(util.GetValAsInt("WgThread", 64)),
 		Pool:      pool,
 		DtServer:  util.GetVal("DtServer"),
 		EventData: make(chan *models.EventData, pool),
@@ -113,7 +113,6 @@ func (e *Engine) GetTask(okTaskIds string) {
 		var oTsk = map[string]interface{}{}
 		if data, err := ioutil.ReadAll(resp.Body); nil == err {
 			if err := json.Unmarshal(data, &oTsk); nil == err {
-
 				e.SendEvent(&n1, n1.EventType)
 			}
 		}
@@ -238,11 +237,11 @@ func (e *Engine) SendTask(s string) {
 	}
 }
 
-func (e *Engine) EngineFuncFactory(nT int64, fnCbk interface{}) {
+func (e *Engine) EngineFuncFactory(nT int64, fnCbk util.EngineFuncType) {
 	e.RegCaseScanFunc(nT, fnCbk)
 }
 
-func (e *Engine) RegCaseScanFunc(nType int64, fnCbk interface{}) {
+func (e *Engine) RegCaseScanFunc(nType int64, fnCbk util.EngineFuncType) {
 	e.caseScanFunc.Store(nType, fnCbk)
 }
 
@@ -261,7 +260,11 @@ func (e *Engine) Close() {
 // case 扫描使用的函数
 func (e *Engine) DoCase(ed *models.EventData) util.EngineFuncType {
 	if i, ok := e.caseScanFunc.Load(ed.EventType); ok {
-		return i.(util.EngineFuncType)
+		if x, ok := i.(util.EngineFuncType); ok {
+			return x
+		} else {
+			log.Println(i)
+		}
 	}
 	return nil
 }
@@ -318,7 +321,7 @@ func (x1 *Engine) Running() {
 				}
 			case x2 := <-x1.EventData: // 各种扫描的控制
 				if nil != x2 && nil != x2.EventData {
-					x1.Wg.Add(1)
+					x1.Wg.Add()
 					x1.PoolFunc.Invoke(x2)
 				}
 			case x1, ok := <-util.PocCheck_pipe:

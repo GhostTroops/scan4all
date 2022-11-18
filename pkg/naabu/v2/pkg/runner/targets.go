@@ -112,7 +112,7 @@ func (r *Runner) MergeToFile() (string, error) {
 
 func (r *Runner) DoSsl(target string) []string {
 	// 处理ssl 数字证书中包含的域名信息，深度挖掘漏洞
-	if "true" == util.GetVal("ParseSSl") {
+	if util.GetValAsBool("ParseSSl") {
 		aH, err := pkg.DoDns(target)
 		if nil == err {
 			return aH
@@ -339,8 +339,7 @@ func (r *Runner) AddTarget(target string) error {
 				//Add2Naabubuffer(u.Hostname())
 				// target 长度 大于 s1才处理
 				////UrlPrecise     bool // 精准url扫描，不去除url清单上下文 2022-06-08
-				UrlPrecise := util.GetVal(util.UrlPrecise)
-				if "true" == UrlPrecise && len(target) > len(s1) {
+				if util.GetValAsBool(util.UrlPrecise) && len(target) > len(s1) {
 					s2 := r1.ReplaceAllString(target[len(s1):], "")
 					// 包含1个以上/表示有上下文
 					if 1 < len(s2) {

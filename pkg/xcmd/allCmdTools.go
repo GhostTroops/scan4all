@@ -112,3 +112,10 @@ func DoRaw4FuzzCmd(s, t string) string {
 	szName, _ := GetTempFile()
 	return doTpCmd(t, s, szName)
 }
+
+// 执行nmap
+func doNmap(s string) string {
+	s = Target2HostsFile(s)
+	szName, _ := GetTempFile()
+	return ""
+}

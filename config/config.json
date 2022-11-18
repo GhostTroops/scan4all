@@ -3,9 +3,15 @@
     "OWASP": ["Amass"],
     "ffuf": ["ffuf"],
     "OJ": ["gobuster"],
+    "jaeles-project":["jaeles"],
     "projectdiscovery": ["naabu","nuclei","subfinder","httpx","katana","interactsh","uncover","dnsx","shuffledns","tlsx","asnmap"]
   },
   "cmds":{
+    "jaeles": [
+      "scan",
+      "-c",20,
+      "-o","{PWD}/logs"
+    ],
     "ffuf": [
       "-u","",
       "-w","{PWD}/brute/dicts/filedic.txt",
@@ -221,8 +227,8 @@
   "nmap": "nmap -n --unique --resolve-all -Pn --min-hostgroup 64 --max-retries 0 --host-timeout 10m --script-timeout 3m -oX {filename} --version-intensity 9 --min-rate 10000 -T4 ",
   "HydraUser": "",
   "HydraPass": "",
-  "UrlPrecise": true,
-  "ParseSSl": true,
+  "UrlPrecise": false,
+  "ParseSSl": false,
   "EnableSubfinder": true,
   "EnableHoneyportDetection": true,
   "EnableKsubdomain": true,
@@ -261,8 +267,8 @@
     "MaxRedirects": 3
   },
   "enableEsSv": true,
-  "enableJaeles": false,
   "CheckWeakPassword": true,
+  "WgThread": 64,
   "jaelesThread": 8,
   "esthread": 8,
   "LimitTask": 4,

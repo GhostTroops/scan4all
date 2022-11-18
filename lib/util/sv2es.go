@@ -100,6 +100,7 @@ func SendReq(data1 interface{}, id string, szType ESaveType) {
 	c1.ErrLimit = 10000
 	c1.ErrCount = 0
 	data, _ := json.Marshal(data1)
+	c1.UseHttp2 = true
 	c1.DoGetWithClient4SetHd(c1.GetClient4Http2(), szUrl, "POST", bytes.NewReader(data), func(resp *http.Response, err error, szU string) {
 		if nil != err {
 			log.Println("pphLog.DoGetWithClient4SetHd ", err)
@@ -107,7 +108,7 @@ func SendReq(data1 interface{}, id string, szType ESaveType) {
 			defer resp.Body.Close()
 			body, err := ioutil.ReadAll(resp.Body)
 			if nil == err && 0 < len(body) {
-				Log("Es save result ", string(body))
+				Log("Es save result ", resp.StatusCode, string(body))
 			} else if nil != err {
 				Log(err)
 			}
