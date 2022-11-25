@@ -1,6 +1,6 @@
 /Login.jsp
 /login.jsp
-.*org/login
+/.well-known/security.txt
 ../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log%00
 ../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log
 ../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log
@@ -3703,7 +3703,6 @@ $metadata
 /.web
 /.well-known/acme-challenge/
 /.well-known/apple-app-site-association
-/.well-known/security.txt
 /.workspace/
 /.wp-config.php.swp
 /.www_acl

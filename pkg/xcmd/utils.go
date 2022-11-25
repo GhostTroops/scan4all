@@ -3,7 +3,7 @@ package xcmd
 import (
 	"bytes"
 	"fmt"
-	util "github.com/hktalent/go-utils"
+	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/kvDb"
 	"io"
 	"io/ioutil"

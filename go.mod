@@ -19,8 +19,8 @@ require (
 	github.com/projectdiscovery/networkpolicy v0.0.2-0.20220925181336-68b15b6cbe8c
 	github.com/remeh/sizedwaitgroup v1.0.0
 	go.uber.org/ratelimit v0.2.0
-	golang.org/x/net v0.1.0
-	golang.org/x/sys v0.1.0
+	golang.org/x/net v0.2.0
+	golang.org/x/sys v0.2.0
 )
 
 require (
@@ -135,7 +135,7 @@ require (
 	golang.org/x/crypto v0.0.0-20221012134737-56aed061732a
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
 	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af
-	google.golang.org/genproto v0.0.0-20220916172020-2692e8806bfa
+	google.golang.org/genproto v0.0.0-20221118155620-16455021b5e6
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/irc.v3 v3.1.4
 	gorm.io/driver/sqlite v1.4.3
@@ -277,6 +277,7 @@ require (
 	github.com/hktalent/bleve-mapping-ui v0.4.1 // indirect
 	github.com/hktalent/go-utils v0.0.0-20221022101117-e2abdad71ff5 // indirect
 	github.com/hktalent/goxml2json v0.0.0-20221020100654-3af6886de60c // indirect
+	github.com/hktalent/gson v0.0.0-20221118090607-68e4c7359da2 // indirect
 	github.com/hktalent/jaeles v1.0.1 // indirect
 	github.com/hktalent/kvDb v0.0.0-20221117003327-e25054351180 // indirect
 	github.com/hktalent/websocket v0.0.0-20220908204337-b4a81b861976 // indirect
@@ -411,9 +412,10 @@ require (
 	golang.org/x/exp v0.0.0-20221018221608-02f3b879a704 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20221005201717-2666ed6287c1 // indirect
 	golang.org/x/sync v0.0.0-20220907140024-f12130a52804 // indirect
-	golang.org/x/term v0.1.0 // indirect
+	golang.org/x/term v0.2.0 // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
+	google.golang.org/grpc v1.51.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
 	gopkg.in/corvus-ch/zbase32.v1 v1.0.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
