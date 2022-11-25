@@ -1,7 +1,14 @@
 package xcmd
 
+import (
+	"github.com/hktalent/ProScan4all/lib/util"
+	"os"
+	"strings"
+)
+
 // 传入目标数据，转换为临时文件名
 //  最后一次参数为输出文件名
+//  内、外网都做
 func DoNaabu(s string) string {
 	return DoTargetHost(s, "naabu")
 }
@@ -23,11 +30,13 @@ func DoNaabu(s string) string {
 {"timestamp":"2022-11-16T18:22:46.461904+08:00","asn":{"as_number":"AS3356","as_name":"LEVEL3","as_country":"US","as_range":["8.11.2.0/23","8.11.4.0/22","8.11.8.0/21","8.11.16.0/20","8.11.32.0/19","8.11.64.0/18","8.11.128.0/17","8.12.0.0/14","8.16.0.0/12","8.32.0.0/11","8.64.0.0/10"]},"hash":{"body_sha1":"ec389ccce387d7c7360618020ecbd8ce502739de","header_sha1":"9b24d16abaaf483e259440356daae71e3cf66efc"},"port":"80","url":"http://www.sina.com.cn:80","input":"www.sina.com.cn","location":"https://www.sina.com.cn/","title":"302 Found","scheme":"http","webserver":"Tengine","content_type":"text/html","method":"GET","host":"8.45.176.229","path":"/","favicon":"-1840324437","time":"473.5599ms","a":["8.45.176.225","8.45.176.227","8.45.176.232","8.45.176.228","8.45.176.229","8.45.176.231","8.45.176.226"],"cname":["spool.grid.sinaedge.com","ww1.sinaimg.cn.w.alikunlun.com"],"tech":["Tengine"],"words":18,"lines":9,"status_code":302,"content_length":242,"failed":false,"vhost":true,"pipeline":true}
 
 cat sample/httpx.json|jq ".tech"
+ 内、外网都做
 */
 func DoHttpx(s string) string {
 	return DoRawCmd(s, "httpx")
 }
 
+// 原样输入执行命令 t， s 为输入， szName 输出
 func DoRawCmd(s, t string) string {
 	s = TargetRaw2HostsFile(s)
 	szName, _ := GetTempFile()
@@ -45,17 +54,21 @@ Out-of-band application security testing (OAST)
    -ak, -cloud-api-key string  api-key for the nuclei cloud server
 
  ./tools/macOS/nuclei -l  tools/xx.txt -t $PWD/config/nuclei-templates,$PWD/config/51pwn -nss -severity critical,high,medium -type http,network,websocket,dns -report-config ./config/nuclei_esConfig.yaml -ztls -config-directory ./config/nuclei -max-host-error 5 -duc -nc -json -o xxx1.json
+ 内、外网都做
 */
 func DoNuclei(s string) string {
 	return DoRawCmd(s, "nuclei")
 }
 
+// 执行命令t，转换目标不包含 http[s]://
+//  s 为 输入
 func DoTargetHost(s, t string) string {
 	s = Target2HostsFile(s)
 	szName, _ := GetTempFile()
 	return doTpCmd(t, s, szName)
 }
 
+// 执行dnsx， 只做外网目标
 func DoDnsx(s string) string {
 	return DoTargetHost(s, "dnsx")
 }
@@ -63,18 +76,23 @@ func DoDnsx(s string) string {
 // -version-enum
 // -cipher-enum
 //         "-san",
+//  只做 https
 func DoTlsx(s string) string {
-	return DoTargetHost(s, "tlsx")
+	return DoTargetHost(s, tlsx)
 }
 
 // -no-scope                   disables host based default scope
+//  爬虫
 func DoKatana(s string) string {
 	return DoRawCmd(s, "katana")
 }
 
 // 这个没有太大用
+// 子域名枚举
 func DoShuffledns(s string) string {
-	return DoTargetHost(s, "shuffledns")
+	s = strings.Join(strings.Split(strings.TrimSpace(s), "\n"), ",")
+	szName, _ := GetTempFile()
+	return doTpCmd(shuffledns, s, szName)
 }
 
 // 这个没有太大用
@@ -116,6 +134,32 @@ func DoRaw4FuzzCmd(s, t string) string {
 // 执行nmap
 func doNmap(s string) string {
 	s = Target2HostsFile(s)
-	szName, _ := GetTempFile()
+	//szName, _ := GetTempFile()
 	return ""
+}
+
+/* ./uncover -q 'ssl:"paypal.com"'  -e shodan -pc ../../config/uncover/provider-config.yaml  -config ../../config/uncover/config.yaml -f ip,port,host -json -o paypal1.json
+'ssl:"China Lodging Group"'
+'ssl:"huazhu"'
+'ssl:"huazhu.com"'
+'ssl:"alipay.com"'
+'ssl:"hackerone.com"'
+'ssl:"paypal.com"'
+'ssl:"PayPal, Inc."'
+'ssl:"tencent"'
+'ssl:"paypal"'
+'ssl:"paypal.com"'
+*/
+func DoUncover(s string) string {
+	t := uncover
+	a := GetCmdParms(t)
+	a = DoParms(a...)
+	a[1] = s
+	szName, _ := GetTempFile()
+	a[len(a)-1] = szName
+	szRst := DoAsyncCmd(t, a...)
+	if util.FileExists(szName) {
+		os.Remove(szName)
+	}
+	return szRst
 }

@@ -29,7 +29,7 @@ func DoGetDnsInfos(t string) *[]Dns2IpMap {
 		return nil
 	}
 	// , "-json" 输出格式不太友好
-	var szW string = util.SzPwd + "/config/databases/subdomain.txt"
+	var szW string = util.SzPwd + "/config/database/subdomain.txt"
 	if !strings.HasPrefix(t, "*.") {
 		// 历史结果匹配
 		x1 := util.Query4Lists[Dns2IpMap]("dns=?", t)

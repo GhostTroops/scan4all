@@ -716,6 +716,9 @@ github.com/hktalent/PipelineHttp
 github.com/hktalent/go-utils
 # github.com/hktalent/goxml2json v0.0.0-20221020100654-3af6886de60c
 ## explicit; go 1.18
+# github.com/hktalent/gson v0.0.0-20221118090607-68e4c7359da2
+## explicit; go 1.18
+github.com/hktalent/gson
 # github.com/hktalent/jaeles v1.0.1
 ## explicit; go 1.18
 github.com/hktalent/jaeles/cmd

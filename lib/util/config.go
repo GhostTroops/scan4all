@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"embed"
+	"encoding/hex"
 	"fmt"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/karlseguin/ccache"
@@ -383,10 +384,12 @@ func Mkdirs(s string) {
 func GetSha1(a ...interface{}) string {
 	h := sha1.New()
 	for _, x := range a {
-		h.Write([]byte(fmt.Sprintf("%v", x)))
+		if data, err := json.Marshal(x); nil == err {
+			h.Write(data)
+		}
 	}
 	bs := h.Sum(nil)
-	return fmt.Sprintf("%x", bs)
+	return hex.EncodeToString(bs) // fmt.Sprintf("%x", bs)
 }
 
 var Abs404 = "/scan4all404"

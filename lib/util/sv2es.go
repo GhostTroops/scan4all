@@ -2,8 +2,6 @@ package util
 
 import (
 	"bytes"
-	"crypto/sha1"
-	"encoding/hex"
 	"fmt"
 	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
 	"github.com/hktalent/51pwnPlatform/pkg/models"
@@ -57,9 +55,7 @@ func SendAnyData(data interface{}, szType ESaveType) {
 	if enableEsSv {
 		data1, _ := json.Marshal(data)
 		if 0 < len(data1) {
-			hasher := sha1.New()
-			hasher.Write(data1)
-			k := hex.EncodeToString(hasher.Sum(nil))
+			k := GetSha1(data)
 			SendEvent(&models.EventData{EventType: Const.ScanType_SaveEs, EventData: []interface{}{data, k, szType}}, Const.ScanType_SaveEs)
 		}
 	}

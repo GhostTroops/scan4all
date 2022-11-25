@@ -33,6 +33,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	util.DoInit(&config)
 
+	// 初始化、下载相关工具
 	xcmd.InitToolsFile()
 	// set version
 	if buildInfo, ok := debug.ReadBuildInfo(); ok {
