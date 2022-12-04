@@ -1,6 +1,3 @@
-[submodule "config/nuclei-templates"]
-  path = config/nuclei-templates
-  url = https://github.com/hktalent/nuclei-templates.git
 [submodule "config/jaeles-signatures"]
 	path = config/jaeles-signatures
 	url = https://github.com/jaeles-project/jaeles-signatures
