@@ -14,7 +14,9 @@ func DoInitAll() {
 
 func TestDoUncover(t *testing.T) {
 	DoInitAll()
-	a := strings.Split(`'ssl:"China Lodging Group"'
+	a := strings.Split(`'gov.cn'
+'ssl:"gov.cn"'
+'ssl:"China Lodging Group"'
 'ssl:"huazhu"'
 'ssl:"huazhu.com"'
 'ssl:"alipay.com"'

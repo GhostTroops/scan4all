@@ -11,7 +11,7 @@ builds:
       - -s -w -X main.Version={{.Version}}
     binary: scan4all
     env:
-      - CGO_ENABLED=1
+      - CGO_ENABLED=0
     main: main.go
     goos:
       - darwin

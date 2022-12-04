@@ -700,7 +700,7 @@ func writeCSVHeaders(data *Result, writer *csv.Writer) {
 
 	if err := writer.Write(headers); err != nil {
 		errMsg := errors.Wrap(err, "Could not write headers")
-		//gologger.Error().Msgf(errMsg.Error())
+		gologger.Error().Msgf(errMsg.Error())
 	}
 }
 
@@ -712,7 +712,7 @@ func writeCSVRow(data *Result, writer *csv.Writer) {
 	}
 	if err := writer.Write(rowData); err != nil {
 		errMsg := errors.Wrap(err, "Could not write row")
-		//gologger.Error().Msgf(errMsg.Error())
+		gologger.Error().Msgf(errMsg.Error())
 	}
 }
 
