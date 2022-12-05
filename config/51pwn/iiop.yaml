@@ -5,6 +5,7 @@ info:
   - 51pwn
   description: |-
     Arbitrary File Read on Skype For Business Server
+  tags: weblogic,web
 requests:
   - raw:
       - |
