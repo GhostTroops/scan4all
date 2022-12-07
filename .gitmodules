@@ -4,3 +4,6 @@
 [submodule "config/nuclei-templates"]
 	path = config/nuclei-templates
 	url = https://github.com/projectdiscovery/nuclei-templates.git
+[submodule "config/fuzzing-templates"]
+	path = config/fuzzing-templates
+	url = https://github.com/projectdiscovery/fuzzing-templates.git
