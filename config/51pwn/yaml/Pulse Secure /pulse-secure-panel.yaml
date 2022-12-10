@@ -1,0 +1,33 @@
+id: pulse-secure-panel
+info:
+  name: Pulse Secure VPN Panel
+  author:
+  - l0ne1y
+  description: |-
+    Pulse Secure敏感信息泄露
+    通过访问特定路径。获取Pulse Secure VPN敏感信息
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.pulsesecure.net/
+    临时修复方案：
+    1、禁止带有敏感数据的Web页面展示，以防止敏感信息泄漏。
+    2、对必须发送的敏感数据或页面请求接口做好严格的权限认证
+requests:
+- matchers:
+  - type: word
+    part: header
+    words:
+    - /dana-na/auth/welcome.cgi
+  - type: regex
+    part: body
+    regex:
+    - (?i)/dana-na/css/ds(_[a-f0-9]{64})?.css
+  matchers-condition: or
+  path:
+  - '{{BaseURL}}/dana-na/auth/url_default/welcome.cgi'
+  - '{{BaseURL}}/dana-na/auth/url_2/welcome.cgi'
+  - '{{BaseURL}}/dana-na/auth/url_3/welcome.cgi'
+  method: GET
+  stop-at-first-match: true

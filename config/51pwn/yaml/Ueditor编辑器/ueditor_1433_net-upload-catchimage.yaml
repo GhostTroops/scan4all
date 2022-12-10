@@ -1,0 +1,30 @@
+id: ueditor_1433_net-upload-catchimage
+info:
+  name: UEditor Arbitrary File Upload
+  author:
+  - princechaddha
+  description: |-
+    UEditor .Net 1.4.3.3版本任意文件上传漏洞
+    UEditor是一款所见即所得的开源富文本编辑器，具有轻量、可定制、用户体验优秀等特点，被广大WEB应用程序所使用。本次爆出的高危漏洞属于.NET版本，其它的版本暂时不受影响。漏洞成因是在抓取远程数据源的时候未对文件后缀名做验证导致任意文件写入漏洞，黑客利用此漏洞可以在服务器上执行任意指令，综合评级高危。由于时间仓促，本文分析不到位的地方还请多多谅解。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、升级系统至无漏洞版本，或于官网下载安全补丁
+
+    临时修复方案：
+    1、修改工程目录下net/App_Code/CrawlerHandler.cs文件，添加对文件类型检查的代码。
+    2、使用各类WAF软件，防止攻击者上传恶意文件。
+    3、检查文件上传路径下是否有近期上传的畸形图片；检查是否存在asp，aspx等类型危险文件。如果发现异常文件，请判断后及时删除。
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    part: body
+    words:
+    - 没有指定抓取源
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/ueditor/net/controller.ashx?action=catchimage&encode=utf-8'
+  method: GET

@@ -1,0 +1,33 @@
+id: ApacheNifi-Api-UnauthorizedAccess
+info:
+  name: Apache Nifi API未授权访问漏洞
+  author:
+  - l0ne1y
+  description: |-
+    Apache Nifi API未授权访问漏洞
+    Apache NiFi是美国阿帕奇（Apache）软件基金会的一套数据处理和分发系统。该系统主要用于数据路由、转换和系统中介逻辑。 Apache NiFi 1.0.0版本至1.11.4版本存在访问控制错误漏洞。该漏洞源于网络系统或产品未正确限制来自未授权角色的资源访问。
+  severity: high
+  remediation: |-
+    **官方修复方案：**
+    官方已经修复该漏洞，请在链接地址下载最新版本https://nifi.apache.org/download.html
+
+    **临时修复方案：**
+    1、API禁止直接暴漏在互联网，需通过VPN等较为安全的接入方式访问内部系统。
+    2、API所有页面开启身份认证，根据情况选择对应方式（认证用户，用户名密码）。
+    3、限制IP访问，绑定固定的IP访问后台管理系统。
+requests:
+- matchers:
+  - type: word
+    words:
+    - '"identity":"anonymous","anonymous":true"'
+  - type: word
+    part: header
+    words:
+    - json
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/nifi-api/flow/current-user'
+  method: GET

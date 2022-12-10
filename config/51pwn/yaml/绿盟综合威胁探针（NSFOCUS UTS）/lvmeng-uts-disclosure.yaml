@@ -1,0 +1,44 @@
+id: lvmeng-uts-disclosure
+info:
+  name: Lvmeng UTS Disclosure
+  author:
+  - pikpikcu
+  description: |-
+    绿盟综合威胁探针（NSFOCUS UTS）信息泄露漏洞
+    绿盟综合威胁探针（NSFOCUS UTS），是一款面向全行业的全流量威胁检测探针，集绿盟多年安全研究及威胁检测能力于一身，运用规则引擎、虚拟沙箱、威胁情报、机器学习等技术，具备识别广泛、检测精准、互联互通的特点，可面向不同场景检测和分析高级威胁，回溯安全事件。
+
+    绿盟综合威胁探针（NSFOCUS UTS）存在信息泄露漏洞，可获取管理员密码登录后台
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    http://update.nsfocus.com/update/listBsaUtsDetail/v/F02
+
+    临时修复方案：
+    1、去除返回包中涉及的敏感信息
+    2、将敏感信息进行加密存储，非必要不可发送前端
+    3、发送敏感信息时需加密传输，如有必要需脱敏处理
+    4、对必须发送的敏感数据或页面请求接口做好严格的权限认证
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    condition: and
+    part: header
+    words:
+    - application/json
+  - type: word
+    condition: and
+    part: body
+    words:
+    - password
+    - nsfocus_uts
+    - MANAGER_IP
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/webapi/v1/system/accountmanage/account'
+  method: GET
+  headers:
+    Content-Type: application/json

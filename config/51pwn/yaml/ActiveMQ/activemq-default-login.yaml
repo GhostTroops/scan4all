@@ -1,0 +1,38 @@
+id: activemq-default-login
+info:
+  name: Apache ActiveMQ Default Login
+  author:
+  - pdteam
+  description: |-
+    ActiveMQ默认账户密码
+    默认的ActiveMQ账号密码
+    admin/admin、user/user
+  severity: high
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+    #### 临时修复方案
+    1. 在账户注册或创建账户时，对用户的密码强度进行强制要求，数字、字母、特殊字符组合，8位以上。
+    2. 用户使用初始密码登录时，强制修改密码。
+    3. 在应用中可以设置定期修改密码的策略。
+    4. 立即修改弱口令账号至强口令。
+requests:
+- matchers:
+  - type: word
+    condition: and
+    words:
+    - Welcome to the Apache ActiveMQ Console of <b>
+    - <h2>Broker</h2>
+  raw:
+  - |
+    GET /admin/ HTTP/1.1
+    Host: {{Hostname}}
+    Authorization: Basic {{base64(username + ':' + password)}}
+  attack: pitchfork
+  payloads:
+    password:
+    - user
+    - admin
+    username:
+    - user
+    - admin

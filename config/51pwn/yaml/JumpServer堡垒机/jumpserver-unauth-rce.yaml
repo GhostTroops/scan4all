@@ -1,0 +1,45 @@
+id: jumpserver-unauth-rce
+info:
+  name: jumpserver unauth read logfile + jumpserver rce
+  author:
+  - l0ne1y
+  description: |-
+    Jumpserver未授权&远程代码执行漏洞
+    JumpServer 是全球首款开源的堡垒机，使用 GNU GPL v2.0 开源协议，是符合 4A 规范的运维安全审计系统。
+
+    JumpServer 某些接口未做授权限制，攻击者可构造恶意请求获取到日志文件获取敏感信息，或者执行相关API操作控制其中所有机器，执行任意命令。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://community.fit2cloud.com/#/products/jumpserver/downloads
+
+    临时修复方案：
+    1、修改Nginx配置文件，以屏蔽漏洞接口 ：
+    /api/v1/authentication/connection-token/
+    /api/v1/users/connection-token/
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code_1==401&&status_code_2==404
+    - all_headers_1=="application/json"&&all_headers_2=="application/json"
+    - body_1=="not_authenticated"&&body_2==""
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/api/v1/users/connection-token/'
+  - '{{BaseURL}}/api/v1/authentication/connection-token/?user-only={{randstr}}'
+  method: GET
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code_1==401&&status_code_2==404
+    - all_headers_1=="application/json"&&all_headers_2=="application/json"
+    - body_1=="not_authenticated"&&body_2==""
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/api/v1/authentication/connection-token/'
+  - '{{BaseURL}}/api/v1/users/connection-token/?user-only={{randstr}}'
+  method: GET

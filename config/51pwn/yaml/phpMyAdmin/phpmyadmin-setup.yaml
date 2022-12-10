@@ -1,0 +1,44 @@
+id: phpmyadmin-setup
+info:
+  name: Publicly Accessible Phpmyadmin Setup
+  author:
+  - l0ne1y
+  description: |-
+    phpMyAdmin 设置页面未授权访问漏洞
+
+    phpMyAdmin是phpMyAdmin团队开发的一套免费的、基于Web的MySQL数据库管理工具。该工具能够创建和删除数据库，创建、删除、修改数据库表，执行SQL脚本命令等。
+
+    phpMyAdmin 存在导入页面未授权访问漏洞。攻击者可利用该漏洞对phpMyAdmin进行配置。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.phpmyadmin.net/
+
+    临时修复方案：
+    1、前后端同时对用户输入信息进行校验，双重验证机制。
+    2、调用功能前验证用户是否有权限调用相关功能。
+requests:
+- matchers:
+  - type: word
+    condition: or
+    words:
+    - You want to configure phpMyAdmin using web interface
+    - <title>phpMyAdmin setup</title>
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/phpmyadmin/scripts/setup.php'
+  - '{{BaseURL}}/_phpmyadmin/scripts/setup.php'
+  - '{{BaseURL}}/forum/phpmyadmin/scripts/setup.php'
+  - '{{BaseURL}}/php/phpmyadmin/scripts/setup.php'
+  - '{{BaseURL}}/typo3/phpmyadmin/scripts/setup.php'
+  - '{{BaseURL}}/web/phpmyadmin/scripts/setup.php'
+  - '{{BaseURL}}/xampp/phpmyadmin/scripts/setup.php'
+  - '{{BaseURL}}/sysadmin/phpMyAdmin/scripts/setup.php'
+  - '{{BaseURL}}/phpmyadmin/setup/index.php'
+  - '{{BaseURL}}/pma/setup/index.php'
+  method: GET
+  stop-at-first-match: true

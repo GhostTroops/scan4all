@@ -1,0 +1,39 @@
+id: consul-service-rce
+info:
+  name: Consul Rexec Rce
+  author:
+  - l0ne1y
+  description: |-
+    Hashicorp Consul Services API远程命令执行漏洞
+    Consul是HashiCorp公司推出的一款开源工具，用于实现分布式系统的服务发现与配置。与其他分布式服务注册与发现的方案相比，Consul提供的方案更为“一站式”。Consul内置了服务注册与发现框架、分布一致性协议实现、健康检查、Key/Value存储、多数据中心方案，不再需要依赖其他工具（例如ZooKeeper等），使用方式也相对简单。
+
+    Consul使用Go语言编写，因此具有天然的可移植性（支持Linux、Windows和Mac OS X系统）；且安装包中仅包含一个可执行文件，便于部署，可与Docker等轻量级容器无缝配合。
+
+    在特定配置下，恶意攻击者可以通过发送精心构造的HTTP请求在未经授权的情况下在Consul服务端远程执行命令。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.consul.io/downloads
+
+    临时修复方案：
+    1、禁用Consul服务器上的脚本检查功能
+    2、确保Consul HTTP API服务无法通过外网访问或调用
+    3、对/v1/agent/service/register 禁止PUT方法
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - '"EnableScriptChecks": true'
+    - '"EnableRemoteScriptChecks": true'
+  - type: word
+    words:
+    - json
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/v1/agent/self'
+  method: GET

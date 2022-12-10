@@ -1,0 +1,37 @@
+id: apache-hbase-unauth
+info:
+  name: Apache Hbase Unauth
+  author:
+  - l0ne1y
+  description: |-
+    Apache Hbase 监控页面未授权访问漏洞
+    Apache HBase是基于Hadoop构建的一个分布式的、可伸缩的海量数据存储系统,其底层用HDFS实现数据存储。其web管理页面存在未授权即登录的情况。
+  severity: medium
+  remediation: |-
+    1.上传jar包hbase-http-auth-e3base.jar到hbase集群主机上的H B A S E H O M E / l i b / 目 录 下 并 分 发 到 集 群 其 它 主 机 。
+    2.修改配置文件HBASE_HOME/conf/hbase-site.xml增加
+    <!–HBASE 弹出框方式增加用户密码校验–>
+    <property>
+    <name>hbase.http.sitech.staticuser.user</name>
+    <value>e3base:Abcd1234</value>
+    </property>
+    <property>
+    <name>hbase.http.filter.initializers</name>
+    <value>org.apache.hadoop.hbase.http.lib.StaticUserWebFilter,org.apache.hadoop.hbase.http.lib.SitechStaticUserWebFilter</value>
+    </property>
+    注：由于用户名和密码是用冒号作为分割，所以设置的用户名中不能有冒号，设置的密码中也不能包含有冒号，否则无法识别。且登陆的用户，只能设置一个
+    3.分发配置文件
+    4.重启hbase
+requests:
+- matchers:
+  - type: word
+    words:
+    - <name>hbase.defaults.for.version</name>
+    - <source>hbase-default.xml</source>
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/conf'
+  method: GET

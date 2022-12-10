@@ -1,0 +1,31 @@
+id: airflow-debug
+info:
+  name: Airflow Debug Trace
+  author:
+  - l0ne1y
+  description: |+
+    Apache Airflow调试信息泄露
+
+    Apache Airflow是美国阿帕奇（Apache）软件基金会的一套用于创建、管理和监控工作流程的开源平台。该平台具有可扩展和动态监控等特点。在配置不当的情况下会泄露调试跟踪信息
+
+  severity: low
+  remediation: |+
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://airflow.apache.org/
+
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: body
+    words:
+    - <h1> Ooops. </h1>
+    - Traceback (most recent call last)
+  - type: status
+    status:
+    - 500
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/admin/airflow/login'
+  method: GET

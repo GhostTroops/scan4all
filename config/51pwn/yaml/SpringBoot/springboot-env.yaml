@@ -1,0 +1,42 @@
+id: springboot-env
+info:
+  name: Detect Springboot Env Actuator
+  author:
+  - l0ne1y
+  description: |-
+    Springboot Env Actuator配置不当导致信息泄露
+    Actuator 是 springboot 提供的用来对应用系统进行自省和监控的功能模块，借助于 Actuator 开发者可以很方便地对应用系统某些监控指标进行查看、统计等。在 Actuator 启用的情况下，如果没有做好相关权限控制，非法用户可通过访问默认的执行器端点（endpoints）来获取应用系统中的监控信息。Actuator 配置不当导致应用系统监控信息泄露对应用系统及其用户的危害是巨大的。Env Actuator配置不当导致敏感环境变量信息泄露。
+  severity: low
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+requests:
+- matchers:
+  - type: word
+    condition: or
+    part: body
+    words:
+    - applicationConfig
+    - activeProfiles
+  - type: word
+    condition: or
+    part: body
+    words:
+    - server.port
+    - local.server.port
+  - type: status
+    status:
+    - 200
+  - type: word
+    condition: or
+    part: header
+    words:
+    - application/json
+    - application/vnd.spring-boot.actuator
+    - application/vnd.spring-boot.actuator.v1+json
+    - application/vnd.spring-boot.actuator.v2+json
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/env'
+  - '{{BaseURL}}/actuator/env'
+  method: GET

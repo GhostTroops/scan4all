@@ -73,10 +73,13 @@ func DoDnsx(s string) string {
 	return DoTargetHost(s, "dnsx")
 }
 
+// tlsx -u www.sina.com.cn -p 443 -scan-mode auto -san -ps -scan-all-ips -ip-version 4,6   -c 300
+// tools/macOS/tlsx -l xxx -p 443 -scan-mode auto -ps -scan-all-ips -ip-version 4,6 -so -tls-version -cipher -hash sha1 -jarm -ja3 -wildcard-cert -probe-status -expired -self-signed -mismatched -revoked -c 300 -silent -nc -json -o xxx
 // -version-enum
 // -cipher-enum
 //         "-san",
 //  只做 https
+// tlsx -u www.sina.com.cn -json -silent | jq .
 func DoTlsx(s string) string {
 	return DoTargetHost(s, tlsx)
 }

