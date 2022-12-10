@@ -1,0 +1,37 @@
+id: dockerfile-hidden-disclosure
+info:
+  name: Dockerfile Hidden Disclosure
+  author:
+  - l0ne1y
+  description: |-
+    Docker Dockerfile 敏感信息泄露
+    Docker中的Dockerfile存在信息泄露，攻击者可利用此漏洞获取Docker关键配置信息。
+  severity: medium
+  remediation: |2-
+
+    官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁
+    https://www.docker.com/get-started/
+
+    临时修复方案：
+    1.去除页面、cookie或缓存中涉及的敏感信息或删除泄露信息页面
+    2.正确配置服务器以防止未经授权的访问、目录列表等信息。
+requests:
+- matchers:
+  - type: regex
+    part: body
+    regex:
+    - ^(?:FROM(?:CACHE)?|RUN|ADD|WORKDIR|ENV|EXPOSE|\#)\s+[ -~]+
+  - type: status
+    status:
+    - 200
+  - type: word
+    part: header
+    negative: true
+    words:
+    - text/html
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/.dockerfile'
+  - '{{BaseURL}}/.Dockerfile'
+  method: GET

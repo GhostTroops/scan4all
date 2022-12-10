@@ -1,0 +1,40 @@
+id: wordpress-db-repair
+info:
+  name: Wordpress DB Repair Exposed
+  author:
+  - l0ne1y
+  tags:
+  - wordpress
+  - config
+  - fpd
+  description: |-
+    WordPress 数据库修复工具 repair.php 未授权访问漏洞
+    WordPress是Wordpress基金会的一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。repair.php是数据库修复工具，旨在数据库出问题时重置恢复。
+  severity: low
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.com/
+
+    临时修复方案：
+    1、repair.php 禁止直接暴漏在互联网，需通过VPN等较为安全的接入方式访问内部系统。
+    2、repair.php 开启身份认证，根据情况选择对应方式（认证用户，用户名密码）。
+    3、限制IP访问，绑定固定的IP访问后台管理系统。
+requests:
+- matchers:
+  - type: word
+    words:
+    - <title>WordPress
+  - type: status
+    status:
+    - 200
+  - type: word
+    condition: and
+    negative: true
+    words:
+    - define
+    - WP_ALLOW_REPAIR
+    - "true"
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-admin/maint/repair.php'
+  method: GET

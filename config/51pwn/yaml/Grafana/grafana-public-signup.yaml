@@ -1,0 +1,41 @@
+id: grafana-public-signup
+info:
+  name: Grafana Public Signup
+  author:
+  - l0ne1y
+  description: |-
+    Grafana Public 默认账号密码
+    Grafana是Grafana实验室的一套提供可视化监控界面的开源监控工具。该工具主要用于监控和分析Graphite、InfluxDB和Prometheus等。
+    Grafana存在API插件注册默认账户密码，管理员在系统安装后未对账号密码进行安全修改。
+  severity: medium
+  remediation: |-
+    1、配置所有的安全机制
+    2、最小原则，关掉或限制不使用的服务
+    3、更改默认账户信息
+    4、使用日志和警报
+    5、回显信息不显示任何与实际错误相关的信息
+    6、检查和修复安全配置项
+requests:
+- matchers:
+  - type: word
+    words:
+    - User sign up completed successfully
+  - type: word
+    condition: and
+    part: header
+    words:
+    - grafana_sess
+    - grafana_user
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /api/user/signup/step2 HTTP/1.1
+    Host: {{Hostname}}
+    content-type: application/json
+    Origin: {{BaseURL}}
+    Referer: {{BaseURL}}
+
+    {"username":"nuclei_{{randstr}}","password":"{{randstr_1}}"}

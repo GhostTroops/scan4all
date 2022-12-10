@@ -1,0 +1,22 @@
+id: CNVD-2018-19403
+info:
+  name: circarlife scada 设备固件版本信息泄露
+  author:
+  - jim2g
+  description: "circarlife scada 设备固件版本信息泄露\n \tCIRCONTROL CirCarLife是西班牙Circontrol公司的一套停车场自动化管理系统。\n\nCIRCONTROL
+    CirCarLife 4.3之前版本中存在信息泄露漏洞，该漏洞源于程序缺少对/html/device-id的身份验证。攻击者可利用该漏洞获取软件和硬件版本信息。"
+  severity: medium
+  remediation: "官方修复方案：\n1、建议用户到官方获取最新补丁或者最新版本程序：\nhttps://circontrol.com/ \n临时修复方案：\n1、去除页面、cookie或缓存中涉及的敏感信息或删除泄露信息页面\n2、将敏感信息进行加密存储，非必要不可发送前端\n3、发送敏感信息时需加密传输，如有必要需脱敏处理\n4、禁止用自己开发的加密算法，必须使用公开、安全的标准加密算法。\n5、禁止在日志中记录明文的敏感数据：禁止在日志中记录明文的敏感数据（如口\n令、会话标识jsessionid等），
+    防止敏感信息泄漏。\n6、禁止带有敏感数据的Web页面缓存：带有敏感数据的Web页面都应该禁止缓\n存，以防止敏感信息泄漏或通过代理服务器上网的用户数据互窜问题。\n7、对必须发送的敏感数据或页面请求接口做好严格的权限认证\n"
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,"circontrol")
+  raw:
+  - |
+    GET /html/device-id HTTP/1.1
+    Host: {{Hostname}}
+  req-condition: true

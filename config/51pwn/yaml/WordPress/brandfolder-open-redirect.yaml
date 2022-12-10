@@ -1,0 +1,33 @@
+id: brandfolder-open-redirect
+info:
+  name: WordPress Brandfolder Plugin Open Redirect
+  author:
+  - l0ne1y
+  tags:
+  - wordpress
+  - wp-plugin
+  - lfi
+  - rfi
+  description: |-
+    Wordpress Plugin  Brandfolder 存在URL重定向漏洞
+    WordPress Brandfolder 中的一个漏洞允许远程攻击者通过“wp_abspath”参数将任意 URL 注入到“callback.php”端点，这会将受害者重定向到该端点。
+  reference:
+  - https://www.exploit-db.com/exploits/39591
+  severity: low
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.com/zh-cn/install-plugins/
+
+    临时修复方案：
+    1、代码固定跳转地址，不让用户控制变量。
+    2、跳转目标地址采用白名单映射机制、只对合法的 URL 做跳转。
+    3、合理充分的校验校验跳转的目标地址，非己方地址时告知用户跳转风险。
+requests:
+- matchers:
+  - type: regex
+    part: header
+    regex:
+    - (?m)^(?:Location\s*?:\s*?)(?:https?://|//)?(?:[a-zA-Z0-9\-_\.@]*)example\.com.*$
+  path:
+  - '{{BaseURL}}/wp-content/plugins/brandfolder/callback.php?wp_abspath=https://example.com/'
+  method: GET

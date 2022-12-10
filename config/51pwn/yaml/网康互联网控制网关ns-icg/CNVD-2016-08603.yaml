@@ -1,0 +1,36 @@
+id: CNVD-2016-08603
+info:
+  name: 北京网康科技有限公司网康互联网控制网关ns-icg存在弱口令漏洞
+  author:
+  - l0ne1y
+  tags:
+  - natshell
+  - rce
+  description: |-
+    网康互联网控制网关ns-icg存在默认口令漏洞
+    京网康科技有限公司网康互联网控制网关是一款软硬件一体化互联网控制管理产品。
+
+    北京网康科技有限公司网康互联网控制网关ns-icg存在默认账户ns25000/ns25000，允许攻击者利用该漏洞成功登录系统，获取敏感信息。
+  reference:
+  - https://www.cnvd.org.cn/flaw/show/cnvd-2016-08603
+  severity: critical
+  remediation: |-
+    1、建议系统管理人员将已发现的弱口令立即改成强口令，并拉网式排查所有系统管理员、用户、设备的弱口令，清扫未发现的弱口令。
+    2、弱口令重在管理。企业应制定强口令制度（如：密码需包含大小写字母、数字、特殊字符至少三种格式，长度不少于十位，并且密码键盘排列无序，密码企业、个人信息无关联。
+    3、弱口令排查方式可以通过汇总企业所有人员账户后根据强口令规则匹配自查、个性化制定字典暴力破解两种方式。
+    4、推荐强口令在线生成:[https://suijimimashengcheng.51240.com/](https://suijimimashengcheng.51240.com/)
+    5、推荐口令强度在线检测:[https://howsecureismypassword.net/](https://howsecureismypassword.net/)
+requests:
+- matchers:
+  - type: word
+    words:
+    - '"agreed":true'
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/user/login/checkPermit'
+  method: POST
+  body: |
+    usrname=ns25000&pass=ns25000

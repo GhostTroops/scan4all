@@ -1,0 +1,50 @@
+id: nexus-default-login
+info:
+  name: Nexus Default Login
+  author:
+  - l0ne1y
+  tags:
+  - nexus
+  - default-login
+  description: |-
+    Sonatype Nexus 默认口令登录漏洞
+    Sonatype Nexus Repository是美国Sonatype公司的一款存储库管理器，它主要用于管理、存储和分发软件等。
+    其web管理后台存在默认账户admin/admin123。
+  severity: high
+  classification:
+    cwe-id:
+    - cwe-522
+    cvss-metrics: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L
+    cvss-score: 8.3
+  remediation: |-
+    1、建议系统管理人员将已发现的弱口令立即改成强口令，并拉网式排查所有系统管理员、用户、设备的弱口令，清扫未发现的弱口令。
+    2、弱口令重在管理。企业应制定强口令制度（如：密码需包含大小写字母、数字、特殊字符至少三种格式，长度不少于十位，并且密码键盘排列无序，密码企业、个人信息无关联。
+    3、弱口令排查方式可以通过汇总企业所有人员账户后根据强口令规则匹配自查、个性化制定字典暴力破解两种方式。
+    4、推荐强口令在线生成:[https://suijimimashengcheng.51240.com/](https://suijimimashengcheng.51240.com/)
+    5、推荐口令强度在线检测:[https://howsecureismypassword.net/](https://howsecureismypassword.net/)
+requests:
+- matchers:
+  - type: status
+    status:
+    - 204
+  - type: word
+    condition: and
+    part: header
+    words:
+    - 'Server: Nexus'
+    - NXSESSIONID
+  matchers-condition: and
+  raw:
+  - |
+    POST /service/rapture/session HTTP/1.1
+    Host: {{Hostname}}
+    X-Nexus-UI: true
+    Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+
+    username={{base64(username)}}&password={{base64(password)}}
+  attack: pitchfork
+  payloads:
+    password:
+    - admin123
+    username:
+    - admin

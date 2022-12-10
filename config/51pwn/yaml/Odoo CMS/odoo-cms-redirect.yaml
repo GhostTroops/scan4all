@@ -1,0 +1,29 @@
+id: odoo-cms-redirect
+info:
+  name: Odoo CMS - Open Redirect
+  author:
+  - l0ne1y
+  description: |-
+    Odoo CMS URL重定向漏洞
+    Odoo（前称OpenERP）是一套企业资源计划（ERP）和客户关系管理（CRM）系统。该系统采用Python语言开发，PostgreSQL作为数据库，并包括了销售管理、库存管理、财务管理等模块，并支持对模块进行卸载、升级等操作。
+
+    Odoo CMS存在输入验证错误漏洞，该漏洞允许远程攻击者可利用该漏洞将受害者重定向到任意URL。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.odoo.com/ar/page/download
+
+    临时修复方案：
+    1、代码固定跳转地址，不让用户控制变量。
+    2、跳转目标地址采用白名单映射机制、只对合法的 URL 做跳转。
+    3、合理充分的校验校验跳转的目标地址，非己方地址时告知用户跳转风险。
+requests:
+- matchers:
+  - type: regex
+    part: header
+    regex:
+    - (?m)^(?:Location\s*?:\s*?)(?:https?://|//)?(?:[a-zA-Z0-9\-_\.@]*)bing\.com.*$
+  path:
+  - '{{BaseURL}}/website/lang/en_US?r=https://bing.com/'
+  method: GET

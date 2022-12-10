@@ -1,0 +1,35 @@
+id: wp-install
+info:
+  name: WordPress Exposed Installation
+  author:
+  - l0ne1y
+  description: |-
+    Wordpress install 安装文件未删除漏洞
+    WordPress和WordPress plugin都是WordPress基金会的产品。WordPress是一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。WordPress plugin是一个应用插件。
+
+    WordPress 存在访问控制不严，导致install.php可被攻击者访问，继而重装cms获取网站控制权。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.com
+    临时修复方案：
+    1、配置所有的安全机制
+    2、最小原则，关掉或限制不使用的服务
+    3、更改默认账户信息
+    4、使用日志和警报
+    5、回显信息不显示任何与实际错误相关的信息
+    6、检查和修复安全配置项
+requests:
+- matchers:
+  - type: word
+    condition: and
+    words:
+    - <title>WordPress &rsaquo; Installation</title>
+    - Site Title
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-admin/install.php'
+  method: GET

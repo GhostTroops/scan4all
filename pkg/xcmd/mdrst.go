@@ -17,9 +17,11 @@ func GetMore(a []string, t string, a1 []string, getId func(*map[string]interface
 	szCmd := strings.Join(a1, " ")
 	for _, x := range a {
 		obj := gson.NewFrom(x)
+		obj.Del("timestamp")
 		switch t {
-		case uncover:
-			obj.Del("timestamp")
+		//case uncover:
+		//
+		default:
 			if m, ok := obj.Val().(map[string]interface{}); ok {
 				m["type"] = t
 				m["cmd"] = szCmd

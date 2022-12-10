@@ -1,0 +1,39 @@
+id: kubernetes-kustomization-disclosure
+info:
+  name: Kubernetes Kustomization Disclosure
+  author:
+  - l0ne1y
+  description: |-
+    Kubernetes Kustomization 信息泄露
+
+    Google Kubernetes是美国谷歌（Google）公司的一套开源的Docker容器集群管理系统。该系统为容器化的应用提供资源调度、部署运行、服务发现和扩容缩容等功能。Kubelet 是 Kubernetes 的核心组件之一。
+    /kustomization.yml文件会泄露apiVersion等信息
+  severity: low
+  remediation: |-
+    官方修复方案：
+    1、目前厂商已发布升级补丁以修复漏洞，补丁获取链接：
+    https://github.com/kubernetes/dashboard/releases/
+
+    临时修复方案：
+    1、去除页面泄露的信息
+requests:
+- matchers:
+  - type: word
+    condition: or
+    part: body
+    words:
+    - 'apiVersion:'
+    - 'resources:'
+    - 'namespace:'
+    - 'commonLabels:'
+    - Kustomization
+  - type: dsl
+    dsl:
+    - contains(tolower(all_headers), 'application/yaml')
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/kustomization.yml'
+  method: GET

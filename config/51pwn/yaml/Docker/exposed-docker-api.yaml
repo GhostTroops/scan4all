@@ -1,0 +1,38 @@
+id: exposed-docker-api
+info:
+  name: Exposed Docker API
+  author:
+  - l0ne1y
+  description: |-
+    Docker API 暴露
+    Docker API 暴露，攻击者可利用此漏洞来获取环境的敏感信息。
+  severity: low
+  remediation: |2-
+
+    官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁
+    https://www.docker.com/get-started/
+
+    临时修复方案：
+    1.去除页面、cookie或缓存中涉及的敏感信息或删除泄露信息页面
+    2.正确配置服务器以防止未经授权的访问、目录列表等信息。
+requests:
+- matchers:
+  - type: word
+    part: header
+    words:
+    - application/json
+  - type: word
+    condition: and
+    part: body
+    words:
+    - KernelVersion
+    - BuildTime
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - http://{{Hostname}}/version
+  - http://{{Hostname}}/v1.24/version
+  method: GET

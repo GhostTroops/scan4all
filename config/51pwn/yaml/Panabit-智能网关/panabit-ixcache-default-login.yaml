@@ -1,0 +1,40 @@
+id: panabit-ixcache-default-login
+info:
+  name: Panabit iXCache Default Login
+  author:
+  - ritikchaddha
+  description: |-
+    Panabit iXCache弱口令漏洞
+    iXCache是北京派网软件有限公司基于PanaOS操作系统研发的网络应用层缓存加速引擎软件。
+
+    北京派网软件有限公司iXCache存在弱口令漏洞，攻击者可利用该漏洞获取敏感信息。
+  severity: medium
+  remediation: |-
+    修复方案：
+    1、建议系统管理人员将已发现的弱口令立即改成强口令。
+    2、弱口令重在管理。企业应制定强口令制度（如：密码需包含大小写字母、数字、特殊字符至少三种格式，长度不少于十位，并且密码键盘排列无序，密码企业、个人信息无关联。
+    3、弱口令排查方式可以通过汇总企业所有人员账户后根据强口令规则匹配自查、个性化制定字典暴力破解两种方式。
+    4、推荐强口令在线生成:[https://suijimimashengcheng.51240.com/](https://suijimimashengcheng.51240.com/)
+    5、推荐口令强度在线检测:[https://howsecureismypassword.net/](https://howsecureismypassword.net/)
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - URL=/cgi-bin/monitor.cgi
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /login/userverify.cgi HTTP/1.1
+    Host: {{Hostname}}
+
+    username={{username}}&password={{password}}
+  attack: pitchfork
+  payloads:
+    password:
+    - ixcache
+    username:
+    - admin

