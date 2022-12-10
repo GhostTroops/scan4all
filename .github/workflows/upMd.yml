@@ -1,0 +1,43 @@
+name: 🥳 New Black Ip Lists
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    #  every day at 5:30 
+      - cron:  '30 5 * * *'
+      - cron:  '30 10 * * *'
+      - cron:  '30 15 * * *'
+      - cron:  '30 20 * * *'
+  
+  workflow_dispatch:
+
+jobs:
+  templates:
+    runs-on: ubuntu-latest
+    if: github.repository == 'hktalent/scan4all'
+    steps:
+      - uses: actions/checkout@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Install Dependences
+        run: sudo apt install -yy git
+
+      - name: update all submodule
+        id: new-additions
+        run: |
+          git pull
+          git -c protocol.version=2 submodule update --remote --force --recursive
+      - name: Commit files
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit --allow-empty -m "Auto update all submodule [$(date)]" -a
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
