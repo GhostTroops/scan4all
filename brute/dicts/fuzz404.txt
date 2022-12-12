@@ -2,6 +2,7 @@
 403
 <a href="/#/error/404">Found</a>
 404
+404 page not found
 404 Not Found
 404.safedog.cn
 Access Failed
