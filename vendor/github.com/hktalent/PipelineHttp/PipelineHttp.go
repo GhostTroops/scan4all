@@ -140,7 +140,21 @@ func (r *PipelineHttp) GetClient(tr http.RoundTripper) *http.Client {
 	if nil == tr {
 		tr = r.GetTransport()
 	}
+	//c := &fasthttp.Client{
+	//	ReadTimeout:                   readTimeout,
+	//	WriteTimeout:                  writeTimeout,
+	//	MaxIdleConnDuration:           maxIdleConnDuration,
+	//	NoDefaultUserAgentHeader:      true, // Don't send: User-Agent: fasthttp
+	//	DisableHeaderNamesNormalizing: true, // If you set the case on your headers correctly you can enable this
+	//	DisablePathNormalizing:        true,
+	//	// increase DNS cache time to an hour instead of default minute
+	//	Dial: (&fasthttp.TCPDialer{
+	//		Concurrency:      4096,
+	//		DNSCacheDuration: time.Hour,
+	//	}).Dial,
+	//}
 	c := &http.Client{
+
 		Transport: tr,
 		//Timeout:   r.Timeout, // 超时为零表示没有超时,  context canceled (Client.Timeout exceeded while awaiting headers)
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -238,7 +252,7 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 		r.Close()
 		return
 	}
-	if !r.UseHttp2 && nil != resp {
+	if !r.UseHttp2 && nil != resp && 200 != resp.StatusCode {
 		r.UseHttp2 = true
 		if a1 := resp.Header["Alt-Svc"]; 0 < len(a1) && strings.Contains(a1[0], "h3=\"") || strings.HasPrefix(resp.Proto, "HTTP/3") {
 			r.Client = r.GetClient4Http3()

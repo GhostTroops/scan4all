@@ -1,6 +1,7 @@
 package go_utils
 
 import (
+	"fmt"
 	"net/url"
 	"os"
 	"strings"
@@ -21,7 +22,7 @@ func DoLog4j(szUrl string) {
 		if "" == EsUrl {
 			EsUrl = GetValByDefault("esUrl", "http://127.0.0.1:9200/%s_index/_doc/%s")
 		}
-		oUrl, err := url.Parse(strings.TrimSpace(EsUrl))
+		oUrl, err := url.Parse(fmt.Sprintf(strings.TrimSpace(EsUrl),"x","x"))
 		if nil == err {
 			p1, err := os.Getwd()
 			if nil == err {
