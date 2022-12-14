@@ -101,7 +101,7 @@ require (
 	github.com/gorilla/websocket v1.5.0
 	github.com/gosnmp/gosnmp v1.35.0
 	github.com/hktalent/51pwnPlatform v1.1.9
-	github.com/hktalent/PipelineHttp v0.0.0-20221015015809-2e197a75e932
+	github.com/hktalent/PipelineHttp v0.0.0-20221209043918-65a9cff9f6ea
 	github.com/hktalent/jarm-go v0.0.0-20220918133110-7801447b6267
 	github.com/huin/asn1ber v0.0.0-20120622192748-af09f62e6358
 	github.com/icodeface/tls v0.0.0-20190904083142-17aec93c60e5
@@ -275,7 +275,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hdm/jarm-go v0.0.7 // indirect
 	github.com/hktalent/bleve-mapping-ui v0.4.1 // indirect
-	github.com/hktalent/go-utils v0.0.0-20221022101117-e2abdad71ff5 // indirect
+	github.com/hktalent/go-utils v0.0.0-20221214032629-91de71a09914 // indirect
 	github.com/hktalent/goxml2json v0.0.0-20221020100654-3af6886de60c // indirect
 	github.com/hktalent/gson v0.0.0-20221118090607-68e4c7359da2 // indirect
 	github.com/hktalent/jaeles v1.0.1 // indirect
@@ -346,6 +346,23 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
+	github.com/pion/datachannel v1.5.2 // indirect
+	github.com/pion/dtls/v2 v2.1.5 // indirect
+	github.com/pion/ice/v2 v2.2.12 // indirect
+	github.com/pion/interceptor v0.1.11 // indirect
+	github.com/pion/logging v0.2.2 // indirect
+	github.com/pion/mdns v0.0.5 // indirect
+	github.com/pion/randutil v0.1.0 // indirect
+	github.com/pion/rtcp v1.2.10 // indirect
+	github.com/pion/rtp v1.7.13 // indirect
+	github.com/pion/sctp v1.8.3 // indirect
+	github.com/pion/sdp/v3 v3.0.6 // indirect
+	github.com/pion/srtp/v2 v2.0.10 // indirect
+	github.com/pion/stun v0.3.5 // indirect
+	github.com/pion/transport v0.13.1 // indirect
+	github.com/pion/turn/v2 v2.0.8 // indirect
+	github.com/pion/udp v0.1.1 // indirect
+	github.com/pion/webrtc/v3 v3.1.49 // indirect
 	github.com/power-devops/perfstat v0.0.0-20220216144756-c35f1ee13d7c // indirect
 	github.com/projectdiscovery/chaos-client v0.3.0 // indirect
 	github.com/projectdiscovery/filekv v0.0.0-20210915124239-3467ef45dd08 // indirect

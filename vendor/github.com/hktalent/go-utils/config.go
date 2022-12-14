@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"embed"
-	"encoding/json"
+	"encoding/hex"
 	"fmt"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/karlseguin/ccache"
 	"github.com/spf13/viper"
 	"io/fs"
@@ -21,6 +22,8 @@ import (
 	"strings"
 	"time"
 )
+
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 字符串包含关系，且大小写不敏感
 func StrContains(s1, s2 string) bool {
@@ -400,22 +403,22 @@ func Init1(config *embed.FS) {
   - "dos"`), os.ModePerm)
 		}
 	}
-	szPath := "config"
-	log.Println("wait for init config files ... ")
+	//szPath := "config"
+	//log.Println("wait for init config files ... ")
 	// 释放config目录到本地
-	if nil != config {
-		if x1, err := config.ReadDir(szPath); nil == err {
-			for _, x2 := range x1 {
-				if x2.IsDir() {
-					doDir(config, x2, szPath)
-				} else {
-					doFile(config, x2, szPath)
-				}
-			}
-		} else {
-			log.Println("Init1:", err)
-		}
-	}
+	//if nil != config {
+	//	if x1, err := config.ReadDir(szPath); nil == err {
+	//		for _, x2 := range x1 {
+	//			if x2.IsDir() {
+	//				doDir(config, x2, szPath)
+	//			} else {
+	//				doFile(config, x2, szPath)
+	//			}
+	//		}
+	//	} else {
+	//		log.Println("Init1:", err)
+	//	}
+	//}
 	InitConfigFile()
 	Init2()
 	log.Println("init config files is over .")
@@ -428,11 +431,15 @@ func Mkdirs(s string) {
 // 获取 Sha1
 func GetSha1(a ...interface{}) string {
 	h := sha1.New()
-	for _, x := range a {
-		h.Write([]byte(fmt.Sprintf("%v", x)))
+	if data, err := json.Marshal(a); nil == err {
+		h.Write(data)
+	} else {
+		for _, x := range a {
+			h.Write([]byte(fmt.Sprintf("%v", x)))
+		}
 	}
 	bs := h.Sum(nil)
-	return fmt.Sprintf("%x", bs)
+	return hex.EncodeToString(bs) // fmt.Sprintf("%x", bs)
 }
 
 var Abs404 = "/scan4all404"
@@ -560,6 +567,26 @@ func CopyConfig(o interface{}) {
 	}
 }
 
+func RemoveDuplication_mapNoEmpy(arr []string) []string {
+	set := make(map[string]struct{}, len(arr))
+	j := 0
+	for _, v := range arr {
+		v = strings.TrimSpace(v)
+		if v == "" {
+			continue
+		}
+		_, ok := set[v]
+		if ok {
+			continue
+		}
+		set[v] = struct{}{}
+		arr[j] = v
+		j++
+	}
+
+	return arr[:j]
+}
+
 func RemoveDuplication_map(arr []string) []string {
 	set := make(map[string]struct{}, len(arr))
 	j := 0
@@ -574,4 +601,22 @@ func RemoveDuplication_map(arr []string) []string {
 	}
 
 	return arr[:j]
+}
+
+func RemoveDuplication_map4Any(arr []interface{}) []string {
+	set := make(map[string]struct{}, len(arr))
+	j := 0
+	var aR = make([]string, len(arr))
+	for _, v1 := range arr {
+		v := fmt.Sprintf("%v", v1)
+		_, ok := set[v]
+		if ok {
+			continue
+		}
+		set[v] = struct{}{}
+		aR[j] = v
+		j++
+	}
+
+	return aR[:j]
 }
