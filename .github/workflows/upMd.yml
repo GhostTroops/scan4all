@@ -7,9 +7,6 @@ on:
   schedule:
     #  every day at 5:30 
       - cron:  '30 5 * * *'
-      - cron:  '30 10 * * *'
-      - cron:  '30 15 * * *'
-      - cron:  '30 20 * * *'
   
   workflow_dispatch:
 
