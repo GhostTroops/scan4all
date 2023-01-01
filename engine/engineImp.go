@@ -100,6 +100,7 @@ func (e *Engine) initNodeId() {
 	}
 }
 
+// 优化使用websocket、或者webRTC
 // "https://dt.51pwn.com/api/v1.0/syncResult/task/%d"
 // curl -v -XPOST -d '{"Num":22,"task_ids":"","node_id":"xx","task_num":443}'  https://127.0.0.1:8081/api/v1.0/syncResult/task/33
 // 结果反馈 /api/v1.0/syncResult/task/%d
@@ -237,10 +238,12 @@ func (e *Engine) SendTask(s string) {
 	}
 }
 
+// 注册特定类型的事件处理
 func (e *Engine) EngineFuncFactory(nT int64, fnCbk util.EngineFuncType) {
 	e.RegCaseScanFunc(nT, fnCbk)
 }
 
+// 注册特定类型的事件处理
 func (e *Engine) RegCaseScanFunc(nType int64, fnCbk util.EngineFuncType) {
 	e.caseScanFunc.Store(nType, fnCbk)
 }

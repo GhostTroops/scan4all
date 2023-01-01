@@ -3,7 +3,6 @@ package api
 import (
 	_ "github.com/hktalent/ProScan4all/engine"
 	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/pkg/hydra"
 	naaburunner "github.com/hktalent/ProScan4all/pkg/naabu/v2/pkg/runner"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/gologger"
@@ -68,12 +67,13 @@ func StartScan(oOpts *map[string]interface{}) {
 		noScan := util.GetValAsBool("noScan")
 
 		// 直接使用 nmap xml结果文件
-		if hydra.DoNmapWithFile(options.HostsFile, &naaburunner.Naabubuffer) {
+		if util.DoNmapWithFile(options.HostsFile, &naaburunner.Naabubuffer) {
 			os.Setenv("noScan", "true")
 			naabuRunner.Close()
 		} else if noScan {
 			s1, err := naabuRunner.MergeToFile()
 			if nil == err {
+				util.DoInput(s1, &naaburunner.Naabubuffer)
 				data, err := ioutil.ReadFile(s1)
 				if nil == err {
 					naaburunner.Naabubuffer.Write(data)

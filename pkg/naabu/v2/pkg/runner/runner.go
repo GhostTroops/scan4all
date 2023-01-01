@@ -9,7 +9,6 @@ import (
 	"github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml"
 	runner2 "github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
 	"github.com/hktalent/ProScan4all/webScan"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/iputil"
 	runner3 "github.com/projectdiscovery/naabu/v2/pkg/runner"
@@ -38,8 +37,6 @@ import (
 	"github.com/remeh/sizedwaitgroup"
 	"go.uber.org/ratelimit"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // Runner is an instance of the port enumeration
 // client used to orchestrate the whole process.
@@ -322,7 +319,7 @@ func (r *Runner) RunEnumeration() error {
 
 					// unmarshal the response
 					data := &shodanidb.ShodanResponse{}
-					if err := json.NewDecoder(response.Body).Decode(data); err != nil {
+					if err := util.Json.NewDecoder(response.Body).Decode(data); err != nil {
 						gologger.Warning().Msgf("Couldn't unmarshal json data for %s: %s\n", ip, err)
 						return
 					}

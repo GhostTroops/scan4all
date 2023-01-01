@@ -35,6 +35,14 @@ func (c *CLI) Format(event *LogEvent) ([]byte, error) {
 		buffer.WriteRune(' ')
 		delete(event.Metadata, "label")
 	}
+	timestamp, ok := event.Metadata["timestamp"]
+	if timestamp != "" && ok {
+		buffer.WriteRune('[')
+		buffer.WriteString(timestamp)
+		buffer.WriteRune(']')
+		buffer.WriteRune(' ')
+		delete(event.Metadata, "timestamp")
+	}
 	buffer.WriteString(event.Message)
 
 	for k, v := range event.Metadata {

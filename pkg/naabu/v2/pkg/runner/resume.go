@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"github.com/hktalent/ProScan4all/lib/util"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -36,7 +37,7 @@ func NewResumeCfg() *ResumeCfg {
 
 // SaveResumeConfig to file
 func (resumeCfg *ResumeCfg) SaveResumeConfig() error {
-	data, _ := json.MarshalIndent(resumeCfg, "", "\t")
+	data, _ := util.Json.MarshalIndent(resumeCfg, "", "\t")
 	return os.WriteFile(DefaultResumeFilePath(), data, os.ModePerm)
 }
 
@@ -47,7 +48,7 @@ func (resumeCfg *ResumeCfg) ConfigureResume() error {
 	if err != nil {
 		return err
 	}
-	err = json.Unmarshal([]byte(file), &resumeCfg)
+	err = util.Json.Unmarshal([]byte(file), &resumeCfg)
 	if err != nil {
 		return err
 	}

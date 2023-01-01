@@ -4,12 +4,15 @@ import (
 	"context"
 	"fmt"
 	util "github.com/hktalent/go-utils"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/remeh/sizedwaitgroup"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
 )
+
+var Json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 全局线程控制
 var Wg *sizedwaitgroup.SizedWaitGroup
@@ -78,7 +81,7 @@ func SetHeader4Map(m *map[string]string) {
 // 程序main整体等待
 func DoSyncFunc(cbk func()) {
 	Wg.Add()
-	go func() {
+	DefaultPool.Submit(func() {
 		defer Wg.Done()
 		for {
 			select {
@@ -90,7 +93,7 @@ func DoSyncFunc(cbk func()) {
 				return
 			}
 		}
-	}()
+	})
 }
 
 // 检查 cookie

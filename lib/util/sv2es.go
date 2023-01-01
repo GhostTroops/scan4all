@@ -14,12 +14,12 @@ import (
 var n1 int
 var nThreads chan struct{}
 var EsUrl string
-var enableEsSv bool
+var EnableEsSv bool
 
 func initEs() {
-	enableEsSv = GetValAsBool("enableEsSv")
+	EnableEsSv = GetValAsBool("EnableEsSv")
 	EsUrl = GetValByDefault("EsUrl", "https://127.0.0.1:8081/%s_index/_doc/%s")
-	if enableEsSv {
+	if EnableEsSv {
 		n1 = GetValAsInt("esthread", 4)
 		log.Printf("es 初始化线程数 = %d, EsUrl = %s", n1, EsUrl)
 		nThreads = make(chan struct{}, n1)
@@ -52,7 +52,7 @@ type SimpleVulResult struct {
 
 // 一定得有全局得线程等待
 func SendAnyData(data interface{}, szType ESaveType) {
-	if enableEsSv {
+	if EnableEsSv {
 		data1, _ := json.Marshal(data)
 		if 0 < len(data1) {
 			k := GetSha1(data)
@@ -63,7 +63,7 @@ func SendAnyData(data interface{}, szType ESaveType) {
 
 // k is id
 func SendAData[T any](k string, data []T, szType ESaveType) {
-	if 0 < len(data) && enableEsSv {
+	if 0 < len(data) && EnableEsSv {
 		m2 := make(map[string]interface{})
 		m2[k] = data
 		SendEvent(&models.EventData{EventType: Const.ScanType_SaveEs, EventData: []interface{}{m2, k, szType}}, Const.ScanType_SaveEs)
@@ -78,10 +78,10 @@ func SendAData[T any](k string, data []T, szType ESaveType) {
 //  id 数据计算出来的id
 //  szType 类型，决定 es不通的索引分类
 func SendReq(data1 interface{}, id string, szType ESaveType) {
-	if !enableEsSv {
+	if !EnableEsSv {
 		return
 	}
-	//log.Println("enableEsSv = ", enableEsSv, " id= ", id, " type = ", szType)
+	//log.Println("EnableEsSv = ", EnableEsSv, " id= ", id, " type = ", szType)
 	nThreads <- struct{}{}
 	defer func() {
 		<-nThreads

@@ -2,15 +2,15 @@ package hydra
 
 import (
 	"fmt"
+	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
+	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
-	jsoniter "github.com/json-iterator/go"
+	"github.com/hktalent/ProScan4all/pkg"
 	"github.com/logrusorgru/aurora"
 	"log"
 	"strconv"
 	"strings"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 func init() {
 	util.RegInitFunc(func() {
@@ -27,6 +27,12 @@ func init() {
 		}
 		//加载自定义字典
 		InitCustomAuthMap(a1, a2)
+		// util.EngineFuncFactory(Const.ScanType_WeakPassword, func(evt *models.EventData, args ...interface{}) {
+		util.EngineFuncFactory(Const.ScanType_Pswd4hydra, func(evt *models.EventData, args ...interface{}) {
+			if pkg.Contains(ProtocolList, evt.EventData[2].(string)) {
+				Start(evt.EventData[0].(string), evt.EventData[1].(int), evt.EventData[2].(string))
+			}
+		})
 	})
 }
 
@@ -46,7 +52,7 @@ func Start(IPAddr string, Port int, Protocol string) {
 		out = info
 		if nil != &out && "" != out.Protocol && out.IPAddr != "" && "" != out.Auth.Username {
 			util.SendAData[AuthInfo](fmt.Sprintf("%s:%d", out.IPAddr, out.Port), []AuthInfo{out}, util.Hydra)
-			data, _ := json.Marshal(out)
+			data, _ := util.Json.Marshal(out)
 			fmt.Println("Successful password cracking：", aurora.BrightRed(string(data)))
 		}
 	}

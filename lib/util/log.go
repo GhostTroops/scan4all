@@ -14,6 +14,15 @@ import (
 // out filename
 var Output = ""
 
+func Logs(a ...any) {
+	s := fmt.Sprintf("%v", a[0])
+	if -1 < strings.Index(s, "%") {
+		log.Printf(s, a[1:]...)
+	} else {
+		log.Println(a...)
+	}
+}
+
 //// 调用方法名作为插件名
 func GetPluginName(defaultVal string) string {
 	pc, _, _, ok := runtime.Caller(1)

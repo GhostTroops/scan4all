@@ -55,6 +55,8 @@ Out-of-band application security testing (OAST)
 
  ./tools/macOS/nuclei -l  tools/xx.txt -t $PWD/config/nuclei-templates,$PWD/config/51pwn -nss -severity critical,high,medium -type http,network,websocket,dns -report-config ./config/nuclei_esConfig.yaml -ztls -config-directory ./config/nuclei -max-host-error 5 -duc -nc -json -o xxx1.json
  内、外网都做
+
++tools:"nuclei" +ip:"202.51.189.217"
 */
 func DoNuclei(s string) string {
 	return DoRawCmd(s, "nuclei")
@@ -80,6 +82,7 @@ func DoDnsx(s string) string {
 //         "-san",
 //  只做 https
 // tlsx -u www.sina.com.cn -json -silent | jq .
+// cmd:"tlsx"
 func DoTlsx(s string) string {
 	return DoTargetHost(s, tlsx)
 }

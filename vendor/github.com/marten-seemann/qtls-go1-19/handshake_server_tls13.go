@@ -57,6 +57,7 @@ func (hs *serverHandshakeStateTLS13) handshake() error {
 	if err := hs.checkForResumption(); err != nil {
 		return err
 	}
+	c.updateConnectionState()
 	if err := hs.pickCertificate(); err != nil {
 		return err
 	}
@@ -79,12 +80,13 @@ func (hs *serverHandshakeStateTLS13) handshake() error {
 	if err := hs.readClientCertificate(); err != nil {
 		return err
 	}
+	c.updateConnectionState()
 	if err := hs.readClientFinished(); err != nil {
 		return err
 	}
 
 	atomic.StoreUint32(&c.handshakeStatus, 1)
-
+	c.updateConnectionState()
 	return nil
 }
 

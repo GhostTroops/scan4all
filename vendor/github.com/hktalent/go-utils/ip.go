@@ -2,6 +2,7 @@ package go_utils
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/big"
