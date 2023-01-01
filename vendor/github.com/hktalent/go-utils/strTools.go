@@ -1,12 +1,27 @@
 package go_utils
 
 import (
+	"fmt"
 	"math/rand"
 	"strings"
 	"time"
 )
 
 var Tplat = "ab9cdef8ghijk0lmnopqr1stuvw2xyzAB3CDEFGHI4JKLMN5OPQRS6TUVW7XYZ"
+
+/*
+数字转换为 "Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB"
+*/
+func ConvertSize(size int64) (result string) {
+	sizes := []string{"Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB"}
+	index := 0
+	for size > 1024 {
+		size /= 1024
+		index++
+	}
+	result = fmt.Sprintf("%.2f %s", float64(size), sizes[index])
+	return
+}
 
 // 随机模版
 func GetRadomTemplate() string {

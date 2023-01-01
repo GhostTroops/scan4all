@@ -13,7 +13,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -76,18 +75,12 @@ func magicNumber(reader *bufio.Reader, offset int) (string, error) {
 
 // Unpack unpacks a compressed stream. Magic numbers are used to determine what
 // decompressor and/or unarchiver to use.
-func Unpack(reader io.Reader, destPath string) (string, error) {
+func Unpack(reader io.Reader, destPath string) error {
 	var err error
-	if destPath == "" {
-		destPath, err = ioutil.TempDir(os.TempDir(), "unpackit-")
-		if err != nil {
-			return "", err
-		}
-	}
 
 	// Makes sure destPath exists
-	if err := os.MkdirAll(destPath, 0740); err != nil {
-		return "", err
+	if err := os.MkdirAll(destPath, 0o740); err != nil {
+		return err
 	}
 
 	r := bufio.NewReader(reader)
@@ -95,7 +88,7 @@ func Unpack(reader io.Reader, destPath string) (string, error) {
 	// Reads magic number from the stream so we can better determine how to proceed
 	ftype, err := magicNumber(r, 0)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	var decompressingReader *bufio.Reader
@@ -103,7 +96,7 @@ func Unpack(reader io.Reader, destPath string) (string, error) {
 	case "gzip":
 		gzr, err := gzip.NewReader(r)
 		if err != nil {
-			return "", err
+			return err
 		}
 
 		defer func() {
@@ -116,14 +109,14 @@ func Unpack(reader io.Reader, destPath string) (string, error) {
 	case "xz":
 		xzr, err := xz.NewReader(r)
 		if err != nil {
-			return "", err
+			return err
 		}
 
 		decompressingReader = bufio.NewReader(xzr)
 	case "bzip":
 		br, err := bzip2.NewReader(r, nil)
 		if err != nil {
-			return "", err
+			return err
 		}
 
 		defer func() {
@@ -145,7 +138,7 @@ func Unpack(reader io.Reader, destPath string) (string, error) {
 	// Check magic number in offset 257 too see if this is also a TAR file
 	ftype, err = magicNumber(decompressingReader, 257)
 	if err != nil {
-		return "", err
+		return err
 	}
 	if ftype == "tar" {
 		return Untar(decompressingReader, destPath)
@@ -157,7 +150,7 @@ func Unpack(reader io.Reader, destPath string) (string, error) {
 	// Creates destination file
 	destFile, err := os.Create(destRawFile)
 	if err != nil {
-		return "", err
+		return err
 	}
 	defer func() {
 		if err := destFile.Close(); err != nil {
@@ -167,50 +160,50 @@ func Unpack(reader io.Reader, destPath string) (string, error) {
 
 	// Copies data to destination file
 	if _, err := io.Copy(destFile, decompressingReader); err != nil {
-		return "", err
+		return err
 	}
 
-	return destPath, nil
+	return nil
 }
 
 // Unzip unpacks a ZIP stream. When given a os.File reader it will get its size without
 // reading the entire zip file in memory.
-func Unzip(r io.Reader, destPath string) (string, error) {
+func Unzip(r io.Reader, destPath string) error {
 	var (
-		zr  *zip.Reader
-		err error
+		zr        *zip.Reader
+		readerErr error
 	)
 
 	if f, ok := r.(*os.File); ok {
 		fstat, err := f.Stat()
 		if err != nil {
-			return "", err
+			return err
 		}
-		zr, err = zip.NewReader(f, fstat.Size())
+		zr, readerErr = zip.NewReader(f, fstat.Size())
 	} else {
-		data, err := ioutil.ReadAll(r)
+		data, err := io.ReadAll(r)
 		if err != nil {
-			return "", err
+			return err
 		}
 		memReader := bytes.NewReader(data)
-		zr, err = zip.NewReader(memReader, memReader.Size())
+		zr, readerErr = zip.NewReader(memReader, memReader.Size())
 	}
 
-	if err != nil {
-		return "", err
+	if readerErr != nil {
+		return readerErr
 	}
 
 	return unpackZip(zr, destPath)
 }
 
-func unpackZip(zr *zip.Reader, destPath string) (string, error) {
+func unpackZip(zr *zip.Reader, destPath string) error {
 	for _, f := range zr.File {
 		err := unzipFile(f, destPath)
 		if err != nil {
-			return "", err
+			return err
 		}
 	}
-	return destPath, nil
+	return nil
 }
 
 func unzipFile(f *zip.File, destPath string) error {
@@ -239,7 +232,7 @@ func unzipFile(f *zip.File, destPath string) error {
 	fileDir := filepath.Dir(destPath)
 	_, err = os.Lstat(fileDir)
 	if err != nil {
-		if err := os.MkdirAll(fileDir, 0700); err != nil {
+		if err := os.MkdirAll(fileDir, 0o700); err != nil {
 			return err
 		}
 	}
@@ -271,10 +264,10 @@ func unzipFile(f *zip.File, destPath string) error {
 }
 
 // Untar unarchives a TAR archive and returns the final destination path or an error
-func Untar(data io.Reader, destPath string) (string, error) {
+func Untar(data io.Reader, destPath string) error {
 	// Makes sure destPath exists
-	if err := os.MkdirAll(destPath, 0740); err != nil {
-		return "", err
+	if err := os.MkdirAll(destPath, 0o740); err != nil {
+		return err
 	}
 
 	tr := tar.NewReader(data)
@@ -289,7 +282,7 @@ func Untar(data io.Reader, destPath string) (string, error) {
 		}
 
 		if err != nil {
-			return rootdir, err
+			return err
 		}
 
 		// Skip pax_global_header with the commit ID this archive was created from
@@ -304,30 +297,30 @@ func Untar(data io.Reader, destPath string) (string, error) {
 			}
 
 			if err := os.MkdirAll(fp, os.FileMode(hdr.Mode)); err != nil {
-				return rootdir, err
+				return err
 			}
 			continue
 		}
 
-		_, untarErr := untarFile(hdr, tr, fp, rootdir)
+		untarErr := untarFile(hdr, tr, fp, rootdir)
 		if untarErr != nil {
-			return rootdir, untarErr
+			return untarErr
 		}
 	}
 
-	return rootdir, nil
+	return nil
 }
 
-func untarFile(hdr *tar.Header, tr *tar.Reader, fp, rootdir string) (string, error) {
+func untarFile(hdr *tar.Header, tr *tar.Reader, fp, rootdir string) error {
 	parentDir, _ := filepath.Split(fp)
 
-	if err := os.MkdirAll(parentDir, 0740); err != nil {
-		return rootdir, err
+	if err := os.MkdirAll(parentDir, 0o740); err != nil {
+		return err
 	}
 
 	file, err := os.Create(fp)
 	if err != nil {
-		return rootdir, err
+		return err
 	}
 
 	defer func() {
@@ -345,10 +338,10 @@ func untarFile(hdr *tar.Header, tr *tar.Reader, fp, rootdir string) (string, err
 	}
 
 	if _, err := io.Copy(file, tr); err != nil {
-		return rootdir, err
+		return err
 	}
 
-	return rootdir, nil
+	return nil
 }
 
 // Sanitizes name to avoid overwriting sensitive system files when unarchiving

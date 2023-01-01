@@ -323,9 +323,18 @@ func Convert2Domains(x string) []string {
 	return aRst
 }
 
+var CloseCbk []func()
+
+func RegCloseCbk(f func()) {
+	CloseCbk = append(CloseCbk, f)
+}
+
 // 关闭所有资源
 func CloseAll() {
 	StopAll()
+	for _, ckb := range CloseCbk {
+		ckb()
+	}
 	// clear
 	// 程序都结束了，没有必要清理内存了
 	// fingerprint.ClearData()
