@@ -53,13 +53,13 @@ func DoOne(s string) {
 	s = strings.TrimSpace(s)
 	var oT = &models.EventData{EventData: []interface{}{s}}
 	if iputil.IsCIDR(s) || iputil.IsIP(s) { // ip/cidrs
-		oT.EventType = Const.ScanType_Nmap
+		oT.EventType = int64(Const.ScanType_Nmap)
 	} else {
 		s1 := strings.ToLower(s)
 		if strings.HasPrefix(s1, HttpPre) || strings.HasPrefix(s1, HttpsPre) { // url
-			oT.EventType = Const.ScanType_Nmap
+			oT.EventType = int64(Const.ScanType_Nmap)
 		} else if strings.HasPrefix(s1, "*.") { // domain
-			oT.EventType = Const.ScanType_Nmap
+			oT.EventType = int64(Const.ScanType_Nmap)
 		}
 	}
 	SendEvent(oT, oT.EventType)
@@ -67,7 +67,7 @@ func DoOne(s string) {
 
 func init() {
 	RegInitFunc(func() {
-		EngineFuncFactory(Const.ScanType_Nmap, func(evt *models.EventData, args ...interface{}) {
+		EngineFuncFactory(int64(Const.ScanType_Nmap), func(evt *models.EventData, args ...interface{}) {
 
 		})
 	})

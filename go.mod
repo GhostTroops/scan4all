@@ -103,7 +103,7 @@ require (
 	github.com/gosnmp/gosnmp v1.35.0
 	github.com/hktalent/51pwnPlatform v1.1.9
 	github.com/hktalent/PipelineHttp v0.0.0-20221209043918-65a9cff9f6ea
-	github.com/hktalent/go-utils v0.0.0-20221022101117-e2abdad71ff5
+	github.com/hktalent/go-utils v0.0.0-20230101111852-df8ac2d2a354
 	github.com/hktalent/gson v0.0.0-20221118090607-68e4c7359da2
 	github.com/hktalent/jaeles v1.0.1
 	github.com/hktalent/jarm-go v0.0.0-20220918133110-7801447b6267
@@ -173,7 +173,7 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/bits-and-blooms/bitset v1.3.3 // indirect
 	github.com/bits-and-blooms/bloom/v3 v3.3.1 // indirect
-	github.com/c4milo/unpackit v0.1.0 // indirect
+	github.com/c4milo/unpackit v1.0.0 // indirect
 	github.com/caddyserver/certmagic v0.17.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/chromedp/sysutil v1.0.0 // indirect
@@ -300,6 +300,23 @@ require (
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/pierrec/lz4 v2.6.1+incompatible // indirect
+	github.com/pion/datachannel v1.5.5 // indirect
+	github.com/pion/dtls/v2 v2.1.5 // indirect
+	github.com/pion/ice/v2 v2.2.13 // indirect
+	github.com/pion/interceptor v0.1.12 // indirect
+	github.com/pion/logging v0.2.2 // indirect
+	github.com/pion/mdns v0.0.5 // indirect
+	github.com/pion/randutil v0.1.0 // indirect
+	github.com/pion/rtcp v1.2.10 // indirect
+	github.com/pion/rtp v1.7.13 // indirect
+	github.com/pion/sctp v1.8.5 // indirect
+	github.com/pion/sdp/v3 v3.0.6 // indirect
+	github.com/pion/srtp/v2 v2.0.10 // indirect
+	github.com/pion/stun v0.3.5 // indirect
+	github.com/pion/transport v0.14.1 // indirect
+	github.com/pion/turn/v2 v2.0.9 // indirect
+	github.com/pion/udp v0.1.1 // indirect
+	github.com/pion/webrtc/v3 v3.1.50 // indirect
 	github.com/power-devops/perfstat v0.0.0-20221212215047-62379fc7944b // indirect
 	github.com/projectdiscovery/chaos-client v0.3.0 // indirect
 	github.com/projectdiscovery/filekv v0.0.0-20210915124239-3467ef45dd08 // indirect

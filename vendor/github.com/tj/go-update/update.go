@@ -61,8 +61,8 @@ func (m *Manager) InstallTo(path, dir string) error {
 	if err != nil {
 		return errors.Wrap(err, "opening tarball")
 	}
-
-	tmpdir, err := unpackit.Unpack(f, "")
+	tmpdir:=""
+	err = unpackit.Unpack(f, tmpdir)
 	if err != nil {
 		f.Close()
 		return errors.Wrap(err, "unpacking tarball")
