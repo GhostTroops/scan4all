@@ -23,7 +23,7 @@ var delayClear sync.Map
 //
 //	n0 0表示60秒后执行
 func RegDelayCbk(szKey string, fnCbk func(), cache func() interface{}, n0 int64, DelayCall int64) {
-	delayClear.Store(szKey, &delayClearObj{Time: time.Now().Unix() - n0, FnCbk: fnCbk, GetCacheObj: cache, DelayCall: DelayCall})
+	delayClear.Store(szKey, &delayClearObj{Time: time.Now().Unix() - n0, FnCbk: fnCbk, GetCacheObj: cache})
 }
 
 // 重时间计数器

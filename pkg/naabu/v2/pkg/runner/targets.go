@@ -7,7 +7,6 @@ import (
 	"github.com/asaskevich/govalidator"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pkg"
-	"github.com/hktalent/ProScan4all/pkg/hydra"
 	"github.com/hktalent/ProScan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/hktalent/ProScan4all/pkg/naabu/v2/pkg/scan"
 	"github.com/hktalent/ProScan4all/projectdiscovery/dnsxx"
@@ -212,7 +211,7 @@ func (r *Runner) DoTargets() (bool, error) {
 					}
 					util.TmpFile[string(util.Naabu)] = []*os.File{tempInput1}
 					log.Println("start parse nmap xml result")
-					hydra.DoNmapRst(&Naabubuffer)
+					util.DoNmapRst(&Naabubuffer)
 					defer r.Close()
 					if "" != r.targetsFile {
 						ioutil.WriteFile(r.targetsFile, []byte(""), os.ModePerm)

@@ -20,7 +20,7 @@ docker run --restart=always --ulimit nofile=65536:65536 -p 9200:9200 -p 9300:930
 ## 启动结果存储到ES
 修改 config/config.json 中为true开启存储结果
 ```
-"enableEsSv": true,
+"EnableEsSv": true,
 ```
 如果你的ES设置了密码，请修改
 config/nuclei_esConfig.yaml
@@ -95,7 +95,7 @@ config/nuclei_esConfig.yaml
   "naabu": {"TopPorts": "1000","ScanAllIPS": true}, // naabu配置
   "nuclei": {}, // nuclei配置，例如线程等
   "httpx": {}   // httpx 配置,
-  "enableEsSv": true,        // 开启结果send 到es
+  "EnableEsSv": true,        // 开启结果send 到es
   "esthread": 8 // 结果写入Elasticsearch的线程数,
   "esUrl": "http://127.0.0.1:9200/%s_index/_doc/%s" // Elasticsearch szUrl
 }
@@ -104,8 +104,8 @@ config/nuclei_esConfig.yaml
 ## 运行扫描任务
 一般不批量的时候，除非想看中间结果，不建议开启 -v -debug
 ```bash
-enableEsSv=true ./scan4all -l list.txt
-enableEsSv=true ./scan4all -host target.com
+EnableEsSv=true ./scan4all -l list.txt
+EnableEsSv=true ./scan4all -host target.com
 ```
 
 ## 查看结果

@@ -12,14 +12,6 @@
       "-c",20,
       "-o","{PWD}/logs"
     ],
-    "uncover": [
-      "-q","",
-      "-e","shodan",
-      "-pc","{PWD}/config/uncover/provider-config.yaml",
-      "-config","{PWD}/config/uncover/config.yaml",
-      "-f","ip,port,host",
-      "-json","-o",""
-    ],
     "ffuf": [
       "-u","",
       "-w","{PWD}/brute/dicts/filedic.txt",
@@ -51,8 +43,10 @@
     ],
     "uncover": [
       "-q","",
-      "-engine","shodan",
-      "-provider","{PWD}/config/uncover/provider-config.yaml",
+      "-e","shodan",
+      "-pc","{PWD}/config/uncover/provider-config.yaml",
+      "-config","{PWD}/config/uncover/config.yaml",
+      "-f","ip,port,host",
       "-shodan",
       "-silent","-nc","-json","-o",""
     ],

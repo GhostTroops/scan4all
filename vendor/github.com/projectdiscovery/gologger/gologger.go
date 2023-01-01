@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/projectdiscovery/gologger/formatter"
 	"github.com/projectdiscovery/gologger/levels"
@@ -39,7 +40,7 @@ type Logger struct {
 
 // Log logs a message to a logger instance
 func (l *Logger) Log(event *Event) {
-	if event.level > l.maxLevel {
+	if !isCurrentLevelEnabled(event) {
 		return
 	}
 	event.message = strings.TrimSuffix(event.message, "\n")
@@ -87,6 +88,12 @@ func (e *Event) Label(label string) *Event {
 	return e
 }
 
+// TimeStamp adds timestamp to the log event
+func (e *Event) TimeStamp() *Event {
+	e.metadata["timestamp"] = time.Now().Format(time.RFC3339)
+	return e
+}
+
 // Str adds a string metadata item to the log
 func (e *Event) Str(key, value string) *Event {
 	e.metadata[key] = value
@@ -94,14 +101,24 @@ func (e *Event) Str(key, value string) *Event {
 }
 
 // Msg logs a message to the logger
-func (e *Event) Msg(format string) {
-	e.message = format
+func (e *Event) Msg(message string) {
+	e.message = message
 	e.logger.Log(e)
 }
 
 // Msgf logs a printf style message to the logger
 func (e *Event) Msgf(format string, args ...interface{}) {
 	e.message = fmt.Sprintf(format, args...)
+	e.logger.Log(e)
+}
+
+// MsgFunc logs a message with lazy evaluation.
+// Useful when computing the message can be resource heavy.
+func (e *Event) MsgFunc(messageSupplier func() string) {
+	if !isCurrentLevelEnabled(e) {
+		return
+	}
+	e.message = messageSupplier()
 	e.logger.Log(e)
 }
 
@@ -280,4 +297,8 @@ func (l *Logger) Verbose() *Event {
 	}
 	event.metadata["label"] = labels[level]
 	return event
+}
+
+func isCurrentLevelEnabled(e *Event) bool {
+	return e.level <= e.logger.maxLevel
 }

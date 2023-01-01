@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"github.com/hktalent/ProScan4all/lib/api"
 	"github.com/hktalent/ProScan4all/lib/util"
+	_ "github.com/hktalent/ProScan4all/pkg/hydra"
 	"github.com/hktalent/ProScan4all/pkg/xcmd"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
 
 	"runtime"
 	"runtime/debug"
@@ -24,11 +24,11 @@ var config embed.FS
 var Version string
 
 func main() {
-	os.Args = []string{"", "-host", "http://127.0.0.1", "-v"}
+	//os.Args = []string{"", "-host", "http://127.0.0.1", "-v"}
 	//os.Args = []string{"", "-host", "http://127.0.0.1", "-v"}
 	//os.Args = []string{"", "-host", "https://www.sina.com.cn/", "-v", "-o", "xxx.csv"}
 	//os.Args = []string{"", "-list", "list.txt", "-v"}
-	//os.Args = []string{"", "-list", "./5701580f708064a329d2c2bca41727b4c13a3126.xml", "-v"}
+	//os.Args = []string{"", "-list", "./3ee8307c128be7296b2fa2ad5453341a3d37c2b6.xml", "-v"}
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	util.DoInit(&config)

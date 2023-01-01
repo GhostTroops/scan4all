@@ -1,5 +1,6 @@
 /Login.jsp
 /login.jsp
+/stats.json
 /.well-known/security.txt
 ../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log%00
 ../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log

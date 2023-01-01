@@ -17,6 +17,18 @@ This package provides various compression algorithms.
 
 # changelog
 
+* Oct 26, 2022 (v1.15.12)
+
+	* zstd: Tweak decoder allocs. https://github.com/klauspost/compress/pull/680
+	* gzhttp: Always delete `HeaderNoCompression` https://github.com/klauspost/compress/pull/683
+
+* Sept 26, 2022 (v1.15.11)
+
+	* flate: Improve level 1-3 compression  https://github.com/klauspost/compress/pull/678
+	* zstd: Improve "best" compression by @nightwolfz in https://github.com/klauspost/compress/pull/677
+	* zstd: Fix+reduce decompression allocations https://github.com/klauspost/compress/pull/668
+	* zstd: Fix non-effective noescape tag https://github.com/klauspost/compress/pull/667
+
 * Sept 16, 2022 (v1.15.10)
 
 	* zstd: Add [WithDecodeAllCapLimit](https://pkg.go.dev/github.com/klauspost/compress@v1.15.10/zstd#WithDecodeAllCapLimit) https://github.com/klauspost/compress/pull/649
