@@ -270,14 +270,16 @@ func (r *Runner) RunEnumeration() error {
 			for ip := range ipStream {
 				for _, port := range r.scanner.Ports {
 					r.limiter.Take()
-					go func(ip string, port int) {
-						if shouldUseRawPackets {
-							r.RawSocketEnumeration(ip, port)
-						} else {
-							r.wgscan.Add()
+					func(ip string, port int) {
+						util.DefaultPool.Submit(func() {
+							if shouldUseRawPackets {
+								r.RawSocketEnumeration(ip, port)
+							} else {
+								r.wgscan.Add()
 
-							go r.handleHostPort(ip, port)
-						}
+								go r.handleHostPort(ip, port)
+							}
+						})
 					}(ip, port)
 				}
 			}
@@ -296,37 +298,38 @@ func (r *Runner) RunEnumeration() error {
 			ipStream, _ := mapcidr.IPAddressesAsStream(cidr.String())
 			for ip := range ipStream {
 				r.wgscan.Add()
-				go func(ip string) {
-					defer r.wgscan.Done()
+				func(ip string) {
+					util.DefaultPool.Submit(func() {
+						defer r.wgscan.Done()
+						// obtain ports from shodan idb
+						shodanURL := fmt.Sprintf(shodanidb.URL, url.QueryEscape(ip))
+						request, err := retryablehttp.NewRequest(http.MethodGet, shodanURL, nil)
+						if err != nil {
+							gologger.Warning().Msgf("Couldn't create http request for %s: %s\n", ip, err)
+							return
+						}
+						r.limiter.Take()
+						response, err := httpClient.Do(request)
+						if err != nil {
+							gologger.Warning().Msgf("Couldn't retrieve http response for %s: %s\n", ip, err)
+							return
+						}
+						if response.StatusCode != http.StatusOK {
+							gologger.Warning().Msgf("Couldn't retrieve data for %s, server replied with status code: %d\n", ip, response.StatusCode)
+							return
+						}
 
-					// obtain ports from shodan idb
-					shodanURL := fmt.Sprintf(shodanidb.URL, url.QueryEscape(ip))
-					request, err := retryablehttp.NewRequest(http.MethodGet, shodanURL, nil)
-					if err != nil {
-						gologger.Warning().Msgf("Couldn't create http request for %s: %s\n", ip, err)
-						return
-					}
-					r.limiter.Take()
-					response, err := httpClient.Do(request)
-					if err != nil {
-						gologger.Warning().Msgf("Couldn't retrieve http response for %s: %s\n", ip, err)
-						return
-					}
-					if response.StatusCode != http.StatusOK {
-						gologger.Warning().Msgf("Couldn't retrieve data for %s, server replied with status code: %d\n", ip, response.StatusCode)
-						return
-					}
+						// unmarshal the response
+						data := &shodanidb.ShodanResponse{}
+						if err := util.Json.NewDecoder(response.Body).Decode(data); err != nil {
+							gologger.Warning().Msgf("Couldn't unmarshal json data for %s: %s\n", ip, err)
+							return
+						}
 
-					// unmarshal the response
-					data := &shodanidb.ShodanResponse{}
-					if err := util.Json.NewDecoder(response.Body).Decode(data); err != nil {
-						gologger.Warning().Msgf("Couldn't unmarshal json data for %s: %s\n", ip, err)
-						return
-					}
-
-					for _, port := range data.Ports {
-						r.scanner.ScanResults.AddPort(ip, port)
-					}
+						for _, port := range data.Ports {
+							r.scanner.ScanResults.AddPort(ip, port)
+						}
+					})
 				}(ip)
 			}
 		}
@@ -411,17 +414,19 @@ func (r *Runner) RunEnumeration() error {
 				r.options.ResumeCfg.Index = index
 				r.options.ResumeCfg.Unlock()
 				// connect scan
-				go func(port int) {
-					if shouldUseRawPackets {
-						r.RawSocketEnumeration(ip, port)
-					} else {
-						r.wgscan.Add()
+				func(port int) {
+					util.DefaultPool.Submit(func() {
+						if shouldUseRawPackets {
+							r.RawSocketEnumeration(ip, port)
+						} else {
+							r.wgscan.Add()
 
-						go r.handleHostPort(ip, port)
-					}
-					if r.options.EnableProgressBar {
-						r.stats.IncrementCounter("packets", 1)
-					}
+							go r.handleHostPort(ip, port)
+						}
+						if r.options.EnableProgressBar {
+							r.stats.IncrementCounter("packets", 1)
+						}
+					})
 				}(port)
 			}
 
@@ -502,10 +507,12 @@ func (r *Runner) ConnectVerification() {
 	for host, ports := range r.scanner.ScanResults.IPPorts {
 		limiter.Take()
 		swg.Add(1)
-		go func(host string, ports map[int]struct{}) {
-			defer swg.Done()
-			results := r.scanner.ConnectVerify(host, ports)
-			r.scanner.ScanResults.SetPorts(host, results)
+		func(host string, ports map[int]struct{}) {
+			util.DefaultPool.Submit(func() {
+				defer swg.Done()
+				results := r.scanner.ConnectVerify(host, ports)
+				r.scanner.ScanResults.SetPorts(host, results)
+			})
 		}(host, ports)
 	}
 

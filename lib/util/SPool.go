@@ -24,7 +24,7 @@ var DefaultPool *Pool
 
 func create() *Pool {
 	options := ants.Options{ExpiryDuration: ExpiryDuration, Nonblocking: Nonblocking}
-	defaultAntsPool, _ := ants.NewPool(DefaultAntsPoolSize, ants.WithOptions(options))
+	defaultAntsPool, _ := ants.NewPool(GetValAsInt("DefaultAntsPoolSize", 2000), ants.WithOptions(options))
 	return defaultAntsPool
 }
 

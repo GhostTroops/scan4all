@@ -1,20 +1,23 @@
 package main
 
-import "log"
+import (
+	"github.com/hktalent/ProScan4all/lib/util"
+	"log"
+)
 
+// //"github.com/hktalent/ProScan4all/pkg/hydra"
+// import (
 //
-////"github.com/hktalent/ProScan4all/pkg/hydra"
-//import (
 //	"github.com/hktalent/ProScan4all/pkg/hydra"
-//)
 //
+// )
 func main() {
 	var nucleiDone1, nucleiDone2 = make(chan bool), make(chan bool)
-	go func() {
+	util.DefaultPool.Submit(func() {
 		//nucleiDone1 <- true
 		//close(nucleiDone1)
 		close(nucleiDone2)
-	}()
+	})
 
 	//log.Printf("%v %v", <-nucleiDone1, <-nucleiDone2)
 	for {

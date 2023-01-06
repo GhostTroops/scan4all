@@ -11,6 +11,7 @@ import (
 	"github.com/boy-hack/ksubdomain/runner/outputter"
 	"github.com/boy-hack/ksubdomain/runner/outputter/output"
 	"github.com/boy-hack/ksubdomain/runner/processbar"
+	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/urfave/cli/v2"
 	"math/rand"
 	"os"
@@ -122,7 +123,7 @@ var enumCommand = &cli.Command{
 		}
 
 		render := make(chan string)
-		go func() {
+		util.DefaultPool.Submit(func() {
 			defer close(render)
 			for _, sub := range subdomainDict {
 				for _, domain := range domains {
@@ -136,7 +137,7 @@ var enumCommand = &cli.Command{
 					}
 				}
 			}
-		}()
+		})
 		domainTotal = len(subdomainDict) * len(domains)
 		if len(levelDomains) > 0 {
 			domainTotal *= len(levelDomains)

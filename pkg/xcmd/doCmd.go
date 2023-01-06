@@ -39,6 +39,7 @@ func DoAsyncCmd(szCmd string, a ...string) string {
 	if _, err := DoCmd(a...); nil != err {
 		log.Println(err)
 	}
+
 	if data, err := ioutil.ReadFile(szName); nil == err && 0 < len(data) {
 		ss1 := string(data)
 		SaveMdRst(ss1, szCmd, a)

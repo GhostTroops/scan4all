@@ -81,12 +81,12 @@ func StartScan(oOpts *map[string]interface{}) {
 			}
 			naabuRunner.Close()
 		} else {
-			gologger.Info().Msg("Port scan starting....")
-			err = naabuRunner.RunEnumeration()
-			if err != nil {
-				gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
-			}
-			gologger.Info().Msg("Port scan over,web scan starting")
+			//gologger.Info().Msg("Port scan starting....")
+			//err = naabuRunner.RunEnumeration()
+			//if err != nil {
+			//	gologger.Fatal().Msgf("Could not run enumeration: %s\n", err)
+			//}
+			//gologger.Info().Msg("Port scan over,web scan starting")
 		}
 		err = naabuRunner.Httpxrun(nil, nil)
 		if err != nil {

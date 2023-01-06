@@ -7,6 +7,7 @@ package emission
 import (
 	"errors"
 	"fmt"
+	"github.com/hktalent/ProScan4all/lib/util"
 	"os"
 	"reflect"
 	"sync"
@@ -198,32 +199,33 @@ func (emitter *Emitter) callListeners(listeners []reflect.Value, event interface
 	wg.Add(len(listeners))
 
 	for _, fn := range listeners {
-		go func(fn reflect.Value) {
-			defer wg.Done()
-
-			// Recover from potential panics, supplying them to a
-			// RecoveryListener if one has been set, else allowing
-			// the panic to occur.
-			if nil != emitter.recoverer {
-				defer func() {
-					if r := recover(); nil != r {
-						err := fmt.Errorf("%v", r)
-						emitter.recoverer(event, fn.Interface(), err)
-					}
-				}()
-			}
-
-			var values []reflect.Value
-
-			for i := 0; i < len(arguments); i++ {
-				if arguments[i] == nil {
-					values = append(values, reflect.New(fn.Type().In(i)).Elem())
-				} else {
-					values = append(values, reflect.ValueOf(arguments[i]))
+		func(fn reflect.Value) {
+			util.DefaultPool.Submit(func() {
+				defer wg.Done()
+				// Recover from potential panics, supplying them to a
+				// RecoveryListener if one has been set, else allowing
+				// the panic to occur.
+				if nil != emitter.recoverer {
+					defer func() {
+						if r := recover(); nil != r {
+							err := fmt.Errorf("%v", r)
+							emitter.recoverer(event, fn.Interface(), err)
+						}
+					}()
 				}
-			}
 
-			fn.Call(values)
+				var values []reflect.Value
+
+				for i := 0; i < len(arguments); i++ {
+					if arguments[i] == nil {
+						values = append(values, reflect.New(fn.Type().In(i)).Elem())
+					} else {
+						values = append(values, reflect.ValueOf(arguments[i]))
+					}
+				}
+
+				fn.Call(values)
+			})
 		}(fn)
 	}
 

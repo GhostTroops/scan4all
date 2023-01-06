@@ -9,6 +9,7 @@ import (
 	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pocs_go"
+	Const "github.com/hktalent/go-utils"
 	"github.com/hktalent/jaeles/cmd"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/panjf2000/ants/v2"
@@ -50,9 +51,10 @@ var GEngine *Engine
 // /api/v1.0/syncResult/task/
 
 // 创建引擎
-//  默认每个 goroutine 占用 8KB 内存
-//  一台 8GB 内存的机器满打满算也只能创建 8GB/8KB = 1000000 个 goroutine
-//  更何况系统还需要保留一部分内存运行日常管理任务，go 运行时需要内存运行 gc、处理 goroutine 切换等
+//
+//	默认每个 goroutine 占用 8KB 内存
+//	一台 8GB 内存的机器满打满算也只能创建 8GB/8KB = 1000000 个 goroutine
+//	更何况系统还需要保留一部分内存运行日常管理任务，go 运行时需要内存运行 gc、处理 goroutine 切换等
 func NewEngine(c *context.Context, pool int) *Engine {
 	if nil != util.G_Engine {
 		return util.G_Engine.(*Engine)
@@ -204,9 +206,10 @@ func (e *Engine) FixTask(s string) (string, string) {
 }
 
 // 发送任务
-//  全局参数配置 + 扫描类型，细化扫描项目，由多个节点来分担不同子任务
-//  config：全局配置已经包含了扫描类型信息，开启、关闭各种类型扫描的参数，包含通过环境变量传递过来的控制
-//  只发送非私有网络的任务
+//
+//	全局参数配置 + 扫描类型，细化扫描项目，由多个节点来分担不同子任务
+//	config：全局配置已经包含了扫描类型信息，开启、关闭各种类型扫描的参数，包含通过环境变量传递过来的控制
+//	只发送非私有网络的任务
 func (e *Engine) SendTask(s string) {
 	_, s = e.FixTask(s)
 	szUrl := fmt.Sprintf(e.DtServer, e.LimitTask)
@@ -260,16 +263,48 @@ func (e *Engine) Close() {
 	cmd.CleanOutput()
 }
 
-// case 扫描使用的函数
-func (e *Engine) DoCase(ed *models.EventData) util.EngineFuncType {
-	if i, ok := e.caseScanFunc.Load(ed.EventType); ok {
-		if x, ok := i.(util.EngineFuncType); ok {
-			return x
-		} else {
-			log.Println(i)
+// 类型转换为 str tags
+func (e *Engine) EventType2Str(argsTypes ...uint64) string {
+	a := map[uint64]string{
+		Const.ScanType_SSLInfo:         "sslInfo",         // 01- SSL信息分析，并对域名信息进行收集、进入下一步流程
+		Const.ScanType_SubDomain:       "subdomain",       // 02- 子域名爆破，新域名回归 到:  1 <-- -> 2，做去重处理
+		Const.ScanType_MergeIps:        "mergeIps",        // 03- 默认自动合并ip，记录ip与域名的关联关系，再发送payload时考虑：相同ip不同域名，相同payload分别发送 合并相同目标 若干域名的ip，避免扫描时重复
+		Const.ScanType_WeakPassword:    "weakPassword",    // 04- 密码破解，隐含包含了: 端口扫描(05-masscan + 06-nmap)
+		Const.ScanType_Masscan:         "masscan",         // 05- 合并后的ip 进行快速端口扫描
+		Const.ScanType_Nmap:            "nmap",            // 06、精准 端口指纹，排除masscan已经识别的几种指纹
+		Const.ScanType_IpInfo:          "ipInfo",          // 07- 获取ip info
+		Const.ScanType_GoPoc:           "goPoc",           // 08- go-poc 检测, 隐含包含了: 端口扫描(05-masscan + 06-nmap)
+		Const.ScanType_PortsWeb:        "portsWeb",        // 09- web端口识别，Naabu,识别 https，识别存活的web端口，再进入下一流程
+		Const.ScanType_WebFingerprints: "webFingerprints", // 10- web指纹，识别蜜罐，并标识
+		Const.ScanType_WebDetectWaf:    "webDetectWaf",    // 11- detect WAF
+		Const.ScanType_WebScrapy:       "webScrapy",       // 12- 爬虫分析，form表单识别，字段名识别，form action提取；
+		Const.ScanType_WebInfo:         "webInfo",         // 13- server、x-powerby、x***，url、ip、其他敏感信息（姓名、电话、地址、身份证）
+		Const.ScanType_WebVulsScan:     "webVulsScan",     // 14- 包含 nuclei
+		Const.ScanType_WebDirScan:      "webDirScan",      // 14- dir爆破,Gobuster
+		Const.ScanType_Naabu:           "naabu",           // 15- naabu
+		Const.ScanType_Httpx:           "httpx",           // 16- httpx
+		Const.ScanType_DNSx:            "dnsx",            // 17- DNSX
+		Const.ScanType_SaveEs:          "saveEs",          // 18- Save Es
+		Const.ScanType_Jaeles:          "jaeles",          // 19 - jaeles
+		Const.ScanType_Uncover:         "uncover",         // Uncover
+		Const.ScanType_Ffuf:            "ffuf",            // ffuf
+		Const.ScanType_Amass:           "amass",           // amass
+		Const.ScanType_Subfinder:       "subfinder",       // subfinder
+		Const.ScanType_Shuffledns:      "shuffledns",      // shuffledns
+		Const.ScanType_Tlsx:            "tlsx",            // tlsx
+		Const.ScanType_Katana:          "katana",          // katana
+		Const.ScanType_Nuclei:          "nuclei",          // nuclei
+		Const.ScanType_Gobuster:        "gobuster",        // Gobuster
+	}
+	var oR []string
+	for _, i := range argsTypes {
+		for k, v := range a {
+			if int64(i&k) == int64(k) {
+				oR = append(oR, v)
+			}
 		}
 	}
-	return nil
+	return strings.Join(oR, ",")
 }
 
 // 关联发送若干个事件
@@ -282,24 +317,32 @@ func (e *Engine) SendEvent(evt *models.EventData, argsTypes ...int64) {
 	}
 }
 
+// 分派任务
+func (e *Engine) Dispather(ed *models.EventData) {
+	oR := e.GetCaseScanFunc()
+	oR.Range(func(k, v any) bool {
+		t1 := k.(int64)
+		if t1&ed.EventType == t1 {
+			v.(util.EngineFuncType)(ed, ed.EventData...)
+		}
+		return true
+	})
+}
+
 // 执行事件代码 内部用
-//  每个事件自己做防重处理
-//  每个事件异步执行
-//  每种事件类型可以独立控制并发数
+//
+//	每个事件自己做防重处理
+//	每个事件异步执行
+//	每种事件类型可以独立控制并发数
 func (e *Engine) DoEvent(ed *models.EventData) {
 	if nil != ed && nil != ed.EventData && 0 < len(ed.EventData) {
-		fnCall := e.DoCase(ed)
-		if nil != fnCall {
-			fnCall(ed, ed.EventData...)
-		} else {
-			log.Printf("can not find fnCall case func %v\n", ed)
-		}
+		e.Dispather(ed)
 	}
 }
 
 func (x1 *Engine) Running() {
 	// 异步启动一个线程处理检测，避免
-	go func() {
+	util.DefaultPool.Submit(func() {
 		defer func() {
 			x1.Close()
 		}()
@@ -350,7 +393,7 @@ func (x1 *Engine) Running() {
 				//util.DoSleep()
 			}
 		}
-	}()
+	})
 }
 
 // 引擎总入口

@@ -2,6 +2,7 @@ package hydra
 
 import (
 	"fmt"
+	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pkg/hydra/oracle"
 	"github.com/hktalent/ProScan4all/pkg/kscan/lib/gotelnet"
 	"github.com/hktalent/ProScan4all/pkg/kscan/lib/misc"
@@ -125,7 +126,7 @@ func (c *Cracker) Run() {
 		return
 	}
 	//go 任务下发器
-	go func() {
+	util.DefaultPool.Submit(func() {
 		x1 := c.authList.Dict(c.onlyPassword)
 		//fmt.Println("破解任务下发器：", len(x1))
 		for _, a := range x1 {
@@ -154,7 +155,7 @@ func (c *Cracker) Run() {
 		}
 		//关闭信道
 		c.Pool.InDone()
-	}()
+	})
 	//开始暴力破解
 	c.Pool.Run()
 }

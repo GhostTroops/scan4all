@@ -74,7 +74,7 @@ func DoDelayClear(Wg1 ...*sizedwaitgroup.SizedWaitGroup) {
 	}
 	IsDo <- struct{}{}
 	wg2.Add()
-	go func() {
+	DefaultPool.Submit(func() {
 		defer func() {
 			<-IsDo
 			wg2.Done()
@@ -95,6 +95,6 @@ func DoDelayClear(Wg1 ...*sizedwaitgroup.SizedWaitGroup) {
 			}
 			return true
 		})
-	}()
+	})
 	return
 }

@@ -376,9 +376,8 @@ func (r *Runner) testAndSet(k string) bool {
 
 func (r *Runner) streamInput() (chan string, error) {
 	out := make(chan string)
-	go func() {
+	util.DefaultPool.Submit(func() {
 		defer close(out)
-
 		if fileutil.FileExists(r.options.InputFile) {
 			fchan, err := fileutil.ReadFile(r.options.InputFile)
 			if err != nil {
@@ -417,7 +416,7 @@ func (r *Runner) streamInput() (chan string, error) {
 				}
 			}
 		}
-	}()
+	})
 	return out, nil
 }
 
@@ -540,95 +539,97 @@ func (r *Runner) RunEnumeration() {
 	wgoutput := sizedwaitgroup.New(1)
 	wgoutput.Add()
 	output := make(chan Result, 200)
-	go func(output chan Result) {
-		defer wgoutput.Done()
+	func(output chan Result) {
+		util.DefaultPool.Submit(func() {
+			defer wgoutput.Done()
 
-		var f *os.File
-		if r.options.Output != "" {
-			var err error
-			f, err := os.OpenFile(r.options.Output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-			if err != nil {
-				gologger.Fatal().Msgf("Could not create output file '%s': %s\n", r.options.Output, err)
+			var f *os.File
+			if r.options.Output != "" {
+				var err error
+				f, err := os.OpenFile(r.options.Output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				if err != nil {
+					gologger.Fatal().Msgf("Could not create output file '%s': %s\n", r.options.Output, err)
+				}
+				defer f.Close() //nolint
 			}
-			defer f.Close() //nolint
-		}
-		if r.options.CSVOutput {
-			header := Result{}.CSVHeader()
-			//gologger.Silent().Msgf("%s\n", header)
-			if f != nil {
-				//nolint:errcheck // this method needs a small refactor to reduce complexity
-				f.WriteString(header + "\n")
-			}
-		}
-
-		for resp := range output {
-			if resp.err != nil {
-				gologger.Debug().Msgf("Failed '%s': %s\n", resp.URL, resp.err)
-			}
-			if resp.str == "" {
-				continue
+			if r.options.CSVOutput {
+				header := Result{}.CSVHeader()
+				//gologger.Silent().Msgf("%s\n", header)
+				if f != nil {
+					//nolint:errcheck // this method needs a small refactor to reduce complexity
+					f.WriteString(header + "\n")
+				}
 			}
 
-			// apply matchers and filters
-			if len(r.options.filterStatusCode) > 0 && slice.IntSliceContains(r.options.filterStatusCode, resp.StatusCode) {
-				continue
-			}
-			if len(r.options.filterContentLength) > 0 && slice.IntSliceContains(r.options.filterContentLength, resp.ContentLength) {
-				continue
-			}
-			if len(r.options.filterLinesCount) > 0 && slice.IntSliceContains(r.options.filterLinesCount, resp.Lines) {
-				continue
-			}
-			if len(r.options.filterWordsCount) > 0 && slice.IntSliceContains(r.options.filterWordsCount, resp.Words) {
-				continue
-			}
-			if r.options.filterRegex != nil && r.options.filterRegex.MatchString(resp.raw) {
-				continue
-			}
-			if r.options.OutputFilterString != "" && strings.Contains(strings.ToLower(resp.raw), strings.ToLower(r.options.OutputFilterString)) {
-				continue
-			}
-			if len(r.options.OutputFilterFavicon) > 0 && stringsutil.EqualFoldAny(resp.FavIconMMH3, r.options.OutputFilterFavicon...) {
-				continue
-			}
-			if len(r.options.matchStatusCode) > 0 && !slice.IntSliceContains(r.options.matchStatusCode, resp.StatusCode) {
-				continue
-			}
-			if len(r.options.matchContentLength) > 0 && !slice.IntSliceContains(r.options.matchContentLength, resp.ContentLength) {
-				continue
-			}
-			if r.options.matchRegex != nil && !r.options.matchRegex.MatchString(resp.raw) {
-				continue
-			}
-			if r.options.OutputMatchString != "" && !strings.Contains(strings.ToLower(resp.raw), strings.ToLower(r.options.OutputMatchString)) {
-				continue
-			}
-			if len(r.options.OutputMatchFavicon) > 0 && !stringsutil.EqualFoldAny(resp.FavIconMMH3, r.options.OutputMatchFavicon...) {
-				continue
-			}
-			if len(r.options.matchLinesCount) > 0 && !slice.IntSliceContains(r.options.matchLinesCount, resp.Lines) {
-				continue
-			}
-			if len(r.options.matchWordsCount) > 0 && !slice.IntSliceContains(r.options.matchWordsCount, resp.Words) {
-				continue
-			}
+			for resp := range output {
+				if resp.err != nil {
+					gologger.Debug().Msgf("Failed '%s': %s\n", resp.URL, resp.err)
+				}
+				if resp.str == "" {
+					continue
+				}
 
-			row := resp.str
-			if r.options.JSONOutput {
-				row = resp.JSON(&r.scanopts)
-				gologger.Silent().Msgf("%s\n", row)
-			} else if r.options.CSVOutput {
-				gologger.Silent().Msgf("%s\n", row)
-				row = resp.CSVRow(&r.scanopts)
-			} else {
-				gologger.Silent().Msgf("%s\n", row)
-			}
+				// apply matchers and filters
+				if len(r.options.filterStatusCode) > 0 && slice.IntSliceContains(r.options.filterStatusCode, resp.StatusCode) {
+					continue
+				}
+				if len(r.options.filterContentLength) > 0 && slice.IntSliceContains(r.options.filterContentLength, resp.ContentLength) {
+					continue
+				}
+				if len(r.options.filterLinesCount) > 0 && slice.IntSliceContains(r.options.filterLinesCount, resp.Lines) {
+					continue
+				}
+				if len(r.options.filterWordsCount) > 0 && slice.IntSliceContains(r.options.filterWordsCount, resp.Words) {
+					continue
+				}
+				if r.options.filterRegex != nil && r.options.filterRegex.MatchString(resp.raw) {
+					continue
+				}
+				if r.options.OutputFilterString != "" && strings.Contains(strings.ToLower(resp.raw), strings.ToLower(r.options.OutputFilterString)) {
+					continue
+				}
+				if len(r.options.OutputFilterFavicon) > 0 && stringsutil.EqualFoldAny(resp.FavIconMMH3, r.options.OutputFilterFavicon...) {
+					continue
+				}
+				if len(r.options.matchStatusCode) > 0 && !slice.IntSliceContains(r.options.matchStatusCode, resp.StatusCode) {
+					continue
+				}
+				if len(r.options.matchContentLength) > 0 && !slice.IntSliceContains(r.options.matchContentLength, resp.ContentLength) {
+					continue
+				}
+				if r.options.matchRegex != nil && !r.options.matchRegex.MatchString(resp.raw) {
+					continue
+				}
+				if r.options.OutputMatchString != "" && !strings.Contains(strings.ToLower(resp.raw), strings.ToLower(r.options.OutputMatchString)) {
+					continue
+				}
+				if len(r.options.OutputMatchFavicon) > 0 && !stringsutil.EqualFoldAny(resp.FavIconMMH3, r.options.OutputMatchFavicon...) {
+					continue
+				}
+				if len(r.options.matchLinesCount) > 0 && !slice.IntSliceContains(r.options.matchLinesCount, resp.Lines) {
+					continue
+				}
+				if len(r.options.matchWordsCount) > 0 && !slice.IntSliceContains(r.options.matchWordsCount, resp.Words) {
+					continue
+				}
 
-			if f != nil {
-				//nolint:errcheck // this method needs a small refactor to reduce complexity
-				f.WriteString(row + "\n")
+				row := resp.str
+				if r.options.JSONOutput {
+					row = resp.JSON(&r.scanopts)
+					gologger.Silent().Msgf("%s\n", row)
+				} else if r.options.CSVOutput {
+					gologger.Silent().Msgf("%s\n", row)
+					row = resp.CSVRow(&r.scanopts)
+				} else {
+					gologger.Silent().Msgf("%s\n", row)
+				}
+
+				if f != nil {
+					//nolint:errcheck // this method needs a small refactor to reduce complexity
+					f.WriteString(row + "\n")
+				}
 			}
-		}
+		})
 	}(output)
 
 	wg := sizedwaitgroup.New(r.options.Threads)
@@ -708,47 +709,49 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 			for _, method := range scanopts.Methods {
 				for _, prot := range protocols {
 					wg.Add()
-					go func(target, method, protocol string) {
-						defer wg.Done()
-						result := r.analyze(hp, protocol, target, method, t, scanopts)
-						util.SendAnyData(&result, util.Httpx)
-						output <- result
-						if scanopts.TLSProbe && result.TLSData != nil {
-							scanopts.TLSProbe = false
-							for _, tt := range result.TLSData.DNSNames {
-								if !r.testAndSet(tt) {
-									continue
+					func(target, method, protocol string) {
+						util.DefaultPool.Submit(func() {
+							defer wg.Done()
+							result := r.analyze(hp, protocol, target, method, t, scanopts)
+							util.SendAnyData(&result, util.Httpx)
+							output <- result
+							if scanopts.TLSProbe && result.TLSData != nil {
+								scanopts.TLSProbe = false
+								for _, tt := range result.TLSData.DNSNames {
+									if !r.testAndSet(tt) {
+										continue
+									}
+									r.process(tt, wg, hp, protocol, scanopts, output)
+									a1 := fingerprint.PreprocessingFingerScan(tt)
+									for _, x1 := range a1 {
+										r.process(x1, wg, hp, protocol, scanopts, output)
+									}
 								}
-								r.process(tt, wg, hp, protocol, scanopts, output)
-								a1 := fingerprint.PreprocessingFingerScan(tt)
-								for _, x1 := range a1 {
-									r.process(x1, wg, hp, protocol, scanopts, output)
-								}
-							}
-							for _, tt := range result.TLSData.CommonName {
-								if !r.testAndSet(tt) {
-									continue
-								}
-								r.process(tt, wg, hp, protocol, scanopts, output)
-								a1 := fingerprint.PreprocessingFingerScan(tt)
-								for _, x1 := range a1 {
-									r.process(x1, wg, hp, protocol, scanopts, output)
-								}
-							}
-						}
-						if scanopts.CSPProbe && result.CSPData != nil {
-							scanopts.CSPProbe = false
-							for _, tt := range result.CSPData.Domains {
-								if !r.testAndSet(tt) {
-									continue
-								}
-								r.process(tt, wg, hp, protocol, scanopts, output)
-								a1 := fingerprint.PreprocessingFingerScan(tt)
-								for _, x1 := range a1 {
-									r.process(x1, wg, hp, protocol, scanopts, output)
+								for _, tt := range result.TLSData.CommonName {
+									if !r.testAndSet(tt) {
+										continue
+									}
+									r.process(tt, wg, hp, protocol, scanopts, output)
+									a1 := fingerprint.PreprocessingFingerScan(tt)
+									for _, x1 := range a1 {
+										r.process(x1, wg, hp, protocol, scanopts, output)
+									}
 								}
 							}
-						}
+							if scanopts.CSPProbe && result.CSPData != nil {
+								scanopts.CSPProbe = false
+								for _, tt := range result.CSPData.Domains {
+									if !r.testAndSet(tt) {
+										continue
+									}
+									r.process(tt, wg, hp, protocol, scanopts, output)
+									a1 := fingerprint.PreprocessingFingerScan(tt)
+									for _, x1 := range a1 {
+										r.process(x1, wg, hp, protocol, scanopts, output)
+									}
+								}
+							}
+						})
 					}(target, method, prot)
 				}
 			}
@@ -762,27 +765,29 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 			for _, wantedProtocol := range wantedProtocols {
 				for _, method := range scanopts.Methods {
 					wg.Add()
-					go func(port int, method, protocol string) {
-						defer wg.Done()
-						h, _ := urlutil.ChangePort(target, fmt.Sprint(port))
-						result := r.analyze(hp, protocol, h, method, t, scanopts)
-						util.SendAnyData(&result, util.Httpx)
-						output <- result
-						if scanopts.TLSProbe && result.TLSData != nil {
-							scanopts.TLSProbe = false
-							for _, tt := range result.TLSData.DNSNames {
-								if !r.testAndSet(tt) {
-									continue
+					func(port int, method, protocol string) {
+						util.DefaultPool.Submit(func() {
+							defer wg.Done()
+							h, _ := urlutil.ChangePort(target, fmt.Sprint(port))
+							result := r.analyze(hp, protocol, h, method, t, scanopts)
+							util.SendAnyData(&result, util.Httpx)
+							output <- result
+							if scanopts.TLSProbe && result.TLSData != nil {
+								scanopts.TLSProbe = false
+								for _, tt := range result.TLSData.DNSNames {
+									if !r.testAndSet(tt) {
+										continue
+									}
+									r.process(tt, wg, hp, protocol, scanopts, output)
 								}
-								r.process(tt, wg, hp, protocol, scanopts, output)
-							}
-							for _, tt := range result.TLSData.CommonName {
-								if !r.testAndSet(tt) {
-									continue
+								for _, tt := range result.TLSData.CommonName {
+									if !r.testAndSet(tt) {
+										continue
+									}
+									r.process(tt, wg, hp, protocol, scanopts, output)
 								}
-								r.process(tt, wg, hp, protocol, scanopts, output)
 							}
-						}
+						})
 					}(port, method, wantedProtocol)
 				}
 			}
@@ -796,7 +801,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 // returns all the targets within a cidr range or the single target
 func (r *Runner) targets(hp *httpx.HTTPX, target string) chan string {
 	results := make(chan string)
-	go func() {
+	util.DefaultPool.Submit(func() {
 		defer close(results)
 
 		// A valid target does not contain:
@@ -834,7 +839,7 @@ func (r *Runner) targets(hp *httpx.HTTPX, target string) chan string {
 		} else {
 			results <- target
 		}
-	}()
+	})
 	return results
 }
 
