@@ -43,6 +43,11 @@ const (
 	ScanType_Nuclei                              // nuclei
 	ScanType_Gobuster                            // Gobuster
 )
+const (
+	ScanType_Ips = ScanType_SSLInfo | ScanType_Tlsx | ScanType_Masscan | ScanType_Nmap | ScanType_IpInfo|ScanType_Uncover|ScanType_GoPoc
+	ScanType_Webs = ScanType_SSLInfo | ScanType_Tlsx | ScanType_GoPoc|ScanType_WebFingerprints|ScanType_WebDetectWaf|ScanType_WebVulsScan|ScanType_Nuclei|ScanType_Gobuster|ScanType_Uncover|ScanType_Httpx|ScanType_WebDirScan
+)
+
 
 // 全局线程控制
 var Wg *sync.WaitGroup = &sync.WaitGroup{}

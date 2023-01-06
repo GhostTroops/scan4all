@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/blang/semver"
+	"github.com/hktalent/ProScan4all/lib/util"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
@@ -157,9 +158,9 @@ func New(options *types.Options) (*Runner, error) {
 		}
 		gologger.Info().Msgf("Listening pprof debug server on: %s", pprofServerAddress)
 		runner.pprofServer = server
-		go func() {
+		util.DefaultPool.Submit(func() {
 			_ = server.ListenAndServe()
-		}()
+		})
 	}
 
 	if (len(options.Templates) == 0 || !options.NewTemplates || (options.TargetsFilePath == "" && !options.Stdin && len(options.Targets) == 0)) && options.UpdateTemplates {

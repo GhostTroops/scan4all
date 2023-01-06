@@ -2,6 +2,7 @@ package goby
 
 import (
 	"embed"
+	"github.com/hktalent/ProScan4all/lib/util"
 	"io/ioutil"
 	"log"
 )
@@ -12,7 +13,7 @@ func LoadPocs(Pocs embed.FS) chan<- string {
 	var szPath string = "goby_pocs"
 	entries, err := Pocs.ReadDir(szPath)
 	if err == nil {
-		go func() {
+		util.DefaultPool.Submit(func() {
 			defer close(rst)
 			for _, v := range entries {
 				szFl1 := szPath + "/" + v.Name()
@@ -23,7 +24,7 @@ func LoadPocs(Pocs embed.FS) chan<- string {
 					log.Println("read ", szFl1, " is error ", err)
 				}
 			}
-		}()
+		})
 	} else {
 		close(rst)
 		log.Println("read ", szPath, " dir is error ", err)

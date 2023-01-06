@@ -3,8 +3,8 @@ package util
 import (
 	"bytes"
 	"fmt"
-	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
 	"github.com/hktalent/51pwnPlatform/pkg/models"
+	Const "github.com/hktalent/go-utils"
 	"io"
 	"io/ioutil"
 	"runtime"
@@ -33,7 +33,7 @@ func CvtData(d []interface{}) []string {
 func init() {
 	RegInitFunc(func() {
 		// 保存数据也采用统一的线程池
-		EngineFuncFactory(Const.ScanType_Nmap, func(evt *models.EventData, args ...interface{}) {
+		EngineFuncFactory(int64(Const.ScanType_Nmap), func(evt *models.EventData, args ...interface{}) {
 			if nil != evt && 0 < len(evt.EventData) {
 				return
 			}

@@ -1,6 +1,7 @@
 package scan
 
 import (
+	"github.com/hktalent/ProScan4all/lib/util"
 	"net"
 	"testing"
 
@@ -8,7 +9,7 @@ import (
 )
 
 func TestConnectVerify(t *testing.T) {
-	go func() {
+	util.DefaultPool.Submit(func() {
 		// start tcp server
 		l, err := net.Listen("tcp", ":17895")
 		if err != nil {
@@ -22,7 +23,7 @@ func TestConnectVerify(t *testing.T) {
 			}
 			defer conn.Close()
 		}
-	}()
+	})
 
 	s, err := NewScanner(&Options{})
 	assert.Nil(t, err)
