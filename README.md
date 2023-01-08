@@ -1,4 +1,4 @@
-[![Tweet](https://img.shields.io/twitter/szUrl/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
+[![Tweet](https://img.shields.io/twitter/url/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
 <p align="center">
    <a href="/README_CN.md">README_中文</a> •
    <a href="/static/Installation.md">Compile/Install/Run</a> •
@@ -193,12 +193,11 @@ more see: <a href=https://github.com/hktalent/ProScan4all/discussions>discussion
 # Communication group (WeChat, QQ，Tg)
 | Wechat | Or | QQchat | Or | Tg |
 | --- |--- |--- |--- |--- |
-
 |<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/wcq.JPG>||<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/qqc.jpg>||<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/tg.jpg>|
 
 
 ## 💖Star
-[![Stargazers over time](https://starchart.cc/hktalent/ProScan4all.svg)](https://starchart.cc/hktalent/ProScan4all)
+[![Stargazers over time](https://starchart.cc/hktalent/scan4all.svg)](https://starchart.cc/hktalent/scan4all)
 
 # Donation
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |
