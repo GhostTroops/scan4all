@@ -1,4 +1,4 @@
-[![Tweet](https://img.shields.io/twitter/szUrl/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
+[![Tweet](https://img.shields.io/twitter/url/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
 <p align="center">
    <a href="/README_CN.md">README_中文</a> •
    <a href="/static/Installation.md">Compile/Install/Run</a> •
@@ -63,6 +63,26 @@ noScan=true ./scan4all -l list.txt -v
 ```
 
 <img src="/static/nmap.gif" width="400">
+
+### --top-ports
+values for reaching various effectiveness levels
+https://nmap.org/book/performance-port-selection.html
+
+|Effectiveness|TCP portsrequired|UDP ports required|
+| ----------- | ----------- | ----------- |
+|10%|1|5|
+|20%|2|12|
+|30%|4|27|
+|40%|6|135|
+|50%|10|1,075|
+|60%|18|2,618|
+|70%|44|5,157|
+|80%|122|7,981|
+|85%|236|9,623|
+|90%|576|11,307|
+|95%|1,558|13,035|
+|99%|3,328|15,094|
+|100%|65,536|65,536|
 
 - Fast 15000+ POC detection capabilities, PoCs include: 
   * nuclei POC
@@ -129,7 +149,7 @@ mkdir ~/MyWork/;cd ~/MyWork/;git clone https://github.com/hktalent/log4j-scan
 download from
 <a href=https://github.com/hktalent/ProScan4all/releases>Releases</a>
 ```bash
-go install github.com/hktalent/ProScan4all@2.6.9
+go install github.com/hktalent/scan4all@latest
 scan4all -h
 ````
 # how to use
@@ -191,14 +211,13 @@ more see: <a href=https://github.com/hktalent/ProScan4all/discussions>discussion
 - 2022-06-07 增加http url列表精准扫描参数，根据环境变量UrlPrecise=true开启
 
 # Communication group (WeChat, QQ，Tg)
-| Wechat | Or | QQchat | Or | Tg |
-| --- |--- |--- |--- |--- |
-
-|<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/wcq.JPG>||<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/qqc.jpg>||<img width=166 src=https://github.com/hktalent/ProScan4all/blob/main/static/tg.jpg>|
+| Wechat                                                                            | Or                                                                                | QQchat                                                                       | Or | Tg |
+|---|---|---|--- |--- |
+| <img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/wcq.JPG> || <img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/qqc.jpg> || <img width=166 src=https://github.com/hktalent/sall/blob/main/static/tg.jpg> |
 
 
 ## 💖Star
-[![Stargazers over time](https://starchart.cc/hktalent/ProScan4all.svg)](https://starchart.cc/hktalent/ProScan4all)
+[![Stargazers over time](https://starchart.cc/hktalent/scan4all.svg)](https://starchart.cc/hktalent/scan4all)
 
 # Donation
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |

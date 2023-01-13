@@ -1,1 +1,1 @@
-{"nuclei-templates-directory":"/Users/51pwn/MyWork/scan4all_release/config/nuclei-templates","nuclei-version":"2.7.9","nuclei-latest-version":"","nuclei-templates-latest-version":""}
+{"nuclei-templates-directory":"/Users/51pwn/nuclei-templates","custom-s3-templates-directory":"/Users/51pwn/nuclei-templates/s3","custom-github-templates-directory":"/Users/51pwn/nuclei-templates/github","nuclei-version":"2.8.6","nuclei-latest-version":"","nuclei-templates-latest-version":""}

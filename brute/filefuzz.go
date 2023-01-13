@@ -5,10 +5,9 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/antlabs/strsim"
-	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
-	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pkg/fingerprint"
+	Const "github.com/hktalent/go-utils"
 	"io/ioutil"
 	"log"
 	"mime"
@@ -157,9 +156,12 @@ func init() {
 		}
 		//regs = append(regs, ret...)
 		// 基于工厂方法构建
-		util.EngineFuncFactory(Const.ScanType_WebDirScan, func(evt *models.EventData, args ...interface{}) {
-			filePaths, fileFuzzTechnologies := FileFuzz(evt.Task.ScanWeb, 200, 100, "")
-			util.SendEngineLog(evt, Const.ScanType_WebDirScan, filePaths, fileFuzzTechnologies)
+		util.EngineFuncFactory(Const.ScanType_WebDirScan, func(evt *Const.EventData, args ...interface{}) {
+			for _, x := range evt.EventData {
+				szT := fmt.Sprintf("%v", x)
+				filePaths, fileFuzzTechnologies := FileFuzz(szT, 200, 100, "")
+				util.SendEngineLog(evt, Const.ScanType_WebDirScan, filePaths, fileFuzzTechnologies)
+			}
 		})
 
 		// 注册一个
@@ -185,8 +187,9 @@ var r001 = regexp.MustCompile(`\.(aac)|(abw)|(arc)|(avif)|(avi)|(azw)|(bin)|(bmp
 
 // 重写了fuzz：优化流程、优化算法、修复线程安全bug、增加智能功能
 //
-//	两次  ioutil.ReadAll(resp.Body)，第二次就会 Read返回EOF error
-//	去除指纹请求的路径，避免重复
+//		两次  ioutil.ReadAll(resp.Body)，第二次就会 Read返回EOF error
+//		去除指纹请求的路径，避免重复
+//	  当前域名ip <- x -> 域名，互相转换后，确认避免重复执行
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
 	DoInitMap()
 	u01, err := url.Parse(strings.TrimSpace(u))

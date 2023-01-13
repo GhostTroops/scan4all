@@ -12,6 +12,7 @@ import (
 	"github.com/hktalent/ProScan4all/pkg/fingerprint"
 	"github.com/hktalent/ProScan4all/pocs_go"
 	"github.com/hktalent/ProScan4all/pocs_yml"
+	Const "github.com/hktalent/go-utils"
 	jsoniter "github.com/json-iterator/go"
 	"io"
 	"io/ioutil"
@@ -713,7 +714,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 						util.DefaultPool.Submit(func() {
 							defer wg.Done()
 							result := r.analyze(hp, protocol, target, method, t, scanopts)
-							util.SendAnyData(&result, util.Httpx)
+							util.SendAnyData(&result, Const.GetTypeName(Const.ScanType_Httpx))
 							output <- result
 							if scanopts.TLSProbe && result.TLSData != nil {
 								scanopts.TLSProbe = false
@@ -770,7 +771,7 @@ func (r *Runner) process(t string, wg *sizedwaitgroup.SizedWaitGroup, hp *httpx.
 							defer wg.Done()
 							h, _ := urlutil.ChangePort(target, fmt.Sprint(port))
 							result := r.analyze(hp, protocol, h, method, t, scanopts)
-							util.SendAnyData(&result, util.Httpx)
+							util.SendAnyData(&result, Const.GetTypeName(Const.ScanType_Httpx))
 							output <- result
 							if scanopts.TLSProbe && result.TLSData != nil {
 								scanopts.TLSProbe = false

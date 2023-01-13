@@ -156,8 +156,9 @@
     ],
     "naabu":[
       "-l", "",
-      "-top-ports", "http",
+      "-top-ports", "full",
       "-iv", "4,6",
+      "-exclude-cdn",
       "-scan-type", "s",
       "-sa","-silent","-nc",
       "-c", "64",

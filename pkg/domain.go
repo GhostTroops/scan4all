@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/projectdiscovery/subfinder"
+	Const "github.com/hktalent/go-utils"
 	jsoniter "github.com/json-iterator/go"
 	"reflect"
 	"strings"
@@ -55,7 +55,11 @@ func doSub(s string) (aRst []string, err1 error) {
 	if "*." == s[:2] {
 		var out = make(chan string, 1000)
 		var close chan bool
-		go subfinder.DoSubfinder([]string{s[2:]}, out, close)
+		util.SendEvent(&Const.EventData{
+			EventType: Const.ScanType_Subfinder,
+			EventData: []interface{}{s[2:]},
+		}, Const.ScanType_Subfinder)
+		//go subfinder.DoSubfinder([]string{s[2:]}, out, close)
 	Close:
 		for {
 			select {
@@ -78,7 +82,7 @@ func doSub(s string) (aRst []string, err1 error) {
 	}
 
 	if bSend {
-		util.SendAData[string](s[:2], aRst, util.Subfinder)
+		util.SendAData[string](s[:2], aRst, Const.GetTypeName(Const.ScanType_Subfinder))
 	}
 	return aRst, nil
 }
@@ -142,43 +146,6 @@ func GetSSLDNS(s string) (aRst []string, err1 error) {
 		for _, x := range cert.DNSNames {
 			aRst = append(aRst, x)
 		}
-		//fmt.Print(cert.Issuer)
-		//fmt.Print("\nSubject: ")
-		//fmt.Print(cert.Subject)
-		//fmt.Print("\nSerial Number: ")
-		//fmt.Print(cert.SerialNumber)
-		//fmt.Print("\nVersion: ")
-		//fmt.Print(cert.Version)
-		//fmt.Print("\nNot Before: ")
-		//fmt.Print(cert.NotBefore)
-		//fmt.Print("\nNot After: ")
-		//fmt.Print(cert.NotAfter)
-		//fmt.Print("\nEmail Addresses: ")
-		//fmt.Print(cert.EmailAddresses)
-		//fmt.Print("\nIP Addresses: ")
-		//fmt.Print(cert.IPAddresses)
-		//fmt.Print("\nPermitted DNS Domains: ")
-		//fmt.Print(cert.PermittedDNSDomains)
-		//fmt.Print("\nExcluded DNS Domains: ")
-		//fmt.Print(cert.ExcludedDNSDomains)
-		//fmt.Print("\nPermitted IP Ranges: ")
-		//fmt.Print(cert.PermittedIPRanges)
-		//fmt.Print("\nEXcluded IP Ranges: ")
-		//fmt.Print(cert.ExcludedIPRanges)
-		//fmt.Print("\nPermitted Email Addresses: ")
-		//fmt.Print(cert.PermittedEmailAddresses)
-		//fmt.Print("\nExcluded Email Addresses: ")
-		//fmt.Print(cert.ExcludedEmailAddresses)
-		//fmt.Print("\nPermitted URI Domains: ")
-		//fmt.Print(cert.PermittedURIDomains)
-		//fmt.Print("\nExlucded URI Domains: ")
-		//fmt.Print(cert.ExcludedURIDomains)
-		//fmt.Print("\nOCSP Server: ")
-		//fmt.Print(cert.OCSPServer)
-		//fmt.Print("\nIssuing Certificate URL Server: ")
-		//fmt.Print(cert.IssuingCertificateURL)
-		//fmt.Print("\nDNS Names: ")
-		//fmt.Println(cert.DNSNames)
 	}
 	return aRst, nil
 }

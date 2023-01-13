@@ -17,7 +17,7 @@ const (
 	compress = true
 )
 
-var pipE = PipelineHttp.NewPipelineHttp()
+var PipE = PipelineHttp.NewPipelineHttp()
 
 // 发送通讯信号
 func SignalCandidate(addr string, c *webrtc.ICECandidate, hd map[string]string, cbk func(resp *http.Response, err error, szU string), kv ...string) {
@@ -26,7 +26,7 @@ func SignalCandidate(addr string, c *webrtc.ICECandidate, hd map[string]string, 
 }
 
 func SendE2eData(addr string, data []byte, hd map[string]string, cbk func(resp *http.Response, err error, szU string), kv ...string) {
-	pipE.DoGetWithClient4SetHd(
+	PipE.DoGetWithClient4SetHd(
 		nil,
 		addr,
 		"POST",

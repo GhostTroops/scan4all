@@ -16,7 +16,12 @@ go build
 apt update
 apt install -yy libpcap0.8-dev
 sudo apt install -y libpcap-dev
+# alpine linux
+apk update
+apk add --upgrade libcap
+
 # cent os
+yum update -yy
 yum install -yy glibc-devel.x86_64
 yum install -yy libpcap
 # mac os

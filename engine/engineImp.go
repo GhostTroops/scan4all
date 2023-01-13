@@ -5,13 +5,12 @@ import (
 	"context"
 	"fmt"
 	"github.com/asaskevich/govalidator"
-	"github.com/hktalent/51pwnPlatform/lib"
-	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pocs_go"
 	Const "github.com/hktalent/go-utils"
 	"github.com/hktalent/jaeles/cmd"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/karlseguin/ccache"
 	"github.com/panjf2000/ants/v2"
 	"github.com/projectdiscovery/iputil"
 	"github.com/remeh/sizedwaitgroup"
@@ -37,12 +36,14 @@ type Engine struct {
 	Wg           *sizedwaitgroup.SizedWaitGroup // Wg
 	Pool         int                            // 线程池
 	PoolFunc     *ants.PoolWithFunc             // 线程调用
-	EventData    chan *models.EventData         // 数据队列
+	EventData    chan *Const.EventData          // 数据队列
 	NodeId       string                         `json:"node_id"`    // 分布式引擎节点的id，除非系统更换，docker重制，否则始终一致
 	LimitTask    int                            `json:"limit_task"` // 当前节点任务并发数的限制
 	SyTask       int                            `json:"sy_task"`    // 剩余task
 	DtServer     string                         `json:"dt_server"`  // 获取任务、提交任务状态的server
 	caseScanFunc sync.Map
+	Lock         *sync.Mutex
+	mcc          *ccache.Cache // 内存缓存
 }
 
 var GEngine *Engine
@@ -60,18 +61,20 @@ func NewEngine(c *context.Context, pool int) *Engine {
 		return util.G_Engine.(*Engine)
 	}
 	x1 := &Engine{
+		mcc:       util.GetMemoryCache(100000, nil),
+		Lock:      &sync.Mutex{},
 		Context:   c,
 		Wg:        util.GetWg(util.GetValAsInt("WgThread", 64)),
 		Pool:      pool,
 		DtServer:  util.GetVal("DtServer"),
-		EventData: make(chan *models.EventData, pool),
+		EventData: make(chan *Const.EventData, pool),
 		LimitTask: util.GetValAsInt("LimitTask", 4),
 	}
 	x1.SyTask = x1.LimitTask // 初始化剩余任务等于最大任务数
 	x1.initNodeId()
 	p, err := ants.NewPoolWithFunc(pool, func(i interface{}) {
 		defer x1.Wg.Done()
-		x1.DoEvent(i.(*models.EventData))
+		x1.DoEvent(i.(*Const.EventData))
 	}, ants.WithPreAlloc(true))
 	if nil != err {
 		log.Println("ants.NewPoolWithFunc is error: ", err)
@@ -112,7 +115,7 @@ func (e *Engine) GetTask(okTaskIds string) {
 		"Content-Type": "application/json",
 	}, strings.NewReader(`{"Num":`+strconv.Itoa(e.SyTask)+`,"task_ids":"`+okTaskIds+`","node_id":"`+e.NodeId+`","task_num":`+strconv.Itoa(e.LimitTask)+`}`)); nil == err && nil != resp {
 		defer resp.Body.Close()
-		var n1 = models.EventData{}
+		var n1 = Const.EventData{}
 		var oTsk = map[string]interface{}{}
 		if data, err := ioutil.ReadAll(resp.Body); nil == err {
 			if err := json.Unmarshal(data, &oTsk); nil == err {
@@ -231,7 +234,7 @@ func (e *Engine) SendTask(s string) {
 			"Content-Type": "application/json",
 		}, bytes.NewReader(data)); nil == err && nil != resp {
 			defer resp.Body.Close()
-			var n1 = models.EventData{}
+			var n1 = Const.EventData{}
 			if data, err := ioutil.ReadAll(resp.Body); nil == err {
 				if err := json.Unmarshal(data, &n1); nil == err {
 					e.SendEvent(&n1, n1.EventType)
@@ -242,12 +245,12 @@ func (e *Engine) SendTask(s string) {
 }
 
 // 注册特定类型的事件处理
-func (e *Engine) EngineFuncFactory(nT int64, fnCbk util.EngineFuncType) {
+func (e *Engine) EngineFuncFactory(nT uint64, fnCbk util.EngineFuncType) {
 	e.RegCaseScanFunc(nT, fnCbk)
 }
 
 // 注册特定类型的事件处理
-func (e *Engine) RegCaseScanFunc(nType int64, fnCbk util.EngineFuncType) {
+func (e *Engine) RegCaseScanFunc(nType uint64, fnCbk util.EngineFuncType) {
 	e.caseScanFunc.Store(nType, fnCbk)
 }
 
@@ -308,25 +311,47 @@ func (e *Engine) EventType2Str(argsTypes ...uint64) string {
 }
 
 // 关联发送若干个事件
-func (e *Engine) SendEvent(evt *models.EventData, argsTypes ...int64) {
+func (e *Engine) SendEvent(evt *Const.EventData, argsTypes ...uint64) {
 	for _, i := range argsTypes {
-		var n1 = models.EventData{}
+		var n1 = Const.EventData{}
 		deepcopier.Copy(evt).To(&n1)
 		n1.EventType = i
 		e.EventData <- &n1
 	}
 }
 
+// 7天
+var ScanTargetNoRepeatCc = time.Minute * 60 * 24 * 7
+
 // 分派任务
-func (e *Engine) Dispather(ed *models.EventData) {
+//
+//	1-加锁，避免多个任务并发冲突
+//	2-获取参数做key + type，避免重复执行
+func (e *Engine) Dispather(ed *Const.EventData) {
+	e.Lock.Lock()
+	defer e.Lock.Unlock()
 	oR := e.GetCaseScanFunc()
+	bNo := true
 	oR.Range(func(k, v any) bool {
-		t1 := k.(int64)
+		t1 := k.(uint64)
 		if t1&ed.EventType == t1 {
-			v.(util.EngineFuncType)(ed, ed.EventData...)
+			bNo = false
+			log.Println("Dispather ", Const.GetTypeName(t1), ed.EventData)
+			if 0 == len(ed.EventData) || fmt.Sprintf("%v", ed.EventData[0]) == "" {
+				log.Println("No correct parameters ", Const.GetTypeName(t1))
+				return true
+			}
+			szKey := fmt.Sprintf("%s_%s", Const.GetTypeName(t1), util.GetSha1(ed.EventData))
+			if nil == e.mcc.Get(szKey) {
+				e.mcc.Set(szKey, "", ScanTargetNoRepeatCc)
+				v.(util.EngineFuncType)(ed, ed.EventData...)
+			}
 		}
 		return true
 	})
+	if bNo {
+		log.Println("not found event type")
+	}
 }
 
 // 执行事件代码 内部用
@@ -334,7 +359,7 @@ func (e *Engine) Dispather(ed *models.EventData) {
 //	每个事件自己做防重处理
 //	每个事件异步执行
 //	每种事件类型可以独立控制并发数
-func (e *Engine) DoEvent(ed *models.EventData) {
+func (e *Engine) DoEvent(ed *Const.EventData) {
 	if nil != ed && nil != ed.EventData && 0 < len(ed.EventData) {
 		e.Dispather(ed)
 	}
@@ -342,7 +367,7 @@ func (e *Engine) DoEvent(ed *models.EventData) {
 
 func (x1 *Engine) Running() {
 	// 异步启动一个线程处理检测，避免
-	util.DefaultPool.Submit(func() {
+	util.DoSyncFunc(func() {
 		defer func() {
 			x1.Close()
 		}()
@@ -351,8 +376,8 @@ func (x1 *Engine) Running() {
 		//nMax := 120 // 等xxx秒都没有消息进入就退出
 		//nCnt := 0
 		// 每10秒获取一次任务
-		c1Task := time.NewTicker(5 * time.Second)
-		c2Task := time.NewTicker(15 * time.Second)
+		c1Task := time.NewTicker(5 * time.Second)  // 获取分布式任务
+		c2Task := time.NewTicker(15 * time.Second) // 延时清理
 		for {
 			select {
 			case <-util.Ctx_global.Done():
@@ -399,8 +424,6 @@ func (x1 *Engine) Running() {
 // 引擎总入口
 func init() {
 	//log.Println("engineImp.go run")
-	lib.GConfigServer.OnClient = true
-	lib.MyHub.FnClose()
 	util.RegInitFunc4Hd(func() {
 		// 下面的变量 不能移动到DoSyncFunc，否则全局变量将影响后续的init，导致无效的内存
 		NewEngine(&util.Ctx_global, util.GetValAsInt("ScanPoolSize", 5000))

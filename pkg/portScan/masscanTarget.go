@@ -1,9 +1,8 @@
 package portScan
 
 import (
-	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
-	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
+	Const "github.com/hktalent/go-utils"
 	"log"
 	"strings"
 )
@@ -33,7 +32,7 @@ func init() {
 	util.RegInitFunc(func() {
 		// 每个端口大约10小时内扫描整个互联网（减去排除值）（如果扫描所有端口，则扫描655,360小时）
 		// 与nmap兼容的“隐形”选项：-sS -Pn -n --randomize-hosts --send-eth
-		util.EngineFuncFactory(Const.ScanType_Masscan, func(evt *models.EventData, args ...interface{}) {
+		util.EngineFuncFactory(Const.ScanType_Masscan, func(evt *Const.EventData, args ...interface{}) {
 			ip := strings.Join(evt.Target2Ip(), ",")
 			if "" == ip {
 				return
@@ -50,9 +49,9 @@ func init() {
 				"--max-rate", string(ms.Rate),
 			}
 			util.MergeParms2Obj(&ms, args...)
-			var hosts []models.Host
-			err := ms.Run(func(host *models.Host) {
-				hosts = append(hosts, *host)
+			var hosts []interface{}
+			err := ms.Run(func(host interface{}) {
+				hosts = append(hosts, host)
 			})
 			if nil != err {
 				log.Println("ms.Run is error ", err)

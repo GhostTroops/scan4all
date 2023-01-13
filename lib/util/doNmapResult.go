@@ -1,16 +1,19 @@
 package util
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/antchfx/xmlquery"
-	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
-	"github.com/hktalent/51pwnPlatform/pkg/models"
+	Const "github.com/hktalent/go-utils"
 	"io/ioutil"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+)
+
+var (
+	Naabu = Const.GetTypeName(Const.ScanType_Naabu)
+	Nmap  = Const.GetTypeName(Const.ScanType_Nmap)
 )
 
 // 弱口令检测
@@ -20,10 +23,10 @@ func CheckWeakPassword(ip, service string, port int) {
 	}
 	// 在弱口令检测范围就开始检测，结果....
 	service = strings.ToLower(service)
-	SendEvent(&models.EventData{
-		EventType: Const.ScanType_Pswd4hydra,
+	SendEvent(&Const.EventData{
+		EventType: Const.ScanType_WeakPassword,
 		EventData: []interface{}{ip, port, service},
-	}, Const.ScanType_Pswd4hydra)
+	}, Const.ScanType_WeakPassword)
 }
 
 // 开启了es
@@ -47,11 +50,12 @@ func GetAttr(att []xmlquery.Attr, name string) string {
 }
 
 // 解析 nmap、masscan 输出的xml结果
-//  解析的结果保存到 bf 中
-//  解析的同时：
-//    1、触发端口弱口令检测，如果当前任务不需要，则，弱口令检测的入口处拦截、过滤
-//    2、端口 POC 检测，如果当前任务不需要，则，弱口令检测的入口处拦截、过滤
-func DoParseXml(s string, bf *bytes.Buffer) {
+//
+//	解析的结果保存到 bf 中
+//	解析的同时：
+//	  1、触发端口弱口令检测，如果当前任务不需要，则，弱口令检测的入口处拦截、过滤
+//	  2、端口 POC 检测，如果当前任务不需要，则，弱口令检测的入口处拦截、过滤
+func DoParseXml(s string, taskT uint64) {
 	doc, err := xmlquery.Parse(strings.NewReader(s))
 	if err != nil {
 		log.Println("DoParseXml： ", err)
@@ -97,7 +101,10 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 				for _, dnsJ := range aDns {
 					aszUlr := []string{fmt.Sprintf("https://%s:%s", dnsJ, szPort), fmt.Sprintf("http://%s:%s", dnsJ, szPort)}
 					for _, szUlr := range aszUlr {
-						bf.Write([]byte(szUlr + "\n"))
+						SendEvent(&Const.EventData{
+							EventType: taskT,
+							EventData: []interface{}{szUlr},
+						}, taskT)
 						if os.Getenv("NoPOC") != "true" {
 							if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
 								PocCheck_pipe <- &PocCheck{
@@ -151,12 +158,13 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 }
 
 // 处理使用者自己扫描的结果
-//  不能用异步，否则后续流程无法读取 buff
-func DoNmapWithFile(s string, bf *bytes.Buffer) bool {
+//
+//	不能用异步，否则后续流程无法读取 buff
+func DoNmapWithFile(s string, taskT uint64) bool {
 	if strings.HasSuffix(strings.ToLower(s), ".xml") {
 		b, err := ioutil.ReadFile(s)
 		if nil == err && 0 < len(b) {
-			DoParseXml(string(b), bf)
+			DoParseXml(string(b), taskT)
 		} else {
 			log.Println("DoNmapWithFile: ", err)
 		}
@@ -166,7 +174,7 @@ func DoNmapWithFile(s string, bf *bytes.Buffer) bool {
 }
 
 // 处理 naabu 端口扫描环节的结果文件
-func DoNmapRst(bf *bytes.Buffer) {
+func DoNmapRst(taskT uint64) {
 	if x1, ok := TmpFile[string(Naabu)]; ok {
 		for _, x := range x1 {
 			defer func(r *os.File) {
@@ -176,7 +184,7 @@ func DoNmapRst(bf *bytes.Buffer) {
 			b, err := ioutil.ReadFile(x.Name())
 			if nil == err && 0 < len(b) {
 				//fmt.Println("read nmap xml file ok: ", len(b))
-				DoParseXml(string(b), bf)
+				DoParseXml(string(b), taskT)
 			} else {
 				log.Println("ioutil.ReadFile(x.Name()): ", err)
 			}

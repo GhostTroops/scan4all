@@ -3,8 +3,7 @@ package util
 import (
 	"bytes"
 	"fmt"
-	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
-	"github.com/hktalent/51pwnPlatform/pkg/models"
+	Const "github.com/hktalent/go-utils"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -29,8 +28,8 @@ func initEs() {
 func init() {
 	RegInitFunc(func() {
 		// 保存数据也采用统一的线程池
-		EngineFuncFactory(Const.ScanType_SaveEs, func(evt *models.EventData, args ...interface{}) {
-			SendReq(args[0].(interface{}), args[1].(string), args[2].(ESaveType))
+		EngineFuncFactory(Const.ScanType_SaveEs, func(evt *Const.EventData, args ...interface{}) {
+			SendReq(args[0].(interface{}), args[1].(string), args[2].(string))
 		})
 	})
 }
@@ -46,27 +45,27 @@ type SimpleVulResult struct {
 	VulType  string        `json:"vulType"`   // 漏洞类型
 	Payload  string        `json:"payload"`   // 攻击、检测一类的结果时，当前的payload
 	Msg      string        `json:"msg"`       // 其他消息
-	ScanType int64         `json:"scan_type"` // 扫描类型
+	ScanType uint64        `json:"scan_type"` // 扫描类型
 	ScanData []interface{} `json:"scan_data"` // 扫描结果，例如 masscan端口扫描、nmap
 }
 
 // 一定得有全局得线程等待
-func SendAnyData(data interface{}, szType ESaveType) {
+func SendAnyData(data interface{}, szType string) {
 	if EnableEsSv {
 		data1, _ := json.Marshal(data)
 		if 0 < len(data1) {
 			k := GetSha1(data)
-			SendEvent(&models.EventData{EventType: Const.ScanType_SaveEs, EventData: []interface{}{data, k, szType}}, Const.ScanType_SaveEs)
+			SendEvent(&Const.EventData{EventType: Const.ScanType_SaveEs, EventData: []interface{}{data, k, szType}}, Const.ScanType_SaveEs)
 		}
 	}
 }
 
 // k is id
-func SendAData[T any](k string, data []T, szType ESaveType) {
+func SendAData[T any](k string, data []T, szType string) {
 	if 0 < len(data) && EnableEsSv {
 		m2 := make(map[string]interface{})
 		m2[k] = data
-		SendEvent(&models.EventData{EventType: Const.ScanType_SaveEs, EventData: []interface{}{m2, k, szType}}, Const.ScanType_SaveEs)
+		SendEvent(&Const.EventData{EventType: Const.ScanType_SaveEs, EventData: []interface{}{m2, k, szType}}, Const.ScanType_SaveEs)
 		//SendReq(m2, k, szType)
 		//log.Printf("%+v\n", data)
 	}
@@ -74,10 +73,11 @@ func SendAData[T any](k string, data []T, szType ESaveType) {
 
 // es 需要基于buffer，避免太频繁
 // 发送数据到ES
-//  data1数据
-//  id 数据计算出来的id
-//  szType 类型，决定 es不通的索引分类
-func SendReq(data1 interface{}, id string, szType ESaveType) {
+//
+//	data1数据
+//	id 数据计算出来的id
+//	szType 类型，决定 es不通的索引分类
+func SendReq(data1 interface{}, id string, szType string) {
 	if !EnableEsSv {
 		return
 	}

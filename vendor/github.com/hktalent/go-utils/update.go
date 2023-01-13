@@ -3,15 +3,15 @@ package go_utils
 import (
 	"fmt"
 	"github.com/apex/log"
+	"github.com/hktalent/go-update"
+	"github.com/hktalent/go-update/progress"
+	githubUpdateStore "github.com/hktalent/go-update/stores/github"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
-	"github.com/tj/go-update"
-	"github.com/tj/go-update/progress"
-	githubUpdateStore "github.com/tj/go-update/stores/github"
 	"runtime"
 )
 
-var Version = `2.7.9`
+var Version = `2.8.6`
 
 var MyName = "scan4all"
 

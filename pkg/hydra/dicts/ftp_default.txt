@@ -1,4 +1,5 @@
 anonymous	anonymous
+minioadmin  minioadmin
 root	rootpasswd
 root	12hrs37
 ftp	b1uRR3

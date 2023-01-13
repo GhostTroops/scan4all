@@ -43,7 +43,7 @@ func SaveMdRst(s, t string, a1 []string) {
 			m := *m1
 			return fmt.Sprintf("%s_%s_%v", m["type"], m["host"], m["port"])
 		}); nil != oR && 0 < len(oR) {
-			util.SendReq(oR, "xxx", util.ESaveType(t))
+			util.SendReq(oR, "xxx", t)
 		}
 	// +type:uncover +cmd:"China Lodging Group"
 	case uncover:
@@ -51,14 +51,14 @@ func SaveMdRst(s, t string, a1 []string) {
 			m := *m1
 			return fmt.Sprintf("%s_%s_%v", m["type"], m["ip"], m["port"])
 		}); nil != oR && 0 < len(oR) {
-			util.SendReq(oR, "xxx", util.ESaveType(t))
+			util.SendReq(oR, "xxx", t)
 		}
 	case shuffledns: // massdns
 		if oR := GetMore(a, t, a1, func(m1 *map[string]interface{}) string {
 			m := *m1
 			return fmt.Sprintf("%s_%s", m["type"], m["hostname"])
 		}); nil != oR && 0 < len(oR) {
-			util.SendReq(oR, "xxx", util.ESaveType(t))
+			util.SendReq(oR, "xxx", t)
 		}
 	}
 

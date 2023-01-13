@@ -3,6 +3,7 @@ password
 12345678
 qwerty
 123456789
+minioadmin
 12345
 1234
 111111

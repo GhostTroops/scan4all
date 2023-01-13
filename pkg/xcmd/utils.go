@@ -159,7 +159,7 @@ func DoCmd(args ...string) (string, error) {
 	if nil != err {
 		return "", err
 	}
-	return string(outStr + "\n" + errStr), err
+	return outStr + "\n" + errStr, err
 }
 
 func GetCmdParms(n string) []string {

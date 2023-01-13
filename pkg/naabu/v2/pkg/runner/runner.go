@@ -6,12 +6,10 @@ import (
 	"fmt"
 	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/ProScan4all/pkg/fingerprint"
-	"github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml"
-	runner2 "github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
 	"github.com/hktalent/ProScan4all/webScan"
+	Const "github.com/hktalent/go-utils"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/iputil"
-	runner3 "github.com/projectdiscovery/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/retryablehttp-go"
 	"log"
 	"net"
@@ -53,13 +51,13 @@ type Runner struct {
 
 var Naabubuffer = bytes.Buffer{}
 
-func (r *Runner) Httpxrun(buf *bytes.Buffer, options *runner3.Options) error {
+func (r *Runner) Httpxrun(buf *bytes.Buffer, options *Options) error {
 	if nil != buf {
 		httpxrunner.Naabubuffer = *buf
 	} else {
 		httpxrunner.Naabubuffer = Naabubuffer
 	}
-	var nucleiDone = make(chan bool, 1)
+	//var nucleiDone = make(chan bool, 1)
 	Cookie := util.GetVal("Cookie")
 	if "" != Cookie {
 		Cookie = "Cookie: " + Cookie + ";rememberMe=123" // add
@@ -69,7 +67,7 @@ func (r *Runner) Httpxrun(buf *bytes.Buffer, options *runner3.Options) error {
 	//log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
 	//Naabubuffer1 := bytes.Buffer{}
 	//Naabubuffer1.Write(httpxrunner.Naabubuffer.Bytes())
-	var xx1 = make(chan *runner2.Runner, 1)
+	//var xx1 = make(chan *runner2.Runner, 1)
 	httpxoptions := httpxrunner.ParseOptions()
 
 	opts := map[string]interface{}{}
@@ -88,17 +86,14 @@ func (r *Runner) Httpxrun(buf *bytes.Buffer, options *runner3.Options) error {
 
 	util.DoSyncFunc(func() {
 		if util.GetValAsBool("enableWebScan") {
-			util.DoSyncFunc(func() {
-				webScan.CheckUrls(&httpxrunner.Naabubuffer)
-			})
+			webScan.CheckUrls(&httpxrunner.Naabubuffer)
 		}
-		if util.GetValAsBool("enableMultNuclei") {
-			go nuclei_Yaml.RunNucleiP(&httpxrunner.Naabubuffer, nucleiDone, &opts, xx1)
-			<-nucleiDone
-		} else if util.GetValAsBool("enableNuclei") {
-			go nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer, nucleiDone, &opts, xx1)
-			<-nucleiDone
-		}
+		s := httpxrunner.Naabubuffer.String()
+		log.Println(s)
+		util.SendEvent(&Const.EventData{
+			EventType: Const.ScanType_Nuclei,
+			EventData: []interface{}{s},
+		}, Const.ScanType_Nuclei)
 	})
 	// 指纹去重复 请求路径
 	if "" != fingerprint.FgDictFile {

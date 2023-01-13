@@ -1,6 +1,6 @@
 module github.com/hktalent/ProScan4all
 
-go 1.18
+go 1.19
 
 //naabu
 require (
@@ -38,12 +38,12 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/json-iterator/go v1.1.12
-	github.com/miekg/dns v1.1.50
+	github.com/miekg/dns v1.1.50 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/projectdiscovery/hmap v0.0.2
-	github.com/projectdiscovery/retryabledns v1.0.15
+	github.com/projectdiscovery/retryabledns v1.0.15 // indirect
 	github.com/projectdiscovery/stringsutil v0.0.1
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	github.com/yl2chen/cidranger v1.0.2 // indirect
@@ -101,9 +101,9 @@ require (
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/gorilla/websocket v1.5.0
 	github.com/gosnmp/gosnmp v1.35.0
-	github.com/hktalent/51pwnPlatform v1.1.9
 	github.com/hktalent/PipelineHttp v0.0.0-20221209043918-65a9cff9f6ea
-	github.com/hktalent/go-utils v0.0.0-20230101111852-df8ac2d2a354
+	github.com/hktalent/go-update v0.0.0-20230103083610-b2d1a1455f93
+	github.com/hktalent/go-utils v0.0.0-20230108120733-7cb384b80b55
 	github.com/hktalent/gson v0.0.0-20221118090607-68e4c7359da2
 	github.com/hktalent/jaeles v1.0.1
 	github.com/hktalent/jarm-go v0.0.0-20220918133110-7801447b6267
@@ -123,17 +123,14 @@ require (
 	github.com/panjf2000/ants/v2 v2.5.0
 	github.com/projectdiscovery/folderutil v0.0.0-20220523100846-d6161a49c221
 	github.com/projectdiscovery/iputil v0.0.0-20220712175312-b9406f31cdd8
-	github.com/projectdiscovery/naabu/v2 v2.1.0
 	github.com/projectdiscovery/nuclei-updatecheck-api v0.0.0-20220726130814-981d44a34f84
 	github.com/projectdiscovery/nuclei/v2 v2.7.8
-	github.com/projectdiscovery/subfinder/v2 v2.5.3
 	github.com/satori/go.uuid v1.2.0
 	github.com/shirou/gopsutil/v3 v3.22.12
 	github.com/sijms/go-ora/v2 v2.5.3
 	github.com/simonnilsson/ask v0.3.0
 	github.com/spf13/viper v1.14.0
 	github.com/stacktitan/smb v0.0.0-20190531122847-da9a425dceb8
-	github.com/tj/go-update v2.2.5-0.20200519121640-62b4b798fd68+incompatible
 	github.com/txthinking/socks5 v0.0.0-20220615051428-39268faee3e6
 	github.com/ulule/deepcopier v0.0.0-20200430083143-45decc6639b6
 	github.com/urfave/cli/v2 v2.16.3
@@ -144,8 +141,8 @@ require (
 	google.golang.org/genproto v0.0.0-20221118155620-16455021b5e6
 	google.golang.org/protobuf v1.28.1
 	gopkg.in/irc.v3 v3.1.4
-	gorm.io/driver/sqlite v1.4.3
-	gorm.io/gorm v1.24.2
+	gorm.io/driver/sqlite v1.4.4
+	gorm.io/gorm v1.24.3
 )
 
 require (
@@ -190,7 +187,6 @@ require (
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/dsnet/compress v0.0.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
-	github.com/elastic/go-elasticsearch/v7 v7.17.1 // indirect
 	github.com/emersion/go-textwrapper v0.0.0-20200911093747-65d896831594 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
@@ -230,17 +226,14 @@ require (
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/gosuri/uiprogress v0.0.1 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
-	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.7.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hdm/jarm-go v0.0.7 // indirect
-	github.com/hktalent/websocket v0.0.0-20220908204337-b4a81b861976 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
 	github.com/iancoleman/orderedmap v0.2.0 // indirect
 	github.com/imdario/mergo v0.3.11 // indirect
@@ -283,7 +276,7 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
-	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
+	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/mholt/acmez v1.0.4 // indirect
 	github.com/mholt/archiver v3.1.1+incompatible // indirect
@@ -318,7 +311,6 @@ require (
 	github.com/pion/udp v0.1.1 // indirect
 	github.com/pion/webrtc/v3 v3.1.50 // indirect
 	github.com/power-devops/perfstat v0.0.0-20221212215047-62379fc7944b // indirect
-	github.com/projectdiscovery/chaos-client v0.3.0 // indirect
 	github.com/projectdiscovery/filekv v0.0.0-20210915124239-3467ef45dd08 // indirect
 	github.com/projectdiscovery/interactsh v1.0.7 // indirect
 	github.com/projectdiscovery/reflectutil v0.0.0-20210804085554-4d90952bf92f // indirect
@@ -346,7 +338,6 @@ require (
 	github.com/thoas/go-funk v0.8.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.11 // indirect
 	github.com/tklauser/numcpus v0.6.0 // indirect
-	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 // indirect
 	github.com/trivago/tgo v1.0.7 // indirect
 	github.com/txthinking/runnergroup v0.0.0-20220212043759-8da8edb7dae8 // indirect
 	github.com/txthinking/x v0.0.0-20210326105829-476fab902fbe // indirect
@@ -387,6 +378,6 @@ require (
 	gopkg.in/src-d/go-billy.v4 v4.3.2 // indirect
 	gopkg.in/src-d/go-git.v4 v4.13.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	gorm.io/driver/mysql v1.4.4 // indirect
+	gorm.io/driver/mysql v1.4.5 // indirect
 	moul.io/http2curl v1.0.0 // indirect
 )

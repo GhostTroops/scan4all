@@ -3,10 +3,9 @@ package nuclei_Yaml
 import (
 	"C"
 	"bytes"
-	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
-	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
 	runner2 "github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
+	Const "github.com/hktalent/go-utils"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"
@@ -493,7 +492,7 @@ func init() {
 	util.RegInitFunc(func() {
 		//log.Println("nuclei_yaml.go init start")
 		// 基于工厂方法构建
-		util.EngineFuncFactory(Const.ScanType_WebVulsScan, func(evt *models.EventData, args ...interface{}) {
+		util.EngineFuncFactory(Const.ScanType_WebVulsScan, func(evt *Const.EventData, args ...interface{}) {
 			var bf bytes.Buffer = bytes.Buffer{}
 			bf.WriteString(evt.Task.ScanWeb + "\n")
 			var nucleiDone = make(chan bool, 1)
