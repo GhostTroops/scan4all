@@ -3,7 +3,6 @@ package util
 import (
 	"bytes"
 	"fmt"
-	"github.com/hktalent/51pwnPlatform/pkg/models"
 	Const "github.com/hktalent/go-utils"
 	"io"
 	"io/ioutil"
@@ -30,10 +29,13 @@ func CvtData(d []interface{}) []string {
 }
 
 // 注册Nmap
+// nmap -sT --top-ports 1000 -v -oG -
+// nmap --top-ports 1000  -v -oG -
+// nmap --top-ports 100  -v -oG -
 func init() {
 	RegInitFunc(func() {
 		// 保存数据也采用统一的线程池
-		EngineFuncFactory(int64(Const.ScanType_Nmap), func(evt *models.EventData, args ...interface{}) {
+		EngineFuncFactory(Const.ScanType_Nmap, func(evt *Const.EventData, args ...interface{}) {
 			if nil != evt && 0 < len(evt.EventData) {
 				return
 			}
@@ -51,8 +53,7 @@ func init() {
 				}
 				x := SzPwd + s009 + tempI.Name() + " " + tempO.Name()
 				if _, err := DoCmd(strings.Split(x, " ")...); nil == err {
-					var bf = &bytes.Buffer{}
-					DoNmapWithFile(tempO.Name(), bf)
+					DoNmapWithFile(tempO.Name(), evt.EventType)
 				}
 			}
 		})

@@ -32,9 +32,9 @@ import (
 	"github.com/projectdiscovery/nuclei/v2/pkg/catalog/config"
 	"github.com/projectdiscovery/nuclei/v2/pkg/utils"
 
-	"github.com/tj/go-update"
-	"github.com/tj/go-update/progress"
-	githubUpdateStore "github.com/tj/go-update/stores/github"
+	"github.com/hktalent/go-update"
+	"github.com/hktalent/go-update/progress"
+	githubUpdateStore "github.com/hktalent/go-update/stores/github"
 )
 
 const (

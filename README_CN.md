@@ -1,4 +1,4 @@
-[![Tweet](https://img.shields.io/twitter/szUrl/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
+[![Tweet](https://img.shields.io/twitter/url/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
 <p align="center">
    <a href="/README.md">README_EN</a> •
    <a href="/static/Installation.md">编译/安装/运行</a> •
@@ -63,6 +63,25 @@ noScan=true  ./scan4all -l list.txt  -v
 ```
 
 <img src="/static/nmap.gif" width="400">
+
+### --top-ports
+values for reaching various effectiveness levels
+https://nmap.org/book/performance-port-selection.html
+|Effectiveness|TCP portsrequired|UDP ports required|
+| --- | --- | --- |
+|10%|1|5|
+|20%|2|12|
+|30%|4|27|
+|40%|6|135|
+|50%|10|1,075|
+|60%|18|2,618|
+|70%|44|5,157|
+|80%|122|7,981|
+|85%|236|9,623|
+|90%|576|11,307|
+|95%|1,558|13,035|
+|99%|3,328|15,094|
+|100%|65,536|65,536|
 
 - 快速 15000+ POC 检测功能，PoCs包含：
   * nuclei POC
@@ -130,7 +149,7 @@ mkdir ~/MyWork/;cd ~/MyWork/;git clone  https://github.com/hktalent/log4j-scan
 download from
 <a href=https://github.com/hktalent/ProScan4all/releases>Releases</a>
 ```bash
-go install github.com/hktalent/ProScan4all@2.6.9
+go install github.com/hktalent/scan4all@latest
 scan4all -h
 ```
 # 如何使用
@@ -243,12 +262,12 @@ more see: <a href=https://github.com/hktalent/ProScan4all/discussions>discussion
 
 
 ## 💖Star
-[![Stargazers over time](https://starchart.cc/hktalent/ProScan4all.svg)](https://starchart.cc/hktalent/ProScan4all)
+[![Stargazers over time](https://starchart.cc/hktalent/scan4all.svg)](https://starchart.cc/hktalent/scan4all)
 
 # Donation
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |
 | --- | --- | --- | --- | --- |
-|<img src=https://github.com/hktalent/myhktools/blob/master/md/wc.png>|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/zfb.png>|[paypal](https://www.paypal.me/pwned2019) **miracletalent@gmail.com**|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/BTC.png>|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/BCH.jpg>|
+|<img src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/wc.png>|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/zfb.png>|[paypal](https://www.paypal.me/pwned2019) **miracletalent@gmail.com**|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/BTC.png>|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/BCH.jpg>|
 
 
 <!--

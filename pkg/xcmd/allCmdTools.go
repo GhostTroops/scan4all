@@ -1,19 +1,23 @@
 package xcmd
 
 import (
-	"github.com/hktalent/51pwnPlatform/pkg/models"
+	"bufio"
+	"fmt"
 	"github.com/hktalent/ProScan4all/lib/util"
 	Const "github.com/hktalent/go-utils"
+	"log"
 	"os"
 	"strings"
 )
+
+type CmdCbk func(string) string
 
 /*
 go install github.com/OJ/gobuster/v3@latest
 */
 func init() {
 	util.RegInitFunc(func() {
-		for k, v := range map[uint64]func(string) string{
+		for k, v := range map[uint64]CmdCbk{
 			Const.ScanType_Naabu:      DoNaabu,
 			Const.ScanType_Httpx:      DoHttpx,
 			Const.ScanType_Nuclei:     DoNuclei,
@@ -27,14 +31,123 @@ func init() {
 			Const.ScanType_Uncover:    DoUncover,
 			Const.ScanType_Gobuster:   DoGobuster,
 		} {
-			func(cbk func(string) string) {
-				util.EngineFuncFactory(int64(k), func(evt *models.EventData, args ...interface{}) {
+			//v = ParseOut(k, v)
+			func(nT uint64, cbk CmdCbk) {
+				util.EngineFuncFactory(k, func(evt *Const.EventData, args ...interface{}) {
 					s := strings.Join(util.CvtData(evt.EventData), "\n")
-					cbk(s)
+					ParseOut(nT, evt.EventType, cbk)(s)
 				})
-			}(v)
+			}(k, v)
 		}
 	})
+}
+
+// 逐行扫描结果，并返回 chan
+func ParseOutJson4Line(s string) <-chan *map[string]interface{} {
+	buf := bufio.NewScanner(strings.NewReader(s))
+	var out = make(chan *map[string]interface{})
+	util.DoSyncFunc(func() {
+		defer close(out)
+		for buf.Scan() {
+			var m = map[string]interface{}{}
+			s1 := strings.TrimSpace(buf.Text())
+			if 6 >= len(s1) { // {"1":1}
+				continue
+			}
+			if err := util.Json.Unmarshal([]byte(s1), &m); nil == err {
+				out <- &m
+			} else {
+				log.Println("ParseOutJson4Line -> json.Unmarshal", err, s1)
+			}
+		}
+	})
+	return out
+}
+
+// 基于回调函数，处理行
+func DoOutJson4Lines(s string, cbk func(*map[string]interface{})) {
+	out := ParseOutJson4Line(s)
+	for x := range out {
+		cbk(x)
+	}
+}
+
+func CvtItfc(m *map[string]interface{}, a ...string) []interface{} {
+	var aR []interface{}
+	m1 := *m
+	for _, x := range a {
+		if o, ok := m1[x]; ok {
+			switch o.(type) {
+			case string:
+				aR = append(aR, o)
+			case interface{}:
+				if oA, ok := o.([]interface{}); ok {
+					aR = append(aR, oA...)
+				} else {
+					aR = append(aR, o)
+				}
+			}
+		}
+	}
+	return aR
+}
+
+// 解析结果的包装，便于将结果传递到下一层流程
+func ParseOut(nType, rawType uint64, fnCbk CmdCbk) CmdCbk {
+	return func(s string) string {
+		s1 := fnCbk(s)
+		xEt := ^nType & rawType
+		switch nType {
+		// {"host":"www.baidu.com","ip":"104.193.88.123","port":443,"timestamp":"2023-01-08T14:58:44.115411Z"}
+		case Const.ScanType_Naabu:
+			DoOutJson4Lines(s1, func(m *map[string]interface{}) {
+				m1 := *m
+				util.SendEvent(&Const.EventData{
+					EventType: xEt,
+					EventData: []interface{}{fmt.Sprintf("%v:%d", m1["host"], m1["port"]), fmt.Sprintf("%v:%d", m1["ip"], m1["port"])},
+				})
+			})
+		// {"timestamp":"2023-01-08T23:18:44.757246+08:00","hash":{"body_md5":"5cf3b0c5e0285fbad7e312e5ed95fd4b","body_mmh3":"-983595835","body_sha256":"7f335bced6015416c675987323e16468a95d259bf0fc9f8af316d10cb56c1d4d","body_simhash":"9827907017474422702","header_md5":"2300e055a48aec993e56a9b1e335a927","header_mmh3":"-972303241","header_sha256":"0b2cf3d67a00796be4c20cdd97eb20d62496bfb1bef6c7fc247df7af69b0b556","header_simhash":"11021017588798556011"},"port":"443","url":"https://www.baidu.com:443","input":"www.baidu.com","title":"百度一下","scheme":"https","webserver":"apache","content_type":"text/html","method":"GET","host":"39.156.66.18","path":"/","time":"2.320031121s","a":["39.156.66.18","39.156.66.14"],"cname":["www.a.shifen.com"],"tech":["Apache","HSTS"],"words":3937,"lines":3,"status_code":200,"content_length":205250,"failed":false}
+		case Const.ScanType_Httpx:
+			DoOutJson4Lines(s1, func(m *map[string]interface{}) {
+				eD1 := CvtItfc(m, "url", "a", "cname")
+				util.SendEvent(&Const.EventData{
+					EventType: xEt,
+					EventData: eD1,
+				})
+				// 假定，所有命令结果都保存到库，其他命令从库中获取附加参数，例如 tech，所以，这里不再单独派发辅助参数
+			})
+		case Const.ScanType_Nuclei:
+			DoOutJson4Lines(s1, func(m *map[string]interface{}) {
+
+			})
+		case Const.ScanType_DNSx:
+			DoOutJson4Lines(s1, func(m *map[string]interface{}) {
+
+			})
+		case Const.ScanType_Tlsx:
+			DoOutJson4Lines(s1, func(m *map[string]interface{}) {
+
+			})
+		case Const.ScanType_Katana:
+		case Const.ScanType_Shuffledns:
+		case Const.ScanType_Subfinder:
+			DoOutJson4Lines(s1, func(m *map[string]interface{}) {
+
+			})
+		case Const.ScanType_Amass:
+		case Const.ScanType_Ffuf:
+		case Const.ScanType_Uncover:
+			DoOutJson4Lines(s1, func(m *map[string]interface{}) {
+
+			})
+		case Const.ScanType_Gobuster:
+		}
+		// 解析结果
+		log.Println(s1)
+
+		return s1
+	}
 }
 
 /*
@@ -52,6 +165,8 @@ func DoGobuster(s string) string {
 //
 //	最后一次参数为输出文件名
 //	内、外网都做
+//
+// full,100,1000,
 func DoNaabu(s string) string {
 	return DoTargetHost(s, "naabu")
 }

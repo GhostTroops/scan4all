@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
-	"github.com/hktalent/51pwnPlatform/pkg/models"
+	Const "github.com/hktalent/go-utils"
 	"log"
 	"os"
 	"runtime"
@@ -23,7 +23,7 @@ func Logs(a ...any) {
 	}
 }
 
-//// 调用方法名作为插件名
+// // 调用方法名作为插件名
 func GetPluginName(defaultVal string) string {
 	pc, _, _, ok := runtime.Caller(1)
 	details := runtime.FuncForPC(pc)
@@ -33,11 +33,13 @@ func GetPluginName(defaultVal string) string {
 	return defaultVal
 }
 
+var Scan4all = Const.GetTypeName(Const.ScanType_Scan4all)
+
 // 1、优化代码，统一结果输出，便于维护
 func SendLog(szUrl, szVulType, Msg, Payload string) {
 	v := &SimpleVulResult{
 		Url:     szUrl,
-		VulKind: string(Scan4all),
+		VulKind: Scan4all,
 		VulType: szVulType,
 		Payload: Payload,
 		Msg:     strings.TrimSpace(Msg) + " " + szVulType,
@@ -47,34 +49,35 @@ func SendLog(szUrl, szVulType, Msg, Payload string) {
 }
 
 // 专门发送改造后的引擎函数执行结果
-func SendEngineLog(evt *models.EventData, nCurType int64, data ...interface{}) {
+func SendEngineLog(evt *Const.EventData, nCurType uint64, data ...interface{}) {
 	if nil != data && 0 < len(data) {
+		szT := Scan4all
 		v := &SimpleVulResult{
 			Url:      evt.Task.ScanWeb,
-			VulKind:  string(Scan4all),
+			VulKind:  szT,
 			ScanType: nCurType,
 			ScanData: data,
 		}
-		s := GetEsType(nCurType)
-		if "" != s {
-			SendAnyData(v, s)
-			writeoutput(v)
-		} else {
-			log.Printf("SendEngineLog can not find type %d\n", nCurType)
+		if s, ok := Const.ScanType2Str[nCurType]; ok {
+			szT = s
 		}
+		SendAnyData(v, szT)
+		writeoutput(v)
+
 	}
 }
 
 // 专门发送改造后的引擎函数执行结果
-func SendEngineLog4Url(Url string, nCurType int64, data ...interface{}) {
+func SendEngineLog4Url(Url string, nCurType uint64, data ...interface{}) {
 	if nil != data && 0 < len(data) {
+		szT := Scan4all
 		v := &SimpleVulResult{
 			Url:      Url,
-			VulKind:  string(Scan4all),
+			VulKind:  string(szT),
 			ScanType: nCurType,
 			ScanData: data,
 		}
-		SendAnyData(v, Scan4all)
+		SendAnyData(v, szT)
 		writeoutput(v)
 	}
 }

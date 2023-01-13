@@ -2,3 +2,4 @@ anonymous
 ftp
 test
 web
+minioadmin

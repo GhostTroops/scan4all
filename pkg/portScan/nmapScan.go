@@ -3,9 +3,8 @@ package portScan
 import (
 	"context"
 	"github.com/Ullaakut/nmap"
-	"github.com/hktalent/51pwnPlatform/lib/scan/Const"
-	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/ProScan4all/lib/util"
+	Const "github.com/hktalent/go-utils"
 	"io"
 	"log"
 	"time"
@@ -15,7 +14,7 @@ func init() {
 	util.RegInitFunc(func() {
 		// 基于工厂方法构建，这里需要考虑策略，是出一条结果反馈一次，还是所有结果处理后统一反馈
 		// 当前：所有结果统一、一次反馈
-		util.EngineFuncFactory(Const.ScanType_Nmap, func(evt *models.EventData, args ...interface{}) {
+		util.EngineFuncFactory(Const.ScanType_Nmap, func(evt *Const.EventData, args ...interface{}) {
 			var Targets []string = args[0].([]string)
 			var Ports []string = args[1].([]string)
 			x1 := &Scanner{Targets: Targets, Ports: Ports}
@@ -56,14 +55,14 @@ type Scanner struct {
 //
 // Targets can be:
 //
-//    - a subnet (e.g.: 172.16.100.0/24)
-//    - an IP (e.g.: 172.16.100.10)
-//    - a hostname (e.g.: localhost)
-//    - a range of IPs (e.g.: 172.16.100.10-20)
+//   - a subnet (e.g.: 172.16.100.0/24)
+//   - an IP (e.g.: 172.16.100.10)
+//   - a hostname (e.g.: localhost)
+//   - a range of IPs (e.g.: 172.16.100.10-20)
 //
 // Ports can be:
 //
-//    - one or multiple Ports and port ranges separated by commas (e.g.: 554,8554-8560,18554-28554)
+//   - one or multiple Ports and port ranges separated by commas (e.g.: 554,8554-8560,18554-28554)
 func (s *Scanner) Scan(fnCbk func(*Stream)) ([]*Stream, error) {
 	log.Println("Scanning the network")
 	ctx, cancel := context.WithTimeout(context.Background(), 1800*time.Minute)

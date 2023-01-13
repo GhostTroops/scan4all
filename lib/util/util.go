@@ -16,8 +16,8 @@ import (
 	"github.com/codegangsta/inject"
 	"github.com/corpix/uarand"
 	"github.com/hbakhtiyor/strsim"
-	"github.com/hktalent/51pwnPlatform/pkg/models"
 	"github.com/hktalent/PipelineHttp"
+	Const "github.com/hktalent/go-utils"
 	"github.com/karlseguin/ccache"
 	"io"
 	"io/ioutil"
@@ -458,16 +458,16 @@ func DeepCopy(src, dist interface{}) (err error) {
 	return gob.NewDecoder(&buf).Decode(dist)
 }
 
-type EngineFuncType func(evt *models.EventData, args ...interface{})
+type EngineFuncType func(evt *Const.EventData, args ...interface{})
 
 // 工厂方法
 //
 //	便于同一、规范引擎调用的方法、参数约束
-var EngineFuncFactory func(nT int64, fnCbk EngineFuncType)
+var EngineFuncFactory func(nT uint64, fnCbk EngineFuncType)
 
 // 全局引擎
 var G_Engine interface{}
-var SendEvent func(evt *models.EventData, argsTypes ...int64)
+var SendEvent func(evt *Const.EventData, argsTypes ...uint64)
 
 // 反射调用
 func Invoke(iFunc interface{}, args ...interface{}) {
@@ -493,6 +493,16 @@ func DoGet(szUrl string, hd map[string]string) (resp *http.Response, err error) 
 		}, false)
 	}
 	return resp, err
+}
+
+// 检查 aT中是否包含 cT
+func CheckEventType(aT uint64, cT ...uint64) bool {
+	for _, x := range cT {
+		if aT&x == x {
+			return true
+		}
+	}
+	return false
 }
 
 // 检查目标漏洞

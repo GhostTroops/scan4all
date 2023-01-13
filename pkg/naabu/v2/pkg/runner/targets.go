@@ -9,7 +9,7 @@ import (
 	"github.com/hktalent/ProScan4all/pkg"
 	"github.com/hktalent/ProScan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/hktalent/ProScan4all/pkg/naabu/v2/pkg/scan"
-	"github.com/hktalent/ProScan4all/projectdiscovery/dnsxx"
+	Const "github.com/hktalent/go-utils"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/iputil"
 	"github.com/remeh/sizedwaitgroup"
@@ -292,7 +292,10 @@ func Add2Naabubuffer_1(target string) {
 	util.PutAny[string](k1, target)
 	// 缓存一下域名和ip的关系
 	if oU, err := url.Parse(target); nil == err && oU.Hostname() != "" {
-		dnsxx.DoGetDnsInfos(oU.Hostname())
+		util.SendEvent(&Const.EventData{
+			EventType: Const.ScanType_DNSx,
+			EventData: []interface{}{oU.Hostname()},
+		}, Const.ScanType_DNSx)
 	}
 	Naabubuffer.Write([]byte(target))
 }

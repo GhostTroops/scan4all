@@ -1,6 +1,7 @@
 000000
 
 000000a
+minioadmin
 abcabc
 qwerty123
 100200
