@@ -59,6 +59,7 @@
       "-pc","{PWD}/config/uncover/provider-config.yaml",
       "-config","{PWD}/config/uncover/config.yaml",
       "-f","ip,port,host",
+      "-l","900000",
       "-shodan",
       "-silent","-nc","-json","-o",""
     ],

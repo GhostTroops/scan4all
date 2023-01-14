@@ -211,7 +211,7 @@ more see: <a href=https://github.com/hktalent/ProScan4all/discussions>discussion
 - 2022-06-07 增加http url列表精准扫描参数，根据环境变量UrlPrecise=true开启
 
 # Communication group (WeChat, QQ，Tg)
-| Wechat                                                                            | Or                                                                                | QQchat                                                                       | Or | Tg |
+|Wechat|Or|QQchat|Or|Tg|
 |---|---|---|--- |--- |
 | <img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/wcq.JPG> || <img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/qqc.jpg> || <img width=166 src=https://github.com/hktalent/sall/blob/main/static/tg.jpg> |
 

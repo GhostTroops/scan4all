@@ -7,3 +7,6 @@
 [submodule "config/fuzzing-templates"]
 	path = config/fuzzing-templates
 	url = https://github.com/projectdiscovery/fuzzing-templates.git
+[submodule "tools/ProxyShell"]
+	path = tools/ProxyShell
+	url = https://github.com/ktecv2000/ProxyShell.git

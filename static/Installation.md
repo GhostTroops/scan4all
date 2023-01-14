@@ -13,6 +13,7 @@ go build
 
 ```sh
 # ubuntu、linux
+$ sudo apt-get install wireless-tools net-tools libpcap-dev bluetooth
 apt update
 apt install -yy libpcap0.8-dev
 sudo apt install -y libpcap-dev
@@ -26,7 +27,6 @@ yum install -yy glibc-devel.x86_64
 yum install -yy libpcap
 # mac os
 brew install libpcap
-
 ```
 
 2.前往
