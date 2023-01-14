@@ -303,7 +303,11 @@ func DoRaw4FuzzCmd(s, t string) string {
 }
 
 /*
+ssl:".edu" country:"US"
+
 	./uncover -q 'ssl:"paypal.com"'  -e shodan -pc ../../config/uncover/provider-config.yaml  -config ../../config/uncover/config.yaml -f ip,port,host -json -o paypal1.json
+
+./uncover -q 'ssl:".gov" country:"US"' -l 500000  -e shodan -pc ../../config/uncover/provider-config.yaml  -config ../../config/uncover/config.yaml -f ip,port,host -json -o edu.json
 
 'ssl:"China Lodging Group"'
 'ssl:"huazhu"'

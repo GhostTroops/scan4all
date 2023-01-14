@@ -43,8 +43,8 @@ jobs:
           fetch-depth: 0
       - name: Checkout submodules
         run: git submodule update --init --recursive
-      - name: Install cross-compiler for linux/arm64
-        run: sudo apt-get -y install gcc-aarch64-linux-gnu
+#      - name: Install cross-compiler for linux/arm64
+#        run: sudo apt-get -y install gcc-aarch64-linux-gnu
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
@@ -52,10 +52,11 @@ jobs:
       - name: Install Dependences
         run: |
           sudo apt-get update
-          sudo apt-get -y install gcc-mingw-w64-x86-64
-          sudo apt-get -y install gcc-arm-linux-gnueabihf libc6-dev-armhf-cross
-          sudo apt-get -y install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
-          sudo apt install -yy libpcap-dev upx gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+#          sudo apt-get -y install gcc-mingw-w64-x86-64
+#          sudo apt-get -y install gcc-arm-linux-gnueabihf libc6-dev-armhf-cross
+#          sudo apt-get -y install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+          sudo apt install -yy libpcap-dev
+#          sudo apt install upx gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
           chmod +x .github/workflows/upx.sh
 #          git submodule update --init --recursive --remote
       - name: Run GoReleaser

@@ -122,6 +122,7 @@
 /components/com_users/views/login/tmpl/index.html
 /components/com_users/views/login/view.html.php
 /confluence/login.vm
+/old/wp-admin/setup-config.php
 /console/login/LoginForm.jsp
 /doc/page/login.asp
 /downloader/template/login.phtml
