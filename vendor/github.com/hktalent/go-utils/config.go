@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
+var Json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 字符串包含关系，且大小写不敏感
 func StrContains(s1, s2 string) bool {
