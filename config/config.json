@@ -140,6 +140,7 @@
     ],
     "nuclei": [
       "-l", "",
+      "-scan-all-ips",
       "-t","{PWD}/config/nuclei-templates,{PWD}/config/51pwn",
       "-no-strict-syntax",
       "-severity","critical,high,medium",
