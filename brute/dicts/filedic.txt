@@ -102,6 +102,7 @@
 /apps/frontend/modules/main/templates/loginSuccess.php
 /apps/frontend/modules/main/validate/login.yml
 /auth/login
+/classicapi/doc/
 /auth/login/github
 /auth/login/google
 /auth/login/sentry/
