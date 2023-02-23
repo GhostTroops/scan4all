@@ -152,7 +152,7 @@ func ParseOut(nType, rawType uint64, fnCbk CmdCbk) CmdCbk {
 
 /*
 gobuster dns -d qq.com -c -w config/database/subdomain.txt
-gobuster dir -u https://127.0.0.1:8081/ -H 'Cookie: JSESSIONID=353170776e;rememberMe=123' --no-status -k --random-agent -w $HOME/MyWork/scan4all/brute/dicts/filedic.txt -o xxx.txt
+gobuster dir -t 64 -u https://127.0.0.1:8081/ -H 'Cookie: JSESSIONID=353170776e;rememberMe=123' --no-status -k --random-agent -w $HOME/MyWork/scan4all/brute/dicts/filedic.txt -o xxx.txt
 */
 func DoGobuster(s string) string {
 	szName, _ := GetTempFile() // 输出的文件名

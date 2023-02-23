@@ -152,7 +152,7 @@ func Update[T any](mod *T, query string, args ...interface{}) int64 {
 	if 0 >= rst.RowsAffected {
 		log.Println(rst.Error)
 	}
-	return rst.RowsAffected
+	return xxxD.RowsAffected
 }
 
 //func Update[T any](mod T, id interface{}) int64 {

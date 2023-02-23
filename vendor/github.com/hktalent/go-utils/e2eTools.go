@@ -51,7 +51,13 @@ func GetPeerConnection(key string, certificates *[]webrtc.Certificate) *webrtc.P
 	config := webrtc.Configuration{
 		ICEServers: []webrtc.ICEServer{
 			{
-				URLs: []string{"stun:stun.l.google.com:19302"},
+				URLs: []string{
+					"stun:stun.l.google.com:19302",  // 108.177.125.127
+					"stun:stun1.l.google.com:19302", // 142.250.21.127
+					"stun:stun2.l.google.com:19302", // 172.253.56.127
+					"stun:stun3.l.google.com:19302", // 74.125.197.127
+					"stun:stun4.l.google.com:19302", // 142.251.2.127
+				},
 			},
 		},
 	}
@@ -74,7 +80,7 @@ func GetPeerConnection(key string, certificates *[]webrtc.Certificate) *webrtc.P
 // Encode encodes the input in base64
 // It can optionally zip the input before encoding
 func Encode(obj interface{}) string {
-	b, err := json.Marshal(obj)
+	b, err := Json.Marshal(obj)
 	if err != nil {
 		panic(err)
 	}
@@ -98,7 +104,7 @@ func Decode(in string, obj interface{}) {
 		b = unzip(b)
 	}
 
-	err = json.Unmarshal(b, obj)
+	err = Json.Unmarshal(b, obj)
 	if err != nil {
 		panic(err)
 	}

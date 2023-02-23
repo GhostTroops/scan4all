@@ -19,6 +19,7 @@ var (
 	errPayloadDiffers                = errors.New("payload differs")
 	errStartedChannelUsedIncorrectly = errors.New("started channel used incorrectly, should only be closed")
 	errBadIVLength                   = errors.New("bad iv length in xorBytesCTR")
+	errExceededMaxPackets            = errors.New("exceeded the maximum number of packets")
 
 	errStreamNotInited     = errors.New("stream has not been inited, unable to close")
 	errStreamAlreadyClosed = errors.New("stream is already closed")

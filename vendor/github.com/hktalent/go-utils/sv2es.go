@@ -57,7 +57,7 @@ type SimpleVulResult struct {
 // 一定得有全局得线程等待
 func SendAnyData(data interface{}, szType ESaveType) {
 	DoSyncFunc(func() {
-		data1, _ := json.Marshal(data)
+		data1, _ := Json.Marshal(data)
 		if 0 < len(data1) && enableEsSv {
 			hasher := sha1.New()
 			hasher.Write(data1)
@@ -84,7 +84,7 @@ func SendReq(data1 interface{}, id string, szType ESaveType) {
 			return
 		}
 		//log.Println("enableEsSv = ", enableEsSv, " id= ", id, " type = ", szType)
-		data, _ := json.Marshal(data1)
+		data, _ := Json.Marshal(data1)
 		nThreads <- struct{}{}
 		defer func() {
 			<-nThreads

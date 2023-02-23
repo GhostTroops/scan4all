@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hktalent/ProScan4all/lib/util"
+	"log"
 	"net"
 	"net/url"
 	"strconv"
@@ -123,7 +124,7 @@ func (r *CheckTarget) WriteWithFlush(s string) (nn int, err error) {
 	if nil == bw {
 		return -1, errors.New("WriteWithFlush can not get GetBufWriter")
 	}
-	//log.Printf("Payload: %s\n%s", r.UrlRaw, s)
+	log.Printf("Payload: %s\n%s", r.UrlRaw, s)
 	nn, err = bw.Write([]byte(s))
 	bw.Flush()
 	return

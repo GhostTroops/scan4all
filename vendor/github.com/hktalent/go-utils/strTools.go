@@ -9,6 +9,14 @@ import (
 
 var Tplat = "ab9cdef8ghijk0lmnopqr1stuvw2xyzAB3CDEFGHI4JKLMN5OPQRS6TUVW7XYZ"
 
+func Convert2Arr(a []interface{}) []string {
+	var a1 []string
+	for _, x := range a {
+		a1 = append(a1, fmt.Sprintf("%v", x))
+	}
+	return a1
+}
+
 /*
 数字转换为 "Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB"
 */
@@ -34,7 +42,8 @@ func GetRadomTemplate() string {
 }
 
 // 生成count个[start,end)结束的不重复的随机数
-//  可以在一次会话中随机生成62个数字，构建 62 进制字符串模版
+//
+//	可以在一次会话中随机生成62个数字，构建 62 进制字符串模版
 func GenerateRandomNumber(start int, end int, count int) []int {
 	// 范围检查
 	if end < start || (end-start) < count {
@@ -67,9 +76,10 @@ func GenerateRandomNumber(start int, end int, count int) []int {
 // 1 -- > 1
 // 10-- > a
 // 61-- > Z
-//  id 需要转换的数字
-//  szTemplate 模版
-//  szTemplate 的长度决定进制 数据, 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 表示 62 进制度
+//
+//	id 需要转换的数字
+//	szTemplate 模版
+//	szTemplate 的长度决定进制 数据, 0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ 表示 62 进制度
 func TransInt64ToN(id int64, szTemplate string) string {
 	n := int64(len(szTemplate))
 	var shortUrl []byte

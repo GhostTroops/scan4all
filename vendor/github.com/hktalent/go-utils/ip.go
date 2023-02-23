@@ -173,7 +173,7 @@ func BigInt2Hex(v *big.Int, base int) string {
 
 // int to hex string
 func Any2Hex(v interface{}) string {
-	data, err := json.Marshal(v)
+	data, err := Json.Marshal(v)
 	if nil != err {
 		log.Println("Any2Hex is error: ", err)
 		return ""

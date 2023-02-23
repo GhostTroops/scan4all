@@ -82,6 +82,8 @@ requests:
       - type: regex
         regex:
           - '(uid=[^\n\\]+)'
+          - '(gid=[^\n\\]+)'
+        condition: and
     extractors:
       - type: regex
         part: body

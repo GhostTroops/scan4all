@@ -43,12 +43,14 @@ type PipelineHttp struct {
 	UseHttp2              bool                     `json:"use_http_2"`
 	TestHttp              bool                     `json:"test_http"`
 	ReTry                 int                      `json:"re_try"` // 连接超时重试
+	ver                   int
 }
 
 func NewPipelineHttp(args ...map[string]interface{}) *PipelineHttp {
 	nTimeout := 60
 	nIdle := 500
 	x1 := &PipelineHttp{
+		ver:                   1,
 		UseHttp2:              false,
 		TestHttp:              false,
 		Buf:                   &bytes.Buffer{},
@@ -154,7 +156,6 @@ func (r *PipelineHttp) GetClient(tr http.RoundTripper) *http.Client {
 	//	}).Dial,
 	//}
 	c := &http.Client{
-
 		Transport: tr,
 		//Timeout:   r.Timeout, // 超时为零表示没有超时,  context canceled (Client.Timeout exceeded while awaiting headers)
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -197,7 +198,7 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 	}
 	req, err := http.NewRequest(method, szUrl, postBody)
 	if nil == err {
-		if !r.UseHttp2 && !r.TestHttp && strings.HasPrefix(szUrl, "https://") {
+		if 1 == r.ver && !r.UseHttp2 && !r.TestHttp && strings.HasPrefix(szUrl, "https://") {
 			req.Header.Set("Connection", "Upgrade, HTTP2-Settings")
 			req.Header.Set("Upgrade", "h2c")
 			req.Header.Set("HTTP2-Settings", "AAMAAABkAARAAAAAAAIAAAAA")

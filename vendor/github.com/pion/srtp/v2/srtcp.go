@@ -63,11 +63,16 @@ func (c *Context) encryptRTCP(dst, decrypted []byte) ([]byte, error) {
 	ssrc := binary.BigEndian.Uint32(decrypted[4:])
 	s := c.getSRTCPSSRCState(ssrc)
 
+	if s.srtcpIndex >= maxSRTCPIndex {
+		// ... when 2^48 SRTP packets or 2^31 SRTCP packets have been secured with the same key
+		// (whichever occurs before), the key management MUST be called to provide new master key(s)
+		// (previously stored and used keys MUST NOT be used again), or the session MUST be terminated.
+		// https://www.rfc-editor.org/rfc/rfc3711#section-9.2
+		return nil, errExceededMaxPackets
+	}
+
 	// We roll over early because MSB is used for marking as encrypted
 	s.srtcpIndex++
-	if s.srtcpIndex > maxSRTCPIndex {
-		s.srtcpIndex = 0
-	}
 
 	return c.cipher.encryptRTCP(dst, decrypted, s.srtcpIndex, ssrc)
 }

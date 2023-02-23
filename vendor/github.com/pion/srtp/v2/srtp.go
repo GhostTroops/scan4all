@@ -8,7 +8,10 @@ import (
 func (c *Context) decryptRTP(dst, ciphertext []byte, header *rtp.Header, headerLen int) ([]byte, error) {
 	s := c.getSRTPSSRCState(header.SSRC)
 
-	markAsValid, ok := s.replayDetector.Check(uint64(header.SequenceNumber))
+	roc, diff, _ := s.nextRolloverCount(header.SequenceNumber)
+	markAsValid, ok := s.replayDetector.Check(
+		(uint64(roc) << 16) | uint64(header.SequenceNumber),
+	)
 	if !ok {
 		return nil, &duplicatedError{
 			Proto: "srtp", SSRC: header.SSRC, Index: uint32(header.SequenceNumber),
@@ -20,7 +23,6 @@ func (c *Context) decryptRTP(dst, ciphertext []byte, header *rtp.Header, headerL
 		return nil, err
 	}
 	dst = growBufferSize(dst, len(ciphertext)-authTagLen)
-	roc, diff := s.nextRolloverCount(header.SequenceNumber)
 
 	dst, err = c.cipher.decryptRTP(dst, ciphertext, header, headerLen, roc)
 	if err != nil {
@@ -67,7 +69,14 @@ func (c *Context) EncryptRTP(dst []byte, plaintext []byte, header *rtp.Header) (
 // Similar to above but faster because it can avoid unmarshaling the header and marshaling the payload.
 func (c *Context) encryptRTP(dst []byte, header *rtp.Header, payload []byte) (ciphertext []byte, err error) {
 	s := c.getSRTPSSRCState(header.SSRC)
-	roc, diff := s.nextRolloverCount(header.SequenceNumber)
+	roc, diff, ovf := s.nextRolloverCount(header.SequenceNumber)
+	if ovf {
+		// ... when 2^48 SRTP packets or 2^31 SRTCP packets have been secured with the same key
+		// (whichever occurs before), the key management MUST be called to provide new master key(s)
+		// (previously stored and used keys MUST NOT be used again), or the session MUST be terminated.
+		// https://www.rfc-editor.org/rfc/rfc3711#section-9.2
+		return nil, errExceededMaxPackets
+	}
 	s.updateRolloverCount(header.SequenceNumber, diff)
 
 	return c.cipher.encryptRTP(dst, header, payload, roc)

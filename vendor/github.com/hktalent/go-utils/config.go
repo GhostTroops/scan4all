@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-var Json = jsoniter.ConfigCompatibleWithStandardLibrary
+var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // 字符串包含关系，且大小写不敏感
 func StrContains(s1, s2 string) bool {
@@ -168,9 +168,9 @@ func GetTempFile(t string) *os.File {
 // 从配置json中读取naabu、httpx、nuclei等的细化配置
 func ParseOption[T any](key string, opt *T) *T {
 	m1 := GetVal4Any[map[string]interface{}](key)
-	bA, err := json.Marshal(m1)
+	bA, err := Json.Marshal(m1)
 	if nil == err && 0 < len(bA) {
-		json.Unmarshal(bA, opt)
+		Json.Unmarshal(bA, opt)
 	}
 	return opt
 }
@@ -431,7 +431,7 @@ func Mkdirs(s string) {
 // 获取 Sha1
 func GetSha1(a ...interface{}) string {
 	h := sha1.New()
-	if data, err := json.Marshal(a); nil == err {
+	if data, err := Json.Marshal(a); nil == err {
 		h.Write(data)
 	} else {
 		for _, x := range a {
@@ -542,28 +542,36 @@ func TestIs404Page(szUrl string) (page *Page, r01 *Response, err error, ok bool)
 }
 
 var fnInit []func()
+var fnInitHd []func()
+
+func RegInitFunc4Hd(cbk func()) {
+	fnInitHd = append(fnInitHd, cbk)
+}
 
 func RegInitFunc(cbk func()) {
 	fnInit = append(fnInit, cbk)
 }
 
 // 初始化
-//  1、读取配置文件
-//  2、驱动执行 其他初始化注册的func
+//
+//	1、读取配置文件
+//	2、驱动执行 其他初始化注册的func
 func DoInit(config *embed.FS) {
 	Init1(config)
 	rand.Seed(time.Now().UnixNano())
+	fnInit = append(fnInitHd, fnInit...)
 	for _, x := range fnInit {
 		x()
 	}
 	fnInit = nil
+	//PrintCaller()
 }
 
 // 拷贝配置信息到o中
 func CopyConfig(o interface{}) {
-	data, err := json.Marshal(mData)
+	data, err := Json.Marshal(mData)
 	if nil == err {
-		json.Unmarshal(data, o)
+		Json.Unmarshal(data, o)
 	}
 }
 

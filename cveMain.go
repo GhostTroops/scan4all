@@ -36,7 +36,7 @@ import (
 var Config embed.FS
 
 // 多个web cve 检测
-func main() {
+func main1() {
 	util.DoInit(&Config)
 	for _, cbk := range []func(string) bool{
 		ruby.DoCheck,

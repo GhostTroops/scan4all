@@ -1,3 +1,7 @@
 {
-  "UploadFileMaxSize": 1073741824
+  "UploadFileMaxSize": 1073741824,
+  "esUrl": "https://127.0.0.1:8081/%s_index/_doc/%s",
+  "enableEsSv": true,
+  "toolType": "ksubdomain",
+  "esthread": 64
 }

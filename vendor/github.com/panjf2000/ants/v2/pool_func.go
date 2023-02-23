@@ -61,42 +61,56 @@ type PoolWithFunc struct {
 	// waiting is the number of the goroutines already been blocked on pool.Invoke(), protected by pool.lock
 	waiting int32
 
-	heartbeatDone int32
-	stopHeartbeat context.CancelFunc
+	purgeDone int32
+	stopPurge context.CancelFunc
+
+	ticktockDone int32
+	stopTicktock context.CancelFunc
+
+	now atomic.Value
 
 	options *Options
 }
 
-// purgePeriodically clears expired workers periodically which runs in an individual goroutine, as a scavenger.
-func (p *PoolWithFunc) purgePeriodically(ctx context.Context) {
-	heartbeat := time.NewTicker(p.options.ExpiryDuration)
+// purgeStaleWorkers clears stale workers periodically, it runs in an individual goroutine, as a scavenger.
+func (p *PoolWithFunc) purgeStaleWorkers(ctx context.Context) {
+	ticker := time.NewTicker(p.options.ExpiryDuration)
 	defer func() {
-		heartbeat.Stop()
-		atomic.StoreInt32(&p.heartbeatDone, 1)
+		ticker.Stop()
+		atomic.StoreInt32(&p.purgeDone, 1)
 	}()
 
 	var expiredWorkers []*goWorkerWithFunc
 	for {
 		select {
-		case <-heartbeat.C:
 		case <-ctx.Done():
 			return
+		case <-ticker.C:
 		}
 
 		if p.IsClosed() {
 			break
 		}
-		currentTime := time.Now()
+
+		criticalTime := time.Now().Add(-p.options.ExpiryDuration)
+
 		p.lock.Lock()
 		idleWorkers := p.workers
 		n := len(idleWorkers)
-		var i int
-		for i = 0; i < n && currentTime.Sub(idleWorkers[i].recycleTime) > p.options.ExpiryDuration; i++ {
+		l, r, mid := 0, n-1, 0
+		for l <= r {
+			mid = (l + r) / 2
+			if criticalTime.Before(idleWorkers[mid].recycleTime) {
+				r = mid - 1
+			} else {
+				l = mid + 1
+			}
 		}
+		i := r + 1
 		expiredWorkers = append(expiredWorkers[:0], idleWorkers[:i]...)
 		if i > 0 {
 			m := copy(idleWorkers, idleWorkers[i:])
-			for i = m; i < n; i++ {
+			for i := m; i < n; i++ {
 				idleWorkers[i] = nil
 			}
 			p.workers = idleWorkers[:m]
@@ -122,6 +136,51 @@ func (p *PoolWithFunc) purgePeriodically(ctx context.Context) {
 	}
 }
 
+// ticktock is a goroutine that updates the current time in the pool regularly.
+func (p *PoolWithFunc) ticktock(ctx context.Context) {
+	ticker := time.NewTicker(nowTimeUpdateInterval)
+	defer func() {
+		ticker.Stop()
+		atomic.StoreInt32(&p.ticktockDone, 1)
+	}()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+
+		if p.IsClosed() {
+			break
+		}
+
+		p.now.Store(time.Now())
+	}
+}
+
+func (p *PoolWithFunc) goPurge() {
+	if p.options.DisablePurge {
+		return
+	}
+
+	// Start a goroutine to clean up expired workers periodically.
+	var ctx context.Context
+	ctx, p.stopPurge = context.WithCancel(context.Background())
+	go p.purgeStaleWorkers(ctx)
+}
+
+func (p *PoolWithFunc) goTicktock() {
+	p.now.Store(time.Now())
+	var ctx context.Context
+	ctx, p.stopTicktock = context.WithCancel(context.Background())
+	go p.ticktock(ctx)
+}
+
+func (p *PoolWithFunc) nowTime() time.Time {
+	return p.now.Load().(time.Time)
+}
+
 // NewPoolWithFunc generates an instance of ants pool with a specific function.
 func NewPoolWithFunc(size int, pf func(interface{}), options ...Option) (*PoolWithFunc, error) {
 	if size <= 0 {
@@ -134,10 +193,12 @@ func NewPoolWithFunc(size int, pf func(interface{}), options ...Option) (*PoolWi
 
 	opts := loadOptions(options...)
 
-	if expiry := opts.ExpiryDuration; expiry < 0 {
-		return nil, ErrInvalidPoolExpiry
-	} else if expiry == 0 {
-		opts.ExpiryDuration = DefaultCleanIntervalTime
+	if !opts.DisablePurge {
+		if expiry := opts.ExpiryDuration; expiry < 0 {
+			return nil, ErrInvalidPoolExpiry
+		} else if expiry == 0 {
+			opts.ExpiryDuration = DefaultCleanIntervalTime
+		}
 	}
 
 	if opts.Logger == nil {
@@ -164,10 +225,8 @@ func NewPoolWithFunc(size int, pf func(interface{}), options ...Option) (*PoolWi
 	}
 	p.cond = sync.NewCond(p.lock)
 
-	// Start a goroutine to clean up expired workers periodically.
-	var ctx context.Context
-	ctx, p.stopHeartbeat = context.WithCancel(context.Background())
-	go p.purgePeriodically(ctx)
+	p.goPurge()
+	p.goTicktock()
 
 	return p, nil
 }
@@ -256,17 +315,23 @@ func (p *PoolWithFunc) Release() {
 
 // ReleaseTimeout is like Release but with a timeout, it waits all workers to exit before timing out.
 func (p *PoolWithFunc) ReleaseTimeout(timeout time.Duration) error {
-	if p.IsClosed() || p.stopHeartbeat == nil {
+	if p.IsClosed() || (!p.options.DisablePurge && p.stopPurge == nil) || p.stopTicktock == nil {
 		return ErrPoolClosed
 	}
 
-	p.stopHeartbeat()
-	p.stopHeartbeat = nil
+	if p.stopPurge != nil {
+		p.stopPurge()
+		p.stopPurge = nil
+	}
+	p.stopTicktock()
+	p.stopTicktock = nil
 	p.Release()
 
 	endTime := time.Now().Add(timeout)
 	for time.Now().Before(endTime) {
-		if p.Running() == 0 && atomic.LoadInt32(&p.heartbeatDone) == 1 {
+		if p.Running() == 0 &&
+			(p.options.DisablePurge || atomic.LoadInt32(&p.purgeDone) == 1) &&
+			atomic.LoadInt32(&p.ticktockDone) == 1 {
 			return nil
 		}
 		time.Sleep(10 * time.Millisecond)
@@ -277,10 +342,10 @@ func (p *PoolWithFunc) ReleaseTimeout(timeout time.Duration) error {
 // Reboot reboots a closed pool.
 func (p *PoolWithFunc) Reboot() {
 	if atomic.CompareAndSwapInt32(&p.state, CLOSED, OPENED) {
-		atomic.StoreInt32(&p.heartbeatDone, 0)
-		var ctx context.Context
-		ctx, p.stopHeartbeat = context.WithCancel(context.Background())
-		go p.purgePeriodically(ctx)
+		atomic.StoreInt32(&p.purgeDone, 0)
+		p.goPurge()
+		atomic.StoreInt32(&p.ticktockDone, 0)
+		p.goTicktock()
 	}
 }
 
@@ -362,7 +427,7 @@ func (p *PoolWithFunc) revertWorker(worker *goWorkerWithFunc) bool {
 		p.cond.Broadcast()
 		return false
 	}
-	worker.recycleTime = time.Now()
+	worker.recycleTime = p.nowTime()
 	p.lock.Lock()
 
 	// To avoid memory leaks, add a double check in the lock scope.
