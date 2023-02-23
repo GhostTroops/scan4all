@@ -45,11 +45,13 @@ type Client struct {
 	pollDuration     time.Duration
 	cooldownDuration time.Duration
 
-	hostname       string
+	dataMutex *sync.RWMutex
+
+	hostname string
+
 	firstTimeGroup sync.Once
 	generated      uint32 // decide to wait if we have a generated url
 	matched        bool
-	IsClosed bool
 }
 
 var (
@@ -59,7 +61,7 @@ var (
 
 const (
 	stopAtFirstMatchAttribute = "stop-at-first-match"
-	templateIdAttribute = "template-id"
+	templateIdAttribute       = "template-id"
 )
 
 // Options contains configuration options for interactsh nuclei integration.
@@ -116,7 +118,6 @@ func New(options *Options) (*Client, error) {
 	interactshURLCache := ccache.New(ccache.Configure().MaxSize(defaultMaxInteractionsCount))
 
 	interactClient := &Client{
-		IsClosed:false,
 		eviction:         options.Eviction,
 		interactions:     interactionsCache,
 		matchedTemplates: matchedTemplateCache,
@@ -125,6 +126,7 @@ func New(options *Options) (*Client, error) {
 		requests:         cache,
 		pollDuration:     options.PollDuration,
 		cooldownDuration: options.CooldownPeriod,
+		dataMutex:        &sync.RWMutex{},
 	}
 	return interactClient, nil
 }
@@ -146,7 +148,7 @@ func NewDefaultOptions(output output.Writer, reporting *reporting.Client, progre
 }
 
 func (c *Client) firstTimeInitializeClient() error {
-	if c.options.NoInteractsh ||nil == c.requests||nil == c.matchedTemplates||nil == c.interactions||c.IsClosed{
+	if c.options.NoInteractsh {
 		return nil // do not init if disabled
 	}
 	interactsh, err := client.New(&client.Options{
@@ -163,7 +165,10 @@ func (c *Client) firstTimeInitializeClient() error {
 	interactURL := interactsh.URL()
 	interactDomain := interactURL[strings.Index(interactURL, ".")+1:]
 	gologger.Info().Msgf("Using Interactsh Server: %s", interactDomain)
+
+	c.dataMutex.Lock()
 	c.hostname = interactDomain
+	c.dataMutex.Unlock()
 
 	interactsh.StartPolling(c.pollDuration, func(interaction *server.Interaction) {
 		item := c.requests.Get(interaction.UniqueID)
@@ -199,7 +204,6 @@ func (c *Client) firstTimeInitializeClient() error {
 
 // processInteractionForRequest processes an interaction for a request
 func (c *Client) processInteractionForRequest(interaction *server.Interaction, data *RequestData) bool {
-	if c.IsClosed{return false}
 	data.Event.InternalEvent["interactsh_protocol"] = interaction.Protocol
 	data.Event.InternalEvent["interactsh_request"] = interaction.RawRequest
 	data.Event.InternalEvent["interactsh_response"] = interaction.RawResponse
@@ -241,7 +245,7 @@ func (c *Client) URL() string {
 			gologger.Error().Msgf("Could not initialize interactsh client: %s", err)
 		}
 	})
-	if c.IsClosed|| c.interactsh == nil {
+	if c.interactsh == nil {
 		return ""
 	}
 	atomic.CompareAndSwapUint32(&c.generated, 0, 1)
@@ -250,29 +254,6 @@ func (c *Client) URL() string {
 
 // Close closes the interactsh clients after waiting for cooldown period.
 func (c *Client) Close() bool {
-	c.IsClosed = true
-	defer func() {
-		if nil != c.interactions {
-			c.interactions.Clear()
-			c.interactions.Stop()
-			c.interactions = nil
-		}
-		if nil != c.requests {
-			c.requests.Clear()
-			c.requests.Stop()
-			c.requests = nil
-		}
-		if nil != c.matchedTemplates {
-			c.matchedTemplates.Clear()
-			c.matchedTemplates.Stop()
-			c.matchedTemplates = nil
-		}
-		if nil != c.interactshURLs {
-			c.interactshURLs.Clear()
-			c.interactshURLs.Stop()
-			c.interactshURLs = nil
-		}
-	}()
 	if c.cooldownDuration > 0 && atomic.LoadUint32(&c.generated) == 1 {
 		time.Sleep(c.cooldownDuration)
 	}
@@ -289,7 +270,6 @@ func (c *Client) Close() bool {
 // It accepts data to replace as well as the URL to replace placeholders
 // with generated uniquely for each request.
 func (c *Client) ReplaceMarkers(data string, interactshURLs []string) (string, []string) {
-	if nil == c.interactshURLs||c.IsClosed{return data,interactshURLs}
 	for interactshURLMarkerRegex.Match([]byte(data)) {
 		url := c.URL()
 		interactshURLs = append(interactshURLs, url)
@@ -308,9 +288,7 @@ func (c *Client) ReplaceMarkers(data string, interactshURLs []string) (string, [
 
 // MakePlaceholders does placeholders for interact URLs and other data to a map
 func (c *Client) MakePlaceholders(urls []string, data map[string]interface{}) {
-	if c.IsClosed{return}
-	data["interactsh-server"] = c.hostname
-	if nil == c.interactshURLs{return }
+	data["interactsh-server"] = c.getInteractServerHostname()
 	for _, url := range urls {
 		if interactshURLMarker := c.interactshURLs.Get(url); interactshURLMarker != nil {
 			if interactshURLMarker, ok := interactshURLMarker.Value().(string); ok {
@@ -348,7 +326,6 @@ type RequestData struct {
 
 // RequestEvent is the event for a network request sent by nuclei.
 func (c *Client) RequestEvent(interactshURLs []string, data *RequestData) {
-	if nil==c.interactions||c.IsClosed{return}
 	for _, interactshURL := range interactshURLs {
 		id := strings.TrimRight(strings.TrimSuffix(interactshURL, c.hostname), ".")
 
@@ -460,4 +437,11 @@ func hash(templateID, host string) string {
 	h.Write([]byte(templateID))
 	h.Write([]byte(host))
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+func (c *Client) getInteractServerHostname() string {
+	c.dataMutex.RLock()
+	defer c.dataMutex.RUnlock()
+
+	return c.hostname
 }
