@@ -8,6 +8,7 @@ import (
 	"github.com/corpix/uarand"
 	"github.com/hbakhtiyor/strsim"
 	"github.com/hktalent/PipelineHttp"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/karlseguin/ccache"
 	"io"
 	"io/ioutil"
@@ -28,6 +29,7 @@ var (
 	CeyeApi     string // Ceye api
 	CeyeDomain  string // Ceye domain
 	Fuzzthreads = 32   // 2,4,8,16,32,采用2的N次方的数字
+	Json        = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 
 const (
@@ -45,7 +47,8 @@ func HttpRequsetBasic(username string, password string, urlstring string, method
 var clientHttpCc *ccache.Cache
 
 // 获取一个内存对象
-//  如果c不是nil，就不再创建新的
+//
+//	如果c不是nil，就不再创建新的
 func GetMemoryCache(nMaxSize int64, c *ccache.Cache) *ccache.Cache {
 	if nil == c {
 		configure := ccache.Configure()
@@ -135,8 +138,9 @@ func SliceRemoveDuplicates(slice []string) []string {
 }
 
 // 若干参数依赖注入到对象 obj中
-//  util.MergeParms2Obj(&ms, args...)
-//  使用 inject 注入 struct 需要注意的时，每个inject的类型不一样，如果一样的，必须使用类型别名，否则盲注会出问题
+//
+//	util.MergeParms2Obj(&ms, args...)
+//	使用 inject 注入 struct 需要注意的时，每个inject的类型不一样，如果一样的，必须使用类型别名，否则盲注会出问题
 func MergeParms2Obj(obj interface{}, args ...interface{}) interface{} {
 	if nil != args && 0 < len(args) {
 		in := inject.New()
@@ -190,9 +194,10 @@ func GetResponse(username string, password string, urlstring string, method stri
 }
 
 // 需要考虑缓存
-//  1、缓解网络不好的情况
-//  2、缓存有效期为当天
-//  3、缓存命中需和请求的数据完全匹配
+//
+//	1、缓解网络不好的情况
+//	2、缓存有效期为当天
+//	3、缓存命中需和请求的数据完全匹配
 func HttpRequset(urlstring string, method string, postdata string, isredirect bool, headers map[string]string) (*Response, error) {
 	rsps, _, _, err := GetResponse("", "", urlstring, method, postdata, isredirect, headers)
 	return rsps, err
@@ -335,6 +340,7 @@ func CloseAll() {
 	for _, ckb := range CloseCbk {
 		ckb()
 	}
+	ReleaseFunc.DoFunc()
 	// clear
 	// 程序都结束了，没有必要清理内存了
 	// fingerprint.ClearData()

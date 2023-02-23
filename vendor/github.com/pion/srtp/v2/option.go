@@ -11,7 +11,7 @@ type ContextOption func(*Context) error
 func SRTPReplayProtection(windowSize uint) ContextOption { // nolint:revive
 	return func(c *Context) error {
 		c.newSRTPReplayDetector = func() replaydetector.ReplayDetector {
-			return replaydetector.WithWrap(windowSize, maxSequenceNumber)
+			return replaydetector.New(windowSize, maxROC<<16|maxSequenceNumber)
 		}
 		return nil
 	}
@@ -21,7 +21,7 @@ func SRTPReplayProtection(windowSize uint) ContextOption { // nolint:revive
 func SRTCPReplayProtection(windowSize uint) ContextOption {
 	return func(c *Context) error {
 		c.newSRTCPReplayDetector = func() replaydetector.ReplayDetector {
-			return replaydetector.WithWrap(windowSize, maxSRTCPIndex)
+			return replaydetector.New(windowSize, maxSRTCPIndex)
 		}
 		return nil
 	}

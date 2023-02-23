@@ -29,7 +29,7 @@ func checkSmuggling4Poc(ClTePayload *[]string, nTimes int, r1 *Smuggling, r *soc
 	for _, x := range *ClTePayload {
 		s := r.SendOnePayload(x, r.UrlPath, r.HostName, nTimes)
 		if "" != s && (*r1).CheckResponse(s, x) {
-			log.Printf("found: %s\n%s\n", r.UrlRaw, s)
+			log.Printf("found: %s\n\nout:\n%s\n", r.UrlRaw, s)
 			// send result
 			util.SendAnyData(&util.SimpleVulResult{
 				Url:     r.UrlPath,

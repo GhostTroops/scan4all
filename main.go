@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
 	"runtime"
 	"runtime/debug"
 )
@@ -26,7 +25,7 @@ var Version string
 func main() {
 	//os.Args = []string{"", "-host", "http://127.0.0.1", "-v"}
 	//os.Args = []string{"", "-host", "http://127.0.0.1", "-v"}
-	os.Args = []string{"", "-host", "https://www.sina.com.cn/", "-v", "-o", "xxx.csv"}
+	//os.Args = []string{"", "-host", "https://www.sina.com.cn/", "-v", "-o", "xxx.csv"}
 	//os.Args = []string{"", "-list", "list.txt", "-v"}
 	//os.Args = []string{"", "-list", "./3ee8307c128be7296b2fa2ad5453341a3d37c2b6.xml", "-v"}
 

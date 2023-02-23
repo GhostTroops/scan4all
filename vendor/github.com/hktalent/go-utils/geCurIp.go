@@ -104,7 +104,7 @@ func GetIp() *map[string]interface{} {
 		defer r.Body.Close()
 		if data, err := ioutil.ReadAll(r.Body); nil == err {
 
-			if nil == json.Unmarshal(data, &m1) {
+			if nil == Json.Unmarshal(data, &m1) {
 				log.Printf("%+v", m1)
 			}
 		}

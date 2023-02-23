@@ -30,6 +30,7 @@ func (r *PipelineHttp) GetClient4Http2() *http.Client {
 	if nil == r.Client {
 		r.Client = r.GetRawClient4Http2()
 		r.UseHttp2 = r.Client != nil
+		r.ver = 2
 	}
 	return r.Client
 }

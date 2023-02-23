@@ -7,7 +7,6 @@ import (
 	"github.com/hktalent/ProScan4all/lib/util"
 	"net/url"
 	"strings"
-	"sync"
 )
 
 type CLTE struct {
@@ -75,7 +74,6 @@ func (r *CLTE) DoFirst(szPath, szLocalHost string) {
 
 func main() {
 	a := strings.Split(``, "\n")
-	util.Wg = &sync.WaitGroup{}
 	for _, x := range a {
 		Smuggling.DoCheckSmuggling(x, "")
 		//x1 := NewCLTE(x)

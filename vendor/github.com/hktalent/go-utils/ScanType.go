@@ -39,35 +39,35 @@ const (
 
 const (
 	ScanType_WebFinger = ScanType_WebFingerprints | ScanType_Wappalyzer
-	ScanType_Ips  = ScanType_SSLInfo | ScanType_Tlsx | ScanType_Masscan | ScanType_Nmap | ScanType_IpInfo | ScanType_Uncover | ScanType_GoPoc
-	ScanType_Webs = ScanType_SSLInfo | ScanType_Tlsx | ScanType_GoPoc | ScanType_WebFingerprints | ScanType_WebDetectWaf | ScanType_WebVulsScan | ScanType_Nuclei | ScanType_Gobuster | ScanType_Uncover | ScanType_Httpx | ScanType_WebDirScan
+	ScanType_Ips       = ScanType_SSLInfo | ScanType_Tlsx | ScanType_Masscan | ScanType_Nmap | ScanType_IpInfo | ScanType_Uncover | ScanType_GoPoc
+	ScanType_Webs      = ScanType_SSLInfo | ScanType_Tlsx | ScanType_GoPoc | ScanType_WebFingerprints | ScanType_WebDetectWaf | ScanType_WebVulsScan | ScanType_Nuclei | ScanType_Gobuster | ScanType_Uncover | ScanType_Httpx | ScanType_WebDirScan
 )
 
 const (
-	// 任务类型
-	TaskType_Subdomain   = uint64(1 << iota) // 任务类型：子域名
-	TaskType_PortScan                        // 任务类型：端口扫描
-	TaskType_UrlScan                         // 任务类型：url扫描
-	TaskType_Fingerprint                     // 任务类型：指纹识别
-	TaskType_VulsScan                        // 任务类型：漏洞扫描
-
-	// 任务状态
-	Task_Status_Pending     // 任务状态：待执行
-	Task_Status_InExecution // 任务状态：执行中
-	Task_Status_Completed   // 任务状态：已完成
-
-	// 子域名遍历
-	SubDomains_Sublist3r // 子域名：Sublist3r 7.1k
-
-	// 指纹
-	ScanType_Fingerprint_Wappalyzer // 指纹:wappalyzer 7.5k, https://github.com/wappalyzer/wappalyzer
-	ScanType_Fingerprint_WhatWeb    // 指纹: WhatWeb 3.8k,https://github.com/urbanadventurer/WhatWeb
-
-	// 服务、目录发现
-	ScanType_Discovery_Fscan // 服务、目录发现：fscan 3.6k,https://github.com/shadow1ng/fscan
-	//  Others
-	// https://github.com/NVIDIA/NeMo
-	// https://github.com/veo/vscan
+// 任务类型
+//TaskType_Subdomain   = uint64(1 << iota) // 任务类型：子域名
+//TaskType_PortScan                        // 任务类型：端口扫描
+//TaskType_UrlScan                         // 任务类型：url扫描
+//TaskType_Fingerprint                     // 任务类型：指纹识别
+//TaskType_VulsScan                        // 任务类型：漏洞扫描
+//
+//// 任务状态
+//Task_Status_Pending     // 任务状态：待执行
+//Task_Status_InExecution // 任务状态：执行中
+//Task_Status_Completed   // 任务状态：已完成
+//
+//// 子域名遍历
+//SubDomains_Sublist3r // 子域名：Sublist3r 7.1k
+//
+//// 指纹
+//ScanType_Fingerprint_Wappalyzer // 指纹:wappalyzer 7.5k, https://github.com/wappalyzer/wappalyzer
+//ScanType_Fingerprint_WhatWeb    // 指纹: WhatWeb 3.8k,https://github.com/urbanadventurer/WhatWeb
+//
+//// 服务、目录发现
+//ScanType_Discovery_Fscan // 服务、目录发现：fscan 3.6k,https://github.com/shadow1ng/fscan
+////  Others
+//// https://github.com/NVIDIA/NeMo
+//// https://github.com/veo/vscan
 
 )
 

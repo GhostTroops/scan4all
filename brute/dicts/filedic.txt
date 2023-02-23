@@ -7053,6 +7053,7 @@ $metadata
 /examples/index.html
 /examples/jsp/index.html
 /examples/jsp/jsp2/misc/config.jsp
+/;param=value/examples/jsp/snp/snoop.jsp
 /examples/jsp/snp/snoop.jsp
 /examples/jsp/source.jsp
 /examples/servlet/HelloWorldExample

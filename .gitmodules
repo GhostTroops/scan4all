@@ -10,3 +10,9 @@
 [submodule "tools/ProxyShell"]
 	path = tools/ProxyShell
 	url = https://github.com/ktecv2000/ProxyShell.git
+[submodule "config/smuggler"]
+	path = config/smuggler
+	url = https://github.com/defparam/smuggler.git
+[submodule "tools/The-Hacker-Recipes"]
+	path = tools/The-Hacker-Recipes
+	url = https://github.com/ShutdownRepo/The-Hacker-Recipes.git

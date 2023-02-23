@@ -16,6 +16,7 @@ const (
 	labelSRTCPSalt              = 0x05
 
 	maxSequenceNumber = 65535
+	maxROC            = (1 << 32) - 1
 
 	seqNumMedian = 1 << 15
 	seqNumMax    = 1 << 16
@@ -60,8 +61,7 @@ type Context struct {
 // Passing multiple options which set the same parameter let the last one valid.
 // Following example create SRTP Context with replay protection with window size of 256.
 //
-//   decCtx, err := srtp.CreateContext(key, salt, profile, srtp.SRTPReplayProtection(256))
-//
+//	decCtx, err := srtp.CreateContext(key, salt, profile, srtp.SRTPReplayProtection(256))
 func CreateContext(masterKey, masterSalt []byte, profile ProtectionProfile, opts ...ContextOption) (c *Context, err error) {
 	keyLen, err := profile.keyLen()
 	if err != nil {
@@ -112,7 +112,7 @@ func CreateContext(masterKey, masterSalt []byte, profile ProtectionProfile, opts
 }
 
 // https://tools.ietf.org/html/rfc3550#appendix-A.1
-func (s *srtpSSRCState) nextRolloverCount(sequenceNumber uint16) (uint32, int32) {
+func (s *srtpSSRCState) nextRolloverCount(sequenceNumber uint16) (roc uint32, diff int32, overflow bool) {
 	seq := int32(sequenceNumber)
 	localRoc := uint32(s.index >> 16)
 	localSeq := int32(s.index & (seqNumMax - 1))
@@ -147,7 +147,7 @@ func (s *srtpSSRCState) nextRolloverCount(sequenceNumber uint16) (uint32, int32)
 		}
 	}
 
-	return guessRoc, difference
+	return guessRoc, difference, (guessRoc == 0 && localRoc == maxROC)
 }
 
 func (s *srtpSSRCState) updateRolloverCount(sequenceNumber uint16, difference int32) {
@@ -201,7 +201,7 @@ func (c *Context) ROC(ssrc uint32) (uint32, bool) {
 // SetROC sets SRTP rollover counter value of specified SSRC.
 func (c *Context) SetROC(ssrc uint32, roc uint32) {
 	s := c.getSRTPSSRCState(ssrc)
-	s.index = uint64(roc<<16) | (s.index & (seqNumMax - 1))
+	s.index = uint64(roc)<<16 | (s.index & (seqNumMax - 1))
 }
 
 // Index returns SRTCP index value of specified SSRC.
