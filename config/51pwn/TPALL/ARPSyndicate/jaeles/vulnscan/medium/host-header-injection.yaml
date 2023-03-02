@@ -1,0 +1,23 @@
+# info to search signature
+id: host-header-injection
+type: fuzz
+info:
+  name: Host Header Injection
+  risk: Medium
+
+
+variables:
+  - head: |
+      Host
+  - dest: 'cvebase.com'
+
+payloads:
+  - "{{.dest}}"
+
+requests:
+  - method: GET
+  - generators:
+      - Header("{{.payload}}", "{{.head}}")
+    detections:
+      - >-
+        RegexSearch("resHeaders", "(?m)^(L|l)ocation: ((http|https)://)?{{.dest}}")

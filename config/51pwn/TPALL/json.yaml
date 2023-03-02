@@ -1,0 +1,20 @@
+id: json-endpoints
+
+info:
+  name: JSON formatted Endpoints
+  author: panch0r3d
+  severity: info
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    headers:
+      User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0
+      Range: bytes=0-10
+    matchers-condition: and
+    matchers:
+      - type: regex
+        regex:
+          - "(c|C)(o|O)(n|N)(t|T)(e|E)(n|N)(t|T).(t|T)(y|Y)(p|P)(e|E).*?(a|A)(p|P)(p|P)(l|L)(i|I)(c|C)(a|A)(t|T)(i|I)(o|O)(n|N).(j|J)(s|S)(o|O)(n|N).*?"
+        part: header

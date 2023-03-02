@@ -1,0 +1,21 @@
+id: gogs-install-exposure
+info:
+  name: Gogs install exposure
+  risk: High
+
+params:
+  - root: "{{.BaseURL}}"
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/install
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("body", 'Gogs') && StringSearch("response", 'General Settings') && StringSearch("response", 'Database Settings')
+
+references:
+  - repo: https://github.com/gogs/gogs

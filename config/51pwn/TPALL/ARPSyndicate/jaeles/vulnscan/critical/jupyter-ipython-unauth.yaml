@@ -1,0 +1,21 @@
+id: jupyter-ipython-unauth
+info:
+  name: Jupyter ipython Unauth
+  risk: Critical
+
+params:
+  - root: '{{.BaseURL}}'
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/ipython/tree
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("body", "ipython/static/components") && StringSearch("response", "ipython/kernelspecs")
+
+references:
+  - poc: "import os;os.popen('cat /etc/passwd').read()"

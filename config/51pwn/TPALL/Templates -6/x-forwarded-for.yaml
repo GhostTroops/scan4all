@@ -1,0 +1,19 @@
+id: x-forwarded-for
+
+info:
+  name: x-forwarded-for
+  author: Kabilan S
+  severity: low
+
+requests:
+  - method: GET
+    # Example of sending some headers to the servers
+    headers:
+      
+      X-Forwarded-For: "evil.com"
+    path:
+      - "{{BaseURL}}/"
+    matchers:
+      - type: word
+        words:
+          - "evil"

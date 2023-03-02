@@ -1,0 +1,16 @@
+id: apache-loadbalancer
+
+info:
+  name: Apache Load Balancer Manager
+  author: nithissh
+  severity: informative
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/balancer-manager"
+    matchers:
+      - type: word
+        words:
+          - "Load Balancer Manager"
+        part: body

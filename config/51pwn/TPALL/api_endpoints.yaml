@@ -1,0 +1,72 @@
+id: api-endpoints
+
+info:
+  name: Common API Endpoints
+  author: panch0r3d
+  severity: info
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/server/api/admin"
+      - "{{BaseURL}}/api/v1"
+      - "{{BaseURL}}/api/v2"
+      - "{{BaseURL}}/api/v3"
+      - "{{BaseURL}}/api/v4"
+      - "{{BaseURL}}/api/v5"
+      - "{{BaseURL}}/api/v1/users"
+      - "{{BaseURL}}/api/v2/users"
+      - "{{BaseURL}}/api/v3/users"
+      - "{{BaseURL}}/api/v4/users"
+      - "{{BaseURL}}/api/v5/users"
+      - "{{BaseURL}}/api/v1/orders"
+      - "{{BaseURL}}/api/v2/orders"
+      - "{{BaseURL}}/api/v3/orders"
+      - "{{BaseURL}}/api/v4/orders"
+      - "{{BaseURL}}/api/v5/orders"
+      - "{{BaseURL}}/api/v1/config"
+      - "{{BaseURL}}/api/v2/config"
+      - "{{BaseURL}}/api/v3/config"
+      - "{{BaseURL}}/api/v4/config"
+      - "{{BaseURL}}/api/v5/config"
+      - "{{BaseURL}}/api/v1/webhooks"
+      - "{{BaseURL}}/api/v2/webhooks"
+      - "{{BaseURL}}/api/v3/webhooks"
+      - "{{BaseURL}}/api/v4/webhooks"
+      - "{{BaseURL}}/api/v5/webhooks"
+      - "{{BaseURL}}/api/v1/health"
+      - "{{BaseURL}}/api/v2/health"
+      - "{{BaseURL}}/api/v3/health"
+      - "{{BaseURL}}/api/v4/health"
+      - "{{BaseURL}}/api/v5/health"
+      - "{{BaseURL}}/api/v1/accounts"
+      - "{{BaseURL}}/api/v2/accounts"
+      - "{{BaseURL}}/api/v3/accounts"
+      - "{{BaseURL}}/api/v4/accounts"
+      - "{{BaseURL}}/api/v5/accounts"
+      - "{{BaseURL}}/api/health"
+      - "{{BaseURL}}/api/config"
+      - "{{BaseURL}}/api/users"
+      - "{{BaseURL}}/api/orders"
+      - "{{BaseURL}}/api/webhooks"
+      - "{{BaseURL}}/api/accounts"
+      - "{{BaseURL}}/api/admin"
+      - "{{BaseURL}}/api/account/metadata/"
+      - "{{BaseURL}}/rest/api/health"
+      - "{{BaseURL}}/rest/api/config"
+      - "{{BaseURL}}/rest/api/users"
+      - "{{BaseURL}}/rest/api/orders"
+      - "{{BaseURL}}/rest/api/webhooks"
+      - "{{BaseURL}}/docs"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+          - 405
+          - 500
+          - 403
+      - type: word
+        words:
+          - "Content-Type: application/json"
+        part: header

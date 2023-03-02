@@ -1,0 +1,23 @@
+id: Siteminderagent exposed
+info:
+  name: Find siteminderagent exposed
+  author: Clark
+  severity: medium
+  #Look in for test keys, backup of the login.sfcc, and source code smformscgi.cpp
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/siteminderagent/"
+    
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - 'siteminder'
+          - 'Server Error'
+        condition: and
+
+      - type: status
+        status:
+          - 200
+          - 500

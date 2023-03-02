@@ -1,0 +1,37 @@
+id: HTTP-Character-Attack
+
+info:
+  name: Meta-character
+  author: MR.iambatman
+  severity: high
+  description: HMC
+
+requests:
+
+  - raw:
+      - |
+        GET /?exits=1234 HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0
+        X-MetaChar-Header: §header§
+        Connection: close
+
+      - |
+        GET /?exits=1234 HTTP/1.1
+        Host: {{Hostname}}
+
+      
+    payloads:
+      header: helpers/payloads/cha.txt
+   
+    attack: clusterbomb
+    redirects: true
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 404
+          - 400
+      - type: word
+        words:
+          - "character not allowed"

@@ -1,0 +1,46 @@
+id: control4-default-login
+
+info:
+  name: Control4 default credentials
+  author: esetal
+  severity: high
+  description: 
+  classification:
+    cvss-metrics: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L
+    cvss-score: 8.3
+    cve-id:
+    cwe-id: CWE-522
+  tags: default-login
+
+requests:
+  - raw:
+      - |
+        POST /ajax?sid= HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:88.0) Gecko/20100101 Firefox/88.0
+        Accept: application/json, text/javascript, */*; q=0.01
+        Accept-Language: ru-RU,ru;q=0.8,en-US;q=0.5,en;q=0.3
+        Accept-Encoding: gzip, deflate
+        Content-Type: application/json
+        X-Requested-With: XMLHttpRequest
+        Content-Length: 71
+        Origin: https://{{Hostname}}
+        Connection: close
+        Referer: https://{{Hostname}}/
+        
+        [{"command":"system.login","user":"{{user}}","password":"{{pass}}"}]
+
+    attack: pitchfork
+    payloads:
+      user:
+        - admin
+      pass:
+        - t0talc0ntr0l4!
+
+    matchers:
+      - type: word
+        words:
+          - "sid"
+          - "\"status\":\"ok\""
+          - "\"deadtime\""
+        condition: and

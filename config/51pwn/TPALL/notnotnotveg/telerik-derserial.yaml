@@ -1,0 +1,16 @@
+id: telerik-deserial
+
+info:
+  name: Telerik Deserialization
+  author: notnotnotveg
+  severity: informative
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/Telerik.Web.UI.DialogHandler.aspx"
+    matchers:
+      - type: word
+        words:
+          - "Loading the dialog"
+        part: body

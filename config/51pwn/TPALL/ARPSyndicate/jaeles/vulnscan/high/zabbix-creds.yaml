@@ -1,0 +1,18 @@
+id: zabbix-creds
+info:
+  name: Zabbix default credentials
+  risk: High
+
+requests:
+  - method: POST
+    redirect: false
+    url: >-
+      {{.BaseURL}}/index.php
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+      - Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+      - X-Requested-With: XMLHttpRequest
+    body: name=Admin&password=zabbix&autologin=1&enter=Sign+in
+    detections:
+      - >-
+        StatusCode() == 302 && StringSearch("resHeaders", "Location: zabbix.php?action=dashboard.view")

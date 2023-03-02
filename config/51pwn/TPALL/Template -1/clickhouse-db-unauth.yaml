@@ -1,0 +1,21 @@
+id: Clickhouse DB - Unauthenticated
+
+info:
+  name: Clickhouse DB - Unauthenticated
+  author: notnotnotveg
+  severity: high
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/?query=SELECT%20314159"
+      - "{{BaseURL}}:8123/?query=SELECT%20314159"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "314159"
+        part: body

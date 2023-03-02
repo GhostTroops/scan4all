@@ -1,0 +1,28 @@
+id: RedCap Install Mode
+
+info:
+  name: RedCap Install Module Exposed Can redirect site
+  author: Clark
+  severity: medium
+  description: Can redirect site using REDCap base URL.
+
+requests:
+  - method: GET
+    path:
+      - '{{BaseURL}}/install.php'
+      - '{{BaseURL}}/redcap/install.php'
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        words:
+          - 'Installation Module'
+
+      - type: word
+        words:
+          - 'text/html'
+        part: header

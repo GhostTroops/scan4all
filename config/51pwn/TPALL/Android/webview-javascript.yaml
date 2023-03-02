@@ -1,0 +1,15 @@
+id: webview-javascript-enabled
+
+info:
+  name: Webview JavaScript enabled
+  author: gaurang
+  severity: info
+
+file:
+  - extensions:
+      - all
+
+    matchers:
+      - type: word
+        words:
+          - "Landroid/webkit/WebSettings;->setJavaScriptEnabled(Z)V"

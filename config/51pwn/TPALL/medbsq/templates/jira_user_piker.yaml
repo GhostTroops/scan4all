@@ -1,0 +1,15 @@
+id: jira-unauthenticated-user-picker
+
+info:
+  name: Jira Unauthenticated User Picker
+  author: medbsq
+  severity: medium
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/rest/api/user/picker?query=admin"
+    matchers:
+      - type: status
+        status: 
+          - 200

@@ -1,0 +1,39 @@
+id: header-reflection-body
+
+info:
+  name: Looking for reflected values from request headers
+  author: panch0r3d
+  severity: high
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/"
+      - "{{BaseURL}}/obviouslynotarealpathtoget404URLCanary1234"
+      - "{{BaseURL}}/%%0D%%0|}+^$Aset-cookie%%20:mycookie=URLCKCanary1234;"
+    redirects: true
+    max-redirects: 5
+    headers:
+      User-Agent: "Mozilla UACanary12345"
+      X-Forwarded-For: "panch0r3d.github.io?XFCanary12345"
+      Referer: "RFcanary12345.comRF"
+      Cookie: "CKCanary12345=qwertyCK"
+      Origin: "ORCanary12345.comOR"
+      x-request-id: "XRCanary12345"
+      X-Correlation-ID: "XCIDCanary12345"
+      from: "abc@FRcanary12345.comFR"
+      pragma: "PRcanary12345"
+      via: "VIACanary12345.comVIA"
+      x-requested-with: "XRWCanary12345"
+      x-att-deviceid: "XADCanary12345"
+    matchers-condition: and
+    matchers:
+      - type: regex
+        regex:
+          - ".*?(c|C)(a|A)(n|N)(a|A)(r|R)(y|Y)12345.*?"
+        part: body
+    extractors:
+      - type: regex
+        part: body
+        regex:
+          - "(c|C)(a|A)(n|N)(a|A)(r|R)(y|Y)12345.*?([\r\n]|[}]|[,][>])"

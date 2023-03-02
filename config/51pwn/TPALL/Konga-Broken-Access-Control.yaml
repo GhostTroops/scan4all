@@ -1,0 +1,49 @@
+id: Konga-Broken-Access-Control
+
+info:
+  name: Konga 0.14.9 - Broken Access Control
+  author: RedTeamBrasil
+  severity: high
+  description: |
+    testes descricao
+  reference:
+    - https://
+    - https://
+    - https://
+    - http://
+  classification:
+    cvss-metrics: CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:H
+    cvss-score: 8.8
+    cve-id: CVE-2022-XXXXX
+    cwe-id: CWE-XXX
+  tags: tech,konga,oss
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    req-condition: true
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+          - "<title>Konga</title>"
+
+      - type: status
+        status:
+          - 200
+
+      - type: dsl
+        dsl:
+          - compare_versions(version, '0.14.9')
+
+    extractors:
+      - type: regex
+        part: body
+        group: 1
+        name: version
+        internal: true
+        regex:
+          - 'konga_version = "(.*)";'

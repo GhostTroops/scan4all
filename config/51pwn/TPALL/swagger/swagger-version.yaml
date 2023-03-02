@@ -1,0 +1,33 @@
+id: swagger-version
+
+info:
+  name: Swagger 2.x Version Detection
+  author: c-sh0
+  reference:
+     - Swagger UI 2.x and under
+     - https://github.com/swagger-api/swagger-ui/blob/master/docs/usage/version-detection.md
+  severity: info
+  description: Obtain Swagger Version
+  tags: tech,swagger,api
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/swagger-ui/swagger-ui.js"
+      - "{{BaseURL}}/swagger/swagger-ui.js"
+      - "{{BaseURL}}/swagger-ui.js"
+      - "{{BaseURL}}/swagger/ui/swagger-ui.js"
+
+    matchers-condition: and
+    matchers:
+     - type: status
+       status:
+         - 200
+
+    extractors:
+     - type: regex
+       part: body
+       group: 1
+       regex:
+         - "@version (v[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3})"
+

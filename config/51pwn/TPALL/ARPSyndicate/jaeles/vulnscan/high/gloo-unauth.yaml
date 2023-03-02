@@ -1,0 +1,23 @@
+id: gloo-unauth
+info:
+  name: Gloo UI Unauthentication
+  risk: High
+
+params:
+  - root: "{{.BaseURL}}"
+
+requests:
+  - method: POST
+    redirect: false
+    url: >-
+      {{.root}}/fed.rpc.solo.io.GlooInstanceApi/ListClusterDetails
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+      - Content-type: application/grpc-web+proto
+      - Referer: '{{.root}}/admin/'
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("resHeader", 'application/grpc-web+proto') && StringSearch("body", 'gke-remote')
+
+references:
+  - repo: https://github.com/containous/traefik

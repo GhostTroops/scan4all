@@ -1,0 +1,16 @@
+id: firebase-database
+
+info:
+  name: Firebase Database Detect
+  author: gaurang
+  severity: info
+
+file:
+  - extensions:
+      - all
+
+    extractors:
+      - type: regex
+        regex:
+          - "[a-z0-9.-]+\\.firebaseio\\.com"
+          - "[a-z0-9.-]+\\.firebaseapp\\.com"

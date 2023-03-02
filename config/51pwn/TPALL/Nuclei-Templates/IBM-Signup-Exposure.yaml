@@ -1,0 +1,23 @@
+id: IBM friendly path exposure
+info:
+  name: Finds friendly path exposed leads to user sign-up page
+  author: Clark
+  severity: meduim
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/wps/portal/client/welcome/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8ziHd3DQgMNnM3N_M1DjA08PX0NgoNcnQwt3Ez1wwkpiAJKG-AAjgb6BbmhigBypoQ7/dz/d5/L2dBISEvZ0FBIS9nQSEh/?uri=nm:oid:Z6_00000000000000A0BR2B300GG2"
+      - "{{BaseURL}}/wps/portal/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8ziHd3DQgMNnM3N_M1DjA08PX0NgoNcnQwt3Ez1wwkpiAJKG-AAjgb6BbmhigBypoQ7/dz/d5/L2dBISEvZ0FBIS9nQSEh/?uri=nm:oid:Z6_00000000000000A0BR2B300GG2"
+      - "{{BaseURL}}/wps/portal/!ut/p/z1/04_Sj9CPykssy0xPLMnMz0vMAfIjo8ziDVCAo4FTkJGTsYGBu7uRfjhYgaN7WGiggbO5mb95iLGBp6evQXCQq5OhhZupfhSGfmSToPrxWEBQfxRYSYCHh5mHoYWBj7-RL1DC1y3M2NXCx9jA3RiqAI8ZBbmhEQaZjooABQv7ag!!/dz/d5/L2dBISEvZ0FBIS9nQSEh/dz/d5/L0lJSkdKSUtVSklKQ2dwUkNncFJBL29Od3dBQUFZUUFBRUl3UWxDVTVBQUdNSUtTcEtGTFJ0R0ZvIS80TmxFTklVTVFuRmR1WXBNaFFUVWs1Q2ltcHBBL1o2XzAwMDAwMDAwMDAwMDAwQTBCUjJCMzAwR1YwL1o3XzAwMDAwMDAwMDAwMDAwQTBCUjJCMzAwSU8wL25vcm1hbC9PQ04vWjZfMDAwMDAwMDAwMDAwMDBBMEJSMkIzMDBHRzIvYW8vdGht/#Z7_00000000000000A0BR2B300IO0"
+    
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - 'http://www.ibm.com/websphere/developer/zones/portal/'
+          - 'http://www.ibm.com/software/genservers/portal/support/'
+          - 'Sign Up'
+        part: body
+      - type: status
+        status:
+          - 200

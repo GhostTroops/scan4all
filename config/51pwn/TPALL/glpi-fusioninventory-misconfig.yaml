@@ -1,0 +1,24 @@
+id: glpi-fusioninventory-misconfig
+
+info:
+  name: GLPI FusionInventory plugin insecure setup
+  author: esetal
+  severity: high
+  description: Misconfiguration of FusionInventory plugin leads to information disclosure
+  tags: glpi
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/files/_plugins/fusioninventory/xml/computer/1/10.xml"
+      - "{{BaseURL}}/glpi/files/_plugins/fusioninventory/xml/computer/1/10.xml"
+    matchers-condition: and
+    matchers:
+      - type: word
+        encoding: hex
+        words:
+          - "3C524551554553543E0A20203C434F4E54454E543E0A202020203C4143434553534C4F473E0A2020202020203C4C4F47444154453E"
+        part: body
+      - type: status
+        status:
+          - 200

@@ -160,6 +160,18 @@ func DoGobuster(s string) string {
 
 	return s1
 }
+func DoKsubdomain(s string) string {
+	szName, _ := GetTempFile() // 输出的文件名
+	os.WriteFile(szName, []byte(s), os.ModePerm)
+	t := "ksubdomain"
+	a := GetCmdParms(t)
+	a[10] = szName
+	szRst := DoAsyncCmd(t, a...)
+	if util.FileExists(o) {
+		os.Remove(o)
+	}
+	return szRst
+}
 
 // 传入目标数据，转换为临时文件名
 //

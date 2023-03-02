@@ -1,0 +1,25 @@
+id: connect-proxy-enabled
+
+info:
+  name: proxy via connect method
+  author: panch0r3d
+  severity: medium
+
+# https://www.securityfocus.com/bid/4131/discuss
+
+requests:
+  - raw:
+      - |
+        CONNECT www.example.com HTTP/1.1
+        Content-Type: text/plain
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        words:
+          - Example Domain
+          

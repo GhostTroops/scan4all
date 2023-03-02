@@ -1,0 +1,21 @@
+id: powerlinkg3-default-credential
+info:
+  name: powerlinkg3 Default Credentials Check
+  author: grant
+  severity: high
+
+requests:
+  - method: GET
+    path:
+      - "http://{{BaseURL}}/zone_status.htm?b"
+    headers:
+      Authorization: "Basic YWRtaW46YWRtaW4="
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "Powerlink G3 Zone Status"
+        part: all
+      - type: status
+        status:
+          - 200

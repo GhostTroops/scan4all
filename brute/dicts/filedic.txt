@@ -7050,6 +7050,14 @@ $metadata
 /example.php
 /examples
 /examples/
+/conf5
+/privacy/policy/ms/version
+/v5/gc
+/v5/gcf
+/snsconf
+/v5/gcl
+/v4/imopenstat/im_native_sdk_report
+/privacy/policy/authorization/status
 /examples/index.html
 /examples/jsp/index.html
 /examples/jsp/jsp2/misc/config.jsp

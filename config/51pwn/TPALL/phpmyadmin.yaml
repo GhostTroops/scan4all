@@ -1,0 +1,23 @@
+id: Search for phpmyadmin setup page
+info:
+  name: Find exposed phpmyadmin setup page
+  author: Clark
+  severity: medium
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/phpmyadmin/"
+      - "{{BaseURL}}/phpmyadmin/index.php"
+      - "{{BaseURL}}/phpmyadmin/setup"
+
+    matchers-condition: and
+    matchers:
+
+      - type: word
+        words:
+          - sql
+
+      - type: status
+        status:
+          - 200

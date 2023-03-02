@@ -1,0 +1,28 @@
+id: django-debug-enable
+info:
+  name: Django Debug Mode Enable
+  risk: Medium
+
+params:
+  - root: '{{.BaseURL}}'
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+     {{.root}}/_hopefullynotexist404
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 404 && StringSearch("body", "URLconf") && StringSearch("body", "DEBUG = True")
+
+  - method: GET
+    redirect: false
+    url: >-
+     {{.root}}/api/_hopefullynotexist404
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 404 && StringSearch("body", "URLconf") && StringSearch("body", "DEBUG = True")

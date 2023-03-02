@@ -1,0 +1,15 @@
+id: improper-certificate-validation
+
+info:
+  name: Improper Certificate Validation
+  author: gaurang
+  severity: medium
+
+file:
+  - extensions:
+      - all
+
+    matchers:
+      - type: word
+        words:
+          - "Landroid/webkit/SslErrorHandler;->proceed()V"

@@ -1,0 +1,183 @@
+id: detect-all-takeovers
+
+info:
+  name: Subdomain Takeover Detection
+  author: "melbadry9 & pxmme1337 & geeknik"
+  severity: high
+
+  # Update this list with new takeovers matchers
+  # Do not delete other template files for takeover
+  # https://github.com/EdOverflow/can-i-take-over-xyz
+  # You need to claim the subdomain / CNAME of the subdomain to confirm the takeover.
+  # Do not report subdomain takeover issues only based on detection.
+  # Total number of services #72
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/"
+    matchers-condition: or
+
+    matchers:
+      - type: word
+        name: agilecrm
+        words:
+          - Sorry, this page is no longer available.
+
+      - type: word
+        name: airee
+        words:
+          - Ошибка 402. Сервис Айри.рф не оплачен
+
+      - type: word
+        name: anima
+        words:
+          - "If this is your website and you've just created it, try refreshing in a minute"
+
+      - type: word
+        name: aws-bucket
+        words:
+          - "The specified bucket does not exist"
+
+      - type: word
+        name: bitbucket
+        words:
+          - The page you have requested does not exist
+          - Repository not found
+
+      - type: word
+        name: campaignmonitor
+        words:
+          - "<strong>Trying to access your account?</strong>"
+          - or <a href="mailto:help@createsend.com
+
+      - type: word
+        name: cargocollective
+        words:
+          - <div class="notfound">
+          - 404 Not Found<br>
+
+      - type: word
+        name: gemfury
+        words:
+          - "404: This page could not be found."
+
+      - type: word
+        name: ghost
+        words:
+          - The thing you were looking for is no longer here
+          - The thing you were looking for is no longer here, or never was
+
+      - type: word
+        name: github
+        words:
+          - There isn't a GitHub Pages site here.
+          - For root URLs (like http://example.com/) you must provide an index.html file
+
+      - type: word
+        name: hatenablog
+        words:
+          - 404 Blog is not found
+          - Sorry, we can't find the page you're looking for.
+
+      - type: word
+        name: helpjuice
+        words:
+          - We could not find what you're looking for.
+
+      - type: word
+        name: helpscout
+        words:
+          - "No settings were found for this company:"
+
+      - type: word
+        name: intercom
+        words:
+          - This page is reserved for artistic dogs.
+          - <h1 class="headline">Uh oh. That page doesn’t exist.</h1>
+
+      - type: word
+        name: jetbrains
+        words:
+          - is not a registered InCloud YouTrack.
+
+      - type: word
+        name: kinsta
+        words:
+          - No Site For Domain
+
+      - type: word
+        name: launchrock
+        words:
+          - It looks like you may have taken a wrong turn somewhere. Don't worry...it happens
+            to all of us.
+
+      - type: word
+        name: ngrok
+        words:
+          - ngrok.io not found
+          - Tunnel *.ngrok.io not found
+
+      - type: word
+        name: pantheon.io
+        words:
+          - "The gods are wise, but do not know of the site which you seek."
+
+      - type: word
+        name: pingdom
+        words:
+          - Public Report Not Activated
+          - This public report page has not been activated by the user
+
+      - type: word
+        name: readme
+        words:
+          - Project doesnt exist... yet!
+
+      - type: word
+        name: smartjob
+        words:
+          - Job Board Is Unavailable
+          - This job board website is either expired
+          - This job board website is either expired or its domain name is invalid.
+
+      - type: word
+        name: strikingly
+        words:
+          - But if you're looking to build your own website
+          - you've come to the right place.
+
+      - type: word
+        name: surge
+        words:
+          - project not found
+
+      - type: word
+        name: uberflip
+        words:
+          - "Non-hub domain, The URL you've accessed does not provide a hub."
+
+      - type: regex
+        name: uptimerobot
+        regex:
+          - "^page not found$"
+
+      - type: word
+        name: uservoice
+        words:
+          - This UserVoice subdomain is currently available!
+
+      - type: word
+        name: wordpress
+        words:
+          - Do you want to register
+
+      - type: regex
+        name: worksites
+        regex:
+          - "(?:Company Not Found|you&rsquo;re looking for doesn&rsquo;t exist)"
+
+      - type: word
+        name: smart-jobboard
+        words:
+          - This job board website is either expired or its domain name is invalid.

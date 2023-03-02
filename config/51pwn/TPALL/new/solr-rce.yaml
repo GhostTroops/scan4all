@@ -1,0 +1,24 @@
+id: solr-rce
+
+info:
+  name: solr命令执行
+  author: str1am
+  severity: high
+  tags: solr
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/solr/supplierSearch_V2/dataimport"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "responseHeader"
+          - "initArgs"
+          - "statusMessages"
+        part: body
+        condition: and

