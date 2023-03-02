@@ -1,0 +1,15 @@
+id: amazon-mws-auth-token-value
+
+info:
+  name: Amazon MWS Auth Token
+  author: gaurang
+  severity: medium
+
+file:
+  - extensions:
+      - all
+
+    extractors:
+      - type: regex
+        regex:
+          - "amzn\\.mws\\.[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"

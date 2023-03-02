@@ -1,0 +1,20 @@
+id: web.xml Exposed
+info:
+  name: Find web.xml found
+  author: Clark
+  severity: medium
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/iw-cc/WEB-INF/web.xml"
+    
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - contextConfigLocation
+        condition: and
+
+      - type: status
+        status:
+          - 200

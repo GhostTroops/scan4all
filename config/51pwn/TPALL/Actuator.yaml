@@ -1,0 +1,34 @@
+id: Finds actuator 
+info:
+  name: Actuator info leakage
+  author: Clark
+  severity: medium
+  #Look in for exposed info.
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/actuator"
+      - "{{BaseURL}}/actuator/caches"
+      - "{{BaseURL}}/actuator/configprops"
+      - "{{BaseURL}}/actuator/conditions"
+      - "{{BaseURL}}/actuator/env"
+      - "{{BaseURL}}/actuator/beans"
+      - "{{BaseURL}}/actuator/info"
+      - "{{BaseURL}}/actuator/scheduledtasks"
+      - "{{BaseURL}}/actuator/features"
+      - "{{BaseURL}}/actuator/refresh"
+      - "{{BaseURL}}/actuator/metrics"
+      - "{{BaseURL}}/actuator/loggers"
+      - "{{BaseURL}}/actuator/mappings"
+      - "{{BaseURL}}/actuator/threaddump"
+    
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - actuator
+        condition: and
+
+      - type: status
+        status:
+          - 200

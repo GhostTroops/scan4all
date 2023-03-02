@@ -1,0 +1,21 @@
+id: ojs-unauthenticated-open-redirect
+
+info:
+  name: Open Journal System Open Redirect
+  author: 0x_Akoko
+  reference:
+    - https://web.facebook.com/agussetyar/posts/4303851969720812
+    - https://github.com/pkp/pkp-lib/issues/7575
+  severity: low
+  tags: ojs,redirect
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/index.php/index/user/setLocale/NEW_LOCALE?source=@example.com"
+
+    matchers:
+      - type: regex
+        regex:
+          - '(?m)^(?:Location\s*?:\s*?)(?:https?://|//)?(?:[a-zA-Z0-9\-_\.@]*)example\.com.*$'
+        part: header

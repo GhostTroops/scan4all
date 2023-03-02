@@ -1,0 +1,56 @@
+--- 
+id: GLPI_Exposed_Data
+
+info: 
+  author: RedTeamBrasil
+  description: "By default many system admins allow directory listening"
+  name: "Exposed data in GLPI"
+  reference: "N/A"
+  severity: high
+  tags: "glpi,misconfiguration,data,exposed"
+
+requests: 
+  - 
+    method: GET
+    payloads:
+      expose_data:
+        - /glpi/files/_sessions/
+        - /glpi/files/_sesasdfasdsions/
+        - /glpi/files/_dumps/
+        - /files/_tmp/
+        - /files/_uploads/
+        - /files/_log/
+        - /glpi/_dumps/
+        - /glpi/_pictures/
+        - /glpi/_sessions/
+        - /glpi/_tmp/
+        - /glpi/_uploads/
+        - /glpi/files/_dumps/
+        - /glpi/files/_pictures/
+        - /glpi/files/_sessions/
+        - /glpi/files/_tmp/
+        - /glpi/files/_uploads/
+        - /glpi/files/_log/
+        - /glpi/config/
+        - /files/ZIP/
+        - /glpi/files/ZIP/
+
+    raw:
+    
+      - |
+        GET {{expose_data}} HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0
+        Accept-Encoding: gzip, deflate
+        Accept-Language: en-US,en;q=0.9
+        Connection: close
+
+    attack: batteringram 
+    threads: 10
+    matchers: 
+      - 
+        part: body
+        type: word
+        words: 
+          - "Index of"
+    

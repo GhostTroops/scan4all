@@ -1,0 +1,42 @@
+id: nginx-vhosts-stat
+donce: true
+info:
+  name: Nginx Vhost Stats
+  risk: Medium
+
+params:
+  - root: "{{.BaseURL}}"
+
+variables:
+  - stats: |
+      /
+      /server-status
+      /status.html
+      /stats
+      /_stats
+
+requests:
+  - method: GET
+    redirect: false
+    headers:
+      - User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3984.0 Safari/537.36
+    url: >-
+      {{.root}}{{.stats}}
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", "nginx vhost traffic")
+
+  - method: GET
+    redirect: false
+    headers:
+      - User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3984.0 Safari/537.36
+      - X-Client-IP: "127.0.0.1"
+      - X-Remote-IP: "127.0.0.1"
+      - X-Remote-Addr: "127.0.0.1"
+      - X-Forwarded-For: "127.0.0.1"
+      - X-Originating-IP: "127.0.0.1"
+    url: >-
+      {{.root}}{{.stats}}
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", "nginx vhost traffic")

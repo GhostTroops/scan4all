@@ -1,0 +1,16 @@
+id: Opengear Console Detection
+
+info:
+  name: Opengear Console Detection
+  author: notnotnotveg
+  severity: informative
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/"
+    matchers:
+      - type: word
+        words:
+          - "Opengear Management Console"
+        part: body

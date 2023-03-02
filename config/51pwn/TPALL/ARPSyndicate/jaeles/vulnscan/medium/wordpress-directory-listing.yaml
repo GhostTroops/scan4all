@@ -1,0 +1,28 @@
+id: wordpress-directory-listing
+info:
+  name: Multiples Wordpress Directory Listing
+  risk: Medium
+
+params:
+  - root: '{{.BaseURL}}'
+
+variables:
+  - vul: |
+      wp-includes/
+      wp-includes/images/
+      wp-content/
+      wp-content/uploads/
+      wp-content/themes/
+      wp-content/plugins/
+      wp-content/plugins/hustle/views/admin/dashboard/
+      wp-admin/
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/{{.vul}}
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", "Index of /")

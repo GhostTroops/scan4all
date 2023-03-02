@@ -1,0 +1,22 @@
+id: Backend Dev WorkFront Exposed
+info:
+  name: Find WorkFront Dev Backend and works for Symfony panel.
+  author: Clark
+  severity: medium
+
+requests:
+  - method: GET
+    path:
+     - '{{BaseURL}}/backend_dev.php/'
+     - '{{BaseURL}}/backend.php'
+
+    matchers-condition: and
+    matchers:
+
+      - type: word
+        words:
+          - 'backend_dev.php'
+
+      - type: status
+        status:
+          - 200

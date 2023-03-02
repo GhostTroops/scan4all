@@ -1,0 +1,22 @@
+id: api-linkfinder
+
+info:
+  name: API Recon
+  author: nullenc0de
+  severity: info
+  tags: file
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    extractors:
+      - type: regex
+        name: url_params
+        regex:
+          - '[&\?][a-zA-Z0-9\_]+='
+      - type: regex
+        name: relative_links
+        regex:
+          - ([a-zA-Z0-9_\-/]{1,}/[a-zA-Z0-9_\-/]{1,}(?:[a-zA-Z]{1,4}|action)(?:[\?|#][^"|']{0,}|))

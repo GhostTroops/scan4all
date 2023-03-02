@@ -1,0 +1,37 @@
+id: redfish-api-service-detect
+
+info:
+  name: Redfish API Service Detection
+  description: Redfish API Service Detection
+  author: c-sh0
+  severity: info
+  reference:
+    - https://www.dmtf.org/standards/redfish
+  tags: redfish,api,tech
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/redfish/v1/"
+
+    stop-at-first-match: true
+    redirects: true
+    max-redirects: 2
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        part: header
+        words:
+          - "Server: AMI MegaRAC Redfish Service"
+          - "Redfish Service"
+        condition: or
+
+    extractors:
+      - type: kval
+        part: header
+        kval:
+          - Server

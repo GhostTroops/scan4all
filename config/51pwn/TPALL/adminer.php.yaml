@@ -1,0 +1,21 @@
+id: Find adminer dashboard
+info:
+  name: Find adminer dashboard exposed
+  author: Clark
+  severity: medium
+  #Server-side Request Forgery (SSRF) Try adminer.php?server=[payload]&username=123&password=123&db=123
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/adminer.php"
+    
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - Adminer
+        condition: and
+
+      - type: status
+        status:
+          - 200

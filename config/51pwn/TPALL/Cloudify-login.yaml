@@ -1,0 +1,21 @@
+id: Cloudify login Exposed (Try default creds)
+info:
+  name: Cloudify login
+  author: Clark
+  severity: medium
+
+requests:
+  - method: GET
+    path:
+       - "{{BaseURL}}/console/login"
+
+    matchers-condition: and
+    matchers:
+
+      - type: word
+        words:
+         - "Cloudify Console"
+
+      - type: status
+        status:
+          - 200

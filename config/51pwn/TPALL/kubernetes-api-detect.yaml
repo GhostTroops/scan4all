@@ -1,0 +1,18 @@
+id: kubernetes-api-detect
+
+info:
+  name: Kubernetes API Detection
+  author: notnotnotveg
+  severity: informative
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/pods/"
+      - "{{BaseURL}}:10250/pods/"
+      - "{{BaseURL}}:10255/pods/"
+    matchers:
+      - type: word
+        words:
+          - "PodList"
+        part: body

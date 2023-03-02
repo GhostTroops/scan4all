@@ -1,0 +1,22 @@
+id: fps-config
+
+info:
+  name: FrontPage Server Config Exposure
+  author: nullenc0de
+  severity: critical
+  description: FrontPage Server Config Exposure
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/_vti_pvt/service.pwd"
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "# -FrontPage-"
+        part: body

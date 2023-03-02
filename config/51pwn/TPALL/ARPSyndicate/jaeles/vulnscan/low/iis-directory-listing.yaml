@@ -1,0 +1,22 @@
+id: iis-directory-listing
+info:
+  name: IIS Directory Listing
+  risk: Low
+
+params:
+  - root: "{{.BaseURL}}"
+
+variables:
+  - end: |
+      /
+      /aspnet_client/
+      /App_Data/
+requests:
+  - method: GET
+    url: >-
+      {{.root}}{{.end}}
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && RegexSearch("body", "<\/title><\/head><body><H1>.*-.*<\/H1><hr>")

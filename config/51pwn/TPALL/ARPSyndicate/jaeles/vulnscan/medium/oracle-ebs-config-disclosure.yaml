@@ -1,0 +1,41 @@
+id: oracle-ebs-config-disclosure
+info:
+  name: Oracle EBS Config Disclosure
+  risk: Medium
+  confidence: Tentative
+
+params:
+  - root: "{{.BaseURL}}"
+
+variables:
+  - prefix: |
+      /html
+      //html/
+      //OA_HTML/
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}{{.prefix}}/bin/appsweb.cfg
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("body", "Web CGI Configuration") && StringSearch("body", "OA_JAVA")
+
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}{{.prefix}}/bin/pasta.cfg
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("body", "Pasta configuration file") && StringSearch("body", "%%") && StringSearch("resHeaders", "text/plain")
+
+references:
+  - links:
+      - https://www.blackhat.com/docs/us-16/materials/us-16-Litchfield-Hackproofing-Oracle-eBusiness-Suite-wp-4.pdf
+      - https://www.blackhat.com/docs/us-16/materials/us-16-Litchfield-Hackproofing-Oracle-eBusiness-Suite.pdf
+      - http://www.davidlitchfield.com/AssessingOraclee-BusinessSuite11i.pdf

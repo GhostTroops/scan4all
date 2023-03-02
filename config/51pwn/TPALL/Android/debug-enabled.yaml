@@ -1,0 +1,15 @@
+id: android-debug-enabled
+
+info:
+  name: Android Debug Enabled
+  author: gaurang
+  severity: low
+
+file:
+  - extensions:
+      - all
+
+    matchers:
+      - type: regex
+        regex:
+          - "android:debuggable=\"true\""

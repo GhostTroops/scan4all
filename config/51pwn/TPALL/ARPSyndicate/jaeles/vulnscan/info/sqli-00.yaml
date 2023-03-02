@@ -1,0 +1,39 @@
+id: sqli-00
+type: fuzz
+info:
+  name: SQL Injection on Parameter 01
+  risk: High
+
+
+payloads:
+  - >-
+    '
+  - >-
+    %
+  - >-
+    \"
+  - >-
+    `
+  - >-
+    %25%27%25%22
+  - >-
+    %u0027%u0022
+  - >-
+    %c0%a7
+  - >-
+    %0aa%0db
+  - >-
+    1e309
+  - >-
+    char(0x27)char(0x27)
+  - >-
+    %u2018
+  - >-
+    /*
+
+requests:
+  - generators:
+      - Query("[[.original]]{{.payload}}")
+    detections:
+      - >-
+        RegexSearch("response", "mysql_fetch_|not a valid MySQL|not a legal PLSQL identifer|mysql_connect\(\)|(SELECT\s+[^:>]+\sFROM\s+[^:>]+\sWHERE\s+)|(at\s[[:alnum:]\/\._]+\sline\s\d+)|ociparse\(\):|must be a syntactically valid variable|CFSQLTYPE|Unknown column '|Microsoft OLE DB Provider for SQL|SQL QUERY FAILURE:|Syntax error.{1,50}in query|You have an error in your SQL syntax|Unclosed quotation mark")

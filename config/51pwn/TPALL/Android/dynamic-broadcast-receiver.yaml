@@ -1,0 +1,15 @@
+id: dynamic-registered-broadcast-receiver
+
+info:
+  name: Dynamic Registered Broadcast Receiver
+  author: gaurang
+  severity: info
+
+file:
+  - extensions:
+      - all
+
+    matchers:
+      - type: word
+        words:
+          - ";->registerReceiver(Landroid/content/BroadcastReceiver;Landroid/content/IntentFilter;)"

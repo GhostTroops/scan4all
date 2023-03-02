@@ -1,0 +1,28 @@
+id: Labda_403_Finder
+
+info:
+  name: Labda 403 finder
+  severity: info
+  author: Labda
+  description: Determines 403 Forbidden
+  tags: find, web, 403, Forbidden
+  reference: https://thelabda.com
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    
+    
+    matchers-condition: or
+    matchers:
+      - type: status
+        name: forbidden
+        status:
+          - 403
+
+      - type: word
+        name: forbidden
+        words:
+          - "Forbidden"
+        part: header

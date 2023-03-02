@@ -1,0 +1,27 @@
+id: service-now-exposed
+donce: true
+info:
+  name: ServiceNow Unauth Access (Need to manual bruteforce for sensitive document)
+  risk: Potential
+
+params:
+  - root: "{{.BaseURL}}"
+
+variables:
+  - prefix: |
+      /
+      /servicenow/
+
+requests:
+  - method: GET
+    redirect: false
+    headers:
+      - User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3984.0 Safari/537.36
+    url: >-
+      {{.root}}{{.prefix}}kb_view_customer.do?sysparm_article=KB00199999999
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", "window.NOW") && StringSearch("response", "has either been retired")
+
+references:
+  - link: https://medium.com/@th3g3nt3l/multiple-information-exposed-due-to-misconfigured-service-now-itsm-instances-de7a303ebd56

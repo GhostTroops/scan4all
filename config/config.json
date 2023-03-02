@@ -7,6 +7,10 @@
     "projectdiscovery": ["naabu","nuclei","subfinder","httpx","katana","interactsh","uncover","dnsx","shuffledns","tlsx","asnmap"]
   },
   "cmds":{
+    "ksubdomain": [
+      "echo","$PPSSWWDD","|","sudo","-S","ksubdomain","enum", "-b", "5M", "--dl","",
+      "-f" ,"{PWD}/config/database/subdomain.txt" ,"-o", "{PWD}/atckData/$2.txt"
+    ],
     "gobuster": [
       "dir",
       "-u",

@@ -1,0 +1,22 @@
+id: wordpress-user-enum-01
+info:
+  name: Wordpress REST API user enumeration
+  risk: Low
+
+params:
+  - root: '{{.BaseURL}}'
+
+variables:
+  - vul: |
+      wp-json/wp/v2/users/
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/{{.vul}}
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", "avatar_urls")
