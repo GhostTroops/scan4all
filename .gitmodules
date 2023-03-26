@@ -16,3 +16,6 @@
 [submodule "tools/The-Hacker-Recipes"]
 	path = tools/The-Hacker-Recipes
 	url = https://github.com/ShutdownRepo/The-Hacker-Recipes.git
+[submodule "config/51pwn/juicyinfo-nuclei-templates"]
+	path = config/51pwn/juicyinfo-nuclei-templates
+	url = git@github.com:cipher387/juicyinfo-nuclei-templates.git
