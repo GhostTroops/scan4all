@@ -25,7 +25,6 @@ func main() {
 		case b, ok := <-nucleiDone1:
 			log.Printf("%v %v", b, ok)
 			break
-		default:
 
 		}
 	}

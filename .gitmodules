@@ -1,21 +1,28 @@
 [submodule "config/jaeles-signatures"]
 	path = config/jaeles-signatures
 	url = https://github.com/jaeles-project/jaeles-signatures
+	branch=master
 [submodule "config/nuclei-templates"]
 	path = config/nuclei-templates
 	url = https://github.com/projectdiscovery/nuclei-templates.git
+	branch=main
 [submodule "config/fuzzing-templates"]
 	path = config/fuzzing-templates
 	url = https://github.com/projectdiscovery/fuzzing-templates.git
+	branch=main
 [submodule "tools/ProxyShell"]
 	path = tools/ProxyShell
 	url = https://github.com/ktecv2000/ProxyShell.git
+	branch=main
 [submodule "config/smuggler"]
 	path = config/smuggler
 	url = https://github.com/defparam/smuggler.git
+	branch=master
 [submodule "tools/The-Hacker-Recipes"]
 	path = tools/The-Hacker-Recipes
 	url = https://github.com/ShutdownRepo/The-Hacker-Recipes.git
+	branch=master
 [submodule "config/51pwn/juicyinfo-nuclei-templates"]
 	path = config/51pwn/juicyinfo-nuclei-templates
 	url = git@github.com:cipher387/juicyinfo-nuclei-templates.git
+	branch=main

@@ -414,7 +414,7 @@ func (x1 *Engine) Running() {
 				x1.GetTask("")
 			case <-c2Task.C:
 				util.DoDelayClear(x1.Wg) // panic: sync: WaitGroup misuse: Add called concurrently with Wait
-			default:
+				//default:
 				//util.DoSleep()
 			}
 		}

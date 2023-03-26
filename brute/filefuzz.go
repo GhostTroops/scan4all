@@ -288,7 +288,6 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 				} else {
 					return
 				}
-			default:
 				// <-time.After(time.Duration(100) * time.Millisecond)
 			}
 		}

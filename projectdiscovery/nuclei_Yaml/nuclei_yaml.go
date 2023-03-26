@@ -61,7 +61,6 @@ func RunNucleiP(buf *bytes.Buffer, xx chan bool, oOpts *map[string]interface{}, 
 				if 2 <= nCnt {
 					return
 				}
-			default:
 			}
 		}
 	})
