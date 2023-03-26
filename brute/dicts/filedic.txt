@@ -164,6 +164,7 @@
 /login.php3
 /login.php4
 /login.pl
+/help/android/
 /login.py
 /login.rb
 /login.vm
