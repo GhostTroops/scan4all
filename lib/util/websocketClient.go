@@ -74,8 +74,8 @@ func (r *E2eWebsocket) DispatchEvt(data []byte) {
 					//case Sdp:
 					//	r.E2eImp.SessionDescriptionCbk(io.NopCloser(bytes.NewReader(d1)))
 					//	break
-					default:
-						//r.E2eImp.CandidateCbk(io.NopCloser(bytes.NewReader(d1)))
+					//default:
+					//r.E2eImp.CandidateCbk(io.NopCloser(bytes.NewReader(d1)))
 					}
 				} else if 2 < len(d1) {
 					Logs("json.Marshal(o.Message)", err, string(d1))

@@ -122,7 +122,7 @@ func (m *Masscan) ParseLine(s string) ([]Const.Host, error) {
 				//host.Ip = host.Address.Addr
 				hosts = append(hosts, host)
 			}
-		default:
+			//default:
 		}
 	}
 	return hosts, nil
