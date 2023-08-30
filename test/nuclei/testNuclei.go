@@ -19,10 +19,7 @@ import (
 2）、设置nuclei调用参数：options.Templates 对应命令行中的 -t,格式如下
 nuclei -duc -u http://192.168.10.31:8888 -t "http://127.0.0.1:8088/goSwaggerAPI.yaml,http://127.0.0.1:8088/checkGoDebug.yaml"
 2、多实例测试
-
-
 */
-
 func DoNuclei(buf *bytes.Buffer, wg *sync.WaitGroup, oOpts *map[string]interface{}) {
 	defer wg.Done()
 	xx := make(chan bool)

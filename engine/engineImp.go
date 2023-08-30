@@ -101,7 +101,7 @@ func (e *Engine) initNodeId() {
 	}
 	if "" == e.NodeId {
 		e.NodeId = util.GenUuid()
-		ioutil.WriteFile(szP, []byte(e.NodeId), os.ModePerm)
+		os.WriteFile(szP, []byte(e.NodeId), os.ModePerm)
 	}
 }
 
