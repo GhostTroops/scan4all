@@ -13,6 +13,10 @@ import (
 type CmdCbk func(string) string
 
 /*
+年：31536000000 毫秒
+月：2592000000毫秒
+天：86400000
+小时：3600000毫秒
 go install github.com/OJ/gobuster/v3@latest
 */
 func init() {
@@ -160,6 +164,7 @@ func DoGobuster(s string) string {
 
 	return s1
 }
+
 func DoKsubdomain(s string) string {
 	szName, _ := GetTempFile() // 输出的文件名
 	os.WriteFile(szName, []byte(s), os.ModePerm)
@@ -167,9 +172,9 @@ func DoKsubdomain(s string) string {
 	a := GetCmdParms(t)
 	a[10] = szName
 	szRst := DoAsyncCmd(t, a...)
-	if util.FileExists(o) {
-		os.Remove(o)
-	}
+	//if util.FileExists(o) {
+	//	os.Remove(o)
+	//}
 	return szRst
 }
 

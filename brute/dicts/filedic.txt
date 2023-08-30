@@ -5194,6 +5194,7 @@ $metadata
 /actuator/loggingConfig
 /actuator/mappings
 /actuator/metrics
+/_matrix/static/
 /actuator/refresh
 /actuator/registeredServices
 /actuator/releaseAttributes

@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hktalent/ProScan4all/lib/util"
-	"log"
 	"net"
 	"net/url"
 	"strconv"
@@ -36,6 +35,9 @@ type CheckTarget struct {
 // 准备要检测、链接带目标
 // 需要考虑 ssl的情况
 func NewCheckTarget(szUrl, SzType string, readWriteTimeout int) *CheckTarget {
+	if -1 == strings.Index(szUrl, "?") && -1 < strings.Index(szUrl, "&") {
+		szUrl = strings.Replace(szUrl, "&", "?", -1)
+	}
 	u, err := url.Parse(strings.TrimSpace(szUrl))
 
 	if "" == SzType {
@@ -46,6 +48,7 @@ func NewCheckTarget(szUrl, SzType string, readWriteTimeout int) *CheckTarget {
 	}
 	r11 := &CheckTarget{UrlRaw: szUrl, UrlPath: "/", MacReadSize: 200 * 1024 * 1024, ConnType: SzType, ReadTimeout: readWriteTimeout, CheckCbkLists: []*CheckCbkFuc{}}
 	if err == nil {
+		r11.HostName = u.Hostname()
 		r11.Target = u.Hostname()
 		r11.Port = 80
 		// https://eli.thegreenplace.net/2021/go-socket-servers-with-tls/
@@ -82,7 +85,8 @@ func (r *CheckTarget) SendOnePayload(str, szPath, szHost string, nTimes int) str
 	defer r.Close()
 	if nil == err && r.ConnState {
 		for i := 0; i < nTimes; i++ {
-			r.WriteWithFlush(fmt.Sprintf(str, szPath, szHost, r.CustomHeadersRaw))
+			s1 := fmt.Sprintf(str, szPath, szHost, r.CustomHeadersRaw)
+			r.WriteWithFlush(s1)
 		}
 		s1 := *r.ReadAll2Str()
 		if "" != s1 {
@@ -124,7 +128,7 @@ func (r *CheckTarget) WriteWithFlush(s string) (nn int, err error) {
 	if nil == bw {
 		return -1, errors.New("WriteWithFlush can not get GetBufWriter")
 	}
-	log.Printf("Payload: %s\n%s", r.UrlRaw, s)
+	//log.Printf("Payload: %s\n%s", r.UrlRaw, s)
 	nn, err = bw.Write([]byte(s))
 	bw.Flush()
 	return
