@@ -2,7 +2,7 @@ package svn
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 )
 
 func Check(Host, Username, Password string, Port int) (bool, error) {

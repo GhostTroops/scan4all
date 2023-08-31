@@ -1,7 +1,7 @@
 package landray
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	"strings"
 )
 

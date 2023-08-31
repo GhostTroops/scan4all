@@ -2,7 +2,7 @@ package gitlab
 
 import (
 	"bytes"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	"mime/multipart"
 	"net/textproto"
 	"regexp"

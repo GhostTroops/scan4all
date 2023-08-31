@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"github.com/chromedp/chromedp"
-	pkg "github.com/hktalent/ProScan4all/lib/crawlergo"
+	pkg "github.com/hktalent/scan4all/lib/crawlergo"
 	"log"
 	"time"
 )

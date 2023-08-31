@@ -1,7 +1,7 @@
 package Smuggling
 
 import (
-	"github.com/hktalent/ProScan4all/lib/socket"
+	"github.com/hktalent/scan4all/lib/socket"
 	"log"
 	"strings"
 )

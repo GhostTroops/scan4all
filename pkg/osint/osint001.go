@@ -3,8 +3,8 @@ package osint
 import (
 	_ "embed"
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
 	util1 "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/util"
 	"io"
 	"net/http"
 	"sort"

@@ -2,7 +2,7 @@ package rdp
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp"
 )
 
 func Check(ip, domain, login, password string, port int, protocol string) (bool, error) {

@@ -1,7 +1,7 @@
 package jboss
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 )
 
 func CVE_2017_12149(url string) bool {

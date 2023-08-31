@@ -3,8 +3,8 @@ package xcmd
 import (
 	"bytes"
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
 	"github.com/hktalent/kvDb"
+	"github.com/hktalent/scan4all/lib/util"
 	"io"
 	"io/ioutil"
 	"log"

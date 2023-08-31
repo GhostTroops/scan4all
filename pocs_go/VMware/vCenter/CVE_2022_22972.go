@@ -2,7 +2,7 @@ package vCenter
 
 import (
 	"bytes"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	jsoniter "github.com/json-iterator/go"
 	"io/ioutil"
 	"net/url"

@@ -2,8 +2,8 @@ package fastjson
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/pkg/jndi"
+	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg/jndi"
 	"net/url"
 	"regexp"
 	"strings"

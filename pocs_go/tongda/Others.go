@@ -1,6 +1,6 @@
 package tongda
 
-import "github.com/hktalent/ProScan4all/lib/util"
+import "github.com/hktalent/scan4all/lib/util"
 
 func CheckOthers(u string) {
 	// http://wiki.peiqi.tech/wiki/oa/通达OA/通达OA%20v2014%20get_contactlist.php%20敏感信息泄漏漏洞.html

@@ -4,30 +4,29 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptrace"
+	"net/http/httputil"
+	"net/url"
 	"os"
+
+	readerutil "github.com/projectdiscovery/utils/reader"
+	urlutil "github.com/projectdiscovery/utils/url"
 )
 
-// LenReader is an interface implemented by many in-memory io.Reader's. Used
-// for automatically sending the right Content-Length header when possible.
-type LenReader interface {
-	Len() int
-}
+// When True . Request uses `http` as scheme instead of `https`
+var PreferHTTP bool
 
 // Request wraps the metadata needed to create HTTP requests.
 // Request is not threadsafe. A request cannot be used by multiple goroutines
 // concurrently.
 type Request struct {
-	// body is a seekable reader over the request body payload. This is
-	// used to rewind the request data in between retries.
-	body ReaderFunc
-
 	// Embed an HTTP request directly. This makes a *Request act exactly
 	// like an *http.Request so that all meta methods are supported.
 	*http.Request
+
+	//URL
+	*urlutil.URL
 
 	// Metrics contains the metrics for the request.
 	Metrics Metrics
@@ -77,41 +76,6 @@ type ResponseLogHook func(*http.Response)
 // attempted. If overriding this, be sure to close the body if needed.
 type ErrorHandler func(resp *http.Response, err error, numTries int) (*http.Response, error)
 
-// ReaderFunc is the type of function that can be given natively to NewRequest
-type ReaderFunc func() (io.Reader, error)
-
-// NewRequest creates a new wrapped request.
-func NewRequest(method, url string, body interface{}) (*Request, error) {
-	bodyReader, contentLength, err := getBodyReaderAndContentLength(body)
-	if err != nil {
-		return nil, err
-	}
-
-	httpReq, err := http.NewRequest(method, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	httpReq.ContentLength = contentLength
-
-	return &Request{bodyReader, httpReq, Metrics{}, nil}, nil
-}
-
-// NewRequestWithContext creates a new wrapped request with context
-func NewRequestWithContext(ctx context.Context, method, url string, body interface{}) (*Request, error) {
-	bodyReader, contentLength, err := getBodyReaderAndContentLength(body)
-	if err != nil {
-		return nil, err
-	}
-
-	httpReq, err := http.NewRequestWithContext(ctx, method, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	httpReq.ContentLength = contentLength
-
-	return &Request{bodyReader, httpReq, Metrics{}, nil}, nil
-}
-
 // WithContext returns wrapped Request with a shallow copy of underlying *http.Request
 // with its context changed to ctx. The provided ctx must be non-nil.
 func (r *Request) WithContext(ctx context.Context) *Request {
@@ -119,15 +83,115 @@ func (r *Request) WithContext(ctx context.Context) *Request {
 	return r
 }
 
-// FromRequest wraps an http.Request in a retryablehttp.Request
-func FromRequest(r *http.Request) (*Request, error) {
-	bodyReader, contentLength, err := getBodyReaderAndContentLength(r.Body)
+// BodyBytes allows accessing the request body. It is an analogue to
+// http.Request's Body variable, but it returns a copy of the underlying data
+// rather than consuming it.
+//
+// This function is not thread-safe; do not call it at the same time as another
+// call, or at the same time this request is being used with Client.Do.
+func (r *Request) BodyBytes() ([]byte, error) {
+	if r.Request.Body == nil {
+		return nil, nil
+	}
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(r.Body)
 	if err != nil {
 		return nil, err
 	}
-	r.ContentLength = contentLength
+	return buf.Bytes(), nil
+}
 
-	return &Request{bodyReader, r, Metrics{}, nil}, nil
+// Update request URL with new changes of parameters if any
+func (r *Request) Update() {
+	r.URL.Update()
+	updateScheme(r.URL.URL)
+}
+
+// SetURL updates request url (i.e http.Request.URL) with given url
+func (r *Request) SetURL(u *urlutil.URL) {
+	r.URL = u
+	r.Request.URL = u.URL
+	r.Update()
+}
+
+// Clones and returns new Request
+func (r *Request) Clone(ctx context.Context) *Request {
+	r.Update()
+	ux := r.URL.Clone()
+	req := r.Request.Clone(ctx)
+	req.URL = ux.URL
+	ux.Update()
+	var auth *Auth
+	if r.hasAuth() {
+		auth = &Auth{
+			Type:     r.Auth.Type,
+			Username: r.Auth.Username,
+			Password: r.Auth.Password,
+		}
+	}
+	return &Request{
+		Request: req,
+		URL:     ux,
+		Metrics: Metrics{}, // Metrics shouldn't be cloned
+		Auth:    auth,
+	}
+}
+
+// Dump returns request dump in bytes
+func (r *Request) Dump() ([]byte, error) {
+	resplen := int64(0)
+	dumpbody := true
+	clone := r.Clone(context.TODO())
+	if clone.Body != nil {
+		resplen, _ = getLength(clone.Body)
+	}
+	if resplen == 0 {
+		dumpbody = false
+		clone.ContentLength = 0
+		clone.Body = nil
+		delete(clone.Header, "Content-length")
+	}
+	dumpBytes, err := httputil.DumpRequestOut(clone.Request, dumpbody)
+	if err != nil {
+		return nil, err
+	}
+	return dumpBytes, nil
+}
+
+// hasAuth checks if request has any username/password
+func (request *Request) hasAuth() bool {
+	return request.Auth != nil
+}
+
+// FromRequest wraps an http.Request in a retryablehttp.Request
+func FromRequest(r *http.Request) (*Request, error) {
+	req := Request{
+		Request: r,
+		Metrics: Metrics{},
+		Auth:    nil,
+	}
+
+	if r.URL != nil {
+		urlx, err := urlutil.Parse(r.URL.String())
+		if err != nil {
+			return nil, err
+		}
+		req.URL = urlx
+	}
+
+	if r.Body != nil {
+		body, err := readerutil.NewReusableReadCloser(r.Body)
+		if err != nil {
+			return nil, err
+		}
+		r.Body = body
+		req.ContentLength, err = getLength(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &req, nil
 }
 
 // FromRequestWithTrace wraps an http.Request in a retryablehttp.Request with trace enabled
@@ -158,121 +222,71 @@ func FromRequestWithTrace(r *http.Request) (*Request, error) {
 	return FromRequest(r)
 }
 
-// BodyBytes allows accessing the request body. It is an analogue to
-// http.Request's Body variable, but it returns a copy of the underlying data
-// rather than consuming it.
-//
-// This function is not thread-safe; do not call it at the same time as another
-// call, or at the same time this request is being used with Client.Do.
-func (r *Request) BodyBytes() ([]byte, error) {
-	if r.body == nil {
-		return nil, nil
-	}
-	body, err := r.body()
-	if err != nil {
-		return nil, err
-	}
-	buf := new(bytes.Buffer)
-	_, err = buf.ReadFrom(body)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+// NewRequest creates a new wrapped request.
+func NewRequestFromURL(method string, urlx *urlutil.URL, body interface{}) (*Request, error) {
+	return NewRequestFromURLWithContext(context.Background(), method, urlx, body)
 }
 
-func getBodyReaderAndContentLength(rawBody interface{}) (ReaderFunc, int64, error) {
-	var bodyReader ReaderFunc
-	var contentLength int64
+// NewRequestWithContext creates a new wrapped request with context
+func NewRequestFromURLWithContext(ctx context.Context, method string, urlx *urlutil.URL, body interface{}) (*Request, error) {
+	bodyReader, contentLength, err := getReusableBodyandContentLength(body)
+	if err != nil {
+		return nil, err
+	}
 
-	if rawBody != nil {
-		switch body := rawBody.(type) {
-		// If they gave us a function already, great! Use it.
-		case ReaderFunc:
-			bodyReader = body
-			tmp, err := body()
-			if err != nil {
-				return nil, 0, err
-			}
-			if lr, ok := tmp.(LenReader); ok {
-				contentLength = int64(lr.Len())
-			}
-			if c, ok := tmp.(io.Closer); ok {
-				c.Close()
-			}
+	// we provide a url without path to http.NewRequest at start and then replace url instance directly
+	// because `http.NewRequest()` internally parses using `url.Parse()` this removes/overrides any
+	// patches done by urlutil.URL in unsafe mode (ex: https://scanme.sh/%invalid)
+	// Note: this does not have any impact on actual path when sending request
+	// `http.NewRequestxxx` internally only uses `u.Host` and all other data is stored in `url.URL` instance
+	httpReq, err := http.NewRequestWithContext(ctx, method, "https://"+urlx.Host, nil)
+	if err != nil {
+		return nil, err
+	}
+	urlx.Update()
+	httpReq.URL = urlx.URL
+	updateScheme(httpReq.URL)
+	// content-length and body should be assigned only
+	// if request has body
+	if bodyReader != nil {
+		httpReq.ContentLength = contentLength
+		httpReq.Body = bodyReader
+	}
 
-		case func() (io.Reader, error):
-			bodyReader = body
-			tmp, err := body()
-			if err != nil {
-				return nil, 0, err
-			}
-			if lr, ok := tmp.(LenReader); ok {
-				contentLength = int64(lr.Len())
-			}
-			if c, ok := tmp.(io.Closer); ok {
-				c.Close()
-			}
+	return &Request{httpReq, urlx, Metrics{}, nil}, nil
+}
 
-		// If a regular byte slice, we can read it over and over via new
-		// readers
-		case []byte:
-			buf := body
-			bodyReader = func() (io.Reader, error) {
-				return bytes.NewReader(buf), nil
-			}
-			contentLength = int64(len(buf))
+// NewRequest creates a new wrapped request
+func NewRequest(method, url string, body interface{}) (*Request, error) {
+	urlx, err := urlutil.Parse(url)
+	if err != nil {
+		return nil, err
+	}
+	return NewRequestFromURL(method, urlx, body)
+}
 
-		// If a bytes.Buffer we can read the underlying byte slice over and
-		// over
-		case *bytes.Buffer:
-			buf := body
-			bodyReader = func() (io.Reader, error) {
-				return bytes.NewReader(buf.Bytes()), nil
-			}
-			contentLength = int64(buf.Len())
+// NewRequest creates a new wrapped request with given context
+func NewRequestWithContext(ctx context.Context, method, url string, body interface{}) (*Request, error) {
+	urlx, err := urlutil.Parse(url)
+	if err != nil {
+		return nil, err
+	}
+	return NewRequestFromURLWithContext(ctx, method, urlx, body)
+}
 
-		// We prioritize *bytes.Reader here because we don't really want to
-		// deal with it seeking so want it to match here instead of the
-		// io.ReadSeeker case.
-		case *bytes.Reader:
-			buf, err := ioutil.ReadAll(body)
-			if err != nil {
-				return nil, 0, err
-			}
-			bodyReader = func() (io.Reader, error) {
-				return bytes.NewReader(buf), nil
-			}
-			contentLength = int64(len(buf))
+func updateScheme(u *url.URL) {
+	// when url without scheme is passed to url.URL it loosely parses and ususally actual host is either part of scheme or path
+	// But this is sometimes handled internally when creating request using http.NewRequest
+	// Also It is illegal to update http.Request.URL in serverHTTP https://github.com/golang/go/issues/18952 but no mention about client side
 
-		// Compat case
-		case io.ReadSeeker:
-			raw := body
-			bodyReader = func() (io.Reader, error) {
-				_, err := raw.Seek(0, 0)
-				return ioutil.NopCloser(raw), err
-			}
-			if lr, ok := raw.(LenReader); ok {
-				contentLength = int64(lr.Len())
-			}
+	// When Url of Request is updated (i.e http.Request.URL = tmp etc) this condition must be explicitly handled else
+	// it causes `unsupported protocol scheme "" error `
 
-		// Read all in so we can reset
-		case io.Reader:
-			buf, err := ioutil.ReadAll(body)
-			if err != nil {
-				return nil, 0, err
-			}
-			bodyReader = func() (io.Reader, error) {
-				return bytes.NewReader(buf), nil
-			}
-			contentLength = int64(len(buf))
-
-		default:
-			return nil, 0, fmt.Errorf("cannot handle type %T", rawBody)
+	if u.Host != "" && u.Scheme == "" {
+		if PreferHTTP {
+			u.Scheme = "http"
+		} else {
+			u.Scheme = "https"
 		}
 	}
-	return bodyReader, contentLength, nil
-}
-
-func (request *Request) hasAuth() bool {
-	return request.Auth != nil
 }

@@ -347,7 +347,7 @@ func (request *Request) ExecuteWithResults(input *contextargs.Context, dynamicVa
 const drainReqSize = int64(8 * 1024)
 
 var errStopExecution = errors.New("stop execution due to unresolved variables")
-var someMapMutex = sync.RWMutex{}
+
 // executeRequest executes the actual generated request and returns error if occurred
 func (request *Request) executeRequest(input *contextargs.Context, generatedRequest *generatedRequest, previousEvent output.InternalEvent, hasInteractMatchers bool, callback protocols.OutputEventCallback, requestCount int) error {
 	request.setCustomHeaders(generatedRequest)
@@ -598,7 +598,6 @@ func (request *Request) executeRequest(input *contextargs.Context, generatedRequ
 		if request.options.Interactsh != nil {
 			request.options.Interactsh.MakePlaceholders(generatedRequest.interactshURLs, outputEvent)
 		}
-		someMapMutex.Lock()
 		for k, v := range previousEvent {
 			finalEvent[k] = v
 		}
@@ -614,7 +613,6 @@ func (request *Request) executeRequest(input *contextargs.Context, generatedRequ
 				finalEvent[key] = v
 			}
 		}
-		someMapMutex.Unlock()
 		// prune signature internal values if any
 		request.pruneSignatureInternalValues(generatedRequest.meta)
 

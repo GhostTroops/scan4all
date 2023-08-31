@@ -92,6 +92,44 @@ if isMatch, _ := re.MatchString(`Something to match`); isMatch {
 
 This feature is a work in progress and I'm open to ideas for more things to put here (maybe more relaxed character escaping rules?).
 
+## Catastrophic Backtracking and Timeouts
+
+`regexp2` supports features that can lead to catastrophic backtracking.
+`Regexp.MatchTimeout` can be set to to limit the impact of such behavior; the
+match will fail with an error after approximately MatchTimeout. No timeout
+checks are done by default.
+
+Timeout checking is not free. The current timeout checking implementation starts
+a background worker that updates a clock value approximately once every 100
+milliseconds. The matching code compares this value against the precomputed
+deadline for the match. The performance impact is as follows.
+
+1.  A match with a timeout runs almost as fast as a match without a timeout.
+2.  If any live matches have a timeout, there will be a background CPU load
+    (`~0.15%` currently on a modern machine). This load will remain constant
+    regardless of the number of matches done including matches done in parallel.
+3.  If no live matches are using a timeout, the background load will remain
+    until the longest deadline (match timeout + the time when the match started)
+    is reached. E.g., if you set a timeout of one minute the load will persist
+    for approximately a minute even if the match finishes quickly.
+
+Some alternative implementations were considered and ruled out. 
+
+1.  **time.Now()** - This was the initial timeout implementation. It called `time.Now()`
+    and compared the result to the deadline approximately once every 1000 matching steps.
+    Adding a timeout to a simple match increased the cost from ~45ns to ~3000ns).
+2.  **time.AfterFunc** - This approach entails using `time.AfterFunc` to set an `expired`
+    atomic boolean value. However it increases the cost of handling a simple match 
+    with a timeout from ~45ns to ~360ns and was therefore ruled out.
+3.  **counter** - In this approach an atomic variable tracks the number of live matches
+    with timeouts. The background clock stops when the counter hits zero. The benefit
+    of this approach is that the background load will stop more quickly (after the
+    last match has finished as opposed to waiting until the deadline for the last
+    match). However this approach requires more atomic variable updates and has poorer
+    performance when multiple matches are executed concurrently. (The cost of a
+    single match jumps from ~45ns to ~65ns, and the cost of running matches on
+    all 12 available CPUs jumps from ~400ns to ~730ns).
+
 ## ECMAScript compatibility mode
 In this mode the engine provides compatibility with the [regex engine](https://tc39.es/ecma262/multipage/text-processing.html#sec-regexp-regular-expression-objects) described in the ECMAScript specification.
 

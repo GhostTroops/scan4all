@@ -3,8 +3,8 @@ package xcmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
 	Const "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/util"
 	"log"
 	"os"
 	"strings"
@@ -20,30 +20,30 @@ type CmdCbk func(string) string
 go install github.com/OJ/gobuster/v3@latest
 */
 func init() {
-	util.RegInitFunc(func() {
-		for k, v := range map[uint64]CmdCbk{
-			Const.ScanType_Naabu:      DoNaabu,
-			Const.ScanType_Httpx:      DoHttpx,
-			Const.ScanType_Nuclei:     DoNuclei,
-			Const.ScanType_DNSx:       DoDnsx,
-			Const.ScanType_Tlsx:       DoTlsx,
-			Const.ScanType_Katana:     DoKatana,
-			Const.ScanType_Shuffledns: DoShuffledns,
-			Const.ScanType_Subfinder:  DoSubfinder,
-			Const.ScanType_Amass:      DoAmass,
-			Const.ScanType_Ffuf:       DoFfuf,
-			Const.ScanType_Uncover:    DoUncover,
-			Const.ScanType_Gobuster:   DoGobuster,
-		} {
-			//v = ParseOut(k, v)
-			func(nT uint64, cbk CmdCbk) {
-				util.EngineFuncFactory(k, func(evt *Const.EventData, args ...interface{}) {
-					s := strings.Join(util.CvtData(evt.EventData), "\n")
-					ParseOut(nT, evt.EventType, cbk)(s)
-				})
-			}(k, v)
-		}
-	})
+	//util.RegInitFunc(func() {
+	//	for k, v := range map[uint64]CmdCbk{
+	//		Const.ScanType_Naabu:      DoNaabu,
+	//		Const.ScanType_Httpx:      DoHttpx,
+	//		Const.ScanType_Nuclei:     DoNuclei,
+	//		Const.ScanType_DNSx:       DoDnsx,
+	//		Const.ScanType_Tlsx:       DoTlsx,
+	//		Const.ScanType_Katana:     DoKatana,
+	//		Const.ScanType_Shuffledns: DoShuffledns,
+	//		Const.ScanType_Subfinder:  DoSubfinder,
+	//		Const.ScanType_Amass:      DoAmass,
+	//		Const.ScanType_Ffuf:       DoFfuf,
+	//		Const.ScanType_Uncover:    DoUncover,
+	//		Const.ScanType_Gobuster:   DoGobuster,
+	//	} {
+	//		//v = ParseOut(k, v)
+	//		func(nT uint64, cbk CmdCbk) {
+	//			util.EngineFuncFactory(k, func(evt *Const.EventData, args ...interface{}) {
+	//				s := strings.Join(util.CvtData(evt.EventData), "\n")
+	//				ParseOut(nT, evt.EventType, cbk)(s)
+	//			})
+	//		}(k, v)
+	//	}
+	//})
 }
 
 // 逐行扫描结果，并返回 chan
@@ -100,6 +100,9 @@ func CvtItfc(m *map[string]interface{}, a ...string) []interface{} {
 func ParseOut(nType, rawType uint64, fnCbk CmdCbk) CmdCbk {
 	return func(s string) string {
 		s1 := fnCbk(s)
+		if "" == s1 {
+			return ""
+		}
 		xEt := ^nType & rawType
 		switch nType {
 		// {"host":"www.baidu.com","ip":"104.193.88.123","port":443,"timestamp":"2023-01-08T14:58:44.115411Z"}

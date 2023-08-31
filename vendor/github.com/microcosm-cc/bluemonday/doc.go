@@ -35,31 +35,31 @@ the allowlist will be stripped.
 
 The default bluemonday.UGCPolicy().Sanitize() turns this:
 
-    Hello <STYLE>.XSS{background-image:url("javascript:alert('XSS')");}</STYLE><A CLASS=XSS></A>World
+	Hello <STYLE>.XSS{background-image:url("javascript:alert('XSS')");}</STYLE><A CLASS=XSS></A>World
 
 Into the more harmless:
 
-    Hello World
+	Hello World
 
 And it turns this:
 
-    <a href="javascript:alert('XSS1')" onmouseover="alert('XSS2')">XSS<a>
+	<a href="javascript:alert('XSS1')" onmouseover="alert('XSS2')">XSS<a>
 
 Into this:
 
-    XSS
+	XSS
 
 Whilst still allowing this:
 
-    <a href="http://www.google.com/">
-      <img src="https://ssl.gstatic.com/accounts/ui/logo_2x.png"/>
-    </a>
+	<a href="http://www.google.com/">
+	  <img src="https://ssl.gstatic.com/accounts/ui/logo_2x.png"/>
+	</a>
 
 To pass through mostly unaltered (it gained a rel="nofollow"):
 
-    <a href="http://www.google.com/" rel="nofollow">
-      <img src="https://ssl.gstatic.com/accounts/ui/logo_2x.png"/>
-    </a>
+	<a href="http://www.google.com/" rel="nofollow">
+	  <img src="https://ssl.gstatic.com/accounts/ui/logo_2x.png"/>
+	</a>
 
 The primary purpose of bluemonday is to take potentially unsafe user generated
 content (from things like Markdown, HTML WYSIWYG tools, etc) and make it safe
@@ -95,10 +95,10 @@ attributes are considered safe for your scenario. OWASP provide an XSS
 prevention cheat sheet ( https://www.google.com/search?q=xss+prevention+cheat+sheet )
 to help explain the risks, but essentially:
 
-    1. Avoid allowing anything other than plain HTML elements
-    2. Avoid allowing `script`, `style`, `iframe`, `object`, `embed`, `base`
-       elements
-    3. Avoid allowing anything other than plain HTML elements with simple
-       values that you can match to a regexp
+ 1. Avoid allowing anything other than plain HTML elements
+ 2. Avoid allowing `script`, `style`, `iframe`, `object`, `embed`, `base`
+    elements
+ 3. Avoid allowing anything other than plain HTML elements with simple
+    values that you can match to a regexp
 */
 package bluemonday

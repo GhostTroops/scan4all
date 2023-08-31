@@ -2,7 +2,7 @@ package seeyon
 
 import (
 	"encoding/base64"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 )
 
 //A8 htmlofficeservlet RCE漏洞

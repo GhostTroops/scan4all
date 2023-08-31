@@ -2,8 +2,8 @@ package generate
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/socket"
 	util "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/socket"
 	"net/url"
 	"os"
 	"strings"

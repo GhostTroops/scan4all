@@ -8,12 +8,12 @@ import (
 	"io"
 	"reflect"
 
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp/core"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp/emission"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp/glog"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp/protocol/t125/ber"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp/protocol/t125/gcc"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp/protocol/t125/per"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/core"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/emission"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/glog"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/protocol/t125/ber"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/protocol/t125/gcc"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/protocol/t125/per"
 )
 
 // take idea from https://github.com/Madnikulin50/gordp

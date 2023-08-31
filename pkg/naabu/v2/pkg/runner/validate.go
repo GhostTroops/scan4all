@@ -6,7 +6,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/hktalent/ProScan4all/pkg/naabu/v2/pkg/privileges"
+	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/fileutil"
 

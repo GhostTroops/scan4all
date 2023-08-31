@@ -225,6 +225,7 @@ more see: <a href=https://github.com/hktalent/ProScan4all/discussions>discussion
 |<img src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/wc.png>|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/zfb.png>|[paypal](https://www.paypal.me/pwned2019) **miracletalent@gmail.com**|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/BTC.png>|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/BCH.jpg>|
 
 <!--
+go mod vendor 2>&1|grep "go get "|sort -u
 
 cat $HOME/MyWork/scan4all/json/paypal.com.json|sed 's/=.*//g'|sort -u|nuclei -sa -t $PWD/config/nuclei-templates -no-strict-syntax -severity critical,high,medium -type http,network,websocket,dns,ssl -report-config $PWD/config/nuclei_esConfig.yaml  -ztls -config-directory ${PWD}/config/nuclei -interactions-cache-size 5000 -interactions-eviction 60 -interactions-poll-duration 5 -interactions-cooldown-period 5 -max-host-error 5 -duc -json -o paypal_nuclei.json
 

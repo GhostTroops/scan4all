@@ -3,7 +3,7 @@ package elastic
 import (
 	"context"
 	"fmt"
-	"github.com/hktalent/ProScan4all/pkg/hydra/snmp"
+	"github.com/hktalent/scan4all/pkg/hydra/snmp"
 	"github.com/olivere/elastic"
 	"time"
 )

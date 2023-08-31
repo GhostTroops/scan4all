@@ -2,11 +2,11 @@ package hydra
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/pkg/hydra/oracle"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/gotelnet"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/misc"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/pool"
+	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg/hydra/oracle"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/gotelnet"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/misc"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/pool"
 	"strings"
 	"time"
 )

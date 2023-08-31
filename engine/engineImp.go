@@ -5,10 +5,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/asaskevich/govalidator"
-	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/pocs_go"
 	Const "github.com/hktalent/go-utils"
 	"github.com/hktalent/jaeles/cmd"
+	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pocs_go"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/karlseguin/ccache"
 	"github.com/panjf2000/ants/v2"
@@ -424,14 +424,14 @@ func (x1 *Engine) Running() {
 // 引擎总入口
 func init() {
 	//log.Println("engineImp.go run")
-	util.RegInitFunc4Hd(func() {
-		// 下面的变量 不能移动到DoSyncFunc，否则全局变量将影响后续的init，导致无效的内存
-		NewEngine(&util.Ctx_global, util.GetValAsInt("ScanPoolSize", 5000))
-
-		util.DoSyncFunc(func() {
-			util.G_Engine.(*Engine).Running()
-		})
-	})
+	//util.RegInitFunc4Hd(func() {
+	//	// 下面的变量 不能移动到DoSyncFunc，否则全局变量将影响后续的init，导致无效的内存
+	//	NewEngine(&util.Ctx_global, util.GetValAsInt("ScanPoolSize", 5000))
+	//
+	//	util.DoSyncFunc(func() {
+	//		util.G_Engine.(*Engine).Running()
+	//	})
+	//})
 }
 
 // 发送方 的签名key

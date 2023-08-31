@@ -72,7 +72,6 @@ var (
 	ErrDecoderSizeExceeded = errors.New("decompressed size exceeds configured limit")
 
 	// ErrUnknownDictionary is returned if the dictionary ID is unknown.
-	// For the time being dictionaries are not supported.
 	ErrUnknownDictionary = errors.New("unknown dictionary")
 
 	// ErrFrameSizeExceeded is returned if the stated frame size is exceeded.
@@ -129,11 +128,11 @@ func matchLen(a, b []byte) (n int) {
 }
 
 func load3232(b []byte, i int32) uint32 {
-	return binary.LittleEndian.Uint32(b[i:])
+	return binary.LittleEndian.Uint32(b[:len(b):len(b)][i:])
 }
 
 func load6432(b []byte, i int32) uint64 {
-	return binary.LittleEndian.Uint64(b[i:])
+	return binary.LittleEndian.Uint64(b[:len(b):len(b)][i:])
 }
 
 type byter interface {

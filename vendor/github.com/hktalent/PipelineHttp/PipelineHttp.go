@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -42,7 +43,8 @@ type PipelineHttp struct {
 	Buf                   *bytes.Buffer            `json:"buf"` // http2 client framer message
 	UseHttp2              bool                     `json:"use_http_2"`
 	TestHttp              bool                     `json:"test_http"`
-	ReTry                 int                      `json:"re_try"` // 连接超时重试
+	ReTry                 int                      `json:"re_try"`   // 连接超时重试
+	NoLimit               bool                     `json:"no_limit"` // 不限制
 	ver                   int
 }
 
@@ -52,6 +54,7 @@ func NewPipelineHttp(args ...map[string]interface{}) *PipelineHttp {
 	x1 := &PipelineHttp{
 		ver:                   1,
 		UseHttp2:              false,
+		NoLimit:               false,
 		TestHttp:              false,
 		Buf:                   &bytes.Buffer{},
 		Timeout:               time.Duration(nTimeout) * time.Second, // 拨号、连接
@@ -85,6 +88,9 @@ func NewPipelineHttp(args ...map[string]interface{}) *PipelineHttp {
 	//http.DefaultTransport.(*http.Transport).MaxIdleConns = x1.MaxIdleConns
 	//http.DefaultTransport.(*http.Transport).MaxIdleConnsPerHost = x1.MaxIdleConnsPerHost
 	return x1
+}
+func (r *PipelineHttp) SetNoLimit() {
+	r.NoLimit = true
 }
 
 // https://cloud.tencent.com/developer/article/1529840
@@ -244,9 +250,10 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 	if nil != err {
 		r.ErrCount++
 	}
-	if r.ErrCount >= r.ErrLimit {
+	if (!NoLimit && !r.NoLimit) && r.ErrCount >= r.ErrLimit {
 		log.Printf("PipelineHttp %d >= %d not close\n", r.ErrCount, r.ErrLimit)
 		r.Close()
+		return
 	}
 	if nil != err && rNohost.MatchString(err.Error()) {
 		log.Println(szUrl, err)
@@ -270,7 +277,10 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 	fnCbk(resp, err, szUrl)
 }
 
-var rNohost = regexp.MustCompile(`.*dial tcp: [^:]+: no such host.*`)
+var (
+	rNohost = regexp.MustCompile(`.*dial tcp: [^:]+: no such host.*`)
+	NoLimit = false
+)
 
 func (r *PipelineHttp) Close() {
 	r.IsClosed = true
@@ -309,6 +319,9 @@ func (r *PipelineHttp) testHttp2(szUrl001 string) {
 					}
 				} else if a1 := resp.Header["Alt-Svc"]; 0 < len(a1) && strings.Contains(a1[0], "h3=\"") {
 					r.Client = r.GetClient4Http3()
+				} else if resp.Proto == "HTTP/2.0" {
+					r.UseHttp2 = true
+					r.Client = c1
 				}
 				r.ErrLimit = 99999999
 			} else {
@@ -318,7 +331,7 @@ func (r *PipelineHttp) testHttp2(szUrl001 string) {
 	}
 }
 
-// more see test/main.go
+// more see cmd/main.go
 func (r *PipelineHttp) doDirsPrivate(szUrl string, dirs []string, nThread int, fnCbk func(resp *http.Response, err error, szU string)) {
 	c02 := make(chan struct{}, nThread)
 	defer close(c02)
@@ -366,6 +379,7 @@ func (r *PipelineHttp) doDirsPrivate(szUrl string, dirs []string, nThread int, f
 								s2 = "/" + s2
 							}
 							szUrl001 := szUrl + s2
+							fmt.Printf("%s\033[2K\r", szUrl001)
 							r.DoGetWithClient(client, szUrl001, "GET", nil, fnCbk)
 							//r.DoGet(szUrl001, fnCbk)
 							return

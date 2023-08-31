@@ -2,7 +2,7 @@ package exchange
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	jsoniter "github.com/json-iterator/go"
 	"strings"
 )

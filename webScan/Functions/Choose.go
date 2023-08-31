@@ -1,7 +1,7 @@
 package Funcs
 
 import (
-	Configs "github.com/hktalent/ProScan4all/webScan/config"
+	Configs "github.com/hktalent/scan4all/webScan/config"
 )
 
 type extras struct {

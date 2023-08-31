@@ -3,8 +3,8 @@ package portScan
 import (
 	"context"
 	"github.com/Ullaakut/nmap"
-	"github.com/hktalent/ProScan4all/lib/util"
 	Const "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/util"
 	"io"
 	"log"
 	"time"

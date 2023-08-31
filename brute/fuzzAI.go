@@ -3,9 +3,9 @@ package brute
 import (
 	_ "embed"
 	"github.com/antlabs/strsim"
-	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/pkg"
-	"github.com/hktalent/ProScan4all/pkg/fingerprint"
+	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/pkg/fingerprint"
 	jsoniter "github.com/json-iterator/go"
 	"gorm.io/gorm"
 	"net/url"

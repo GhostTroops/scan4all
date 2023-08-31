@@ -2,8 +2,8 @@ package Funcs
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
-	Configs "github.com/hktalent/ProScan4all/webScan/config"
+	"github.com/hktalent/scan4all/lib/util"
+	Configs "github.com/hktalent/scan4all/webScan/config"
 	"io/ioutil"
 	"net/http"
 	"os"

@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	_ "embed"
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	jsoniter "github.com/json-iterator/go"
 	"io/ioutil"
 	"log"

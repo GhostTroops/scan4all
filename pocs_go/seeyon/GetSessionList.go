@@ -1,7 +1,7 @@
 package seeyon
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 )
 
 //getSessionList.jsp session 泄露

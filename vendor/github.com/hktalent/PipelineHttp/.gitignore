@@ -6,13 +6,14 @@
 *.dll
 *.so
 *.dylib
+ppHttp
 scan4all
 release
 .DbCache
 scan4all_linux
 .DS_Store
 
-# Test binary, built with `go test -c`
+# Test binary, built with `go cmd -c`
 *.test
 
 # Output of the go coverage tool, specifically when used with LiteIDE

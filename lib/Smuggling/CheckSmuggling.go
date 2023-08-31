@@ -2,8 +2,8 @@ package Smuggling
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/socket"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/socket"
+	"github.com/hktalent/scan4all/lib/util"
 	"log"
 	"net/url"
 	"strings"

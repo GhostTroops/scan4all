@@ -3,8 +3,8 @@ package pkg
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
 	Const "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/util"
 	jsoniter "github.com/json-iterator/go"
 	"reflect"
 	"strings"

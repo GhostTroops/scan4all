@@ -298,6 +298,15 @@ func (g ginkgoErrors) SetupNodeNotInOrderedContainer(cl CodeLocation, nodeType N
 	}
 }
 
+func (g ginkgoErrors) InvalidContinueOnFailureDecoration(cl CodeLocation) error {
+	return GinkgoError{
+		Heading:      "ContinueOnFailure not decorating an outermost Ordered Container",
+		Message:      "ContinueOnFailure can only decorate an Ordered container, and this Ordered container must be the outermost Ordered container.",
+		CodeLocation: cl,
+		DocLink:      "ordered-containers",
+	}
+}
+
 /* DeferCleanup errors */
 func (g ginkgoErrors) DeferCleanupInvalidFunction(cl CodeLocation) error {
 	return GinkgoError{
@@ -444,8 +453,8 @@ func (g ginkgoErrors) InvalidEntryDescription(cl CodeLocation) error {
 
 func (g ginkgoErrors) MissingParametersForTableFunction(cl CodeLocation) error {
 	return GinkgoError{
-		Heading:      fmt.Sprintf("No parameters have been passed to the Table Function"),
-		Message:      fmt.Sprintf("The Table Function expected at least 1 parameter"),
+		Heading:      "No parameters have been passed to the Table Function",
+		Message:      "The Table Function expected at least 1 parameter",
 		CodeLocation: cl,
 		DocLink:      "table-specs",
 	}

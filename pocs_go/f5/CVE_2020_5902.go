@@ -1,7 +1,7 @@
 package f5
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 )
 
 func CVE_2020_5902(u string) bool {

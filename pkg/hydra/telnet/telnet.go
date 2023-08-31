@@ -1,7 +1,7 @@
 package telnet
 
 import (
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/gotelnet"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/gotelnet"
 )
 
 func Check(addr, username, password string, port, serverType int) (bool, error) {

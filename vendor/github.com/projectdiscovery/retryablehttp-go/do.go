@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"sync/atomic"
@@ -37,19 +36,8 @@ func (c *Client) Do(req *Request) (*http.Response, error) {
 	}
 
 	for i := 0; ; i++ {
-		// Always rewind the request body when non-nil.
-		if req.body != nil {
-			body, err := req.body()
-			if err != nil {
-				c.closeIdleConnections()
-				return resp, err
-			}
-			if c, ok := body.(io.ReadCloser); ok {
-				req.Body = c
-			} else {
-				req.Body = ioutil.NopCloser(body)
-			}
-		}
+		// request body can be read multiple times
+		// hence no need to rewind it
 
 		if c.RequestLogHook != nil {
 			c.RequestLogHook(req.Request, i)
@@ -115,9 +103,11 @@ func (c *Client) Do(req *Request) (*http.Response, error) {
 
 		// Exit if the main context or the request context is done
 		// Otherwise, wait for the duration and try again.
+		// use label to explicitly specify what to break
+	selectstatement:
 		select {
 		case <-mainCtx.Done():
-			break
+			break selectstatement
 		case <-req.Context().Done():
 			c.closeIdleConnections()
 			return nil, req.Context().Err()
@@ -141,7 +131,7 @@ func (c *Client) Do(req *Request) (*http.Response, error) {
 
 // Try to read the response body so we can reuse this connection.
 func (c *Client) drainBody(req *Request, resp *http.Response) {
-	_, err := io.Copy(ioutil.Discard, io.LimitReader(resp.Body, c.options.RespReadLimit))
+	_, err := io.Copy(io.Discard, io.LimitReader(resp.Body, c.options.RespReadLimit))
 	if err != nil {
 		req.Metrics.DrainErrors++
 	}

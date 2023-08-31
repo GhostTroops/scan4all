@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/hktalent/ProScan4all/lib/Smuggling"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/Smuggling"
+	"github.com/hktalent/scan4all/lib/util"
 	"os"
 	"testing"
 )

@@ -3,7 +3,7 @@ package httpx
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	"io"
 	"io/ioutil"
 	"net/http"

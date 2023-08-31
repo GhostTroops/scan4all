@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/hktalent/ProScan4all/pkg/httpx/common/stringz"
+	"github.com/hktalent/scan4all/pkg/httpx/common/stringz"
 	"github.com/projectdiscovery/fileutil"
 )
 

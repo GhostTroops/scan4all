@@ -3,9 +3,9 @@ package pool
 import (
 	"errors"
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/misc"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/smap"
+	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/misc"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/smap"
 	"io"
 	"log"
 	"sync"
@@ -19,12 +19,12 @@ type Logger interface {
 	Printf(string, ...interface{})
 }
 
-//创建worker，每一个worker抽象成一个可以执行任务的函数
+// 创建worker，每一个worker抽象成一个可以执行任务的函数
 type Worker struct {
 	f func(interface{}) (interface{}, error)
 }
 
-//通过NewTask来创建一个worker
+// 通过NewTask来创建一个worker
 func NewWorker(f func(interface{}) interface{}) *Worker {
 	return &Worker{
 		f: func(in interface{}) (out interface{}, err error) {
@@ -48,12 +48,12 @@ func init() {
 	})
 }
 
-//执行worker
+// 执行worker
 func (t *Worker) Run(in interface{}) (interface{}, error) {
 	return t.f(in)
 }
 
-//池
+// 池
 type Pool struct {
 	//母版函数
 	Function func(interface{}) interface{}
@@ -75,7 +75,7 @@ type Pool struct {
 	Done bool
 }
 
-//实例化工作池使用
+// 实例化工作池使用
 func NewPool(threads int) *Pool {
 	return &Pool{
 		threads:  threads,
@@ -89,7 +89,7 @@ func NewPool(threads int) *Pool {
 	}
 }
 
-//从jobs当中取出任务并执行。
+// 从jobs当中取出任务并执行。
 func (p *Pool) work() {
 	//减少waitGroup计数器的值
 	defer func() {
@@ -116,7 +116,7 @@ func (p *Pool) work() {
 	}
 }
 
-//执行工作池当中的任务
+// 执行工作池当中的任务
 func (p *Pool) Run() {
 	//只启动有限大小的协程，协程的数量不可以超过工作池设定的数量，防止计算资源崩溃
 	for i := 0; i < p.threads; i++ {
@@ -142,27 +142,27 @@ func (p *Pool) Wait() {
 	p.OutDone()
 }
 
-//结束输入信道
+// 结束输入信道
 func (p *Pool) InDone() {
 	close(p.In)
 }
 
-//结束输出信道
+// 结束输出信道
 func (p *Pool) OutDone() {
 	close(p.Out)
 }
 
-//向各工作协程发送提前结束指令
+// 向各工作协程发送提前结束指令
 func (p *Pool) Stop() {
 	p.Done = true
 }
 
-//生成工作票据
+// 生成工作票据
 func (p *Pool) NewTick() string {
 	return misc.RandomString()
 }
 
-//获取线程数
+// 获取线程数
 func (p *Pool) Threads() int {
 	return p.threads
 }

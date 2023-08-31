@@ -29,7 +29,7 @@ type frameDec struct {
 
 	FrameContentSize uint64
 
-	DictionaryID  *uint32
+	DictionaryID  uint32
 	HasCheckSum   bool
 	SingleSegment bool
 }
@@ -155,7 +155,7 @@ func (d *frameDec) reset(br byteBuffer) error {
 
 	// Read Dictionary_ID
 	// https://github.com/facebook/zstd/blob/dev/doc/zstd_compression_format.md#dictionary_id
-	d.DictionaryID = nil
+	d.DictionaryID = 0
 	if size := fhd & 3; size != 0 {
 		if size == 3 {
 			size = 4
@@ -178,11 +178,7 @@ func (d *frameDec) reset(br byteBuffer) error {
 		if debugDecoder {
 			println("Dict size", size, "ID:", id)
 		}
-		if id > 0 {
-			// ID 0 means "sorry, no dictionary anyway".
-			// https://github.com/facebook/zstd/blob/dev/doc/zstd_compression_format.md#dictionary-format
-			d.DictionaryID = &id
-		}
+		d.DictionaryID = id
 	}
 
 	// Read Frame_Content_Size
@@ -297,22 +293,14 @@ func (d *frameDec) next(block *blockDec) error {
 	return nil
 }
 
-// checkCRC will check the checksum if the frame has one.
+// checkCRC will check the checksum, assuming the frame has one.
 // Will return ErrCRCMismatch if crc check failed, otherwise nil.
 func (d *frameDec) checkCRC() error {
-	if !d.HasCheckSum {
-		return nil
-	}
-
 	// We can overwrite upper tmp now
 	buf, err := d.rawInput.readSmall(4)
 	if err != nil {
 		println("CRC missing?", err)
 		return err
-	}
-
-	if d.o.ignoreChecksum {
-		return nil
 	}
 
 	want := binary.LittleEndian.Uint32(buf[:4])
@@ -330,17 +318,13 @@ func (d *frameDec) checkCRC() error {
 	return nil
 }
 
-// consumeCRC reads the checksum data if the frame has one.
+// consumeCRC skips over the checksum, assuming the frame has one.
 func (d *frameDec) consumeCRC() error {
-	if d.HasCheckSum {
-		_, err := d.rawInput.readSmall(4)
-		if err != nil {
-			println("CRC missing?", err)
-			return err
-		}
+	_, err := d.rawInput.readSmall(4)
+	if err != nil {
+		println("CRC missing?", err)
 	}
-
-	return nil
+	return err
 }
 
 // runDecoder will run the decoder for the remainder of the frame.
@@ -419,15 +403,8 @@ func (d *frameDec) runDecoder(dst []byte, dec *blockDec) ([]byte, error) {
 			if d.o.ignoreChecksum {
 				err = d.consumeCRC()
 			} else {
-				var n int
-				n, err = d.crc.Write(dst[crcStart:])
-				if err == nil {
-					if n != len(dst)-crcStart {
-						err = io.ErrShortWrite
-					} else {
-						err = d.checkCRC()
-					}
-				}
+				d.crc.Write(dst[crcStart:])
+				err = d.checkCRC()
 			}
 		}
 	}
