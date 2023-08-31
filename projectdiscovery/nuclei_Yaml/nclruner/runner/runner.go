@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/blang/semver"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
@@ -50,7 +50,7 @@ import (
 	"github.com/projectdiscovery/retryablehttp-go"
 	"github.com/projectdiscovery/stringsutil"
 
-	"github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/colorizer"
+	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/nclruner/colorizer"
 )
 
 var json = jsoniter.ConfigCompatibleWithStandardLibrary

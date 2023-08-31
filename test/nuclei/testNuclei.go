@@ -2,8 +2,8 @@ package main
 
 import (
 	"bytes"
-	"github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml"
-	runner2 "github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
+	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
+	runner2 "github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
 	"github.com/projectdiscovery/nuclei/v2/pkg/model/types/severity"
 	nucleiType "github.com/projectdiscovery/nuclei/v2/pkg/templates/types"
 	_ "net/http/pprof"

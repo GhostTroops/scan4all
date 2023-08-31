@@ -3,8 +3,8 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/pkg/fingerprint"
+	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"io/ioutil"
 	"log"
 	"net/http"

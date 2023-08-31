@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/lcvvvv/gonmap/lib/chinese"
 	"net"
 	"regexp"

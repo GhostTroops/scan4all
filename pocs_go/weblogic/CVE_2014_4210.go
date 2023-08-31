@@ -1,7 +1,7 @@
 package weblogic
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 )
 
 func CVE_2014_4210(url string) bool {

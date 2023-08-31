@@ -1,8 +1,8 @@
 package main
 
 import (
-	main2 "github.com/hktalent/ProScan4all/lib/Smuggling/generate"
 	util "github.com/hktalent/go-utils"
+	main2 "github.com/hktalent/scan4all/lib/Smuggling/generate"
 	"testing"
 )
 

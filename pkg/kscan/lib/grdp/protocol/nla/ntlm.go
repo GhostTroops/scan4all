@@ -8,8 +8,8 @@ import (
 	"encoding/hex"
 	"time"
 
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp/core"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp/glog"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/core"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/glog"
 	"github.com/lunixbochs/struc"
 )
 
@@ -313,7 +313,7 @@ func (n *NTLMv2) GetNegotiateMessage() *NegotiateMessage {
 	return n.negotiateMessage
 }
 
-//  process NTLMv2 Authenticate hash
+// process NTLMv2 Authenticate hash
 func (n *NTLMv2) ComputeResponseV2(respKeyNT, respKeyLM, serverChallenge, clientChallenge,
 	timestamp, serverInfo []byte) (ntChallResp, lmChallResp, SessBaseKey []byte) {
 

@@ -2,6 +2,8 @@
 /login.jsp
 /stats.json
 /.well-known/security.txt
+/maximum-wiki-prod-app/
+/uPlOaDs/
 /admin/export?format=json
 ../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log%00
 ../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log

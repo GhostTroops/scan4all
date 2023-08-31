@@ -2,7 +2,7 @@ package hydra
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/color"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/color"
 )
 
 type AuthInfo struct {

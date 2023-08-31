@@ -35,27 +35,29 @@ func CvtData(d []interface{}) []string {
 func init() {
 	RegInitFunc(func() {
 		// 保存数据也采用统一的线程池
-		EngineFuncFactory(Const.ScanType_Nmap, func(evt *Const.EventData, args ...interface{}) {
-			if nil != evt && 0 < len(evt.EventData) {
-				return
-			}
-			tempI, err1 := ioutil.TempFile("", "stdin-in-*")
-			tempO, err := ioutil.TempFile("", "*.xml")
-			if err == nil && err1 == nil {
-				defer tempO.Close()
-				a10 := CvtData(evt.EventData)
-				a10 = append(a10, CvtData(args)...)
-				io.Copy(tempI, bytes.NewReader([]byte(strings.Join(a10, "\n"))))
-				tempI.Close()
-				s009 := "/config/doNmapScan.sh "
-				if runtime.GOOS == "windows" {
-					s009 = "/config/doNmapScanWin.bat "
+		if nil != EngineFuncFactory {
+			EngineFuncFactory(Const.ScanType_Nmap, func(evt *Const.EventData, args ...interface{}) {
+				if nil != evt && 0 < len(evt.EventData) {
+					return
 				}
-				x := SzPwd + s009 + tempI.Name() + " " + tempO.Name()
-				if _, err := DoCmd(strings.Split(x, " ")...); nil == err {
-					DoNmapWithFile(tempO.Name(), evt.EventType)
+				tempI, err1 := ioutil.TempFile("", "stdin-in-*")
+				tempO, err := ioutil.TempFile("", "*.xml")
+				if err == nil && err1 == nil {
+					defer tempO.Close()
+					a10 := CvtData(evt.EventData)
+					a10 = append(a10, CvtData(args)...)
+					io.Copy(tempI, bytes.NewReader([]byte(strings.Join(a10, "\n"))))
+					tempI.Close()
+					s009 := "/config/doNmapScan.sh "
+					if runtime.GOOS == "windows" {
+						s009 = "/config/doNmapScanWin.bat "
+					}
+					x := SzPwd + s009 + tempI.Name() + " " + tempO.Name()
+					if _, err := DoCmd(strings.Split(x, " ")...); nil == err {
+						DoNmapWithFile(tempO.Name(), evt.EventType)
+					}
 				}
-			}
-		})
+			})
+		}
 	})
 }

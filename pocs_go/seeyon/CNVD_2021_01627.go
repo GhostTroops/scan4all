@@ -1,7 +1,7 @@
 package seeyon
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 )
 
 //ajax.do登录绕过&任意文件上传

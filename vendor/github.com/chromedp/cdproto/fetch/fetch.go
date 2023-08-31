@@ -165,7 +165,7 @@ type ContinueRequestParams struct {
 	URL               string         `json:"url,omitempty"`               // If set, the request url will be modified in a way that's not observable by page.
 	Method            string         `json:"method,omitempty"`            // If set, the request method is overridden.
 	PostData          string         `json:"postData,omitempty"`          // If set, overrides the post data in the request.
-	Headers           []*HeaderEntry `json:"headers,omitempty"`           // If set, overrides the request headers.
+	Headers           []*HeaderEntry `json:"headers,omitempty"`           // If set, overrides the request headers. Note that the overrides do not extend to subsequent redirect hops, if a redirect happens. Another override may be applied to a different request produced by a redirect.
 	InterceptResponse bool           `json:"interceptResponse,omitempty"` // If set, overrides response interception behavior for this request.
 }
 
@@ -202,7 +202,9 @@ func (p ContinueRequestParams) WithPostData(postData string) *ContinueRequestPar
 	return &p
 }
 
-// WithHeaders if set, overrides the request headers.
+// WithHeaders if set, overrides the request headers. Note that the overrides
+// do not extend to subsequent redirect hops, if a redirect happens. Another
+// override may be applied to a different request produced by a redirect.
 func (p ContinueRequestParams) WithHeaders(headers []*HeaderEntry) *ContinueRequestParams {
 	p.Headers = headers
 	return &p
@@ -314,7 +316,10 @@ func (p *ContinueResponseParams) Do(ctx context.Context) (err error) {
 // that is paused in the Response stage and is mutually exclusive with
 // takeResponseBodyForInterceptionAsStream. Calling other methods that affect
 // the request or disabling fetch domain before body is received results in an
-// undefined behavior.
+// undefined behavior. Note that the response body is not available for
+// redirects. Requests paused in the _redirect received_ state may be
+// differentiated by responseCode and presence of location response header, see
+// comments to requestPaused for details.
 type GetResponseBodyParams struct {
 	RequestID RequestID `json:"requestId"` // Identifier for the intercepted request to get body for.
 }
@@ -324,7 +329,10 @@ type GetResponseBodyParams struct {
 // is paused in the Response stage and is mutually exclusive with
 // takeResponseBodyForInterceptionAsStream. Calling other methods that affect
 // the request or disabling fetch domain before body is received results in an
-// undefined behavior.
+// undefined behavior. Note that the response body is not available for
+// redirects. Requests paused in the _redirect received_ state may be
+// differentiated by responseCode and presence of location response header, see
+// comments to requestPaused for details.
 //
 // See: https://chromedevtools.github.io/devtools-protocol/tot/Fetch#method-getResponseBody
 //

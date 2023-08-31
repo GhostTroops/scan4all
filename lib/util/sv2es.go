@@ -28,9 +28,11 @@ func initEs() {
 func init() {
 	RegInitFunc(func() {
 		// 保存数据也采用统一的线程池
-		EngineFuncFactory(Const.ScanType_SaveEs, func(evt *Const.EventData, args ...interface{}) {
-			SendReq(args[0].(interface{}), args[1].(string), args[2].(string))
-		})
+		if nil != EngineFuncFactory {
+			EngineFuncFactory(Const.ScanType_SaveEs, func(evt *Const.EventData, args ...interface{}) {
+				SendReq(args[0].(interface{}), args[1].(string), args[2].(string))
+			})
+		}
 	})
 }
 

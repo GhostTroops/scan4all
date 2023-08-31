@@ -2,9 +2,9 @@ package hydra
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/pkg"
 	Const "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg"
 	"github.com/logrusorgru/aurora"
 	"log"
 	"strconv"
@@ -27,11 +27,13 @@ func init() {
 		//加载自定义字典
 		InitCustomAuthMap(a1, a2)
 		// util.EngineFuncFactory(Const.ScanType_WeakPassword, func(evt *models.EventData, args ...interface{}) {
-		util.EngineFuncFactory(Const.ScanType_WeakPassword, func(evt *Const.EventData, args ...interface{}) {
-			if pkg.Contains(ProtocolList, evt.EventData[2].(string)) {
-				Start(evt.EventData[0].(string), evt.EventData[1].(int), evt.EventData[2].(string))
-			}
-		})
+		if nil != util.EngineFuncFactory {
+			util.EngineFuncFactory(Const.ScanType_WeakPassword, func(evt *Const.EventData, args ...interface{}) {
+				if pkg.Contains(ProtocolList, evt.EventData[2].(string)) {
+					Start(evt.EventData[0].(string), evt.EventData[1].(int), evt.EventData[2].(string))
+				}
+			})
+		}
 	})
 }
 

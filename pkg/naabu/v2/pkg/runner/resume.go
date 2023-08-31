@@ -1,7 +1,7 @@
 package runner
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	"io/ioutil"
 	"os"
 	"path/filepath"

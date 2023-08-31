@@ -1,6 +1,6 @@
 package core
 
-import "github.com/hktalent/ProScan4all/pkg/kscan/lib/grdp/emission"
+import "github.com/hktalent/scan4all/pkg/kscan/lib/grdp/emission"
 
 type Transport interface {
 	Read(b []byte) (n int, err error)

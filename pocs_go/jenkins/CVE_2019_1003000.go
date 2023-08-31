@@ -1,7 +1,7 @@
 package jenkins
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 )
 
 func CVE_2019_10003000(u string) bool {

@@ -463,11 +463,11 @@ type EngineFuncType func(evt *Const.EventData, args ...interface{})
 // 工厂方法
 //
 //	便于同一、规范引擎调用的方法、参数约束
-var EngineFuncFactory func(nT uint64, fnCbk EngineFuncType)
+var EngineFuncFactory func(nT uint64, fnCbk EngineFuncType) = func(nT uint64, fnCbk EngineFuncType) {}
 
 // 全局引擎
 var G_Engine interface{}
-var SendEvent func(evt *Const.EventData, argsTypes ...uint64)
+var SendEvent func(evt *Const.EventData, argsTypes ...uint64) = func(evt *Const.EventData, argsTypes ...uint64) {}
 
 // 反射调用
 func Invoke(iFunc interface{}, args ...interface{}) {

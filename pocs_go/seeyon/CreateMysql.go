@@ -1,7 +1,7 @@
 package seeyon
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 )
 
 //createMysql.jsp 数据库敏感信息泄

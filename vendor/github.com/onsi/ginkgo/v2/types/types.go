@@ -97,9 +97,7 @@ func (report Report) Add(other Report) Report {
 	report.RunTime = report.EndTime.Sub(report.StartTime)
 
 	reports := make(SpecReports, len(report.SpecReports)+len(other.SpecReports))
-	for i := range report.SpecReports {
-		reports[i] = report.SpecReports[i]
-	}
+	copy(reports, report.SpecReports)
 	offset := len(report.SpecReports)
 	for i := range other.SpecReports {
 		reports[i+offset] = other.SpecReports[i]
@@ -602,6 +600,9 @@ var ssEnumSupport = NewEnumSupport(map[uint]string{
 })
 
 func (ss SpecState) String() string {
+	return ssEnumSupport.String(uint(ss))
+}
+func (ss SpecState) GomegaString() string {
 	return ssEnumSupport.String(uint(ss))
 }
 func (ss *SpecState) UnmarshalJSON(b []byte) error {

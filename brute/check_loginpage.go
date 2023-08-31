@@ -1,8 +1,8 @@
 package brute
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/pkg/httpx/common/httpx"
+	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg/httpx/common/httpx"
 	"net/url"
 	"regexp"
 	"strings"

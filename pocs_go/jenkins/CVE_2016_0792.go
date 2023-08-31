@@ -2,7 +2,7 @@ package jenkins
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	"io"
 	"net/url"
 	"strings"

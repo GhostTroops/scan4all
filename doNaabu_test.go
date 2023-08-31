@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/pkg/xcmd"
+	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg/xcmd"
 	"log"
 	"strings"
 	"testing"

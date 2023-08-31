@@ -117,6 +117,19 @@ type Policy struct {
 	// returning true are allowed.
 	allowURLSchemes map[string][]urlPolicy
 
+	// These regexps are used to match allowed URL schemes, for example
+	// if one would want to allow all URL schemes, they would add `.+`.
+	// However pay attention as this can lead to XSS being rendered thus
+	// defeating the purpose of using a HTML sanitizer.
+	// The regexps are only considered if a schema was not explicitly
+	// handled by `AllowURLSchemes` or `AllowURLSchemeWithCustomPolicy`.
+	allowURLSchemeRegexps []*regexp.Regexp
+
+	// If srcRewriter is not nil, it is used to rewrite the src attribute
+	// of tags that download resources, such as <img> and <script>.
+	// It requires that the URL is parsable by "net/url" url.Parse().
+	srcRewriter urlRewriter
+
 	// If an element has had all attributes removed as a result of a policy
 	// being applied, then the element would be removed from the output.
 	//
@@ -192,6 +205,8 @@ type stylePolicyBuilder struct {
 
 type urlPolicy func(url *url.URL) (allowUrl bool)
 
+type urlRewriter func(*url.URL)
+
 type SandboxValue int64
 
 const (
@@ -221,6 +236,7 @@ func (p *Policy) init() {
 		p.elsMatchingAndStyles = make(map[*regexp.Regexp]map[string][]stylePolicy)
 		p.globalStyles = make(map[string][]stylePolicy)
 		p.allowURLSchemes = make(map[string][]urlPolicy)
+		p.allowURLSchemeRegexps = make([]*regexp.Regexp, 0)
 		p.setOfElementsAllowedWithoutAttrs = make(map[string]struct{})
 		p.setOfElementsToSkipContent = make(map[string]struct{})
 		p.initialized = true
@@ -563,6 +579,40 @@ func (p *Policy) AllowElementsMatching(regex *regexp.Regexp) *Policy {
 	return p
 }
 
+// AllowURLSchemesMatching will append URL schemes to the allowlist if they
+// match a regexp.
+func (p *Policy) AllowURLSchemesMatching(r *regexp.Regexp) *Policy {
+	p.allowURLSchemeRegexps = append(p.allowURLSchemeRegexps, r)
+	return p
+}
+
+// RewriteSrc will rewrite the src attribute of a resource downloading tag
+// (e.g. <img>, <script>, <iframe>) using the provided function.
+//
+// Typically the use case here is that if the content that we're sanitizing
+// is untrusted then the content that is inlined is also untrusted.
+// To prevent serving this content on the same domain as the content appears
+// on it is good practise to proxy the content through an additional domain
+// name as this will force the web client to consider the inline content as
+// third party to the main content, thus providing browser isolation around
+// the inline content.
+//
+// An example of this is a web mail provider like fastmail.com , when an
+// email (user generated content) is displayed, the email text is shown on
+// fastmail.com but the inline attachments and content are rendered from
+// fastmailusercontent.com . This proxying of the external content on a
+// domain that is different to the content domain forces the browser domain
+// security model to kick in. Note that this only applies to differences
+// below the suffix (as per the publix suffix list).
+//
+// This is a good practise to adopt as it prevents the content from being
+// able to set cookies on the main domain and thus prevents the content on
+// the main domain from being able to read those cookies.
+func (p *Policy) RewriteSrc(fn urlRewriter) *Policy {
+	p.srcRewriter = fn
+	return p
+}
+
 // RequireNoFollowOnLinks will result in all a, area, link tags having a
 // rel="nofollow"added to them if one does not already exist
 //
@@ -879,6 +929,7 @@ func (p *Policy) addDefaultElementsWithoutAttrs() {
 	p.setOfElementsAllowedWithoutAttrs["optgroup"] = struct{}{}
 	p.setOfElementsAllowedWithoutAttrs["option"] = struct{}{}
 	p.setOfElementsAllowedWithoutAttrs["p"] = struct{}{}
+	p.setOfElementsAllowedWithoutAttrs["picture"] = struct{}{}
 	p.setOfElementsAllowedWithoutAttrs["pre"] = struct{}{}
 	p.setOfElementsAllowedWithoutAttrs["q"] = struct{}{}
 	p.setOfElementsAllowedWithoutAttrs["rp"] = struct{}{}

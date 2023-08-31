@@ -52,48 +52,83 @@ type Options struct {
 	Verbose bool
 	// KillIdleConn specifies if all keep-alive connections gets killed
 	KillIdleConn bool
+	// Custom CheckRetry policy
+	CheckRetry CheckRetry
+	// Custom Backoff policy
+	Backoff Backoff
+	// NoAdjustTimeout disables automatic adjustment of HTTP request timeout
+	NoAdjustTimeout bool
+	// Custom http client
+	HttpClient *http.Client
 }
 
 // DefaultOptionsSpraying contains the default options for host spraying
 // scenarios where lots of requests need to be sent to different hosts.
 var DefaultOptionsSpraying = Options{
-	RetryWaitMin:  1 * time.Second,
-	RetryWaitMax:  30 * time.Second,
-	Timeout:       30 * time.Second,
-	RetryMax:      5,
-	RespReadLimit: 4096,
-	KillIdleConn:  true,
+	RetryWaitMin:    1 * time.Second,
+	RetryWaitMax:    30 * time.Second,
+	Timeout:         30 * time.Second,
+	RetryMax:        5,
+	RespReadLimit:   4096,
+	KillIdleConn:    true,
+	NoAdjustTimeout: true,
 }
 
 // DefaultOptionsSingle contains the default options for host bruteforce
 // scenarios where lots of requests need to be sent to a single host.
 var DefaultOptionsSingle = Options{
-	RetryWaitMin:  1 * time.Second,
-	RetryWaitMax:  30 * time.Second,
-	Timeout:       30 * time.Second,
-	RetryMax:      5,
-	RespReadLimit: 4096,
-	KillIdleConn:  false,
+	RetryWaitMin:    1 * time.Second,
+	RetryWaitMax:    30 * time.Second,
+	Timeout:         30 * time.Second,
+	RetryMax:        5,
+	RespReadLimit:   4096,
+	KillIdleConn:    false,
+	NoAdjustTimeout: true,
 }
 
 // NewClient creates a new Client with default settings.
 func NewClient(options Options) *Client {
-	httpclient := DefaultClient()
+	var httpclient *http.Client
+	if options.HttpClient != nil {
+		httpclient = options.HttpClient
+	} else {
+		httpclient = DefaultClient()
+	}
+
 	httpclient2 := DefaultClient()
 	if err := http2.ConfigureTransport(httpclient2.Transport.(*http.Transport)); err != nil {
 		return nil
 	}
 
+	var retryPolicy CheckRetry
+	var backoff Backoff
+
+	retryPolicy = DefaultRetryPolicy()
+	if options.CheckRetry != nil {
+		retryPolicy = options.CheckRetry
+	}
+
+	backoff = DefaultBackoff()
+	if options.Backoff != nil {
+		backoff = options.Backoff
+	}
+
+	// add timeout to clients
+	if options.Timeout > 0 {
+		httpclient.Timeout = options.Timeout
+		httpclient2.Timeout = options.Timeout
+	}
+
 	// if necessary adjusts per-request timeout proportionally to general timeout (30%)
-	if options.Timeout > time.Second*15 {
+	if options.Timeout > time.Second*15 && options.RetryMax > 1 && !options.NoAdjustTimeout {
 		httpclient.Timeout = time.Duration(options.Timeout.Seconds()*0.3) * time.Second
 	}
 
 	c := &Client{
 		HTTPClient:  httpclient,
 		HTTPClient2: httpclient2,
-		CheckRetry:  DefaultRetryPolicy(),
-		Backoff:     DefaultBackoff(),
+		CheckRetry:  retryPolicy,
+		Backoff:     backoff,
 		options:     options,
 	}
 
@@ -101,24 +136,11 @@ func NewClient(options Options) *Client {
 	return c
 }
 
-// NewWithHTTPClient creates a new Client with default settings and provided http.Client
+// NewWithHTTPClient creates a new Client with custom http client
+// Deprecated: Use options.HttpClient
 func NewWithHTTPClient(client *http.Client, options Options) *Client {
-	httpclient2 := DefaultClient()
-	httpclient2.Transport = client.Transport.(*http.Transport).Clone()
-	if err := http2.ConfigureTransport(httpclient2.Transport.(*http.Transport)); err != nil {
-		return nil
-	}
-	c := &Client{
-		HTTPClient:  client,
-		HTTPClient2: httpclient2,
-		CheckRetry:  DefaultRetryPolicy(),
-		Backoff:     DefaultBackoff(),
-
-		options: options,
-	}
-
-	c.setKillIdleConnections()
-	return c
+	options.HttpClient = client
+	return NewClient(options)
 }
 
 // setKillIdleConnections sets the kill idle conns switch in two scenarios

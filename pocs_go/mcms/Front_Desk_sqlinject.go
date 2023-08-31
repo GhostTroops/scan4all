@@ -2,12 +2,12 @@ package mcms
 
 import (
 	"fmt"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 
 	"strings"
 )
 
-//mcms 5.2.7 /cms/content/list
+// mcms 5.2.7 /cms/content/list
 func Front_Sql_inject(u string) bool {
 	if req, err := util.HttpRequset(u+"/cms/content/list", "POST", "categoryId=1'", false, nil); err == nil {
 		if strings.Contains(req.Body, "error in your SQL") {

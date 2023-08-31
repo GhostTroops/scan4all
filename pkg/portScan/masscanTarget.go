@@ -1,8 +1,8 @@
 package portScan
 
 import (
-	"github.com/hktalent/ProScan4all/lib/util"
 	Const "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/util"
 	"log"
 	"strings"
 )
@@ -26,7 +26,6 @@ output-filename = scan.xml
 Ports = 0-65535
 range = 0.0.0.0-255.255.255.255
 excludefile = exclude.txt
-
 */
 func init() {
 	util.RegInitFunc(func() {

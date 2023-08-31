@@ -2,7 +2,7 @@ package brute
 
 import (
 	"context"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	"net/http"
 	"regexp"
 	"strings"

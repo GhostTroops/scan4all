@@ -3,7 +3,7 @@ package utils
 import (
 	"embed"
 	"fmt"
-	"github.com/hktalent/ProScan4all/pocs_yml/pkg/xray/structs"
+	"github.com/hktalent/scan4all/pocs_yml/pkg/xray/structs"
 	"gopkg.in/yaml.v2"
 	"strings"
 )

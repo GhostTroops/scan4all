@@ -95,41 +95,6 @@ func (p *Policy) SanitizeReaderToWriter(r io.Reader, w io.Writer) error {
 	return p.sanitize(r, w)
 }
 
-const escapedURLChars = "'<>\"\r"
-
-func escapeUrlComponent(w stringWriterWriter, val string) error {
-	i := strings.IndexAny(val, escapedURLChars)
-	for i != -1 {
-		if _, err := w.WriteString(val[:i]); err != nil {
-			return err
-		}
-		var esc string
-		switch val[i] {
-		case '\'':
-			// "&#39;" is shorter than "&apos;" and apos was not in HTML until HTML5.
-			esc = "&#39;"
-		case '<':
-			esc = "&lt;"
-		case '>':
-			esc = "&gt;"
-		case '"':
-			// "&#34;" is shorter than "&quot;".
-			esc = "&#34;"
-		case '\r':
-			esc = "&#13;"
-		default:
-			panic("unrecognized escape character")
-		}
-		val = val[i+1:]
-		if _, err := w.WriteString(esc); err != nil {
-			return err
-		}
-		i = strings.IndexAny(val, escapedURLChars)
-	}
-	_, err := w.WriteString(val)
-	return err
-}
-
 // Query represents a single part of the query string, a query param
 type Query struct {
 	Key      string
@@ -440,8 +405,8 @@ func (p *Policy) sanitize(r io.Reader, w io.Writer) error {
 					if _, err := buff.WriteString(" "); err != nil {
 						return err
 					}
-					break
 				}
+				break
 			}
 			if !skipElementContent {
 				if _, err := buff.WriteString(token.String()); err != nil {
@@ -612,6 +577,14 @@ attrsLoop:
 				case "audio", "embed", "iframe", "img", "script", "source", "track", "video":
 					if htmlAttr.Key == "src" {
 						if u, ok := p.validURL(htmlAttr.Val); ok {
+							if p.srcRewriter != nil {
+								parsedURL, err := url.Parse(u)
+								if err != nil {
+									fmt.Println(err)
+								}
+								p.srcRewriter(parsedURL)
+								u = parsedURL.String()
+							}
 							htmlAttr.Val = u
 							tmpAttrs = append(tmpAttrs, htmlAttr)
 						}
@@ -852,6 +825,7 @@ func (p *Policy) sanitizeStyles(attr html.Attribute, elementName string) html.At
 	}
 
 	//Add semi-colon to end to fix parsing issue
+	attr.Val = strings.TrimRight(attr.Val, " ")
 	if len(attr.Val) > 0 && attr.Val[len(attr.Val)-1] != ';' {
 		attr.Val = attr.Val + ";"
 	}
@@ -969,9 +943,14 @@ func (p *Policy) validURL(rawurl string) (string, bool) {
 		}
 
 		if u.Scheme != "" {
-
 			urlPolicies, ok := p.allowURLSchemes[u.Scheme]
 			if !ok {
+				for _, r := range p.allowURLSchemeRegexps {
+					if r.MatchString(u.Scheme) {
+						return u.String(), true
+					}
+				}
+
 				return "", false
 			}
 
@@ -980,7 +959,7 @@ func (p *Policy) validURL(rawurl string) (string, bool) {
 			}
 
 			for _, urlPolicy := range urlPolicies {
-				if urlPolicy(u) == true {
+				if urlPolicy(u) {
 					return u.String(), true
 				}
 			}

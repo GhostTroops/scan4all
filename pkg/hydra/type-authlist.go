@@ -1,7 +1,7 @@
 package hydra
 
 import (
-	"github.com/hktalent/ProScan4all/pkg/kscan/lib/misc"
+	"github.com/hktalent/scan4all/pkg/kscan/lib/misc"
 )
 
 type AuthList struct {

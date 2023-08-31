@@ -2,7 +2,7 @@ package core
 
 import (
 	"encoding/binary"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	"io"
 )
 

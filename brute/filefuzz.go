@@ -5,9 +5,9 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/antlabs/strsim"
-	"github.com/hktalent/ProScan4all/lib/util"
-	"github.com/hktalent/ProScan4all/pkg/fingerprint"
 	Const "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/util"
+	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"io/ioutil"
 	"log"
 	"mime"
@@ -156,14 +156,15 @@ func init() {
 		}
 		//regs = append(regs, ret...)
 		// 基于工厂方法构建
-		util.EngineFuncFactory(Const.ScanType_WebDirScan, func(evt *Const.EventData, args ...interface{}) {
-			for _, x := range evt.EventData {
-				szT := fmt.Sprintf("%v", x)
-				filePaths, fileFuzzTechnologies := FileFuzz(szT, 200, 100, "")
-				util.SendEngineLog(evt, Const.ScanType_WebDirScan, filePaths, fileFuzzTechnologies)
-			}
-		})
-
+		if nil != util.EngineFuncFactory {
+			util.EngineFuncFactory(Const.ScanType_WebDirScan, func(evt *Const.EventData, args ...interface{}) {
+				for _, x := range evt.EventData {
+					szT := fmt.Sprintf("%v", x)
+					filePaths, fileFuzzTechnologies := FileFuzz(szT, 200, 100, "")
+					util.SendEngineLog(evt, Const.ScanType_WebDirScan, filePaths, fileFuzzTechnologies)
+				}
+			})
+		}
 		// 注册一个
 	})
 }

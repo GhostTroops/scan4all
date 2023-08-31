@@ -3,9 +3,9 @@ package nuclei_Yaml
 import (
 	"C"
 	"bytes"
-	"github.com/hktalent/ProScan4all/lib/util"
-	runner2 "github.com/hktalent/ProScan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
 	Const "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/util"
+	runner2 "github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml/nclruner/runner"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goflags"

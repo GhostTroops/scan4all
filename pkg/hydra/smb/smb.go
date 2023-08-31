@@ -3,7 +3,7 @@ package smb
 import (
 	"context"
 	"errors"
-	"github.com/hktalent/ProScan4all/lib/util"
+	"github.com/hktalent/scan4all/lib/util"
 	"github.com/stacktitan/smb/smb"
 	"time"
 )
