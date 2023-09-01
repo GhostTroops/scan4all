@@ -1,6 +1,10 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package twcc
 
 import (
+	"errors"
 	"math/rand"
 	"sync"
 	"time"
@@ -15,8 +19,10 @@ type SenderInterceptorFactory struct {
 	opts []Option
 }
 
+var errClosed = errors.New("interceptor is closed")
+
 // NewInterceptor constructs a new SenderInterceptor
-func (s *SenderInterceptorFactory) NewInterceptor(id string) (interceptor.Interceptor, error) {
+func (s *SenderInterceptorFactory) NewInterceptor(_ string) (interceptor.Interceptor, error) {
 	i := &SenderInterceptor{
 		log:        logging.NewDefaultLoggerFactory().NewLogger("twcc_sender_interceptor"),
 		packetChan: make(chan packet),
@@ -129,11 +135,16 @@ func (s *SenderInterceptor) BindRemoteStream(info *interceptor.StreamInfo, reade
 				return 0, nil, err
 			}
 
-			s.packetChan <- packet{
+			p := packet{
 				hdr:            header,
 				sequenceNumber: tccExt.TransportSequence,
 				arrivalTime:    time.Since(s.startTime).Microseconds(),
 				ssrc:           info.SSRC,
+			}
+			select {
+			case <-s.close:
+				return 0, nil, errClosed
+			case s.packetChan <- p:
 			}
 		}
 

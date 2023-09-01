@@ -23,6 +23,9 @@ func NewOracleNetworkDESCryptor(key []byte, iv []byte) (*OracleNetworkDESCryptor
 	return output, nil
 }
 
+func (sec *OracleNetworkDESCryptor) Reset() error {
+	return nil
+}
 func (sec *OracleNetworkDESCryptor) Encrypt(input []byte) ([]byte, error) {
 	//padding := 0
 	//if len(input)%8 > 0 {

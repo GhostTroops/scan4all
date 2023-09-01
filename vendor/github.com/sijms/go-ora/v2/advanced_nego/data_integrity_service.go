@@ -22,6 +22,7 @@ func NewDataIntegrityService(comm *AdvancedNegoComm) (*dataIntegrityService, err
 	output := &dataIntegrityService{
 		defaultService: defaultService{
 			comm:                  comm,
+			level:                 comm.session.Context.ConnOption.IntServiceLevel,
 			serviceType:           3,
 			version:               0xB200200,
 			availableServiceNames: []string{"", "MD5", "SHA1", "SHA512", "SHA256", "SHA384"},

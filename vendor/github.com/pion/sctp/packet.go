@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package sctp
 
 import (
@@ -19,34 +22,29 @@ Packet represents an SCTP packet, defined in https://tools.ietf.org/html/rfc4960
 An SCTP packet is composed of a common header and chunks.  A chunk
 contains either control information or user data.
 
+						SCTP Packet Format
+	 0                   1                   2                   3
+	 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                        Common Header                          |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                          Chunk #1                             |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                           ...                                 |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                          Chunk #n                             |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-                      SCTP Packet Format
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                        Common Header                          |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Chunk #1                             |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           ...                                 |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                          Chunk #n                             |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-
-                SCTP Common Header Format
-
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|     Source Value Number        |     Destination Value Number   |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                      Verification Tag                         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                           Checksum                            |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-
-
+					SCTP Common Header Format
+	 0                   1                   2                   3
+	 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|     Source Value Number      |     Destination Value Number   |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                      Verification Tag                         |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                           Checksum                            |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 */
 type packet struct {
 	sourcePort      uint16
@@ -59,16 +57,17 @@ const (
 	packetHeaderSize = 12
 )
 
+// SCTP packet errors
 var (
-	errPacketRawTooSmall           = errors.New("raw is smaller than the minimum length for a SCTP packet")
-	errParseSCTPChunkNotEnoughData = errors.New("unable to parse SCTP chunk, not enough data for complete header")
-	errUnmarshalUnknownChunkType   = errors.New("failed to unmarshal, contains unknown chunk type")
-	errChecksumMismatch            = errors.New("checksum mismatch theirs")
+	ErrPacketRawTooSmall           = errors.New("raw is smaller than the minimum length for a SCTP packet")
+	ErrParseSCTPChunkNotEnoughData = errors.New("unable to parse SCTP chunk, not enough data for complete header")
+	ErrUnmarshalUnknownChunkType   = errors.New("failed to unmarshal, contains unknown chunk type")
+	ErrChecksumMismatch            = errors.New("checksum mismatch theirs")
 )
 
 func (p *packet) unmarshal(raw []byte) error {
 	if len(raw) < packetHeaderSize {
-		return fmt.Errorf("%w: raw only %d bytes, %d is the minimum length", errPacketRawTooSmall, len(raw), packetHeaderSize)
+		return fmt.Errorf("%w: raw only %d bytes, %d is the minimum length", ErrPacketRawTooSmall, len(raw), packetHeaderSize)
 	}
 
 	p.sourcePort = binary.BigEndian.Uint16(raw[0:])
@@ -81,7 +80,7 @@ func (p *packet) unmarshal(raw []byte) error {
 		if offset == len(raw) {
 			break
 		} else if offset+chunkHeaderSize > len(raw) {
-			return fmt.Errorf("%w: offset %d remaining %d", errParseSCTPChunkNotEnoughData, offset, len(raw))
+			return fmt.Errorf("%w: offset %d remaining %d", ErrParseSCTPChunkNotEnoughData, offset, len(raw))
 		}
 
 		var c chunk
@@ -115,7 +114,7 @@ func (p *packet) unmarshal(raw []byte) error {
 		case ctShutdownComplete:
 			c = &chunkShutdownComplete{}
 		default:
-			return fmt.Errorf("%w: %s", errUnmarshalUnknownChunkType, chunkType(raw[offset]).String())
+			return fmt.Errorf("%w: %s", ErrUnmarshalUnknownChunkType, chunkType(raw[offset]).String())
 		}
 
 		if err := c.unmarshal(raw[offset:]); err != nil {
@@ -129,7 +128,7 @@ func (p *packet) unmarshal(raw []byte) error {
 	theirChecksum := binary.LittleEndian.Uint32(raw[8:])
 	ourChecksum := generatePacketChecksum(raw)
 	if theirChecksum != ourChecksum {
-		return fmt.Errorf("%w: %d ours: %d", errChecksumMismatch, theirChecksum, ourChecksum)
+		return fmt.Errorf("%w: %d ours: %d", ErrChecksumMismatch, theirChecksum, ourChecksum)
 	}
 	return nil
 }

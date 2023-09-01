@@ -1,6 +1,0 @@
-bind: http://127.0.0.1:5000
-cors: '*'
-defaultsign: '*'
-password: f0542023f9
-secret: f0542023f9e46accd1e195c7830ec556718e037f
-username: jaeles

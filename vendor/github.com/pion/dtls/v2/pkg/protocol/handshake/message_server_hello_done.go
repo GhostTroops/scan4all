@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package handshake
 
 // MessageServerHelloDone is final non-encrypted message from server
@@ -16,6 +19,6 @@ func (m *MessageServerHelloDone) Marshal() ([]byte, error) {
 }
 
 // Unmarshal populates the message from encoded data
-func (m *MessageServerHelloDone) Unmarshal(data []byte) error {
+func (m *MessageServerHelloDone) Unmarshal([]byte) error {
 	return nil
 }

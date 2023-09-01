@@ -64,7 +64,7 @@ func newAtomicBased(rate int, opts ...Option) *atomicLimiter {
 }
 
 // Take blocks to ensure that the time spent between multiple
-// Take calls is on average time.Second/rate.
+// Take calls is on average per/rate.
 func (t *atomicLimiter) Take() time.Time {
 	var (
 		newState state

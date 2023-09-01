@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package nack
 
 import (
@@ -19,7 +22,7 @@ type packetFactory interface {
 }
 
 // NewInterceptor constructs a new ResponderInterceptor
-func (r *ResponderInterceptorFactory) NewInterceptor(id string) (interceptor.Interceptor, error) {
+func (r *ResponderInterceptorFactory) NewInterceptor(_ string) (interceptor.Interceptor, error) {
 	i := &ResponderInterceptor{
 		size:    1024,
 		log:     logging.NewDefaultLoggerFactory().NewLogger("nack_responder"),

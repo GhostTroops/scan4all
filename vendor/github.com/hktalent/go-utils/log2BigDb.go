@@ -1,5 +1,7 @@
 package go_utils
 
+import "log"
+
 // 记录日志到 大数据搜索引擎
 func SendEsLog(m1 interface{}) {
 	if 0 == len(EsUrl) {
@@ -7,11 +9,10 @@ func SendEsLog(m1 interface{}) {
 	}
 	szId := "xxx"
 	SendReq(&m1, szId, ESaveType(GetVal("toolType")))
-
 }
 
 var bOk = make(chan struct{})
-var bDo = make(chan struct{})
+var bDo = make(chan struct{}, 1)
 var oR = make(chan interface{}, 5000)
 
 func DoSaves() {
@@ -21,22 +22,26 @@ func DoSaves() {
 		oS = append(oS, <-oR)
 		n--
 	}
-	DoSyncFunc(func() {
-		SendEsLog(&oS)
-	})
+	if 0 < len(oS) {
+		DoSyncFunc(func() {
+			SendEsLog(&oS)
+			log.Println("DoSaves", n)
+		})
+	}
 }
 
 func PushLog(o interface{}) {
 	oR <- o
-	if 5000 <= len(oR) {
-		bDo <- struct{}{}
-	}
 }
 
 func DoRunning() {
 	defer DoSaves()
 	for {
 		select {
+		case <-oR:
+			if 5000 <= len(oR) {
+				bDo <- struct{}{}
+			}
 		case <-bOk:
 			return
 		case <-bDo:
@@ -50,6 +55,5 @@ func CloseLogBigDb() {
 	close(bOk)
 	defer func() {
 		close(bDo)
-		close(oR)
 	}()
 }

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package dtls
 
 import (
@@ -14,7 +17,7 @@ import (
 	"github.com/pion/dtls/v2/pkg/protocol/recordlayer"
 )
 
-func flight5Parse(ctx context.Context, c flightConn, state *State, cache *handshakeCache, cfg *handshakeConfig) (flightVal, *alert.Alert, error) {
+func flight5Parse(_ context.Context, c flightConn, state *State, cache *handshakeCache, cfg *handshakeConfig) (flightVal, *alert.Alert, error) {
 	_, msgs, ok := cache.fullPullMap(state.handshakeRecvSequence, state.cipherSuite,
 		handshakeCachePullRule{handshake.TypeFinished, cfg.initialEpoch + 1, false, false},
 	)
@@ -63,20 +66,30 @@ func flight5Parse(ctx context.Context, c flightConn, state *State, cache *handsh
 }
 
 func flight5Generate(c flightConn, state *State, cache *handshakeCache, cfg *handshakeConfig) ([]*packet, *alert.Alert, error) { //nolint:gocognit
-	var certBytes [][]byte
 	var privateKey crypto.PrivateKey
-	if len(cfg.localCertificates) > 0 {
-		certificate, err := cfg.getCertificate(cfg.serverName)
+	var pkts []*packet
+	if state.remoteRequestedCertificate {
+		_, msgs, ok := cache.fullPullMap(state.handshakeRecvSequence-2, state.cipherSuite,
+			handshakeCachePullRule{handshake.TypeCertificateRequest, cfg.initialEpoch, false, false})
+		if !ok {
+			return nil, &alert.Alert{Level: alert.Fatal, Description: alert.HandshakeFailure}, errClientCertificateRequired
+		}
+		reqInfo := CertificateRequestInfo{}
+		if r, ok := msgs[handshake.TypeCertificateRequest].(*handshake.MessageCertificateRequest); ok {
+			reqInfo.AcceptableCAs = r.CertificateAuthoritiesNames
+		} else {
+			return nil, &alert.Alert{Level: alert.Fatal, Description: alert.HandshakeFailure}, errClientCertificateRequired
+		}
+		certificate, err := cfg.getClientCertificate(&reqInfo)
 		if err != nil {
 			return nil, &alert.Alert{Level: alert.Fatal, Description: alert.HandshakeFailure}, err
 		}
-		certBytes = certificate.Certificate
-		privateKey = certificate.PrivateKey
-	}
-
-	var pkts []*packet
-
-	if state.remoteRequestedCertificate {
+		if certificate == nil {
+			return nil, &alert.Alert{Level: alert.Fatal, Description: alert.HandshakeFailure}, errNotAcceptableCertificateChain
+		}
+		if certificate.Certificate != nil {
+			privateKey = certificate.PrivateKey
+		}
 		pkts = append(pkts,
 			&packet{
 				record: &recordlayer.RecordLayer{
@@ -85,7 +98,7 @@ func flight5Generate(c flightConn, state *State, cache *handshakeCache, cfg *han
 					},
 					Content: &handshake.Handshake{
 						Message: &handshake.MessageCertificate{
-							Certificate: certBytes,
+							Certificate: certificate.Certificate,
 						},
 					},
 				},
@@ -167,7 +180,7 @@ func flight5Generate(c flightConn, state *State, cache *handshakeCache, cfg *han
 	// If the client has sent a certificate with signing ability, a digitally-signed
 	// CertificateVerify message is sent to explicitly verify possession of the
 	// private key in the certificate.
-	if state.remoteRequestedCertificate && len(cfg.localCertificates) > 0 {
+	if state.remoteRequestedCertificate && privateKey != nil {
 		plainText := append(cache.pullAndMerge(
 			handshakeCachePullRule{handshake.TypeClientHello, cfg.initialEpoch, true, false},
 			handshakeCachePullRule{handshake.TypeServerHello, cfg.initialEpoch, false, false},
@@ -326,6 +339,11 @@ func initalizeCipherSuite(state *State, cache *handshakeCache, cfg *handshakeCon
 			if err = cfg.verifyPeerCertificate(state.PeerCertificates, chains); err != nil {
 				return &alert.Alert{Level: alert.Fatal, Description: alert.BadCertificate}, err
 			}
+		}
+	}
+	if cfg.verifyConnection != nil {
+		if err = cfg.verifyConnection(state.clone()); err != nil {
+			return &alert.Alert{Level: alert.Fatal, Description: alert.BadCertificate}, err
 		}
 	}
 

@@ -1,7 +1,11 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 // Package turn contains the public API for pion/turn, a toolkit for building TURN clients and servers
 package turn
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -28,11 +32,12 @@ type Server struct {
 	packetConnConfigs  []PacketConnConfig
 	listenerConfigs    []ListenerConfig
 	allocationManagers []*allocation.Manager
-
-	inboundMTU int
+	inboundMTU         int
 }
 
 // NewServer creates the Pion TURN server
+//
+//nolint:gocognit
 func NewServer(config ServerConfig) (*Server, error) {
 	if err := config.validate(); err != nil {
 		return nil, err
@@ -55,7 +60,6 @@ func NewServer(config ServerConfig) (*Server, error) {
 		channelBindTimeout: config.ChannelBindTimeout,
 		packetConnConfigs:  config.PacketConnConfigs,
 		listenerConfigs:    config.ListenerConfigs,
-		allocationManagers: make([]*allocation.Manager, len(config.PacketConnConfigs)+len(config.ListenerConfigs)),
 		nonces:             &sync.Map{},
 		inboundMTU:         mtu,
 	}
@@ -64,56 +68,34 @@ func NewServer(config ServerConfig) (*Server, error) {
 		s.channelBindTimeout = proto.DefaultLifetime
 	}
 
-	for i := range s.packetConnConfigs {
-		go func(i int, p PacketConnConfig) {
-			allocationManager, err := allocation.NewManager(allocation.ManagerConfig{
-				AllocatePacketConn: p.RelayAddressGenerator.AllocatePacketConn,
-				AllocateConn:       p.RelayAddressGenerator.AllocateConn,
-				LeveledLogger:      s.log,
-			})
-			if err != nil {
-				s.log.Errorf("exit read loop on error: %s", err.Error())
-				return
-			}
-			s.allocationManagers[i] = allocationManager
-			defer func() {
-				if err := allocationManager.Close(); err != nil {
-					s.log.Errorf("Failed to close AllocationManager: %s", err.Error())
-				}
-			}()
+	for _, cfg := range s.packetConnConfigs {
+		am, err := s.createAllocationManager(cfg.RelayAddressGenerator, cfg.PermissionHandler)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create AllocationManager: %w", err)
+		}
 
-			s.readLoop(p.PacketConn, allocationManager)
-		}(i, s.packetConnConfigs[i])
+		go func(cfg PacketConnConfig, am *allocation.Manager) {
+			s.readLoop(cfg.PacketConn, am)
+
+			if err := am.Close(); err != nil {
+				s.log.Errorf("Failed to close AllocationManager: %s", err)
+			}
+		}(cfg, am)
 	}
 
-	for i, listener := range s.listenerConfigs {
-		go func(i int, l ListenerConfig) {
-			allocationManager, err := allocation.NewManager(allocation.ManagerConfig{
-				AllocatePacketConn: l.RelayAddressGenerator.AllocatePacketConn,
-				AllocateConn:       l.RelayAddressGenerator.AllocateConn,
-				LeveledLogger:      s.log,
-			})
-			if err != nil {
-				s.log.Errorf("exit read loop on error: %s", err.Error())
-				return
-			}
-			s.allocationManagers[i] = allocationManager
-			defer func() {
-				if err := allocationManager.Close(); err != nil {
-					s.log.Errorf("Failed to close AllocationManager: %s", err.Error())
-				}
-			}()
+	for _, cfg := range s.listenerConfigs {
+		am, err := s.createAllocationManager(cfg.RelayAddressGenerator, cfg.PermissionHandler)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create AllocationManager: %w", err)
+		}
 
-			for {
-				conn, err := l.Listener.Accept()
-				if err != nil {
-					s.log.Debugf("exit accept loop on error: %s", err.Error())
-					return
-				}
+		go func(cfg ListenerConfig, am *allocation.Manager) {
+			s.readListener(cfg.Listener, am)
 
-				go s.readLoop(NewSTUNConn(conn), allocationManager)
+			if err := am.Close(); err != nil {
+				s.log.Errorf("Failed to close AllocationManager: %s", err)
 			}
-		}(i+len(s.packetConnConfigs), listener)
+		}(cfg, am)
 	}
 
 	return s, nil
@@ -121,27 +103,25 @@ func NewServer(config ServerConfig) (*Server, error) {
 
 // AllocationCount returns the number of active allocations. It can be used to drain the server before closing
 func (s *Server) AllocationCount() int {
-	allocations := 0
-	for _, manager := range s.allocationManagers {
-		if manager != nil {
-			allocations += manager.AllocationCount()
-		}
+	allocs := 0
+	for _, am := range s.allocationManagers {
+		allocs += am.AllocationCount()
 	}
-	return allocations
+	return allocs
 }
 
 // Close stops the TURN Server. It cleans up any associated state and closes all connections it is managing
 func (s *Server) Close() error {
 	var errors []error
 
-	for _, p := range s.packetConnConfigs {
-		if err := p.PacketConn.Close(); err != nil {
+	for _, cfg := range s.packetConnConfigs {
+		if err := cfg.PacketConn.Close(); err != nil {
 			errors = append(errors, err)
 		}
 	}
 
-	for _, l := range s.listenerConfigs {
-		if err := l.Listener.Close(); err != nil {
+	for _, cfg := range s.listenerConfigs {
+		if err := cfg.Listener.Close(); err != nil {
 			errors = append(errors, err)
 		}
 	}
@@ -152,10 +132,48 @@ func (s *Server) Close() error {
 
 	err := errFailedToClose
 	for _, e := range errors {
-		err = fmt.Errorf("%s; Close error (%w) ", err.Error(), e)
+		err = fmt.Errorf("%s; close error (%w) ", err, e) //nolint:errorlint
 	}
 
 	return err
+}
+
+func (s *Server) readListener(l net.Listener, am *allocation.Manager) {
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			s.log.Debugf("Failed to accept: %s", err)
+			return
+		}
+
+		go func() {
+			s.readLoop(NewSTUNConn(conn), am)
+
+			if err := conn.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
+				s.log.Errorf("Failed to close conn: %s", err)
+			}
+		}()
+	}
+}
+
+func (s *Server) createAllocationManager(addrGenerator RelayAddressGenerator, handler PermissionHandler) (*allocation.Manager, error) {
+	if handler == nil {
+		handler = DefaultPermissionHandler
+	}
+
+	am, err := allocation.NewManager(allocation.ManagerConfig{
+		AllocatePacketConn: addrGenerator.AllocatePacketConn,
+		AllocateConn:       addrGenerator.AllocateConn,
+		PermissionHandler:  handler,
+		LeveledLogger:      s.log,
+	})
+	if err != nil {
+		return am, err
+	}
+
+	s.allocationManagers = append(s.allocationManagers, am)
+
+	return am, err
 }
 
 func (s *Server) readLoop(p net.PacketConn, allocationManager *allocation.Manager) {
@@ -164,7 +182,7 @@ func (s *Server) readLoop(p net.PacketConn, allocationManager *allocation.Manage
 		n, addr, err := p.ReadFrom(buf)
 		switch {
 		case err != nil:
-			s.log.Debugf("exit read loop on error: %s", err.Error())
+			s.log.Debugf("Exit read loop on error: %s", err)
 			return
 		case n >= s.inboundMTU:
 			s.log.Debugf("Read bytes exceeded MTU, packet is possibly truncated")
@@ -181,7 +199,7 @@ func (s *Server) readLoop(p net.PacketConn, allocationManager *allocation.Manage
 			ChannelBindTimeout: s.channelBindTimeout,
 			Nonces:             s.nonces,
 		}); err != nil {
-			s.log.Errorf("error when handling datagram: %v", err)
+			s.log.Errorf("Failed to handle datagram: %v", err)
 		}
 	}
 }

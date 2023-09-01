@@ -2,16 +2,22 @@
 # we would love to have you https://github.com/pion/webrtc/wiki/Contributing
 #
 # This file is auto generated, using git to list all individuals contributors.
-# see `.github/generate-authors.sh` for the scripting
+# see https://github.com/pion/.goassets/blob/master/scripts/generate-authors.sh for the scripting
 Aaron France <aaron.l.france@gmail.com>
 Aleksandr Razumov <ar@gortc.io>
+anastasia <anastasia@plutoview.com>
 andrefsp <andrefsp@gmail.com>
+Andy Yan <yan.andy4@gmail.com>
 Antonio Sorrentino <ansorrenltd@gmail.com>
+Artem Yarovenko <a.yarovenko@rubetek.com>
 Atsushi Watanabe <atsushi.w@ieee.org>
 backkem <mail@backkem.me>
+boks1971 <raja.gobi@tutanota.com>
 Caleb Phillips <calebrphillips@gmail.com>
 cnderrauber <zengjie9004@gmail.com>
 David Colburn <xero73@gmail.com>
+Gabor Retvari <retvari@tmit.bme.hu>
+Harold Thetiot <hthetiot@gmail.com>
 Herman Banken <hermanbanken@gmail.com>
 Hugo Arregui <hugo.arregui@gmail.com>
 Igor German <igor.german@synesis.ru>
@@ -37,3 +43,6 @@ ted <ted@skydio.com>
 Tom Clift <tom@clift.id.au>
 Yusuke Nakamura <yusuke1994525@gmail.com>
 Yutaka Takeda <yt0916@gmail.com>
+
+# List of contributors not appearing in Git history
+

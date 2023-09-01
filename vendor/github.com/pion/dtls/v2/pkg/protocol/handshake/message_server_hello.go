@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package handshake
 
 import (
@@ -88,11 +91,14 @@ func (m *MessageServerHello) Unmarshal(data []byte) error {
 	m.SessionID = append([]byte{}, data[currOffset:currOffset+n]...)
 	currOffset += len(m.SessionID)
 
+	if len(data) < currOffset+2 {
+		return errBufferTooSmall
+	}
 	m.CipherSuiteID = new(uint16)
 	*m.CipherSuiteID = binary.BigEndian.Uint16(data[currOffset:])
 	currOffset += 2
 
-	if len(data) < currOffset {
+	if len(data) <= currOffset {
 		return errBufferTooSmall
 	}
 	if compressionMethod, ok := protocol.CompressionMethods()[protocol.CompressionMethodID(data[currOffset])]; ok {

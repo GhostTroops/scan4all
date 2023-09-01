@@ -1,152 +1,153 @@
 package cdncheck
 
 import (
-	"crypto/tls"
 	"net"
-	"net/http"
-	"time"
+	"strings"
+	"sync"
 
-	"github.com/yl2chen/cidranger"
+	"github.com/projectdiscovery/retryabledns"
 )
+
+var (
+	DefaultCDNProviders   string
+	DefaultWafProviders   string
+	DefaultCloudProviders string
+)
+
+// DefaultResolvers trusted (taken from fastdialer)
+var DefaultResolvers = []string{
+	"1.1.1.1:53",
+	"1.0.0.1:53",
+	"8.8.8.8:53",
+	"8.8.4.4:53",
+}
 
 // Client checks for CDN based IPs which should be excluded
 // during scans since they belong to third party firewalls.
 type Client struct {
-	Options *Options
-	ranges  map[string][]string
-	rangers map[string]cidranger.Ranger
+	sync.Once
+	cdn          *providerScraper
+	waf          *providerScraper
+	cloud        *providerScraper
+	retriabledns *retryabledns.Client
 }
 
-var defaultScrapers = map[string]scraperFunc{
-	"azure":      scrapeAzure,
-	"cloudflare": scrapeCloudflare,
-	"cloudfront": scrapeCloudFront,
-	"fastly":     scrapeFastly,
-	"incapsula":  scrapeIncapsula,
+// New creates cdncheck client with default options
+// NewWithOpts should be preferred over this function
+func New() *Client {
+	client, _ := NewWithOpts(3, []string{})
+	return client
 }
 
-var defaultScrapersWithOptions = map[string]scraperWithOptionsFunc{
-	"akamai":   scrapeAkamai,
-	"sucuri":   scrapeSucuri,
-	"leaseweb": scrapeLeaseweb,
-}
-
-// New creates a new firewall IP checking client.
-func New() (*Client, error) {
-	return new(&Options{})
-}
-
-// NewWithCache creates a new firewall IP with cached data from project discovery (faster)
-func NewWithCache() (*Client, error) {
-	return new(&Options{Cache: true})
-}
-
-// NewWithOptions creates a new instance with options
-func NewWithOptions(Options *Options) (*Client, error) {
-	return new(Options)
-}
-
-func new(options *Options) (*Client, error) {
-	httpClient := &http.Client{
-		Transport: &http.Transport{
-			MaxIdleConns:        100,
-			MaxIdleConnsPerHost: 100,
-			TLSClientConfig: &tls.Config{
-				Renegotiation:      tls.RenegotiateOnceAsClient,
-				InsecureSkipVerify: true,
-			},
-		},
-		Timeout: time.Duration(30) * time.Second,
+// NewWithOpts creates cdncheck client with custom options
+func NewWithOpts(MaxRetries int, resolvers []string) (*Client, error) {
+	if MaxRetries <= 0 {
+		MaxRetries = 3
 	}
-	client := &Client{Options: options}
-
-	var err error
-	if options.Cache {
-		err = client.getCDNDataFromCache(httpClient)
-	} else {
-		err = client.getCDNData(httpClient)
+	if len(resolvers) == 0 {
+		resolvers = DefaultResolvers
 	}
+	retryabledns, err := retryabledns.New(resolvers, MaxRetries)
 	if err != nil {
 		return nil, err
+	}
+	client := &Client{
+		cdn:          newProviderScraper(generatedData.CDN),
+		waf:          newProviderScraper(generatedData.WAF),
+		cloud:        newProviderScraper(generatedData.Cloud),
+		retriabledns: retryabledns,
 	}
 	return client, nil
 }
 
-func (c *Client) getCDNData(httpClient *http.Client) error {
-	c.ranges = make(map[string][]string)
-	c.rangers = make(map[string]cidranger.Ranger)
-
-	for provider, scraper := range defaultScrapers {
-		cidrs, err := scraper(httpClient)
-		if err != nil {
-			return err
-		}
-
-		c.ranges[provider] = cidrs
-		ranger := cidranger.NewPCTrieRanger()
-		for _, cidr := range cidrs {
-			_, network, err := net.ParseCIDR(cidr)
-			if err != nil {
-				continue
-			}
-			_ = ranger.Insert(cidranger.NewBasicRangerEntry(*network))
-		}
-	}
-	if c.Options.HasAuthInfo() {
-		for provider, scraper := range defaultScrapersWithOptions {
-			cidrs, err := scraper(httpClient, c.Options)
-			if err != nil {
-				return err
-			}
-
-			c.ranges[provider] = cidrs
-			ranger := cidranger.NewPCTrieRanger()
-			for _, cidr := range cidrs {
-				_, network, err := net.ParseCIDR(cidr)
-				if err != nil {
-					continue
-				}
-				_ = ranger.Insert(cidranger.NewBasicRangerEntry(*network))
-			}
-		}
-	}
-	return nil
+// CheckCDN checks if an IP is contained in the cdn denylist
+func (c *Client) CheckCDN(ip net.IP) (matched bool, value string, err error) {
+	matched, value, err = c.cdn.Match(ip)
+	return matched, value, err
 }
 
-func (c *Client) getCDNDataFromCache(httpClient *http.Client) error {
-	var err error
-	c.ranges, err = scrapeProjectDiscovery(httpClient)
+// CheckWAF checks if an IP is contained in the waf denylist
+func (c *Client) CheckWAF(ip net.IP) (matched bool, value string, err error) {
+	matched, value, err = c.waf.Match(ip)
+	return matched, value, err
+}
+
+// CheckCloud checks if an IP is contained in the cloud denylist
+func (c *Client) CheckCloud(ip net.IP) (matched bool, value string, err error) {
+	matched, value, err = c.cloud.Match(ip)
+	return matched, value, err
+}
+
+// Check checks if ip belongs to one of CDN, WAF and Cloud . It is generic method for Checkxxx methods
+func (c *Client) Check(ip net.IP) (matched bool, value string, itemType string, err error) {
+	if matched, value, err = c.cdn.Match(ip); err == nil && matched && value != "" {
+		return matched, value, "cdn", nil
+	}
+	if matched, value, err = c.waf.Match(ip); err == nil && matched && value != "" {
+		return matched, value, "waf", nil
+	}
+	if matched, value, err = c.cloud.Match(ip); err == nil && matched && value != "" {
+		return matched, value, "cloud", nil
+	}
+	return false, "", "", err
+}
+
+// Check Domain with fallback checks if domain belongs to one of CDN, WAF and Cloud . It is generic method for Checkxxx methods
+// Since input is domain, as a fallback it queries CNAME records and checks if domain is WAF
+func (c *Client) CheckDomainWithFallback(domain string) (matched bool, value string, itemType string, err error) {
+	dnsData, err := c.retriabledns.Resolve(domain)
 	if err != nil {
-		return err
+		return false, "", "", err
 	}
+	matched, value, itemType, err = c.CheckDNSResponse(dnsData)
+	if err != nil {
+		return false, "", "", err
+	}
+	if matched {
+		return matched, value, itemType, nil
+	}
+	// resolve cname
+	dnsData, err = c.retriabledns.CNAME(domain)
+	if err != nil {
+		return false, "", "", err
+	}
+	return c.CheckDNSResponse(dnsData)
+}
 
-	c.rangers = make(map[string]cidranger.Ranger)
-	for provider, ranges := range c.ranges {
-		ranger := cidranger.NewPCTrieRanger()
-
-		for _, cidr := range ranges {
-			_, network, err := net.ParseCIDR(cidr)
-			if err != nil {
+// CheckDNSResponse is same as CheckDomainWithFallback but takes DNS response as input
+func (c *Client) CheckDNSResponse(dnsResponse *retryabledns.DNSData) (matched bool, value string, itemType string, err error) {
+	if dnsResponse.A != nil {
+		for _, ip := range dnsResponse.A {
+			ipAddr := net.ParseIP(ip)
+			if ipAddr == nil {
 				continue
 			}
-			_ = ranger.Insert(cidranger.NewBasicRangerEntry(*network))
-		}
-		c.rangers[provider] = ranger
-	}
-	return nil
-}
-
-// Check checks if an IP is contained in the blacklist
-func (c *Client) Check(ip net.IP) (bool, string, error) {
-	for provider, ranger := range c.rangers {
-		if contains, err := ranger.Contains(ip); contains {
-			return true, provider, err
+			matched, value, itemType, err := c.Check(ipAddr)
+			if err != nil {
+				return false, "", "", err
+			}
+			if matched {
+				return matched, value, itemType, nil
+			}
 		}
 	}
-	return false, "", nil
+	if dnsResponse.CNAME != nil {
+		matched, discovered, itemType, err := c.CheckSuffix(dnsResponse.CNAME...)
+		if err != nil {
+			return false, "", itemType, err
+		}
+		if matched {
+			// for now checkSuffix only checks for wafs
+			return matched, discovered, itemType, nil
+		}
+	}
+	return false, "", "", err
 }
 
-// Ranges returns the providers and ranges for the cdn client
-func (c *Client) Ranges() map[string][]string {
-	return c.ranges
+func mapKeys(m map[string][]string) string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return strings.Join(keys, ", ")
 }

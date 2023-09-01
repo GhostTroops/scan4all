@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 //go:build !js
 // +build !js
 
@@ -139,13 +142,11 @@ func (t *DTLSTransport) WriteRTCP(pkts []rtcp.Packet) (int, error) {
 
 	writeStream, err := srtcpSession.OpenWriteStream()
 	if err != nil {
+		// nolint
 		return 0, fmt.Errorf("%w: %v", errPeerConnWriteRTCPOpenWriteStream, err)
 	}
 
-	if n, err := writeStream.Write(raw); err != nil {
-		return n, err
-	}
-	return 0, nil
+	return writeStream.Write(raw)
 }
 
 // GetLocalParameters returns the DTLS parameters of the local DTLSTransport upon construction.
@@ -212,16 +213,19 @@ func (t *DTLSTransport) startSRTP() error {
 	connState := t.conn.ConnectionState()
 	err := srtpConfig.ExtractSessionKeysFromDTLS(&connState, t.role() == DTLSRoleClient)
 	if err != nil {
+		// nolint
 		return fmt.Errorf("%w: %v", errDtlsKeyExtractionFailed, err)
 	}
 
 	srtpSession, err := srtp.NewSessionSRTP(t.srtpEndpoint, srtpConfig)
 	if err != nil {
+		// nolint
 		return fmt.Errorf("%w: %v", errFailedToStartSRTP, err)
 	}
 
 	srtcpSession, err := srtp.NewSessionSRTCP(t.srtcpEndpoint, srtpConfig)
 	if err != nil {
+		// nolint
 		return fmt.Errorf("%w: %v", errFailedToStartSRTCP, err)
 	}
 
@@ -312,7 +316,7 @@ func (t *DTLSTransport) Start(remoteParameters DTLSParameters) error {
 			}(),
 			ClientAuth:         dtls.RequireAnyClientCert,
 			LoggerFactory:      t.api.settingEngine.LoggerFactory,
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: !t.api.settingEngine.dtls.disableInsecureSkipVerify,
 		}, nil
 	}
 
@@ -327,9 +331,18 @@ func (t *DTLSTransport) Start(remoteParameters DTLSParameters) error {
 		dtlsConfig.ReplayProtectionWindow = int(*t.api.settingEngine.replayProtection.DTLS)
 	}
 
-	if t.api.settingEngine.dtls.retransmissionInterval != 0 {
-		dtlsConfig.FlightInterval = t.api.settingEngine.dtls.retransmissionInterval
+	if t.api.settingEngine.dtls.clientAuth != nil {
+		dtlsConfig.ClientAuth = *t.api.settingEngine.dtls.clientAuth
 	}
+
+	dtlsConfig.FlightInterval = t.api.settingEngine.dtls.retransmissionInterval
+	dtlsConfig.InsecureSkipVerifyHello = t.api.settingEngine.dtls.insecureSkipHelloVerify
+	dtlsConfig.EllipticCurves = t.api.settingEngine.dtls.ellipticCurves
+	dtlsConfig.ConnectContextMaker = t.api.settingEngine.dtls.connectContextMaker
+	dtlsConfig.ExtendedMasterSecret = t.api.settingEngine.dtls.extendedMasterSecret
+	dtlsConfig.ClientCAs = t.api.settingEngine.dtls.clientCAs
+	dtlsConfig.RootCAs = t.api.settingEngine.dtls.rootCAs
+	dtlsConfig.KeyLogWriter = t.api.settingEngine.dtls.keyLogWriter
 
 	// Connect as DTLS Client/Server, function is blocking and we
 	// must not hold the DTLSTransport lock
@@ -357,6 +370,8 @@ func (t *DTLSTransport) Start(remoteParameters DTLSParameters) error {
 	switch srtpProfile {
 	case dtls.SRTP_AEAD_AES_128_GCM:
 		t.srtpProtectionProfile = srtp.ProtectionProfileAeadAes128Gcm
+	case dtls.SRTP_AEAD_AES_256_GCM:
+		t.srtpProtectionProfile = srtp.ProtectionProfileAeadAes256Gcm
 	case dtls.SRTP_AES128_CM_HMAC_SHA1_80:
 		t.srtpProtectionProfile = srtp.ProtectionProfileAes128CmHmacSha1_80
 	default:

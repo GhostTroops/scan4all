@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"gorm.io/gorm"
@@ -48,14 +49,51 @@ func (m Migrator) FullDataTypeOf(field *schema.Field) clause.Expr {
 
 func (m Migrator) AlterColumn(value interface{}, field string) error {
 	return m.RunWithValue(value, func(stmt *gorm.Statement) error {
-		if field := stmt.Schema.LookUpField(field); field != nil {
-			return m.DB.Exec(
-				"ALTER TABLE ? MODIFY COLUMN ? ?",
-				clause.Table{Name: stmt.Table}, clause.Column{Name: field.DBName}, m.FullDataTypeOf(field),
-			).Error
+		if stmt.Schema != nil {
+			if field := stmt.Schema.LookUpField(field); field != nil {
+				fullDataType := m.FullDataTypeOf(field)
+				if m.Dialector.DontSupportRenameColumnUnique {
+					fullDataType.SQL = strings.Replace(fullDataType.SQL, " UNIQUE ", " ", 1)
+				}
+
+				return m.DB.Exec(
+					"ALTER TABLE ? MODIFY COLUMN ? ?",
+					clause.Table{Name: stmt.Table}, clause.Column{Name: field.DBName}, fullDataType,
+				).Error
+			}
 		}
 		return fmt.Errorf("failed to look up field with name: %s", field)
 	})
+}
+
+func (m Migrator) TiDBVersion() (isTiDB bool, major, minor, patch int, err error) {
+	// TiDB version string looks like:
+	// "5.7.25-TiDB-v6.5.0" or "5.7.25-TiDB-v6.4.0-serverless"
+	tidbVersionArray := strings.Split(m.Dialector.ServerVersion, "-")
+	if len(tidbVersionArray) < 3 || tidbVersionArray[1] != "TiDB" {
+		// It isn't TiDB
+		return
+	}
+
+	rawVersion := strings.TrimPrefix(tidbVersionArray[2], "v")
+	realVersionArray := strings.Split(rawVersion, ".")
+	if major, err = strconv.Atoi(realVersionArray[0]); err != nil {
+		err = fmt.Errorf("failed to parse the version of TiDB, the major version is: %s", realVersionArray[0])
+		return
+	}
+
+	if minor, err = strconv.Atoi(realVersionArray[1]); err != nil {
+		err = fmt.Errorf("failed to parse the version of TiDB, the minor version is: %s", realVersionArray[0])
+		return
+	}
+
+	if patch, err = strconv.Atoi(realVersionArray[2]); err != nil {
+		err = fmt.Errorf("failed to parse the version of TiDB, the patch version is: %s", realVersionArray[0])
+		return
+	}
+
+	isTiDB = true
+	return
 }
 
 func (m Migrator) RenameColumn(value interface{}, oldName, newName string) error {
@@ -65,14 +103,16 @@ func (m Migrator) RenameColumn(value interface{}, oldName, newName string) error
 		}
 
 		var field *schema.Field
-		if f := stmt.Schema.LookUpField(oldName); f != nil {
-			oldName = f.DBName
-			field = f
-		}
+		if stmt.Schema != nil {
+			if f := stmt.Schema.LookUpField(oldName); f != nil {
+				oldName = f.DBName
+				field = f
+			}
 
-		if f := stmt.Schema.LookUpField(newName); f != nil {
-			newName = f.DBName
-			field = f
+			if f := stmt.Schema.LookUpField(newName); f != nil {
+				newName = f.DBName
+				field = f
+			}
 		}
 
 		if field != nil {
@@ -103,22 +143,24 @@ func (m Migrator) RenameIndex(value interface{}, oldName, newName string) error 
 			return err
 		}
 
-		if idx := stmt.Schema.LookIndex(newName); idx == nil {
-			if idx = stmt.Schema.LookIndex(oldName); idx != nil {
-				opts := m.BuildIndexOptions(idx.Fields, stmt)
-				values := []interface{}{clause.Column{Name: newName}, clause.Table{Name: stmt.Table}, opts}
+		if stmt.Schema != nil {
+			if idx := stmt.Schema.LookIndex(newName); idx == nil {
+				if idx = stmt.Schema.LookIndex(oldName); idx != nil {
+					opts := m.BuildIndexOptions(idx.Fields, stmt)
+					values := []interface{}{clause.Column{Name: newName}, clause.Table{Name: stmt.Table}, opts}
 
-				createIndexSQL := "CREATE "
-				if idx.Class != "" {
-					createIndexSQL += idx.Class + " "
+					createIndexSQL := "CREATE "
+					if idx.Class != "" {
+						createIndexSQL += idx.Class + " "
+					}
+					createIndexSQL += "INDEX ? ON ??"
+
+					if idx.Type != "" {
+						createIndexSQL += " USING " + idx.Type
+					}
+
+					return m.DB.Exec(createIndexSQL, values...).Error
 				}
-				createIndexSQL += "INDEX ? ON ??"
-
-				if idx.Type != "" {
-					createIndexSQL += " USING " + idx.Type
-				}
-
-				return m.DB.Exec(createIndexSQL, values...).Error
 			}
 		}
 
@@ -173,11 +215,11 @@ func (m Migrator) ColumnTypes(value interface{}) ([]gorm.ColumnType, error) {
 		}
 
 		rawColumnTypes, err := rows.ColumnTypes()
-		
+
 		if err != nil {
 			return err
 		}
-		
+
 		if err := rows.Close(); err != nil {
 			return err
 		}
@@ -279,9 +321,13 @@ func (m Migrator) GetIndexes(value interface{}) ([]gorm.Index, error) {
 		if scanErr != nil {
 			return scanErr
 		}
-		indexMap := groupByIndexName(result)
+		indexMap, indexNames := groupByIndexName(result)
 
-		for _, idx := range indexMap {
+		for _, name := range indexNames {
+			idx := indexMap[name]
+			if len(idx) == 0 {
+				continue
+			}
 			tempIdx := &migrator.Index{
 				TableName: idx[0].TableName,
 				NameValue: idx[0].IndexName,
@@ -312,12 +358,16 @@ type Index struct {
 	NonUnique  int32  `gorm:"column:NON_UNIQUE"`
 }
 
-func groupByIndexName(indexList []*Index) map[string][]*Index {
+func groupByIndexName(indexList []*Index) (map[string][]*Index, []string) {
 	columnIndexMap := make(map[string][]*Index, len(indexList))
+	indexNames := make([]string, 0, len(indexList))
 	for _, idx := range indexList {
+		if _, ok := columnIndexMap[idx.IndexName]; !ok {
+			indexNames = append(indexNames, idx.IndexName)
+		}
 		columnIndexMap[idx.IndexName] = append(columnIndexMap[idx.IndexName], idx)
 	}
-	return columnIndexMap
+	return columnIndexMap, indexNames
 }
 
 func (m Migrator) CurrentSchema(stmt *gorm.Statement, table string) (string, string) {
@@ -330,4 +380,29 @@ func (m Migrator) CurrentSchema(stmt *gorm.Statement, table string) (string, str
 
 func (m Migrator) GetTypeAliases(databaseTypeName string) []string {
 	return typeAliasMap[databaseTypeName]
+}
+
+// TableType table type return tableType,error
+func (m Migrator) TableType(value interface{}) (tableType gorm.TableType, err error) {
+	var table migrator.TableType
+
+	err = m.RunWithValue(value, func(stmt *gorm.Statement) error {
+		var (
+			values = []interface{}{
+				&table.SchemaValue, &table.NameValue, &table.TypeValue, &table.CommentValue,
+			}
+			currentDatabase, tableName = m.CurrentSchema(stmt, stmt.Table)
+			tableTypeSQL               = "SELECT table_schema, table_name, table_type, table_comment FROM information_schema.tables WHERE table_schema = ? AND table_name = ?"
+		)
+
+		row := m.DB.Table(tableName).Raw(tableTypeSQL, currentDatabase, tableName).Row()
+
+		if scanErr := row.Scan(values...); scanErr != nil {
+			return scanErr
+		}
+
+		return nil
+	})
+
+	return table, err
 }

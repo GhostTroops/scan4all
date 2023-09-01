@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 // Package prf implements TLS 1.2 Pseudorandom functions
 package prf
 
@@ -135,14 +138,14 @@ func ellipticCurvePreMasterSecret(publicKey, privateKey []byte, c1, c2 ellipticS
 // specify a PRF and, in general, SHOULD use the TLS PRF with SHA-256 or a
 // stronger standard hash function.
 //
-//    P_hash(secret, seed) = HMAC_hash(secret, A(1) + seed) +
-//                           HMAC_hash(secret, A(2) + seed) +
-//                           HMAC_hash(secret, A(3) + seed) + ...
+//	P_hash(secret, seed) = HMAC_hash(secret, A(1) + seed) +
+//	                       HMAC_hash(secret, A(2) + seed) +
+//	                       HMAC_hash(secret, A(3) + seed) + ...
 //
 // A() is defined as:
 //
-//    A(0) = seed
-//    A(i) = HMAC_hash(secret, A(i-1))
+//	A(0) = seed
+//	A(i) = HMAC_hash(secret, A(i-1))
 //
 // P_hash can be iterated as many times as necessary to produce the
 // required quantity of data.  For example, if P_SHA256 is being used to

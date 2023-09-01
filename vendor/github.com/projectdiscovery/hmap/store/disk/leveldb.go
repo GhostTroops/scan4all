@@ -8,6 +8,7 @@ import (
 
 	"github.com/syndtr/goleveldb/leveldb"
 	"github.com/syndtr/goleveldb/leveldb/iterator"
+	"github.com/syndtr/goleveldb/leveldb/opt"
 	"github.com/syndtr/goleveldb/leveldb/util"
 )
 
@@ -21,7 +22,9 @@ type LevelDB struct {
 
 // OpenLevelDB - Opens the specified path
 func OpenLevelDB(path string) (*LevelDB, error) {
-	db, err := leveldb.OpenFile(path, nil)
+	db, err := leveldb.OpenFile(path, &opt.Options{
+		CompactionTableSize: 256 * Megabyte,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +129,10 @@ func (ldb *LevelDB) get(k string) ([]byte, error) {
 	}
 
 	if delete {
-		ldb.db.Delete([]byte(k), nil)
+		errDelete := ldb.db.Delete([]byte(k), nil)
+		if errDelete != nil {
+			return data, errDelete
+		}
 		return data, ErrNotFound
 	}
 

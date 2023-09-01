@@ -1,6 +1,6 @@
 package converters
 
-func NewStringConverter(langID int) *StringConverter {
+func NewStringConverter(langID int) IStringConverter {
 	switch langID {
 	case 0x1: // 1
 		return &StringConverter{
@@ -8569,7 +8569,7 @@ func NewStringConverter(langID int) *StringConverter {
 				1616: 240, 1617: 241, 1618: 242, 1662: 243, 1657: 244, 1670: 245, 1749: 246, 1700: 247, 1711: 248, 1672: 249, 1681: 250, 63678: 251, 63677: 252, 63676: 253, 1688: 254, 1746: 255,
 			},
 		}
-	case 0x24e: // 590
+	case 0x24E: // 590
 		return &StringConverter{
 			LangID:    590,
 			CharWidth: 1,
@@ -25106,7 +25106,6 @@ func NewStringConverter(langID int) *StringConverter {
 				64045: 64081,
 			},
 		}
-
 	case 0x35e: // 862
 		return &StringConverter{
 			LangID:    862,
@@ -25187,13 +25186,25 @@ func NewStringConverter(langID int) *StringConverter {
 				8216: 96, 8213: 45, 63742: 183, 8248: 94, 8764: 126, 63741: 102, 8356: 76, 376: 89, 946: 223,
 			},
 		}
-	default:
+	case 0x366:
+		fallthrough
+	case 0x367:
+		fallthrough
+	case 0x368:
+		fallthrough
+	case 0x369:
+		fallthrough
+	case 0x7D0:
+		fallthrough
+	case 0x7D2:
 		return &StringConverter{
 			LangID:    langID,
 			CharWidth: 2,
 			eReplace:  65533,
 			dReplace:  63,
 		}
+	default:
+		return nil
 	}
 	//fileName := fmt.Sprintf("glb/lx20%x.json", LangID)
 	//jsonFile, err := os.Open(fileName)

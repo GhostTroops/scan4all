@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package sctp
 
 import (
@@ -17,11 +20,12 @@ const (
 	paramHeaderLength = 4
 )
 
+// Parameter header parse errors
 var (
-	errParamHeaderTooShort                  = errors.New("param header too short")
-	errParamHeaderSelfReportedLengthShorter = errors.New("param self reported length is shorter than header length")
-	errParamHeaderSelfReportedLengthLonger  = errors.New("param self reported length is longer than header length")
-	errParamHeaderParseFailed               = errors.New("failed to parse param type")
+	ErrParamHeaderTooShort                  = errors.New("param header too short")
+	ErrParamHeaderSelfReportedLengthShorter = errors.New("param self reported length is shorter than header length")
+	ErrParamHeaderSelfReportedLengthLonger  = errors.New("param self reported length is longer than header length")
+	ErrParamHeaderParseFailed               = errors.New("failed to parse param type")
 )
 
 func (p *paramHeader) marshal() ([]byte, error) {
@@ -37,20 +41,20 @@ func (p *paramHeader) marshal() ([]byte, error) {
 
 func (p *paramHeader) unmarshal(raw []byte) error {
 	if len(raw) < paramHeaderLength {
-		return errParamHeaderTooShort
+		return ErrParamHeaderTooShort
 	}
 
 	paramLengthPlusHeader := binary.BigEndian.Uint16(raw[2:])
 	if int(paramLengthPlusHeader) < paramHeaderLength {
-		return fmt.Errorf("%w: param self reported length (%d) shorter than header length (%d)", errParamHeaderSelfReportedLengthShorter, int(paramLengthPlusHeader), paramHeaderLength)
+		return fmt.Errorf("%w: param self reported length (%d) shorter than header length (%d)", ErrParamHeaderSelfReportedLengthShorter, int(paramLengthPlusHeader), paramHeaderLength)
 	}
 	if len(raw) < int(paramLengthPlusHeader) {
-		return fmt.Errorf("%w: param length (%d) shorter than its self reported length (%d)", errParamHeaderSelfReportedLengthLonger, len(raw), int(paramLengthPlusHeader))
+		return fmt.Errorf("%w: param length (%d) shorter than its self reported length (%d)", ErrParamHeaderSelfReportedLengthLonger, len(raw), int(paramLengthPlusHeader))
 	}
 
 	typ, err := parseParamType(raw[0:])
 	if err != nil {
-		return fmt.Errorf("%w: %v", errParamHeaderParseFailed, err)
+		return fmt.Errorf("%w: %v", ErrParamHeaderParseFailed, err) //nolint:errorlint
 	}
 	p.typ = typ
 	p.raw = raw[paramHeaderLength:paramLengthPlusHeader]

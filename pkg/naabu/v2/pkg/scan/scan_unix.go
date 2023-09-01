@@ -4,7 +4,6 @@ package scan
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
 	"io"
 	"net"
 	"sync"
@@ -104,56 +103,54 @@ func TCPReadWorkerPCAPUnix(s *Scanner) {
 
 	for _, handler := range handlers.Active {
 		wgread.Add(1)
-		func(handler *pcap.Handle) {
-			util.DefaultPool.Submit(func() {
-				defer wgread.Done()
+		go func(handler *pcap.Handle) {
+			defer wgread.Done()
 
-				var (
-					eth layers.Ethernet
-					ip4 layers.IPv4
-					tcp layers.TCP
-				)
+			var (
+				eth layers.Ethernet
+				ip4 layers.IPv4
+				tcp layers.TCP
+			)
 
-				// Interfaces with MAC (Physical + Virtualized)
-				parserMac := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &tcp)
-				// Interfaces without MAC (TUN/TAP)
-				parserNoMac := gopacket.NewDecodingLayerParser(layers.LayerTypeIPv4, &ip4, &tcp)
+			// Interfaces with MAC (Physical + Virtualized)
+			parserMac := gopacket.NewDecodingLayerParser(layers.LayerTypeEthernet, &eth, &ip4, &tcp)
+			// Interfaces without MAC (TUN/TAP)
+			parserNoMac := gopacket.NewDecodingLayerParser(layers.LayerTypeIPv4, &ip4, &tcp)
 
-				var parsers []*gopacket.DecodingLayerParser
-				parsers = append(parsers, parserMac, parserNoMac)
+			var parsers []*gopacket.DecodingLayerParser
+			parsers = append(parsers, parserMac, parserNoMac)
 
-				decoded := []gopacket.LayerType{}
+			decoded := []gopacket.LayerType{}
 
-				for {
-					data, _, err := handler.ReadPacketData()
-					if err == io.EOF {
-						break
-					} else if err != nil {
+			for {
+				data, _, err := handler.ReadPacketData()
+				if err == io.EOF {
+					break
+				} else if err != nil {
+					continue
+				}
+
+				for _, parser := range parsers {
+					if err := parser.DecodeLayers(data, &decoded); err != nil {
 						continue
 					}
+					for _, layerType := range decoded {
+						if layerType == layers.LayerTypeTCP {
+							if !s.IPRanger.Contains(ip4.SrcIP.String()) {
+								gologger.Debug().Msgf("Discarding TCP packet from non target ip %s\n", ip4.SrcIP.String())
+								continue
+							}
 
-					for _, parser := range parsers {
-						if err := parser.DecodeLayers(data, &decoded); err != nil {
-							continue
-						}
-						for _, layerType := range decoded {
-							if layerType == layers.LayerTypeTCP {
-								if !s.IPRanger.Contains(ip4.SrcIP.String()) {
-									gologger.Debug().Msgf("Discarding TCP packet from non target ip %s\n", ip4.SrcIP.String())
-									continue
-								}
-
-								// We consider only incoming packets
-								if tcp.DstPort != layers.TCPPort(s.listenPort) {
-									continue
-								} else if tcp.SYN && tcp.ACK {
-									s.tcpChan <- &PkgResult{ip: ip4.SrcIP.String(), port: int(tcp.SrcPort)}
-								}
+							// We consider only incoming packets
+							if tcp.DstPort != layers.TCPPort(s.listenPort) {
+								continue
+							} else if tcp.SYN && tcp.ACK {
+								s.tcpChan <- &PkgResult{ip: ip4.SrcIP.String(), port: int(tcp.SrcPort)}
 							}
 						}
 					}
 				}
-			})
+			}
 		}(handler)
 	}
 

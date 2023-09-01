@@ -2,12 +2,16 @@
 # we would love to have you https://github.com/pion/webrtc/wiki/Contributing
 #
 # This file is auto generated, using git to list all individuals contributors.
-# see `.github/generate-authors.sh` for the scripting
+# see https://github.com/pion/.goassets/blob/master/scripts/generate-authors.sh for the scripting
 Aaron France <aaron.l.france@gmail.com>
 Adam Kiss <masterada@gmail.com>
 adwpc <adwpc@hotmail.com>
 Aleksandr Razumov <ar@gortc.io>
+aler9 <46489434+aler9@users.noreply.github.com>
+Anshul <malikanshul29@gmail.com>
 Antoine Baché <antoine@tenten.app>
+ar-hosseinkhani <alireza.8096@chmail.ir>
+Artur Shellunts <shellunts.artur@gmail.com>
 Assad Obaid <assad@lap5cg901003r.se.axis.com>
 Atsushi Watanabe <atsushi.w@ieee.org>
 backkem <mail@backkem.me>
@@ -18,6 +22,8 @@ cnderrauber <zengjie9004@gmail.com>
 David Hamilton <davidhamiltron@gmail.com>
 David Zhao <david@davidzhao.com>
 David Zhao <dz@livekit.io>
+Eric Daniels <eric@erdaniels.com>
+Genteure <github@genteure.com>
 Henry <cryptix@riseup.net>
 hexiang <hexiang.zhang@chukong-inc.com>
 hn8 <10730886+hn8@users.noreply.github.com>
@@ -38,11 +44,14 @@ Meelap Shah <meelapshah@gmail.com>
 Michael MacDonald <github@macdonald.cx>
 Michael MacDonald <mike.macdonald@savantsystems.com>
 Mikhail Bragin <misha@wiretrustee.com>
+Miroslav Šedivý <sedivy.miro@gmail.com>
 Nevio Vesic <nevio@subspace.com>
 Ori Bernstein <ori@eigenstate.org>
+Rasmus Hanning <rasmus@hanning.se>
 Robert Eperjesi <eperjesi@uber.com>
 Sam Lancia <sam@gpsm.co.uk>
 Sam Lancia <sam@vaion.com>
+San9H0 <lucian@hpcnt.com>
 Sean DuBois <seaduboi@amazon.com>
 Sean DuBois <sean@siobud.com>
 Sebastian Waisbrot <seppo0010@gmail.com>
@@ -53,3 +62,6 @@ Woodrow Douglass <wdouglass@carnegierobotics.com>
 Yutaka Takeda <yt0916@gmail.com>
 ZHENK <chengzhenyang@gmail.com>
 Zizheng Tai <me@zizheng.me>
+
+# List of contributors not appearing in Git history
+

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package codecs
 
 import (
@@ -211,10 +214,8 @@ func (p *H264Packet) IsDetectedFinalPacketInSequence(rtpPacketMarketBit bool) bo
 
 // Unmarshal parses the passed byte slice and stores the result in the H264Packet this method is called upon
 func (p *H264Packet) Unmarshal(payload []byte) ([]byte, error) {
-	if payload == nil {
-		return nil, errNilPacket
-	} else if len(payload) <= 2 {
-		return nil, fmt.Errorf("%w: %d <= 2", errShortPacket, len(payload))
+	if len(payload) == 0 {
+		return nil, fmt.Errorf("%w: %d <=0", errShortPacket, len(payload))
 	}
 
 	// NALU Types
@@ -267,8 +268,17 @@ func (p *H264Packet) Unmarshal(payload []byte) ([]byte, error) {
 	return nil, fmt.Errorf("%w: %d", errUnhandledNALUType, naluType)
 }
 
-// H264PartitionHeadChecker is obsolete
+// H264PartitionHeadChecker checks H264 partition head.
+//
+// Deprecated: replaced by H264Packet.IsPartitionHead()
 type H264PartitionHeadChecker struct{}
+
+// IsPartitionHead checks if this is the head of a packetized nalu stream.
+//
+// Deprecated: replaced by H264Packet.IsPartitionHead()
+func (*H264PartitionHeadChecker) IsPartitionHead(packet []byte) bool {
+	return (&H264Packet{}).IsPartitionHead(packet)
+}
 
 // IsPartitionHead checks if this is the head of a packetized nalu stream.
 func (*H264Packet) IsPartitionHead(payload []byte) bool {

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package codecs
 
 import (
@@ -32,11 +35,13 @@ const (
 
 // H265NALUHeader is a H265 NAL Unit Header
 // https://datatracker.ietf.org/doc/html/rfc7798#section-1.1.4
-// +---------------+---------------+
-//  |0|1|2|3|4|5|6|7|0|1|2|3|4|5|6|7|
-//  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//  |F|   Type    |  LayerID  | TID |
-//  +-------------+-----------------+
+/*
+* +---------------+---------------+
+* |0|1|2|3|4|5|6|7|0|1|2|3|4|5|6|7|
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |F|   Type    |  LayerID  | TID |
+* +-------------+-----------------+
+**/
 type H265NALUHeader uint16
 
 func newH265NALUHeader(highByte, lowByte uint8) H265NALUHeader {
@@ -95,18 +100,19 @@ func (h H265NALUHeader) IsPACIPacket() bool {
 //
 
 // H265SingleNALUnitPacket represents a NALU packet, containing exactly one NAL unit.
-//     0                   1                   2                   3
-//    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |           PayloadHdr          |      DONL (conditional)       |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |                                                               |
-//   |                  NAL unit payload data                        |
-//   |                                                               |
-//   |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |                               :...OPTIONAL RTP padding        |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//
+/*
+*  0                   1                   2                   3
+*  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |           PayloadHdr          |      DONL (conditional)       |
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |                                                               |
+* |                  NAL unit payload data                        |
+* |                                                               |
+* |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |                               :...OPTIONAL RTP padding        |
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+**/
 // Reference: https://datatracker.ietf.org/doc/html/rfc7798#section-4.4.1
 type H265SingleNALUnitPacket struct {
 	// payloadHeader is the header of the H265 packet.
@@ -184,19 +190,19 @@ func (p *H265SingleNALUnitPacket) isH265Packet() {}
 //
 
 // H265AggregationUnitFirst represent the First Aggregation Unit in an AP.
-//
-//    0                   1                   2                   3
-//    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//                   :       DONL (conditional)      |   NALU size   |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |   NALU size   |                                               |
-//   +-+-+-+-+-+-+-+-+         NAL unit                              |
-//   |                                                               |
-//   |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |                               :
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//
+/*
+*  0                   1                   2                   3
+*  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* :       DONL (conditional)      |   NALU size   |
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |   NALU size   |                                               |
+* +-+-+-+-+-+-+-+-+         NAL unit                              |
+* |                                                               |
+* |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |                               :
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+**/
 // Reference: https://datatracker.ietf.org/doc/html/rfc7798#section-4.4.2
 type H265AggregationUnitFirst struct {
 	donl        *uint16
@@ -222,18 +228,18 @@ func (u H265AggregationUnitFirst) NalUnit() []byte {
 }
 
 // H265AggregationUnit represent the an Aggregation Unit in an AP, which is not the first one.
-//
-//    0                   1                   2                   3
-//    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//                   : DOND (cond)   |          NALU size            |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |                                                               |
-//   |                       NAL unit                                |
-//   |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |                               :
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//
+/*
+*  0                   1                   2                   3
+*  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* : DOND (cond)   |          NALU size            |
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |                                                               |
+* |                       NAL unit                                |
+* |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |                               :
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+**/
 // Reference: https://datatracker.ietf.org/doc/html/rfc7798#section-4.4.2
 type H265AggregationUnit struct {
 	dond        *uint8
@@ -259,18 +265,19 @@ func (u H265AggregationUnit) NalUnit() []byte {
 }
 
 // H265AggregationPacket represents an Aggregation packet.
-//   0                   1                   2                   3
-//    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |    PayloadHdr (Type=48)       |                               |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
-//   |                                                               |
-//   |             two or more aggregation units                     |
-//   |                                                               |
-//   |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//   |                               :...OPTIONAL RTP padding        |
-//   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//
+/*
+*  0                   1                   2                   3
+*  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |    PayloadHdr (Type=48)       |                               |
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+                               |
+* |                                                               |
+* |             two or more aggregation units                     |
+* |                                                               |
+* |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |                               :...OPTIONAL RTP padding        |
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+**/
 // Reference: https://datatracker.ietf.org/doc/html/rfc7798#section-4.4.2
 type H265AggregationPacket struct {
 	firstUnit  *H265AggregationUnitFirst
@@ -395,11 +402,13 @@ const (
 )
 
 // H265FragmentationUnitHeader is a H265 FU Header
-// +---------------+
-// |0|1|2|3|4|5|6|7|
-// +-+-+-+-+-+-+-+-+
-// |S|E|  FuType   |
-// +---------------+
+/*
+* +---------------+
+* |0|1|2|3|4|5|6|7|
+* +-+-+-+-+-+-+-+-+
+* |S|E|  FuType   |
+* +---------------+
+**/
 type H265FragmentationUnitHeader uint8
 
 // S represents the start of a fragmented NAL unit.
@@ -421,20 +430,20 @@ func (h H265FragmentationUnitHeader) FuType() uint8 {
 }
 
 // H265FragmentationUnitPacket represents a single Fragmentation Unit packet.
-//
-//  0                   1                   2                   3
-// 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-// |    PayloadHdr (Type=49)       |   FU header   | DONL (cond)   |
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-|
-// | DONL (cond)   |                                               |
-// |-+-+-+-+-+-+-+-+                                               |
-// |                         FU payload                            |
-// |                                                               |
-// |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-// |                               :...OPTIONAL RTP padding        |
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//
+/*
+*  0                   1                   2                   3
+*  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |    PayloadHdr (Type=49)       |   FU header   | DONL (cond)   |
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-|
+* | DONL (cond)   |                                               |
+* |-+-+-+-+-+-+-+-+                                               |
+* |                         FU payload                            |
+* |                                                               |
+* |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |                               :...OPTIONAL RTP padding        |
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+**/
 // Reference: https://datatracker.ietf.org/doc/html/rfc7798#section-4.4.3
 type H265FragmentationUnitPacket struct {
 	// payloadHeader is the header of the H265 packet.
@@ -521,22 +530,22 @@ func (p *H265FragmentationUnitPacket) isH265Packet() {}
 //
 
 // H265PACIPacket represents a single H265 PACI packet.
-//
-//  0                   1                   2                   3
-// 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-// |    PayloadHdr (Type=50)       |A|   cType   | PHSsize |F0..2|Y|
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-// |        Payload Header Extension Structure (PHES)              |
-// |=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=|
-// |                                                               |
-// |                  PACI payload: NAL unit                       |
-// |                   . . .                                       |
-// |                                                               |
-// |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-// |                               :...OPTIONAL RTP padding        |
-// +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//
+/*
+*  0                   1                   2                   3
+*  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |    PayloadHdr (Type=50)       |A|   cType   | PHSsize |F0..2|Y|
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |        Payload Header Extension Structure (PHES)              |
+* |=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=|
+* |                                                               |
+* |                  PACI payload: NAL unit                       |
+* |                   . . .                                       |
+* |                                                               |
+* |                               +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+* |                               :...OPTIONAL RTP padding        |
+* +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+**/
 // Reference: https://datatracker.ietf.org/doc/html/rfc7798#section-4.4.4
 type H265PACIPacket struct {
 	// payloadHeader is the header of the H265 packet.

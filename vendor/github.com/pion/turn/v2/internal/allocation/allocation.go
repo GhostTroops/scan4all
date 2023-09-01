@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 // Package allocation contains all CRUD operations for allocations
 package allocation
 
@@ -34,21 +37,11 @@ type Allocation struct {
 	closed              chan interface{}
 	log                 logging.LeveledLogger
 
-	// some clients (Firefox or others using resiprocate's nICE lib) may retry allocation
+	// Some clients (Firefox or others using resiprocate's nICE lib) may retry allocation
 	// with same 5 tuple when received 413, for compatible with these clients,
 	// cache for response lost and client retry to implement 'stateless stack approach'
-	// https://datatracker.ietf.org/doc/html/rfc5766#section-6.2
+	// See: https://datatracker.ietf.org/doc/html/rfc5766#section-6.2
 	responseCache atomic.Value // *allocationResponse
-}
-
-func addr2IPFingerprint(addr net.Addr) string {
-	switch a := addr.(type) {
-	case *net.UDPAddr:
-		return a.IP.String()
-	case *net.TCPAddr: // Do we really need this case?
-		return a.IP.String()
-	}
-	return "" // should never happen
 }
 
 // NewAllocation creates a new instance of NewAllocation.
@@ -67,12 +60,12 @@ func (a *Allocation) GetPermission(addr net.Addr) *Permission {
 	a.permissionsLock.RLock()
 	defer a.permissionsLock.RUnlock()
 
-	return a.permissions[addr2IPFingerprint(addr)]
+	return a.permissions[ipnet.FingerprintAddr(addr)]
 }
 
 // AddPermission adds a new permission to the allocation
 func (a *Allocation) AddPermission(p *Permission) {
-	fingerprint := addr2IPFingerprint(p.Addr)
+	fingerprint := ipnet.FingerprintAddr(p.Addr)
 
 	a.permissionsLock.RLock()
 	existedPermission, ok := a.permissions[fingerprint]
@@ -95,7 +88,7 @@ func (a *Allocation) AddPermission(p *Permission) {
 func (a *Allocation) RemovePermission(addr net.Addr) {
 	a.permissionsLock.Lock()
 	defer a.permissionsLock.Unlock()
-	delete(a.permissions, addr2IPFingerprint(addr))
+	delete(a.permissions, ipnet.FingerprintAddr(addr))
 }
 
 // AddChannelBind adds a new ChannelBind to the allocation, it also updates the
@@ -250,7 +243,7 @@ func (a *Allocation) packetHandler(m *Manager) {
 			return
 		}
 
-		a.log.Debugf("relay socket %s received %d bytes from %s",
+		a.log.Debugf("Relay socket %s received %d bytes from %s",
 			a.RelaySocket.LocalAddr().String(),
 			n,
 			srcAddr.String())
@@ -280,7 +273,7 @@ func (a *Allocation) packetHandler(m *Manager) {
 				a.log.Errorf("Failed to send DataIndication from allocation %v %v", srcAddr, err)
 				return
 			}
-			a.log.Debugf("relaying message from %s to client at %s",
+			a.log.Debugf("Relaying message from %s to client at %s",
 				srcAddr.String(),
 				a.fiveTuple.SrcAddr.String())
 			if _, err = a.TurnSocket.WriteTo(msg.Raw, a.fiveTuple.SrcAddr); err != nil {

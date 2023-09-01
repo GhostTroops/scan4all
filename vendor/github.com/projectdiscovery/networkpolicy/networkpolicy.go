@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/projectdiscovery/iputil"
+	iputil "github.com/projectdiscovery/utils/ip"
 	"github.com/yl2chen/cidranger"
 )
 

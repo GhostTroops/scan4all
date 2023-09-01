@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package nack
 
 import (
@@ -16,7 +19,7 @@ type GeneratorInterceptorFactory struct {
 }
 
 // NewInterceptor constructs a new ReceiverInterceptor
-func (g *GeneratorInterceptorFactory) NewInterceptor(id string) (interceptor.Interceptor, error) {
+func (g *GeneratorInterceptorFactory) NewInterceptor(_ string) (interceptor.Interceptor, error) {
 	i := &GeneratorInterceptor{
 		size:        512,
 		skipLastN:   0,
@@ -108,8 +111,8 @@ func (n *GeneratorInterceptor) BindRemoteStream(info *interceptor.StreamInfo, re
 	})
 }
 
-// UnbindLocalStream is called when the Stream is removed. It can be used to clean up any data related to that track.
-func (n *GeneratorInterceptor) UnbindLocalStream(info *interceptor.StreamInfo) {
+// UnbindRemoteStream is called when the Stream is removed. It can be used to clean up any data related to that track.
+func (n *GeneratorInterceptor) UnbindRemoteStream(info *interceptor.StreamInfo) {
 	n.receiveLogsMu.Lock()
 	delete(n.receiveLogs, info.SSRC)
 	n.receiveLogsMu.Unlock()

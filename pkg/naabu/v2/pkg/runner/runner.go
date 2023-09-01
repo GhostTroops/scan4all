@@ -3,21 +3,23 @@ package runner
 import (
 	"bytes"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
-	Const "github.com/hktalent/go-utils"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
+	"github.com/hktalent/scan4all/projectdiscovery/nuclei_Yaml"
 	"github.com/hktalent/scan4all/webScan"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/iputil"
+	runner3 "github.com/projectdiscovery/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/retryablehttp-go"
+	"github.com/projectdiscovery/uncover/sources/agent/shodanidb"
 	"log"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"time"
 
@@ -31,7 +33,7 @@ import (
 	"github.com/projectdiscovery/dnsx/libs/dnsx"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/mapcidr"
-	"github.com/projectdiscovery/uncover/uncover/agent/shodanidb"
+
 	"github.com/remeh/sizedwaitgroup"
 	"go.uber.org/ratelimit"
 )
@@ -51,13 +53,12 @@ type Runner struct {
 
 var Naabubuffer = bytes.Buffer{}
 
-func (r *Runner) Httpxrun(buf *bytes.Buffer, options *Options) error {
+func (r *Runner) Httpxrun(buf *bytes.Buffer, options *runner3.Options) error {
 	if nil != buf {
 		httpxrunner.Naabubuffer = *buf
 	} else {
 		httpxrunner.Naabubuffer = Naabubuffer
 	}
-	//var nucleiDone = make(chan bool, 1)
 	Cookie := util.GetVal("Cookie")
 	if "" != Cookie {
 		Cookie = "Cookie: " + Cookie + ";rememberMe=123" // add
@@ -67,7 +68,6 @@ func (r *Runner) Httpxrun(buf *bytes.Buffer, options *Options) error {
 	//log.Println("httpxrunner.Naabubuffer = ", httpxrunner.Naabubuffer.String())
 	//Naabubuffer1 := bytes.Buffer{}
 	//Naabubuffer1.Write(httpxrunner.Naabubuffer.Bytes())
-	//var xx1 = make(chan *runner2.Runner, 1)
 	httpxoptions := httpxrunner.ParseOptions()
 
 	opts := map[string]interface{}{}
@@ -86,14 +86,11 @@ func (r *Runner) Httpxrun(buf *bytes.Buffer, options *Options) error {
 
 	util.DoSyncFunc(func() {
 		if util.GetValAsBool("enableWebScan") {
-			webScan.CheckUrls(&httpxrunner.Naabubuffer)
+			util.DoSyncFunc(func() {
+				webScan.CheckUrls(&httpxrunner.Naabubuffer)
+			})
 		}
-		s := httpxrunner.Naabubuffer.String()
-		log.Println(s)
-		util.SendEvent(&Const.EventData{
-			EventType: Const.ScanType_Nuclei,
-			EventData: []interface{}{s},
-		}, Const.ScanType_Nuclei)
+		nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer)
 	})
 	// 指纹去重复 请求路径
 	if "" != fingerprint.FgDictFile {
@@ -265,16 +262,14 @@ func (r *Runner) RunEnumeration() error {
 			for ip := range ipStream {
 				for _, port := range r.scanner.Ports {
 					r.limiter.Take()
-					func(ip string, port int) {
-						util.DefaultPool.Submit(func() {
-							if shouldUseRawPackets {
-								r.RawSocketEnumeration(ip, port)
-							} else {
-								r.wgscan.Add()
+					go func(ip string, port int) {
+						if shouldUseRawPackets {
+							r.RawSocketEnumeration(ip, port)
+						} else {
+							r.wgscan.Add()
 
-								go r.handleHostPort(ip, port)
-							}
-						})
+							go r.handleHostPort(ip, port)
+						}
 					}(ip, port)
 				}
 			}
@@ -293,38 +288,37 @@ func (r *Runner) RunEnumeration() error {
 			ipStream, _ := mapcidr.IPAddressesAsStream(cidr.String())
 			for ip := range ipStream {
 				r.wgscan.Add()
-				func(ip string) {
-					util.DefaultPool.Submit(func() {
-						defer r.wgscan.Done()
-						// obtain ports from shodan idb
-						shodanURL := fmt.Sprintf(shodanidb.URL, url.QueryEscape(ip))
-						request, err := retryablehttp.NewRequest(http.MethodGet, shodanURL, nil)
-						if err != nil {
-							gologger.Warning().Msgf("Couldn't create http request for %s: %s\n", ip, err)
-							return
-						}
-						r.limiter.Take()
-						response, err := httpClient.Do(request)
-						if err != nil {
-							gologger.Warning().Msgf("Couldn't retrieve http response for %s: %s\n", ip, err)
-							return
-						}
-						if response.StatusCode != http.StatusOK {
-							gologger.Warning().Msgf("Couldn't retrieve data for %s, server replied with status code: %d\n", ip, response.StatusCode)
-							return
-						}
+				go func(ip string) {
+					defer r.wgscan.Done()
 
-						// unmarshal the response
-						data := &shodanidb.ShodanResponse{}
-						if err := util.Json.NewDecoder(response.Body).Decode(data); err != nil {
-							gologger.Warning().Msgf("Couldn't unmarshal json data for %s: %s\n", ip, err)
-							return
-						}
+					// obtain ports from shodan idb
+					shodanURL := fmt.Sprintf(shodanidb.URL, url.QueryEscape(ip))
+					request, err := retryablehttp.NewRequest(http.MethodGet, shodanURL, nil)
+					if err != nil {
+						gologger.Warning().Msgf("Couldn't create http request for %s: %s\n", ip, err)
+						return
+					}
+					r.limiter.Take()
+					response, err := httpClient.Do(request)
+					if err != nil {
+						gologger.Warning().Msgf("Couldn't retrieve http response for %s: %s\n", ip, err)
+						return
+					}
+					if response.StatusCode != http.StatusOK {
+						gologger.Warning().Msgf("Couldn't retrieve data for %s, server replied with status code: %d\n", ip, response.StatusCode)
+						return
+					}
 
-						for _, port := range data.Ports {
-							r.scanner.ScanResults.AddPort(ip, port)
-						}
-					})
+					// unmarshal the response
+					data := &shodanidb.ShodanResponse{}
+					if err := json.NewDecoder(response.Body).Decode(data); err != nil {
+						gologger.Warning().Msgf("Couldn't unmarshal json data for %s: %s\n", ip, err)
+						return
+					}
+
+					for _, port := range data.Ports {
+						r.scanner.ScanResults.AddPort(ip, port)
+					}
 				}(ip)
 			}
 		}
@@ -361,7 +355,7 @@ func (r *Runner) RunEnumeration() error {
 			r.stats.AddCounter("packets", uint64(0))
 			r.stats.AddCounter("errors", uint64(0))
 			r.stats.AddCounter("total", Range*uint64(r.options.Retries))
-			if err := r.stats.Start(makePrintCallback(), time.Duration(r.options.StatsInterval)*time.Second); err != nil {
+			if err := r.stats.Start(); err != nil {
 				gologger.Warning().Msgf("Couldn't start statistics: %s", err)
 			}
 		}
@@ -409,19 +403,17 @@ func (r *Runner) RunEnumeration() error {
 				r.options.ResumeCfg.Index = index
 				r.options.ResumeCfg.Unlock()
 				// connect scan
-				func(port int) {
-					util.DefaultPool.Submit(func() {
-						if shouldUseRawPackets {
-							r.RawSocketEnumeration(ip, port)
-						} else {
-							r.wgscan.Add()
+				go func(port int) {
+					if shouldUseRawPackets {
+						r.RawSocketEnumeration(ip, port)
+					} else {
+						r.wgscan.Add()
 
-							go r.handleHostPort(ip, port)
-						}
-						if r.options.EnableProgressBar {
-							r.stats.IncrementCounter("packets", 1)
-						}
-					})
+						go r.handleHostPort(ip, port)
+					}
+					if r.options.EnableProgressBar {
+						r.stats.IncrementCounter("packets", 1)
+					}
 				}(port)
 			}
 
@@ -502,12 +494,10 @@ func (r *Runner) ConnectVerification() {
 	for host, ports := range r.scanner.ScanResults.IPPorts {
 		limiter.Take()
 		swg.Add(1)
-		func(host string, ports map[int]struct{}) {
-			util.DefaultPool.Submit(func() {
-				defer swg.Done()
-				results := r.scanner.ConnectVerify(host, ports)
-				r.scanner.ScanResults.SetPorts(host, results)
-			})
+		go func(host string, ports map[int]struct{}) {
+			defer swg.Done()
+			results := r.scanner.ConnectVerify(host, ports)
+			r.scanner.ScanResults.SetPorts(host, results)
 		}(host, ports)
 	}
 
@@ -693,7 +683,7 @@ func (r *Runner) handleOutput() {
 func writeCSVHeaders(data *Result, writer *csv.Writer) {
 	headers, err := data.CSVHeaders()
 	if err != nil {
-		//gologger.Error().Msgf(err.Error())
+		gologger.Error().Msgf(err.Error())
 		return
 	}
 
@@ -706,59 +696,11 @@ func writeCSVHeaders(data *Result, writer *csv.Writer) {
 func writeCSVRow(data *Result, writer *csv.Writer) {
 	rowData, err := data.CSVFields()
 	if err != nil {
-		//gologger.Error().Msgf(err.Error())
+		gologger.Error().Msgf(err.Error())
 		return
 	}
 	if err := writer.Write(rowData); err != nil {
 		errMsg := errors.Wrap(err, "Could not write row")
 		gologger.Error().Msgf(errMsg.Error())
-	}
-}
-
-const bufferSize = 128
-
-func makePrintCallback() func(stats clistats.StatisticsClient) {
-	builder := &strings.Builder{}
-	builder.Grow(bufferSize)
-
-	return func(stats clistats.StatisticsClient) {
-		builder.WriteRune('[')
-		startedAt, _ := stats.GetStatic("startedAt")
-		duration := time.Since(startedAt.(time.Time))
-		builder.WriteString(clistats.FmtDuration(duration))
-		builder.WriteRune(']')
-
-		hosts, _ := stats.GetStatic("hosts")
-		builder.WriteString(" | Hosts: ")
-		builder.WriteString(clistats.String(hosts))
-
-		ports, _ := stats.GetStatic("ports")
-		builder.WriteString(" | Ports: ")
-		builder.WriteString(clistats.String(ports))
-
-		retries, _ := stats.GetStatic("retries")
-		builder.WriteString(" | Retries: ")
-		builder.WriteString(clistats.String(retries))
-
-		packets, _ := stats.GetCounter("packets")
-		total, _ := stats.GetCounter("total")
-
-		builder.WriteString(" | PPS: ")
-		builder.WriteString(clistats.String(uint64(float64(packets) / duration.Seconds())))
-
-		builder.WriteString(" | Packets: ")
-		builder.WriteString(clistats.String(packets))
-		builder.WriteRune('/')
-		builder.WriteString(clistats.String(total))
-		builder.WriteRune(' ')
-		builder.WriteRune('(')
-		//nolint:gomnd // this is not a magic number
-		builder.WriteString(clistats.String(uint64(float64(packets) / float64(total) * 100.0)))
-		builder.WriteRune('%')
-		builder.WriteRune(')')
-		builder.WriteString("         \r")
-
-		fmt.Fprintf(os.Stderr, "%s", builder.String())
-		builder.Reset()
 	}
 }

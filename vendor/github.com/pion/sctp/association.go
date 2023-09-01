@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package sctp
 
 import (
@@ -17,28 +20,30 @@ import (
 )
 
 // Use global random generator to properly seed by crypto grade random.
+var globalMathRandomGenerator = randutil.NewMathRandomGenerator() // nolint:gochecknoglobals
+
+// Association errors
 var (
-	globalMathRandomGenerator        = randutil.NewMathRandomGenerator() // nolint:gochecknoglobals
-	errChunk                         = errors.New("abort chunk, with following errors")
-	errShutdownNonEstablished        = errors.New("shutdown called in non-established state")
-	errAssociationClosedBeforeConn   = errors.New("association closed before connecting")
-	errSilentlyDiscard               = errors.New("silently discard")
-	errInitNotStoredToSend           = errors.New("the init not stored to send")
-	errCookieEchoNotStoredToSend     = errors.New("cookieEcho not stored to send")
-	errSCTPPacketSourcePortZero      = errors.New("sctp packet must not have a source port of 0")
-	errSCTPPacketDestinationPortZero = errors.New("sctp packet must not have a destination port of 0")
-	errInitChunkBundled              = errors.New("init chunk must not be bundled with any other chunk")
-	errInitChunkVerifyTagNotZero     = errors.New("init chunk expects a verification tag of 0 on the packet when out-of-the-blue")
-	errHandleInitState               = errors.New("todo: handle Init when in state")
-	errInitAckNoCookie               = errors.New("no cookie in InitAck")
-	errInflightQueueTSNPop           = errors.New("unable to be popped from inflight queue TSN")
-	errTSNRequestNotExist            = errors.New("requested non-existent TSN")
-	errResetPacketInStateNotExist    = errors.New("sending reset packet in non-established state")
-	errParamterType                  = errors.New("unexpected parameter type")
-	errPayloadDataStateNotExist      = errors.New("sending payload data in non-established state")
-	errChunkTypeUnhandled            = errors.New("unhandled chunk type")
-	errHandshakeInitAck              = errors.New("handshake failed (INIT ACK)")
-	errHandshakeCookieEcho           = errors.New("handshake failed (COOKIE ECHO)")
+	ErrChunk                         = errors.New("abort chunk, with following errors")
+	ErrShutdownNonEstablished        = errors.New("shutdown called in non-established state")
+	ErrAssociationClosedBeforeConn   = errors.New("association closed before connecting")
+	ErrSilentlyDiscard               = errors.New("silently discard")
+	ErrInitNotStoredToSend           = errors.New("the init not stored to send")
+	ErrCookieEchoNotStoredToSend     = errors.New("cookieEcho not stored to send")
+	ErrSCTPPacketSourcePortZero      = errors.New("sctp packet must not have a source port of 0")
+	ErrSCTPPacketDestinationPortZero = errors.New("sctp packet must not have a destination port of 0")
+	ErrInitChunkBundled              = errors.New("init chunk must not be bundled with any other chunk")
+	ErrInitChunkVerifyTagNotZero     = errors.New("init chunk expects a verification tag of 0 on the packet when out-of-the-blue")
+	ErrHandleInitState               = errors.New("todo: handle Init when in state")
+	ErrInitAckNoCookie               = errors.New("no cookie in InitAck")
+	ErrInflightQueueTSNPop           = errors.New("unable to be popped from inflight queue TSN")
+	ErrTSNRequestNotExist            = errors.New("requested non-existent TSN")
+	ErrResetPacketInStateNotExist    = errors.New("sending reset packet in non-established state")
+	ErrParamterType                  = errors.New("unexpected parameter type")
+	ErrPayloadDataStateNotExist      = errors.New("sending payload data in non-established state")
+	ErrChunkTypeUnhandled            = errors.New("unhandled chunk type")
+	ErrHandshakeInitAck              = errors.New("handshake failed (INIT ACK)")
+	ErrHandshakeCookieEcho           = errors.New("handshake failed (COOKIE ECHO)")
 )
 
 const (
@@ -115,21 +120,17 @@ func getAssociationStateString(a uint32) string {
 
 // Association represents an SCTP association
 // 13.2.  Parameters Necessary per Association (i.e., the TCB)
-// Peer        : Tag value to be sent in every packet and is received
-// Verification: in the INIT or INIT ACK chunk.
-// Tag         :
 //
-// My          : Tag expected in every inbound packet and sent in the
-// Verification: INIT or INIT ACK chunk.
+//	Peer        : Tag value to be sent in every packet and is received
+//	Verification: in the INIT or INIT ACK chunk.
+//	Tag         :
+//	State       : A state variable indicating what state the association
+//	            : is in, i.e., COOKIE-WAIT, COOKIE-ECHOED, ESTABLISHED,
+//	            : SHUTDOWN-PENDING, SHUTDOWN-SENT, SHUTDOWN-RECEIVED,
+//	            : SHUTDOWN-ACK-SENT.
 //
-// Tag         :
-// State       : A state variable indicating what state the association
-//             : is in, i.e., COOKIE-WAIT, COOKIE-ECHOED, ESTABLISHED,
-//             : SHUTDOWN-PENDING, SHUTDOWN-SENT, SHUTDOWN-RECEIVED,
-//             : SHUTDOWN-ACK-SENT.
-//
-//               Note: No "CLOSED" state is illustrated since if a
-//               association is "CLOSED" its TCB SHOULD be removed.
+// Note: No "CLOSED" state is illustrated since if a
+// association is "CLOSED" its TCB SHOULD be removed.
 type Association struct {
 	bytesReceived uint64
 	bytesSent     uint64
@@ -171,7 +172,8 @@ type Association struct {
 	pendingQueue            *pendingQueue
 	controlQueue            *controlQueue
 	mtu                     uint32
-	maxPayloadSize          uint32 // max DATA chunk payload size
+	maxPayloadSize          uint32       // max DATA chunk payload size
+	srtt                    atomic.Value // type float64
 	cumulativeTSNAckPoint   uint32
 	advancedPeerTSNAckPoint uint32
 	useForwardTSN           bool
@@ -246,7 +248,7 @@ func Server(config Config) (*Association, error) {
 		}
 		return a, nil
 	case <-a.readLoopCloseCh:
-		return nil, errAssociationClosedBeforeConn
+		return nil, ErrAssociationClosedBeforeConn
 	}
 }
 
@@ -262,7 +264,7 @@ func Client(config Config) (*Association, error) {
 		}
 		return a, nil
 	case <-a.readLoopCloseCh:
-		return nil, errAssociationClosedBeforeConn
+		return nil, ErrAssociationClosedBeforeConn
 	}
 }
 
@@ -310,7 +312,7 @@ func createAssociation(config Config) *Association {
 		handshakeCompletedCh:    make(chan error),
 		cumulativeTSNAckPoint:   tsn - 1,
 		advancedPeerTSNAckPoint: tsn - 1,
-		silentError:             errSilentlyDiscard,
+		silentError:             ErrSilentlyDiscard,
 		stats:                   &associationStats{},
 		log:                     config.LoggerFactory.NewLogger("sctp"),
 	}
@@ -321,10 +323,11 @@ func createAssociation(config Config) *Association {
 	//  o  The initial cwnd before DATA transmission or after a sufficiently
 	//     long idle period MUST be set to min(4*MTU, max (2*MTU, 4380
 	//     bytes)).
-	a.cwnd = min32(4*a.mtu, max32(2*a.mtu, 4380))
+	a.setCWND(min32(4*a.MTU(), max32(2*a.MTU(), 4380)))
 	a.log.Tracef("[%s] updated cwnd=%d ssthresh=%d inflight=%d (INI)",
-		a.name, a.cwnd, a.ssthresh, a.inflightQueue.getNumBytes())
+		a.name, a.CWND(), a.ssthresh, a.inflightQueue.getNumBytes())
 
+	a.srtt.Store(float64(0))
 	a.t1Init = newRTXTimer(timerT1Init, a, maxInitRetrans)
 	a.t1Cookie = newRTXTimer(timerT1Cookie, a, maxInitRetrans)
 	a.t2Shutdown = newRTXTimer(timerT2Shutdown, a, noMaxRetrans) // retransmit forever
@@ -366,7 +369,7 @@ func (a *Association) init(isClient bool) {
 func (a *Association) sendInit() error {
 	a.log.Debugf("[%s] sending INIT", a.name)
 	if a.storedInit == nil {
-		return errInitNotStoredToSend
+		return ErrInitNotStoredToSend
 	}
 
 	outbound := &packet{}
@@ -387,7 +390,7 @@ func (a *Association) sendInit() error {
 // caller must hold a.lock
 func (a *Association) sendCookieEcho() error {
 	if a.storedCookieEcho == nil {
-		return errCookieEchoNotStoredToSend
+		return ErrCookieEchoNotStoredToSend
 	}
 
 	a.log.Debugf("[%s] sending COOKIE-ECHO", a.name)
@@ -413,7 +416,7 @@ func (a *Association) Shutdown(ctx context.Context) error {
 	state := a.getState()
 
 	if state != established {
-		return fmt.Errorf("%w: shutdown %s", errShutdownNonEstablished, a.name)
+		return fmt.Errorf("%w: shutdown %s", ErrShutdownNonEstablished, a.name)
 	}
 
 	// Attempt a graceful shutdown.
@@ -744,7 +747,7 @@ func (a *Association) gatherOutboundFastRetransmissionPackets(rawPackets [][]byt
 			//		packet.
 
 			dataChunkSize := dataChunkHeaderSize + uint32(len(c.userData))
-			if a.mtu < fastRetransSize+dataChunkSize {
+			if a.MTU() < fastRetransSize+dataChunkSize {
 				break
 			}
 
@@ -775,7 +778,7 @@ func (a *Association) gatherOutboundSackPackets(rawPackets [][]byte) [][]byte {
 	if a.ackState == ackStateImmediate {
 		a.ackState = ackStateIdle
 		sack := a.createSelectiveAckChunk()
-		a.log.Debugf("[%s] sending SACK: %s", a.name, sack.String())
+		a.log.Debugf("[%s] sending SACK: %s", a.name, sack)
 		raw, err := a.createPacket([]chunk{sack}).marshal()
 		if err != nil {
 			a.log.Warnf("[%s] failed to serialize a SACK packet", a.name)
@@ -930,7 +933,7 @@ func checkPacket(p *packet) error {
 	// identify the association to which this packet belongs.  The port
 	// number 0 MUST NOT be used.
 	if p.sourcePort == 0 {
-		return errSCTPPacketSourcePortZero
+		return ErrSCTPPacketSourcePortZero
 	}
 
 	// This is the SCTP port number to which this packet is destined.
@@ -938,7 +941,7 @@ func checkPacket(p *packet) error {
 	// SCTP packet to the correct receiving endpoint/application.  The
 	// port number 0 MUST NOT be used.
 	if p.destinationPort == 0 {
-		return errSCTPPacketDestinationPortZero
+		return ErrSCTPPacketDestinationPortZero
 	}
 
 	// Check values on the packet that are specific to a particular chunk type
@@ -949,13 +952,13 @@ func checkPacket(p *packet) error {
 			// They MUST be the only chunks present in the SCTP packets that carry
 			// them.
 			if len(p.chunks) != 1 {
-				return errInitChunkBundled
+				return ErrInitChunkBundled
 			}
 
 			// A packet containing an INIT chunk MUST have a zero Verification
 			// Tag.
 			if p.verificationTag != 0 {
-				return errInitChunkVerifyTagNotZero
+				return ErrInitChunkVerifyTagNotZero
 			}
 		}
 	}
@@ -1011,6 +1014,34 @@ func (a *Association) BytesReceived() uint64 {
 	return atomic.LoadUint64(&a.bytesReceived)
 }
 
+// MTU returns the association's current MTU
+func (a *Association) MTU() uint32 {
+	return atomic.LoadUint32(&a.mtu)
+}
+
+// CWND returns the association's current congestion window (cwnd)
+func (a *Association) CWND() uint32 {
+	return atomic.LoadUint32(&a.cwnd)
+}
+
+func (a *Association) setCWND(cwnd uint32) {
+	atomic.StoreUint32(&a.cwnd, cwnd)
+}
+
+// RWND returns the association's current receiver window (rwnd)
+func (a *Association) RWND() uint32 {
+	return atomic.LoadUint32(&a.rwnd)
+}
+
+func (a *Association) setRWND(rwnd uint32) {
+	atomic.StoreUint32(&a.rwnd, rwnd)
+}
+
+// SRTT returns the latest smoothed round-trip time (srrt)
+func (a *Association) SRTT() float64 {
+	return a.srtt.Load().(float64) //nolint:forcetypeassert
+}
+
 func setSupportedExtensions(init *chunkInitCommon) {
 	// nolint:godox
 	// TODO RFC5061 https://tools.ietf.org/html/rfc6525#section-5.2
@@ -1037,7 +1068,7 @@ func (a *Association) handleInit(p *packet, i *chunkInit) ([]*packet, error) {
 	if state != closed && state != cookieWait && state != cookieEchoed {
 		// 5.2.2.  Unexpected INIT in States Other than CLOSED, COOKIE-ECHOED,
 		//        COOKIE-WAIT, and SHUTDOWN-ACK-SENT
-		return nil, fmt.Errorf("%w: %s", errHandleInitState, getAssociationStateString(state))
+		return nil, fmt.Errorf("%w: %s", ErrHandleInitState, getAssociationStateString(state))
 	}
 
 	// Should we be setting any of these permanently until we've ACKed further?
@@ -1121,16 +1152,16 @@ func (a *Association) handleInitAck(p *packet, i *chunkInitAck) error {
 		return nil
 	}
 
-	a.rwnd = i.advertisedReceiverWindowCredit
-	a.log.Debugf("[%s] initial rwnd=%d", a.name, a.rwnd)
+	a.setRWND(i.advertisedReceiverWindowCredit)
+	a.log.Debugf("[%s] initial rwnd=%d", a.name, a.RWND())
 
 	// RFC 4690 Sec 7.2.1
 	//  o  The initial value of ssthresh MAY be arbitrarily high (for
 	//     example, implementations MAY use the size of the receiver
 	//     advertised window).
-	a.ssthresh = a.rwnd
+	a.ssthresh = a.RWND()
 	a.log.Tracef("[%s] updated cwnd=%d ssthresh=%d inflight=%d (INI)",
-		a.name, a.cwnd, a.ssthresh, a.inflightQueue.getNumBytes())
+		a.name, a.CWND(), a.ssthresh, a.inflightQueue.getNumBytes())
 
 	a.t1Init.stop()
 	a.storedInit = nil
@@ -1153,7 +1184,7 @@ func (a *Association) handleInitAck(p *packet, i *chunkInitAck) error {
 		a.log.Warnf("[%s] not using ForwardTSN (on initAck)", a.name)
 	}
 	if cookieParam == nil {
-		return errInitAckNoCookie
+		return ErrInitAckNoCookie
 	}
 
 	a.storedCookieEcho = &chunkCookieEcho{}
@@ -1415,7 +1446,7 @@ func (a *Association) processSelectiveAck(d *chunkSelectiveAck) (map[uint16]int,
 	for i := a.cumulativeTSNAckPoint + 1; sna32LTE(i, d.cumulativeTSNAck); i++ {
 		c, ok := a.inflightQueue.pop(i)
 		if !ok {
-			return nil, 0, fmt.Errorf("%w: %v", errInflightQueueTSNPop, i)
+			return nil, 0, fmt.Errorf("%w: %v", ErrInflightQueueTSNPop, i)
 		}
 
 		if !c.acked {
@@ -1451,6 +1482,7 @@ func (a *Association) processSelectiveAck(d *chunkSelectiveAck) (map[uint16]int,
 				a.minTSN2MeasureRTT = a.myNextTSN
 				rtt := time.Since(c.since).Seconds() * 1000.0
 				srtt := a.rtoMgr.setNewRTT(rtt)
+				a.srtt.Store(srtt)
 				a.log.Tracef("[%s] SACK: measured-rtt=%f srtt=%f new-rto=%f",
 					a.name, rtt, srtt, a.rtoMgr.getRTO())
 			}
@@ -1470,7 +1502,7 @@ func (a *Association) processSelectiveAck(d *chunkSelectiveAck) (map[uint16]int,
 			tsn := d.cumulativeTSNAck + uint32(i)
 			c, ok := a.inflightQueue.get(tsn)
 			if !ok {
-				return nil, 0, fmt.Errorf("%w: %v", errTSNRequestNotExist, tsn)
+				return nil, 0, fmt.Errorf("%w: %v", ErrTSNRequestNotExist, tsn)
 			}
 
 			if !c.acked {
@@ -1489,6 +1521,7 @@ func (a *Association) processSelectiveAck(d *chunkSelectiveAck) (map[uint16]int,
 					a.minTSN2MeasureRTT = a.myNextTSN
 					rtt := time.Since(c.since).Seconds() * 1000.0
 					srtt := a.rtoMgr.setNewRTT(rtt)
+					a.srtt.Store(srtt)
 					a.log.Tracef("[%s] SACK: measured-rtt=%f srtt=%f new-rto=%f",
 						a.name, rtt, srtt, a.rtoMgr.getRTO())
 				}
@@ -1517,7 +1550,7 @@ func (a *Association) onCumulativeTSNAckPointAdvanced(totalBytesAcked int) {
 	}
 
 	// Update congestion control parameters
-	if a.cwnd <= a.ssthresh {
+	if a.CWND() <= a.ssthresh {
 		// RFC 4096, sec 7.2.1.  Slow-Start
 		//   o  When cwnd is less than or equal to ssthresh, an SCTP endpoint MUST
 		//		use the slow-start algorithm to increase cwnd only if the current
@@ -1531,13 +1564,13 @@ func (a *Association) onCumulativeTSNAckPointAdvanced(totalBytesAcked int) {
 		//      path MTU.
 		if !a.inFastRecovery &&
 			a.pendingQueue.size() > 0 {
-			a.cwnd += min32(uint32(totalBytesAcked), a.cwnd) // TCP way
-			// a.cwnd += min32(uint32(totalBytesAcked), a.mtu) // SCTP way (slow)
+			a.setCWND(a.CWND() + min32(uint32(totalBytesAcked), a.CWND()))
+			// a.cwnd += min32(uint32(totalBytesAcked), a.MTU()) // SCTP way (slow)
 			a.log.Tracef("[%s] updated cwnd=%d ssthresh=%d acked=%d (SS)",
-				a.name, a.cwnd, a.ssthresh, totalBytesAcked)
+				a.name, a.CWND(), a.ssthresh, totalBytesAcked)
 		} else {
 			a.log.Tracef("[%s] cwnd did not grow: cwnd=%d ssthresh=%d acked=%d FR=%v pending=%d",
-				a.name, a.cwnd, a.ssthresh, totalBytesAcked, a.inFastRecovery, a.pendingQueue.size())
+				a.name, a.CWND(), a.ssthresh, totalBytesAcked, a.inFastRecovery, a.pendingQueue.size())
 		}
 	} else {
 		// RFC 4096, sec 7.2.2.  Congestion Avoidance
@@ -1553,11 +1586,11 @@ func (a *Association) onCumulativeTSNAckPointAdvanced(totalBytesAcked int) {
 		//      of data outstanding (i.e., before arrival of the SACK, flight size
 		//      was greater than or equal to cwnd), increase cwnd by MTU, and
 		//      reset partial_bytes_acked to (partial_bytes_acked - cwnd).
-		if a.partialBytesAcked >= a.cwnd && a.pendingQueue.size() > 0 {
-			a.partialBytesAcked -= a.cwnd
-			a.cwnd += a.mtu
+		if a.partialBytesAcked >= a.CWND() && a.pendingQueue.size() > 0 {
+			a.partialBytesAcked -= a.CWND()
+			a.setCWND(a.CWND() + a.MTU())
 			a.log.Tracef("[%s] updated cwnd=%d ssthresh=%d acked=%d (CA)",
-				a.name, a.cwnd, a.ssthresh, totalBytesAcked)
+				a.name, a.CWND(), a.ssthresh, totalBytesAcked)
 		}
 	}
 }
@@ -1586,7 +1619,7 @@ func (a *Association) processFastRetransmission(cumTSNAckPoint, htna uint32, cum
 		for tsn := cumTSNAckPoint + 1; sna32LT(tsn, maxTSN); tsn++ {
 			c, ok := a.inflightQueue.get(tsn)
 			if !ok {
-				return fmt.Errorf("%w: %v", errTSNRequestNotExist, tsn)
+				return fmt.Errorf("%w: %v", ErrTSNRequestNotExist, tsn)
 			}
 			if !c.acked && !c.abandoned() && c.missIndicator < 3 {
 				c.missIndicator++
@@ -1597,13 +1630,13 @@ func (a *Association) processFastRetransmission(cumTSNAckPoint, htna uint32, cum
 						//     last sent, according to the formula described in Section 7.2.3.
 						a.inFastRecovery = true
 						a.fastRecoverExitPoint = htna
-						a.ssthresh = max32(a.cwnd/2, 4*a.mtu)
-						a.cwnd = a.ssthresh
+						a.ssthresh = max32(a.CWND()/2, 4*a.MTU())
+						a.setCWND(a.ssthresh)
 						a.partialBytesAcked = 0
 						a.willRetransmitFast = true
 
 						a.log.Tracef("[%s] updated cwnd=%d ssthresh=%d inflight=%d (FR)",
-							a.name, a.cwnd, a.ssthresh, a.inflightQueue.getNumBytes())
+							a.name, a.CWND(), a.ssthresh, a.inflightQueue.getNumBytes())
 					}
 				}
 			}
@@ -1685,9 +1718,9 @@ func (a *Association) handleSack(d *chunkSelectiveAck) error {
 	// bytes acked were already subtracted by markAsAcked() method
 	bytesOutstanding := uint32(a.inflightQueue.getNumBytes())
 	if bytesOutstanding >= d.advertisedReceiverWindowCredit {
-		a.rwnd = 0
+		a.setRWND(0)
 	} else {
-		a.rwnd = d.advertisedReceiverWindowCredit - bytesOutstanding
+		a.setRWND(d.advertisedReceiverWindowCredit - bytesOutstanding)
 	}
 
 	err = a.processFastRetransmission(d.cumulativeTSNAck, htna, cumTSNAckPointAdvanced)
@@ -1805,7 +1838,7 @@ func (a *Association) handleAbort(c *chunkAbort) error {
 
 	_ = a.close()
 
-	return fmt.Errorf("[%s] %w: %s", a.name, errChunk, errStr)
+	return fmt.Errorf("[%s] %w: %s", a.name, ErrChunk, errStr)
 }
 
 // createForwardTSN generates ForwardTSN chunk.
@@ -1963,7 +1996,7 @@ func (a *Association) sendResetRequest(streamIdentifier uint16) error {
 
 	state := a.getState()
 	if state != established {
-		return fmt.Errorf("%w: state=%s", errResetPacketInStateNotExist,
+		return fmt.Errorf("%w: state=%s", ErrResetPacketInStateNotExist,
 			getAssociationStateString(state))
 	}
 
@@ -2001,7 +2034,7 @@ func (a *Association) handleReconfigParam(raw param) (*packet, error) {
 		}
 		return nil, nil //nolint:nilnil
 	default:
-		return nil, fmt.Errorf("%w: %t", errParamterType, p)
+		return nil, fmt.Errorf("%w: %t", ErrParamterType, p)
 	}
 }
 
@@ -2095,7 +2128,7 @@ func (a *Association) popPendingDataChunksToSend() ([]*chunkPayloadData, []uint1
 				continue
 			}
 
-			if uint32(a.inflightQueue.getNumBytes())+dataLen > a.cwnd {
+			if uint32(a.inflightQueue.getNumBytes())+dataLen > a.CWND() {
 				break // would exceeds cwnd
 			}
 
@@ -2103,7 +2136,7 @@ func (a *Association) popPendingDataChunksToSend() ([]*chunkPayloadData, []uint1
 				break // no more rwnd
 			}
 
-			a.rwnd -= dataLen
+			a.setRWND(a.RWND() - dataLen)
 
 			a.movePendingDataChunkToInflightQueue(c)
 			chunks = append(chunks, c)
@@ -2138,7 +2171,7 @@ func (a *Association) bundleDataChunksIntoPackets(chunks []*chunkPayloadData) []
 		//   single packet.  Furthermore, DATA chunks being retransmitted MAY be
 		//   bundled with new DATA chunks, as long as the resulting packet size
 		//   does not exceed the path MTU.
-		if bytesInPacket+len(c.userData) > int(a.mtu) {
+		if bytesInPacket+len(c.userData) > int(a.MTU()) {
 			packets = append(packets, a.createPacket(chunksToSend))
 			chunksToSend = []chunk{}
 			bytesInPacket = int(commonHeaderSize)
@@ -2162,7 +2195,7 @@ func (a *Association) sendPayloadData(chunks []*chunkPayloadData) error {
 
 	state := a.getState()
 	if state != established {
-		return fmt.Errorf("%w: state=%s", errPayloadDataStateNotExist,
+		return fmt.Errorf("%w: state=%s", ErrPayloadDataStateNotExist,
 			getAssociationStateString(state))
 	}
 
@@ -2215,7 +2248,7 @@ func (a *Association) checkPartialReliabilityStatus(c *chunkPayloadData) {
 // that are not acked or abandoned yet.
 // The caller should hold the lock.
 func (a *Association) getDataPacketsToRetransmit() []*packet {
-	awnd := min32(a.cwnd, a.rwnd)
+	awnd := min32(a.CWND(), a.RWND())
 	chunks := []*chunkPayloadData{}
 	var bytesToSend int
 	var done bool
@@ -2230,7 +2263,7 @@ func (a *Association) getDataPacketsToRetransmit() []*packet {
 			continue
 		}
 
-		if i == 0 && int(a.rwnd) < len(c.userData) {
+		if i == 0 && int(a.RWND()) < len(c.userData) {
 			// Send it as a zero window probe
 			done = true
 		} else if bytesToSend+len(c.userData) > int(awnd) {
@@ -2367,7 +2400,7 @@ func (a *Association) handleChunk(p *packet, c chunk) error {
 		err = a.handleShutdownComplete(c)
 
 	default:
-		err = errChunkTypeUnhandled
+		err = ErrChunkTypeUnhandled
 	}
 
 	// Log and return, the only condition that is fatal is a ABORT chunk
@@ -2435,10 +2468,10 @@ func (a *Association) onRetransmissionTimeout(id int, nRtos uint) {
 		//      ssthresh = max(cwnd/2, 4*MTU)
 		//      cwnd = 1*MTU
 
-		a.ssthresh = max32(a.cwnd/2, 4*a.mtu)
-		a.cwnd = a.mtu
+		a.ssthresh = max32(a.CWND()/2, 4*a.MTU())
+		a.setCWND(a.MTU())
 		a.log.Tracef("[%s] updated cwnd=%d ssthresh=%d inflight=%d (RTO)",
-			a.name, a.cwnd, a.ssthresh, a.inflightQueue.getNumBytes())
+			a.name, a.CWND(), a.ssthresh, a.inflightQueue.getNumBytes())
 
 		// RFC 3758 sec 3.5
 		//  A5) Any time the T3-rtx timer expires, on any destination, the sender
@@ -2463,7 +2496,7 @@ func (a *Association) onRetransmissionTimeout(id int, nRtos uint) {
 			}
 		}
 
-		a.log.Debugf("[%s] T3-rtx timed out: nRtos=%d cwnd=%d ssthresh=%d", a.name, nRtos, a.cwnd, a.ssthresh)
+		a.log.Debugf("[%s] T3-rtx timed out: nRtos=%d cwnd=%d ssthresh=%d", a.name, nRtos, a.CWND(), a.ssthresh)
 
 		/*
 			a.log.Debugf("   - advancedPeerTSNAckPoint=%d", a.advancedPeerTSNAckPoint)
@@ -2495,13 +2528,13 @@ func (a *Association) onRetransmissionFailure(id int) {
 
 	if id == timerT1Init {
 		a.log.Errorf("[%s] retransmission failure: T1-init", a.name)
-		a.handshakeCompletedCh <- errHandshakeInitAck
+		a.handshakeCompletedCh <- ErrHandshakeInitAck
 		return
 	}
 
 	if id == timerT1Cookie {
 		a.log.Errorf("[%s] retransmission failure: T1-cookie", a.name)
-		a.handshakeCompletedCh <- errHandshakeCookieEcho
+		a.handshakeCompletedCh <- ErrHandshakeCookieEcho
 		return
 	}
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package server
 
 import "errors"
@@ -15,7 +18,7 @@ var (
 	errFailedToCreateSTUNPacket               = errors.New("failed to create stun message from packet")
 	errFailedToCreateChannelData              = errors.New("failed to create channel data from packet")
 	errRelayAlreadyAllocatedForFiveTuple      = errors.New("relay already allocated for 5-TUPLE")
-	errRequestedTransportMustBeUDP            = errors.New("RequestedTransport must be UDP")
+	errUnsupportedTransportProtocol           = errors.New("RequestedTransport must be UDP or TCP")
 	errNoDontFragmentSupport                  = errors.New("no support for DONT-FRAGMENT")
 	errRequestWithReservationTokenAndEvenPort = errors.New("Request must not contain RESERVATION-TOKEN and EVEN-PORT")
 	errNoAllocationFound                      = errors.New("no allocation found")

@@ -1,0 +1,9 @@
+# IDE Settings
+/.idea
+/.vscode
+/.vs
+
+examples/basic/basic
+examples/basic/basic.exe
+
+.devcontainer

@@ -9,10 +9,6 @@ import (
 	"strings"
 )
 
-func CheckFj(u string) bool {
-	return "" != Check(u, u)
-}
-
 func Check(u string, finalURL string) string {
 	domainx := getinputurl(finalURL)
 	for _, jsonurl := range domainx {

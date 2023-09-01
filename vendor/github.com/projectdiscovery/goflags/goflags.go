@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,14 +15,18 @@ import (
 	"time"
 
 	"github.com/cnf/structhash"
-	"github.com/projectdiscovery/fileutil"
+	fileutil "github.com/projectdiscovery/utils/file"
+	permissionutil "github.com/projectdiscovery/utils/permission"
+	"golang.org/x/exp/maps"
 	"gopkg.in/yaml.v3"
 )
 
 // FlagSet is a list of flags for an application
 type FlagSet struct {
+	CaseSensitive  bool
 	Marshal        bool
 	description    string
+	customHelpText string
 	flagKeys       InsertionOrderedMap
 	groups         []groupData
 	CommandLine    *flag.FlagSet
@@ -81,6 +84,11 @@ func (flagSet *FlagSet) SetDescription(description string) {
 	flagSet.description = description
 }
 
+// SetCustomHelpText sets the help text for a flagSet to a value. This variable appends text to the default help text.
+func (flagSet *FlagSet) SetCustomHelpText(helpText string) {
+	flagSet.customHelpText = helpText
+}
+
 // SetGroup sets a group with name and description for the command line options
 //
 // The order in which groups are passed is also kept as is, similar to flags.
@@ -95,6 +103,7 @@ func (flagSet *FlagSet) MergeConfigFile(file string) error {
 
 // Parse parses the flags provided to the library.
 func (flagSet *FlagSet) Parse() error {
+	flagSet.CommandLine.SetOutput(os.Stdout)
 	flagSet.CommandLine.Usage = flagSet.usageFunc
 	_ = flagSet.CommandLine.Parse(os.Args[1:])
 
@@ -102,10 +111,10 @@ func (flagSet *FlagSet) Parse() error {
 	if err != nil {
 		return err
 	}
-	_ = os.MkdirAll(filepath.Dir(configFilePath), os.ModePerm)
+	_ = os.MkdirAll(filepath.Dir(configFilePath), permissionutil.ConfigFolderPermission)
 	if !fileutil.FileExists(configFilePath) {
 		configData := flagSet.generateDefaultConfig()
-		return ioutil.WriteFile(configFilePath, configData, os.ModePerm)
+		return os.WriteFile(configFilePath, configData, permissionutil.ConfigFilePermission)
 	}
 	_ = flagSet.MergeConfigFile(configFilePath) // try to read default config after parsing flags
 	return nil
@@ -345,12 +354,12 @@ func (flagSet *FlagSet) IntVar(field *int, long string, defaultValue int, usage 
 func (flagSet *FlagSet) StringSliceVarP(field *StringSlice, long, short string, defaultValue StringSlice, usage string, options Options) *FlagData {
 	optionMap[field] = options
 	for _, defaultItem := range defaultValue {
-		_ = field.Set(defaultItem)
 		values, _ := ToStringSlice(defaultItem, options)
 		for _, value := range values {
 			_ = field.Set(value)
 		}
 	}
+	optionDefaultValues[field] = *field
 	flagData := &FlagData{
 		usage:        usage,
 		long:         long,
@@ -427,6 +436,7 @@ func (flagSet *FlagSet) PortVarP(field *Port, long, short string, defaultValue [
 	for _, item := range defaultValue {
 		_ = field.Set(item)
 	}
+	portOptionDefaultValues[field] = maps.Clone(field.kv)
 
 	flagData := &FlagData{
 		usage:        usage,
@@ -445,34 +455,6 @@ func (flagSet *FlagSet) PortVarP(field *Port, long, short string, defaultValue [
 	return flagData
 }
 
-// DurationVarP adds a duration flag with a shortname and longname
-func (flagSet *FlagSet) DurationVarP(field *time.Duration, long, short string, defaultValue time.Duration, usage string) *FlagData {
-	flagSet.CommandLine.DurationVar(field, short, defaultValue, usage)
-	flagSet.CommandLine.DurationVar(field, long, defaultValue, usage)
-
-	flagData := &FlagData{
-		usage:        usage,
-		short:        short,
-		long:         long,
-		defaultValue: defaultValue,
-	}
-	flagSet.flagKeys.Set(short, flagData)
-	flagSet.flagKeys.Set(long, flagData)
-	return flagData
-}
-
-// DurationVar adds a duration flag with a longname
-func (flagSet *FlagSet) DurationVar(field *time.Duration, long string, defaultValue time.Duration, usage string) *FlagData {
-	flagSet.CommandLine.DurationVar(field, long, defaultValue, usage)
-	flagData := &FlagData{
-		usage:        usage,
-		long:         long,
-		defaultValue: defaultValue,
-	}
-	flagSet.flagKeys.Set(long, flagData)
-	return flagData
-}
-
 // EnumVar adds a enum flag with a longname
 func (flagSet *FlagSet) EnumVar(field *string, long string, defaultValue EnumVariable, usage string, allowedTypes AllowdTypes) *FlagData {
 	return flagSet.EnumVarP(field, long, "", defaultValue, usage, allowedTypes)
@@ -480,15 +462,20 @@ func (flagSet *FlagSet) EnumVar(field *string, long string, defaultValue EnumVar
 
 // EnumVarP adds a enum flag with a shortname and longname
 func (flagSet *FlagSet) EnumVarP(field *string, long, short string, defaultValue EnumVariable, usage string, allowedTypes AllowdTypes) *FlagData {
+	var hasDefaultValue bool
 	for k, v := range allowedTypes {
 		if v == defaultValue {
+			hasDefaultValue = true
 			*field = k
 		}
+	}
+	if !hasDefaultValue {
+		panic("undefined default value")
 	}
 	flagData := &FlagData{
 		usage:        usage,
 		long:         long,
-		defaultValue: defaultValue,
+		defaultValue: *field,
 	}
 	if short != "" {
 		flagData.short = short
@@ -496,6 +483,41 @@ func (flagSet *FlagSet) EnumVarP(field *string, long, short string, defaultValue
 		flagSet.flagKeys.Set(short, flagData)
 	}
 	flagSet.CommandLine.Var(&EnumVar{allowedTypes, field}, long, usage)
+	flagSet.flagKeys.Set(long, flagData)
+	return flagData
+}
+
+// EnumVar adds a enum flag with a longname
+func (flagSet *FlagSet) EnumSliceVar(field *[]string, long string, defaultValues []EnumVariable, usage string, allowedTypes AllowdTypes) *FlagData {
+	return flagSet.EnumSliceVarP(field, long, "", defaultValues, usage, allowedTypes)
+}
+
+// EnumVarP adds a enum flag with a shortname and longname
+func (flagSet *FlagSet) EnumSliceVarP(field *[]string, long, short string, defaultValues []EnumVariable, usage string, allowedTypes AllowdTypes) *FlagData {
+	var defaults []string
+	for k, v := range allowedTypes {
+		for _, defaultValue := range defaultValues {
+			if v == defaultValue {
+				defaults = append(defaults, k)
+			}
+		}
+	}
+	if len(defaults) == 0 {
+		panic("undefined default value")
+	}
+
+	*field = defaults
+	flagData := &FlagData{
+		usage:        usage,
+		long:         long,
+		defaultValue: strings.Join(*field, ","),
+	}
+	if short != "" {
+		flagData.short = short
+		flagSet.CommandLine.Var(&EnumSliceVar{allowedTypes, field}, short, usage)
+		flagSet.flagKeys.Set(short, flagData)
+	}
+	flagSet.CommandLine.Var(&EnumSliceVar{allowedTypes, field}, long, usage)
 	flagSet.flagKeys.Set(long, flagData)
 	return flagData
 }
@@ -521,12 +543,16 @@ func (flagSet *FlagSet) usageFunc() {
 
 	writer := tabwriter.NewWriter(cliOutput, 0, 0, 1, ' ', 0)
 
-	// If user has specified group with help and we have groups, return
-	// with it's usage function
+	// If a user has specified a group with help, and we have groups, return with the tool's usage function
 	if len(flagSet.groups) > 0 && len(os.Args) == 3 {
 		group := flagSet.getGroupbyName(strings.ToLower(os.Args[2]))
 		if group.name != "" {
 			flagSet.displayGroupUsageFunc(newUniqueDeduper(), group, cliOutput, writer)
+			return
+		}
+		flag := flagSet.getFlagByName(os.Args[2])
+		if flag != nil {
+			flagSet.displaySingleFlagUsageFunc(os.Args[2], flag, cliOutput, writer)
 			return
 		}
 	}
@@ -535,6 +561,11 @@ func (flagSet *FlagSet) usageFunc() {
 		flagSet.usageFuncForGroups(cliOutput, writer)
 	} else {
 		flagSet.usageFuncInternal(writer)
+	}
+
+	// If there is a custom help text specified, print it
+	if !isEmpty(flagSet.customHelpText) {
+		fmt.Fprintf(cliOutput, "\n%s\n", flagSet.customHelpText)
 	}
 }
 
@@ -545,6 +576,22 @@ func (flagSet *FlagSet) getGroupbyName(name string) groupData {
 		}
 	}
 	return groupData{}
+}
+
+func (flagSet *FlagSet) getFlagByName(name string) *FlagData {
+	var flagData *FlagData
+	flagSet.flagKeys.forEach(func(key string, data *FlagData) {
+		// check if the items are equal
+		// - Case sensitive
+		equal := flagSet.CaseSensitive && (data.long == name || data.short == name)
+		// - Case insensitive
+		equalFold := !flagSet.CaseSensitive && (strings.EqualFold(data.long, name) || strings.EqualFold(data.short, name))
+		if equal || equalFold {
+			flagData = data
+			return
+		}
+	})
+	return flagData
 }
 
 // usageFuncInternal prints usage for command line flags
@@ -613,6 +660,15 @@ func (flagSet *FlagSet) displayGroupUsageFunc(uniqueDeduper *uniqueDeduper, grou
 	return otherOptions
 }
 
+// displaySingleFlagUsageFunc displays usage for a single flag
+func (flagSet *FlagSet) displaySingleFlagUsageFunc(name string, data *FlagData, cliOutput io.Writer, writer *tabwriter.Writer) {
+	if currentFlag := flagSet.CommandLine.Lookup(name); currentFlag != nil {
+		result := createUsageString(data, currentFlag)
+		fmt.Fprint(writer, result, "\n")
+		writer.Flush()
+	}
+}
+
 type uniqueDeduper struct {
 	hashes map[string]interface{}
 }
@@ -629,10 +685,6 @@ func (u *uniqueDeduper) isUnique(data *FlagData) bool {
 	}
 	u.hashes[dataHash] = struct{}{}
 	return true
-}
-
-func isNotBlank(value string) bool {
-	return len(strings.TrimSpace(value)) != 0
 }
 
 func createUsageString(data *FlagData, currentFlag *flag.Flag) string {
@@ -693,7 +745,7 @@ func createUsageFlagNames(data *FlagData) string {
 
 	var validFlags []string
 	addValidParam := func(value string) {
-		if isNotBlank(value) {
+		if !isEmpty(value) {
 			validFlags = append(validFlags, fmt.Sprintf("-%s", value))
 		}
 	}

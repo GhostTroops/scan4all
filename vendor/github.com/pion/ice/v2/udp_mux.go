@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package ice
 
 import (
@@ -10,7 +13,8 @@ import (
 
 	"github.com/pion/logging"
 	"github.com/pion/stun"
-	"github.com/pion/transport/vnet"
+	"github.com/pion/transport/v2"
+	"github.com/pion/transport/v2/stdnet"
 )
 
 // UDPMux allows multiple connections to go over a single UDP port
@@ -34,12 +38,12 @@ type UDPMuxDefault struct {
 	addressMapMu sync.RWMutex
 	addressMap   map[string]*udpMuxedConn
 
-	// buffer pool to recycle buffers for net.UDPAddr encodes/decodes
+	// Buffer pool to recycle buffers for net.UDPAddr encodes/decodes
 	pool *sync.Pool
 
 	mu sync.Mutex
 
-	// for UDP connection listen at unspecified address
+	// For UDP connection listen at unspecified address
 	localAddrsForUnspecified []net.Addr
 }
 
@@ -49,6 +53,11 @@ const maxAddrSize = 512
 type UDPMuxParams struct {
 	Logger  logging.LeveledLogger
 	UDPConn net.PacketConn
+
+	// Required for gathering local addresses
+	// in case a un UDPConn is passed which does not
+	// bind to a specific local address.
+	Net transport.Net
 }
 
 // NewUDPMuxDefault creates an implementation of UDPMux
@@ -77,14 +86,20 @@ func NewUDPMuxDefault(params UDPMuxParams) *UDPMuxDefault {
 			params.Logger.Errorf("LocalAddr expected IPV4 or IPV6, got %T", params.UDPConn.LocalAddr())
 		}
 		if len(networks) > 0 {
-			muxNet := vnet.NewNet(nil)
-			ips, err := localInterfaces(muxNet, nil, nil, networks, true)
+			if params.Net == nil {
+				var err error
+				if params.Net, err = stdnet.NewNet(); err != nil {
+					params.Logger.Errorf("Failed to get create network: %v", err)
+				}
+			}
+
+			ips, err := localInterfaces(params.Net, nil, nil, networks, true)
 			if err == nil {
 				for _, ip := range ips {
 					localAddrsForUnspecified = append(localAddrsForUnspecified, &net.UDPAddr{IP: ip, Port: addr.Port})
 				}
 			} else {
-				params.Logger.Errorf("failed to get local interfaces for unspecified addr: %v", err)
+				params.Logger.Errorf("Failed to get local interfaces for unspecified addr: %v", err)
 			}
 		}
 	}
@@ -97,7 +112,7 @@ func NewUDPMuxDefault(params UDPMuxParams) *UDPMuxDefault {
 		closedChan: make(chan struct{}, 1),
 		pool: &sync.Pool{
 			New: func() interface{} {
-				// big enough buffer to fit both packet and address
+				// Big enough buffer to fit both packet and address
 				return newBufferHolder(receiveMTU + maxAddrSize)
 			},
 		},
@@ -275,7 +290,7 @@ func (m *UDPMuxDefault) connWorker() {
 			if os.IsTimeout(err) {
 				continue
 			} else if !errors.Is(err, io.EOF) {
-				logger.Errorf("could not read udp packet: %v", err)
+				logger.Errorf("Failed to read UDP packet: %v", err)
 			}
 
 			return
@@ -283,7 +298,7 @@ func (m *UDPMuxDefault) connWorker() {
 
 		udpAddr, ok := addr.(*net.UDPAddr)
 		if !ok {
-			logger.Errorf("underlying PacketConn did not return a UDPAddr")
+			logger.Errorf("Underlying PacketConn did not return a UDPAddr")
 			return
 		}
 
@@ -318,12 +333,12 @@ func (m *UDPMuxDefault) connWorker() {
 		}
 
 		if destinationConn == nil {
-			m.params.Logger.Tracef("dropping packet from %s, addr: %s", udpAddr.String(), addr.String())
+			m.params.Logger.Tracef("Dropping packet from %s, addr: %s", udpAddr.String(), addr.String())
 			continue
 		}
 
 		if err = destinationConn.writePacket(buf[:n], udpAddr); err != nil {
-			m.params.Logger.Errorf("could not write packet: %v", err)
+			m.params.Logger.Errorf("Failed to write packet: %v", err)
 		}
 	}
 }

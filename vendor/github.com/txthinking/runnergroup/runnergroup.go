@@ -8,8 +8,8 @@ import (
 // RunnerGroup is like sync.WaitGroup,
 // the diffrence is if one task stops, all will be stopped.
 type RunnerGroup struct {
-	runners []*Runner
-	done    chan byte
+	Runners []*Runner
+	End     chan byte
 }
 
 type Runner struct {
@@ -24,20 +24,20 @@ type Runner struct {
 
 func New() *RunnerGroup {
 	g := &RunnerGroup{}
-	g.runners = make([]*Runner, 0)
-	g.done = make(chan byte)
+	g.Runners = make([]*Runner, 0)
+	g.End = make(chan byte)
 	return g
 }
 
 func (g *RunnerGroup) Add(r *Runner) {
-	g.runners = append(g.runners, r)
+	g.Runners = append(g.Runners, r)
 }
 
 // Call Wait after all task have been added,
 // Return the first ended start's result.
 func (g *RunnerGroup) Wait() error {
 	e := make(chan error)
-	for _, v := range g.runners {
+	for _, v := range g.Runners {
 		v.status = 1
 		go func(v *Runner) {
 			err := v.Start()
@@ -45,13 +45,13 @@ func (g *RunnerGroup) Wait() error {
 			v.status = 0
 			v.lock.Unlock()
 			select {
-			case <-g.done:
+			case <-g.End:
 			case e <- err:
 			}
 		}(v)
 	}
 	err := <-e
-	for _, v := range g.runners {
+	for _, v := range g.Runners {
 		for {
 			v.lock.Lock()
 			if v.status == 0 {
@@ -63,7 +63,7 @@ func (g *RunnerGroup) Wait() error {
 			time.Sleep(300 * time.Millisecond)
 		}
 	}
-	close(g.done)
+	close(g.End)
 	return err
 }
 
@@ -71,11 +71,11 @@ func (g *RunnerGroup) Wait() error {
 // return the stop's return which is not nil, do not guarantee,
 // because starts may ended caused by itself.
 func (g *RunnerGroup) Done() error {
-	if len(g.runners) == 0 {
+	if len(g.Runners) == 0 {
 		return nil
 	}
 	var e error
-	for _, v := range g.runners {
+	for _, v := range g.Runners {
 		for {
 			v.lock.Lock()
 			if v.status == 0 {
@@ -91,6 +91,6 @@ func (g *RunnerGroup) Done() error {
 			time.Sleep(300 * time.Millisecond)
 		}
 	}
-	<-g.done
+	<-g.End
 	return e
 }

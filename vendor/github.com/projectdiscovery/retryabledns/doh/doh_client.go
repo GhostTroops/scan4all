@@ -5,16 +5,15 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/miekg/dns"
-	"github.com/projectdiscovery/retryablehttp-go"
 )
 
 type Client struct {
 	DefaultResolver Resolver
-	httpClient      *retryablehttp.Client
+	httpClient      *http.Client
 }
 
 func NewWithOptions(options Options) *Client {
@@ -22,7 +21,8 @@ func NewWithOptions(options Options) *Client {
 }
 
 func New() *Client {
-	return NewWithOptions(Options{DefaultResolver: Cloudflare, HttpClient: retryablehttp.NewClient(retryablehttp.DefaultOptionsSingle)})
+	httpClient := NewHttpClientWithTimeout(DefaultTimeout)
+	return NewWithOptions(Options{DefaultResolver: Cloudflare, HttpClient: httpClient})
 }
 
 func (c *Client) Query(name string, question QuestionType) (*Response, error) {
@@ -34,7 +34,7 @@ func (c *Client) QueryWithResolver(r Resolver, name string, question QuestionTyp
 }
 
 func (c *Client) QueryWithJsonAPI(r Resolver, name string, question QuestionType) (*Response, error) {
-	req, err := retryablehttp.NewRequest(http.MethodGet, r.URL, nil)
+	req, err := http.NewRequest(http.MethodGet, r.URL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (c *Client) QueryWithDOHMsg(method Method, r Resolver, msg *dns.Msg) (*dns.
 	default:
 		return nil, errors.New("unsupported method")
 	}
-	req, err := retryablehttp.NewRequest(string(method), r.URL, bytes.NewReader(body))
+	req, err := http.NewRequest(string(method), r.URL, bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +117,7 @@ func (c *Client) QueryWithDOHMsg(method Method, r Resolver, msg *dns.Msg) (*dns.
 		return nil, errors.New("empty response body")
 	}
 
-	respBodyBytes, err := ioutil.ReadAll(resp.Body)
+	respBodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

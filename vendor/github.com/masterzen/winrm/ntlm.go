@@ -16,7 +16,9 @@ type ClientNTLM struct {
 
 // Transport creates the wrapped NTLM transport
 func (c *ClientNTLM) Transport(endpoint *Endpoint) error {
-	c.clientRequest.Transport(endpoint)
+	if err := c.clientRequest.Transport(endpoint); err != nil {
+		return err
+	}
 	c.clientRequest.transport = &ntlmssp.Negotiator{RoundTripper: c.clientRequest.transport}
 	return nil
 }

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package turn
 
 import (
@@ -89,7 +92,7 @@ func (s *STUNConn) ReadFrom(p []byte) (n int, addr net.Addr, err error) {
 }
 
 // WriteTo implements WriteTo from net.PacketConn
-func (s *STUNConn) WriteTo(p []byte, addr net.Addr) (n int, err error) {
+func (s *STUNConn) WriteTo(p []byte, _ net.Addr) (n int, err error) {
 	return s.nextConn.Write(p)
 }
 

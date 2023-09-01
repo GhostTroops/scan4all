@@ -120,6 +120,8 @@ func (stmt *Statement) QuoteTo(writer clause.Writer, field interface{}) {
 				write(v.Raw, stmt.Schema.PrioritizedPrimaryField.DBName)
 			} else if len(stmt.Schema.DBNames) > 0 {
 				write(v.Raw, stmt.Schema.DBNames[0])
+			} else {
+				stmt.DB.AddError(ErrModelAccessibleFieldsRequired) //nolint:typecheck,errcheck
 			}
 		} else {
 			write(v.Raw, v.Name)
@@ -311,6 +313,9 @@ func (stmt *Statement) BuildCondition(query interface{}, args ...interface{}) []
 	conds := make([]clause.Expression, 0, 4)
 	args = append([]interface{}{query}, args...)
 	for idx, arg := range args {
+		if arg == nil {
+			continue
+		}
 		if valuer, ok := arg.(driver.Valuer); ok {
 			arg, _ = valuer.Value()
 		}
@@ -319,11 +324,9 @@ func (stmt *Statement) BuildCondition(query interface{}, args ...interface{}) []
 		case clause.Expression:
 			conds = append(conds, v)
 		case *DB:
-			for _, scope := range v.Statement.scopes {
-				v = scope(v)
-			}
+			v.executeScopes()
 
-			if cs, ok := v.Statement.Clauses["WHERE"]; ok {
+			if cs, ok := v.Statement.Clauses["WHERE"]; ok && cs.Expression != nil {
 				if where, ok := cs.Expression.(clause.Where); ok {
 					if len(where.Exprs) == 1 {
 						if orConds, ok := where.Exprs[0].(clause.OrConditions); ok {
@@ -331,8 +334,12 @@ func (stmt *Statement) BuildCondition(query interface{}, args ...interface{}) []
 						}
 					}
 					conds = append(conds, clause.And(where.Exprs...))
-				} else if cs.Expression != nil {
+				} else {
 					conds = append(conds, cs.Expression)
+				}
+				if v.Statement == stmt {
+					cs.Expression = nil
+					stmt.Statement.Clauses["WHERE"] = cs
 				}
 			}
 		case map[interface{}]interface{}:
@@ -665,47 +672,41 @@ func (stmt *Statement) SelectAndOmitColumns(requireCreate, requireUpdate bool) (
 	results := map[string]bool{}
 	notRestricted := false
 
-	// select columns
-	for _, column := range stmt.Selects {
+	processColumn := func(column string, result bool) {
 		if stmt.Schema == nil {
-			results[column] = true
+			results[column] = result
 		} else if column == "*" {
-			notRestricted = true
+			notRestricted = result
 			for _, dbName := range stmt.Schema.DBNames {
-				results[dbName] = true
+				results[dbName] = result
 			}
 		} else if column == clause.Associations {
 			for _, rel := range stmt.Schema.Relationships.Relations {
-				results[rel.Name] = true
+				results[rel.Name] = result
 			}
 		} else if field := stmt.Schema.LookUpField(column); field != nil && field.DBName != "" {
-			results[field.DBName] = true
+			results[field.DBName] = result
 		} else if matches := nameMatcher.FindStringSubmatch(column); len(matches) == 3 && (matches[1] == stmt.Table || matches[1] == "") {
-			results[matches[2]] = true
+			if matches[2] == "*" {
+				for _, dbName := range stmt.Schema.DBNames {
+					results[dbName] = result
+				}
+			} else {
+				results[matches[2]] = result
+			}
 		} else {
-			results[column] = true
+			results[column] = result
 		}
 	}
 
+	// select columns
+	for _, column := range stmt.Selects {
+		processColumn(column, true)
+	}
+
 	// omit columns
-	for _, omit := range stmt.Omits {
-		if stmt.Schema == nil {
-			results[omit] = false
-		} else if omit == "*" {
-			for _, dbName := range stmt.Schema.DBNames {
-				results[dbName] = false
-			}
-		} else if omit == clause.Associations {
-			for _, rel := range stmt.Schema.Relationships.Relations {
-				results[rel.Name] = false
-			}
-		} else if field := stmt.Schema.LookUpField(omit); field != nil && field.DBName != "" {
-			results[field.DBName] = false
-		} else if matches := nameMatcher.FindStringSubmatch(omit); len(matches) == 2 {
-			results[matches[1]] = false
-		} else {
-			results[omit] = false
-		}
+	for _, column := range stmt.Omits {
+		processColumn(column, false)
 	}
 
 	if stmt.Schema != nil {

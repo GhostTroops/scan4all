@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package sctp
 
 import (
@@ -15,16 +18,15 @@ the present association.
 The parameter field contains the Heartbeat Information, which is a
 variable-length opaque data structure understood only by the sender.
 
-
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Type = 4    | Chunk  Flags  |      Heartbeat Length         |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-|            Heartbeat Information TLV (Variable-Length)        |
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	 0                   1                   2                   3
+	 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|   Type = 4    | Chunk  Flags  |      Heartbeat Length         |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                                                               |
+	|            Heartbeat Information TLV (Variable-Length)        |
+	|                                                               |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 Defined as a variable-length parameter using the format described
 in Section 3.2.1, i.e.:
@@ -38,36 +40,37 @@ type chunkHeartbeat struct {
 	params []param
 }
 
+// Heartbeat chunk errors
 var (
-	errChunkTypeNotHeartbeat      = errors.New("ChunkType is not of type HEARTBEAT")
-	errHeartbeatNotLongEnoughInfo = errors.New("heartbeat is not long enough to contain Heartbeat Info")
-	errParseParamTypeFailed       = errors.New("failed to parse param type")
-	errHeartbeatParam             = errors.New("heartbeat should only have HEARTBEAT param")
-	errHeartbeatChunkUnmarshal    = errors.New("failed unmarshalling param in Heartbeat Chunk")
+	ErrChunkTypeNotHeartbeat      = errors.New("ChunkType is not of type HEARTBEAT")
+	ErrHeartbeatNotLongEnoughInfo = errors.New("heartbeat is not long enough to contain Heartbeat Info")
+	ErrParseParamTypeFailed       = errors.New("failed to parse param type")
+	ErrHeartbeatParam             = errors.New("heartbeat should only have HEARTBEAT param")
+	ErrHeartbeatChunkUnmarshal    = errors.New("failed unmarshalling param in Heartbeat Chunk")
 )
 
 func (h *chunkHeartbeat) unmarshal(raw []byte) error {
 	if err := h.chunkHeader.unmarshal(raw); err != nil {
 		return err
 	} else if h.typ != ctHeartbeat {
-		return fmt.Errorf("%w: actually is %s", errChunkTypeNotHeartbeat, h.typ.String())
+		return fmt.Errorf("%w: actually is %s", ErrChunkTypeNotHeartbeat, h.typ.String())
 	}
 
 	if len(raw) <= chunkHeaderSize {
-		return fmt.Errorf("%w: %d", errHeartbeatNotLongEnoughInfo, len(raw))
+		return fmt.Errorf("%w: %d", ErrHeartbeatNotLongEnoughInfo, len(raw))
 	}
 
 	pType, err := parseParamType(raw[chunkHeaderSize:])
 	if err != nil {
-		return fmt.Errorf("%w: %v", errParseParamTypeFailed, err)
+		return fmt.Errorf("%w: %v", ErrParseParamTypeFailed, err) //nolint:errorlint
 	}
 	if pType != heartbeatInfo {
-		return fmt.Errorf("%w: instead have %s", errHeartbeatParam, pType.String())
+		return fmt.Errorf("%w: instead have %s", ErrHeartbeatParam, pType.String())
 	}
 
 	p, err := buildParam(pType, raw[chunkHeaderSize:])
 	if err != nil {
-		return fmt.Errorf("%w: %v", errHeartbeatChunkUnmarshal, err)
+		return fmt.Errorf("%w: %v", ErrHeartbeatChunkUnmarshal, err) //nolint:errorlint
 	}
 	h.params = append(h.params, p)
 
@@ -75,7 +78,7 @@ func (h *chunkHeartbeat) unmarshal(raw []byte) error {
 }
 
 func (h *chunkHeartbeat) Marshal() ([]byte, error) {
-	return nil, errUnimplemented
+	return nil, ErrUnimplemented
 }
 
 func (h *chunkHeartbeat) check() (abort bool, err error) {

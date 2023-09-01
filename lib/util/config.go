@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"crypto/sha1"
 	"embed"
-	"encoding/hex"
+	"encoding/json"
 	"fmt"
-	jsoniter "github.com/json-iterator/go"
+	util1 "github.com/hktalent/go-utils"
 	"github.com/karlseguin/ccache"
 	"github.com/spf13/viper"
 	"io/fs"
@@ -23,9 +23,6 @@ import (
 	"sync"
 	"time"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
-var DefaultDns = []string{"114.114.114.114", "223.6.6.6"}
 
 // 字符串包含关系，且大小写不敏感
 func StrContains(s1, s2 string) bool {
@@ -78,9 +75,6 @@ func GetVal(key string) string {
 		return strings.TrimSpace(fmt.Sprintf("%v", s))
 	}
 	return ""
-}
-func GetAllConfig() *map[string]interface{} {
-	return &mData
 }
 
 // 获取interface
@@ -233,12 +227,6 @@ func LoadCoinfig(config *viper.Viper) {
 		return
 	}
 	config.Unmarshal(&mData)
-	// 合并环境中的设置
-	for k, _ := range mData {
-		if "" != os.Getenv(k) {
-			mData[k] = strings.TrimSpace(os.Getenv(k))
-		}
-	}
 	//config.OnConfigChange(func(e fsnotify.Event) {
 	//	log.Println("Config file changed, now reLoad it: ", e.Name)
 	//	LoadCoinfig(config)
@@ -306,12 +294,13 @@ func DoCmd(args ...string) (string, error) {
 	cmd.Stdout = &stdout // 标准输出
 	cmd.Stderr = &stderr // 标准错误
 	err := cmd.Run()
-	outStr, errStr := doReadBuff(&stdout), doReadBuff(&stderr)
-	// out, err := cmd.CombinedOutput()
 	if nil != err {
 		return "", err
 	}
-	return outStr + "\n" + errStr, err
+	outStr, _ := doReadBuff(&stdout), doReadBuff(&stderr)
+	// out, err := cmd.CombinedOutput()
+
+	return outStr, err
 }
 
 func doFile(config *embed.FS, s fs.DirEntry, szPath string) {
@@ -384,12 +373,10 @@ func Mkdirs(s string) {
 func GetSha1(a ...interface{}) string {
 	h := sha1.New()
 	for _, x := range a {
-		if data, err := json.Marshal(x); nil == err {
-			h.Write(data)
-		}
+		h.Write([]byte(fmt.Sprintf("%v", x)))
 	}
 	bs := h.Sum(nil)
-	return hex.EncodeToString(bs) // fmt.Sprintf("%x", bs)
+	return fmt.Sprintf("%x", bs)
 }
 
 var Abs404 = "/scan4all404"
@@ -421,18 +408,6 @@ func TestRepeat4Save(key string, a ...interface{}) (interface{}, bool) {
 		return nil, false
 	}
 	return x1.Value(), true
-}
-
-// 生成uuid
-func GenUuid() string {
-	b := make([]byte, 16)
-	_, err := rand.Read(b)
-	if err != nil {
-		return ""
-	}
-	uuid := fmt.Sprintf("%x-%x-%x-%x-%x",
-		b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
-	return uuid
 }
 
 // 关闭cache
@@ -562,6 +537,15 @@ func RegInitFunc4Hd(cbk func()) {
 func DoInit(config *embed.FS) {
 	Init1(config)
 	rand.Seed(time.Now().UnixNano())
+	var wg sync.WaitGroup
+	for _, x := range []string{"nuclei", "naabu", "httpx", "dnsx", "subfinder", "katana", "uncover", "tlsx"} {
+		wg.Add(1)
+		go func(s string) {
+			defer wg.Done()
+			util1.UpdateScan4allVersionToLatest(true, "projectdiscovery", s, util1.SzPwd+"/config/"+runtime.GOOS+"/")
+		}(x)
+	}
+	wg.Wait()
 	//	log.Println("start init for fnInitHd ", len(fnInitHd))
 	//	for _, x := range fnInitHd {
 	//		x()
@@ -586,7 +570,6 @@ func DoInit(config *embed.FS) {
 	fnInitHd = nil
 }
 
-// 字符数组去重复
 func RemoveDuplication_map(arr []string) []string {
 	set := make(map[string]struct{}, len(arr))
 	j := 0

@@ -69,8 +69,9 @@ const (
 )
 
 type parser struct {
-	r *scanner
-	d int
+	r          *scanner
+	d          int
+	namespaces map[string]string
 }
 
 // newOperatorNode returns new operator node OperatorNode.
@@ -84,8 +85,8 @@ func newOperandNode(v interface{}) node {
 }
 
 // newAxisNode returns new axis node AxisNode.
-func newAxisNode(axeTyp, localName, prefix, prop string, n node) node {
-	return &axisNode{
+func newAxisNode(axeTyp, localName, prefix, prop string, n node, opts ...func(p *axisNode)) node {
+	a := axisNode{
 		nodeType:  nodeAxis,
 		LocalName: localName,
 		Prefix:    prefix,
@@ -93,6 +94,10 @@ func newAxisNode(axeTyp, localName, prefix, prop string, n node) node {
 		Prop:      prop,
 		Input:     n,
 	}
+	for _, o := range opts {
+		o(&a)
+	}
+	return &a
 }
 
 // newVariableNode returns new variable node VariableNode.
@@ -469,7 +474,16 @@ func (p *parser) parseNodeTest(n node, axeTyp string) (opnd node) {
 			if p.r.name == "*" {
 				name = ""
 			}
-			opnd = newAxisNode(axeTyp, name, prefix, "", n)
+			opnd = newAxisNode(axeTyp, name, prefix, "", n, func(a *axisNode) {
+				if prefix != "" && p.namespaces != nil {
+					if ns, ok := p.namespaces[prefix]; ok {
+						a.hasNamespaceURI = true
+						a.namespaceURI = ns
+					} else {
+						panic(fmt.Sprintf("prefix %s not defined.", prefix))
+					}
+				}
+			})
 		}
 	case itemStar:
 		opnd = newAxisNode(axeTyp, "", "", "", n)
@@ -531,11 +545,11 @@ func (p *parser) parseMethod(n node) node {
 }
 
 // Parse parsing the XPath express string expr and returns a tree node.
-func parse(expr string) node {
+func parse(expr string, namespaces map[string]string) node {
 	r := &scanner{text: expr}
 	r.nextChar()
 	r.nextItem()
-	p := &parser{r: r}
+	p := &parser{r: r, namespaces: namespaces}
 	return p.parseExpression(nil)
 }
 
@@ -563,11 +577,13 @@ func (o *operatorNode) String() string {
 // axisNode holds a location step.
 type axisNode struct {
 	nodeType
-	Input     node
-	Prop      string // node-test name.[comment|text|processing-instruction|node]
-	AxeType   string // name of the axes.[attribute|ancestor|child|....]
-	LocalName string // local part name of node.
-	Prefix    string // prefix name of node.
+	Input           node
+	Prop            string // node-test name.[comment|text|processing-instruction|node]
+	AxeType         string // name of the axes.[attribute|ancestor|child|....]
+	LocalName       string // local part name of node.
+	Prefix          string // prefix name of node.
+	namespaceURI    string // namespace URI of node
+	hasNamespaceURI bool   // if namespace URI is set (can be "")
 }
 
 func (a *axisNode) String() string {

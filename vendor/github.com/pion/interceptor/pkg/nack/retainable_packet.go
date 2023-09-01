@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package nack
 
 import (
@@ -80,7 +83,7 @@ func (f *noOpPacketFactory) NewPacket(header *rtp.Header, payload []byte) (*reta
 	}, nil
 }
 
-func (f *noOpPacketFactory) releasePacket(header *rtp.Header, payload *[]byte) {
+func (f *noOpPacketFactory) releasePacket(_ *rtp.Header, _ *[]byte) {
 	// no-op
 }
 

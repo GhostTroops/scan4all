@@ -70,12 +70,14 @@ type connection struct {
 	currentlyStreaming   bool
 	connectContextMutex  sync.Mutex
 	cancellationListener cancellationListener
-	serverConnectionID   *int32 // the server's ID for this client's connection
+	serverConnectionID   *int64 // the server's ID for this client's connection
 
 	// pool related fields
-	pool       *pool
-	poolID     uint64
-	generation uint64
+	pool *pool
+
+	// TODO(GODRIVER-2824): change driverConnectionID type to int64.
+	driverConnectionID uint64
+	generation         uint64
 }
 
 // newConnection handles the creation of a connection. It does not connect the connection.
@@ -103,6 +105,12 @@ func newConnection(addr address.Address, opts ...ConnectionOption) *connection {
 	atomic.StoreInt64(&c.state, connInitialized)
 
 	return c
+}
+
+// DriverConnectionID returns the driver connection ID.
+// TODO(GODRIVER-2824): change return type to int64.
+func (c *connection) DriverConnectionID() uint64 {
+	return c.driverConnectionID
 }
 
 // setGenerationNumber sets the connection's generation number if a callback has been provided to do so in connection
@@ -200,6 +208,7 @@ func (c *connection) connect(ctx context.Context) (err error) {
 		ocspOpts := &ocsp.VerifyOptions{
 			Cache:                   c.config.ocspCache,
 			DisableEndpointChecking: c.config.disableOCSPEndpointCheck,
+			HTTPClient:              c.config.httpClient,
 		}
 		tlsNc, err := configureTLS(dialCtx, c.config.tlsConnectionSource, c.nc, c.addr, tlsConfig, ocspOpts)
 		if err != nil {
@@ -378,9 +387,9 @@ func (c *connection) write(ctx context.Context, wm []byte) (err error) {
 }
 
 // readWireMessage reads a wiremessage from the connection. The dst parameter will be overwritten.
-func (c *connection) readWireMessage(ctx context.Context, dst []byte) ([]byte, error) {
+func (c *connection) readWireMessage(ctx context.Context) ([]byte, error) {
 	if atomic.LoadInt64(&c.state) != connConnected {
-		return dst, ConnectionError{ConnectionID: c.id, message: "connection is closed"}
+		return nil, ConnectionError{ConnectionID: c.id, message: "connection is closed"}
 	}
 
 	var deadline time.Time
@@ -398,7 +407,7 @@ func (c *connection) readWireMessage(ctx context.Context, dst []byte) ([]byte, e
 		return nil, ConnectionError{ConnectionID: c.id, Wrapped: err, message: "failed to set read deadline"}
 	}
 
-	dst, errMsg, err := c.read(ctx, dst)
+	dst, errMsg, err := c.read(ctx)
 	if err != nil {
 		// We closeConnection the connection because we don't know if there are other bytes left to read.
 		c.close()
@@ -416,7 +425,7 @@ func (c *connection) readWireMessage(ctx context.Context, dst []byte) ([]byte, e
 	return dst, nil
 }
 
-func (c *connection) read(ctx context.Context, dst []byte) (bytesRead []byte, errMsg string, err error) {
+func (c *connection) read(ctx context.Context) (bytesRead []byte, errMsg string, err error) {
 	go c.cancellationListener.Listen(ctx, c.cancellationListenerCallback)
 	defer func() {
 		// If the context is cancelled after we finish reading the server response, the cancellation listener could fire
@@ -454,18 +463,12 @@ func (c *connection) read(ctx context.Context, dst []byte) (bytesRead []byte, er
 		return nil, errResponseTooLarge.Error(), errResponseTooLarge
 	}
 
-	if int(size) > cap(dst) {
-		// Since we can't grow this slice without allocating, just allocate an entirely new slice.
-		dst = make([]byte, 0, size)
-	}
-	// We need to ensure we don't accidentally read into a subsequent wire message, so we set the
-	// size to read exactly this wire message.
-	dst = dst[:size]
+	dst := make([]byte, size)
 	copy(dst, sizeBuf[:])
 
 	_, err = io.ReadFull(c.nc, dst[4:])
 	if err != nil {
-		return nil, "incomplete read of full message", err
+		return dst, "incomplete read of full message", err
 	}
 
 	return dst, "", nil
@@ -532,7 +535,7 @@ func (c *connection) ID() string {
 	return c.id
 }
 
-func (c *connection) ServerConnectionID() *int32 {
+func (c *connection) ServerConnectionID() *int64 {
 	return c.serverConnectionID
 }
 
@@ -563,8 +566,8 @@ func (c initConnection) LocalAddress() address.Address {
 func (c initConnection) WriteWireMessage(ctx context.Context, wm []byte) error {
 	return c.writeWireMessage(ctx, wm)
 }
-func (c initConnection) ReadWireMessage(ctx context.Context, dst []byte) ([]byte, error) {
-	return c.readWireMessage(ctx, dst)
+func (c initConnection) ReadWireMessage(ctx context.Context) ([]byte, error) {
+	return c.readWireMessage(ctx)
 }
 func (c initConnection) SetStreaming(streaming bool) {
 	c.setStreaming(streaming)
@@ -577,9 +580,10 @@ func (c initConnection) SupportsStreaming() bool {
 }
 
 // Connection implements the driver.Connection interface to allow reading and writing wire
-// messages and the driver.Expirable interface to allow expiring.
+// messages and the driver.Expirable interface to allow expiring. It wraps an underlying
+// topology.connection to make it more goroutine-safe and nil-safe.
 type Connection struct {
-	*connection
+	connection    *connection
 	refCount      int
 	cleanupPoolFn func()
 
@@ -601,18 +605,18 @@ func (c *Connection) WriteWireMessage(ctx context.Context, wm []byte) error {
 	if c.connection == nil {
 		return ErrConnectionClosed
 	}
-	return c.writeWireMessage(ctx, wm)
+	return c.connection.writeWireMessage(ctx, wm)
 }
 
 // ReadWireMessage handles reading a wire message from the underlying connection. The dst parameter
 // will be overwritten with the new wire message.
-func (c *Connection) ReadWireMessage(ctx context.Context, dst []byte) ([]byte, error) {
+func (c *Connection) ReadWireMessage(ctx context.Context) ([]byte, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	if c.connection == nil {
-		return dst, ErrConnectionClosed
+		return nil, ErrConnectionClosed
 	}
-	return c.readWireMessage(ctx, dst)
+	return c.connection.readWireMessage(ctx)
 }
 
 // CompressWireMessage handles compressing the provided wire message using the underlying
@@ -625,9 +629,6 @@ func (c *Connection) CompressWireMessage(src, dst []byte) ([]byte, error) {
 		return dst, ErrConnectionClosed
 	}
 	if c.connection.compressor == wiremessage.CompressorNoOp {
-		if len(dst) == 0 {
-			return src, nil
-		}
 		return append(dst, src...), nil
 	}
 	_, reqid, respto, origcode, rem, ok := wiremessage.ReadHeader(src)
@@ -658,7 +659,7 @@ func (c *Connection) Description() description.Server {
 	if c.connection == nil {
 		return description.Server{}
 	}
-	return c.desc
+	return c.connection.desc
 }
 
 // Close returns this connection to the connection pool. This method may not closeConnection the underlying
@@ -681,12 +682,12 @@ func (c *Connection) Expire() error {
 		return nil
 	}
 
-	_ = c.close()
+	_ = c.connection.close()
 	return c.cleanupReferences()
 }
 
 func (c *Connection) cleanupReferences() error {
-	err := c.pool.checkIn(c.connection)
+	err := c.connection.pool.checkIn(c.connection)
 	if c.cleanupPoolFn != nil {
 		c.cleanupPoolFn()
 		c.cleanupPoolFn = nil
@@ -711,14 +712,22 @@ func (c *Connection) ID() string {
 	if c.connection == nil {
 		return "<closed>"
 	}
-	return c.id
+	return c.connection.id
+}
+
+// ServerConnectionID returns the server connection ID of this connection.
+func (c *Connection) ServerConnectionID() *int64 {
+	if c.connection == nil {
+		return nil
+	}
+	return c.connection.serverConnectionID
 }
 
 // Stale returns if the connection is stale.
 func (c *Connection) Stale() bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	return c.pool.stale(c.connection)
+	return c.connection.pool.stale(c.connection)
 }
 
 // Address returns the address of this connection.
@@ -728,27 +737,27 @@ func (c *Connection) Address() address.Address {
 	if c.connection == nil {
 		return address.Address("0.0.0.0")
 	}
-	return c.addr
+	return c.connection.addr
 }
 
 // LocalAddress returns the local address of the connection
 func (c *Connection) LocalAddress() address.Address {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	if c.connection == nil || c.nc == nil {
+	if c.connection == nil || c.connection.nc == nil {
 		return address.Address("0.0.0.0")
 	}
-	return address.Address(c.nc.LocalAddr().String())
+	return address.Address(c.connection.nc.LocalAddr().String())
 }
 
 // PinToCursor updates this connection to reflect that it is pinned to a cursor.
 func (c *Connection) PinToCursor() error {
-	return c.pin("cursor", c.pool.pinConnectionToCursor, c.pool.unpinConnectionFromCursor)
+	return c.pin("cursor", c.connection.pool.pinConnectionToCursor, c.connection.pool.unpinConnectionFromCursor)
 }
 
 // PinToTransaction updates this connection to reflect that it is pinned to a transaction.
 func (c *Connection) PinToTransaction() error {
-	return c.pin("transaction", c.pool.pinConnectionToTransaction, c.pool.unpinConnectionFromTransaction)
+	return c.pin("transaction", c.connection.pool.pinConnectionToTransaction, c.connection.pool.unpinConnectionFromTransaction)
 }
 
 func (c *Connection) pin(reason string, updatePoolFn, cleanupPoolFn func()) error {
@@ -791,6 +800,12 @@ func (c *Connection) unpin(reason string) error {
 
 	c.refCount--
 	return nil
+}
+
+// DriverConnectionID returns the driver connection ID.
+// TODO(GODRIVER-2824): change return type to int64.
+func (c *Connection) DriverConnectionID() uint64 {
+	return c.connection.DriverConnectionID()
 }
 
 func configureTLS(ctx context.Context,

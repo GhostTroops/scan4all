@@ -96,6 +96,19 @@ func Unescape(input string) (string, error) {
 	return syntax.Unescape(input)
 }
 
+// SetTimeoutPeriod is a debug function that sets the frequency of the timeout goroutine's sleep cycle.
+// Defaults to 100ms. The only benefit of setting this lower is that the 1 background goroutine that manages
+// timeouts may exit slightly sooner after all the timeouts have expired. See Github issue #63
+func SetTimeoutCheckPeriod(d time.Duration) {
+	clockPeriod = d
+}
+
+// StopTimeoutClock should only be used in unit tests to prevent the timeout clock goroutine
+// from appearing like a leaking goroutine
+func StopTimeoutClock() {
+	stopClock()
+}
+
 // String returns the source text used to compile the regular expression.
 func (re *Regexp) String() string {
 	return re.pattern

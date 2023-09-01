@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-var tokenMatcher = regexp.MustCompile("([^[]+)?(?:\\[(\\d+)])?")
+var tokenMatcher = regexp.MustCompile(`([^[]+)?(?:\[(\d+)])?`)
 var mapType = reflect.TypeOf(map[string]interface{}{})
 var sliceType = reflect.TypeOf([]interface{}{})
 
@@ -20,43 +20,79 @@ type Answer struct {
 	value interface{}
 }
 
+func handleIntPart(current interface{}, part int) (interface{}, bool) {
+	val := reflect.ValueOf(current)
+	if val.IsValid() && val.CanConvert(sliceType) {
+		s := val.Convert(sliceType).Interface().([]interface{})
+		if part >= 0 && part < len(s) {
+			return s[part], false
+		}
+	}
+	return current, true
+}
+
+func handleStringPart(current interface{}, part string) (interface{}, bool) {
+	notFound := false
+	match := tokenMatcher.FindStringSubmatch(strings.TrimSpace(part))
+
+	if len(match) == 3 {
+
+		if match[1] != "" {
+			val := reflect.ValueOf(current)
+			if val.IsValid() && val.CanConvert(mapType) {
+				current = val.Convert(mapType).Interface().(map[string]interface{})[match[1]]
+			} else {
+				notFound = true
+			}
+		}
+
+		if match[2] != "" {
+			index, _ := strconv.Atoi(match[2])
+			return handleIntPart(current, index)
+		}
+
+	}
+
+	return current, notFound
+}
+
 // For is used to select a path from source to return as answer.
 func For(source interface{}, path string) *Answer {
 
 	parts := strings.Split(path, ".")
-
+	notFound := false
 	current := source
 
 	for _, part := range parts {
+		current, notFound = handleStringPart(current, part)
+		if notFound {
+			return &Answer{}
+		}
+	}
 
-		match := tokenMatcher.FindStringSubmatch(strings.TrimSpace(part))
+	return &Answer{value: current}
+}
 
-		if len(match) == 3 {
+// ForArgs is used to select a path using individual arguments from source to return as answer.
+func ForArgs(source interface{}, parts ...interface{}) *Answer {
 
-			if match[1] != "" {
-				val := reflect.ValueOf(current)
-				if val.IsValid() && val.CanConvert(mapType) {
-					current = val.Convert(mapType).Interface().(map[string]interface{})[match[1]]
-				} else {
-					return &Answer{}
-				}
+	current := source
+	notFound := false
+
+	for _, part := range parts {
+
+		switch vt := part.(type) {
+		case uint, uint8, uint16, uint32, uint64, int, int8, int16, int32, int64:
+			index := reflect.ValueOf(vt).Int()
+			current, notFound = handleIntPart(current, int(index))
+			if notFound {
+				return &Answer{}
 			}
-
-			if match[2] != "" {
-				val := reflect.ValueOf(current)
-				if val.IsValid() && val.CanConvert(sliceType) {
-					s := val.Convert(sliceType).Interface().([]interface{})
-					index, _ := strconv.Atoi(match[2])
-					if index >= 0 && index < len(s) {
-						current = s[index]
-					} else {
-						return &Answer{}
-					}
-				} else {
-					return &Answer{}
-				}
+		case string:
+			current, notFound = handleStringPart(current, vt)
+			if notFound {
+				return &Answer{}
 			}
-
 		}
 
 	}
@@ -67,6 +103,11 @@ func For(source interface{}, path string) *Answer {
 // Path does the same thing as For but uses existing answer as source.
 func (a *Answer) Path(path string) *Answer {
 	return For(a.value, path)
+}
+
+// PathArgs does the same thing as ForArgs but uses existing answer as source.
+func (a *Answer) PathArgs(parts ...interface{}) *Answer {
+	return ForArgs(a.value, parts...)
 }
 
 // Exists returns a boolean indicating if the answer exists (not nil).
@@ -137,7 +178,7 @@ func (a *Answer) Int(d int64) (int64, bool) {
 		}
 	case float32, float64:
 		val := reflect.ValueOf(vt).Float()
-		if val >= 0 && val <= math.MaxInt64 {
+		if val >= math.MinInt64 && val <= math.MaxInt64 {
 			return int64(val), true
 		}
 	}

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package sctp
 
 import (
@@ -53,10 +56,11 @@ const (
 	initOptionalVarHeaderLength = 4
 )
 
+// Init chunk errors
 var (
-	errInitChunkParseParamTypeFailed = errors.New("failed to parse param type")
-	errInitChunkUnmarshalParam       = errors.New("failed unmarshalling param in Init Chunk")
-	errInitAckMarshalParam           = errors.New("unable to marshal parameter for INIT/INITACK")
+	ErrInitChunkParseParamTypeFailed = errors.New("failed to parse param type")
+	ErrInitChunkUnmarshalParam       = errors.New("failed unmarshalling param in Init Chunk")
+	ErrInitAckMarshalParam           = errors.New("unable to marshal parameter for INIT/INITACK")
 )
 
 func (i *chunkInitCommon) unmarshal(raw []byte) error {
@@ -89,11 +93,11 @@ func (i *chunkInitCommon) unmarshal(raw []byte) error {
 		if remaining > initOptionalVarHeaderLength {
 			pType, err := parseParamType(raw[offset:])
 			if err != nil {
-				return fmt.Errorf("%w: %v", errInitChunkParseParamTypeFailed, err)
+				return fmt.Errorf("%w: %v", ErrInitChunkParseParamTypeFailed, err) //nolint:errorlint
 			}
 			p, err := buildParam(pType, raw[offset:])
 			if err != nil {
-				return fmt.Errorf("%w: %v", errInitChunkUnmarshalParam, err)
+				return fmt.Errorf("%w: %v", ErrInitChunkUnmarshalParam, err) //nolint:errorlint
 			}
 			i.params = append(i.params, p)
 			padding := getPadding(p.length())
@@ -117,7 +121,7 @@ func (i *chunkInitCommon) marshal() ([]byte, error) {
 	for idx, p := range i.params {
 		pp, err := p.marshal()
 		if err != nil {
-			return nil, fmt.Errorf("%w: %v", errInitAckMarshalParam, err)
+			return nil, fmt.Errorf("%w: %v", ErrInitAckMarshalParam, err) //nolint:errorlint
 		}
 
 		out = append(out, pp...)

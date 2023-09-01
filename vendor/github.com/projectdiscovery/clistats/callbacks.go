@@ -8,11 +8,11 @@ import "time"
 type RequestPerSecondCallbackOptions struct {
 	// StartTimeFieldID is the ID of the start time field for the client.
 	StartTimeFieldID string
-	// RequestsCounterID is the ID of the sent request counter
+	// RequestsCounterID is the ID of the request sent counter
 	RequestsCounterID string
 }
 
-//NewRequestsPerSecondCallback creates a request per second callback function.
+// NewRequestsPerSecondCallback creates a request per second callback function.
 func NewRequestsPerSecondCallback(options RequestPerSecondCallbackOptions) DynamicCallback {
 	return func(client StatisticsClient) interface{} {
 		start, ok := client.GetStatic(options.StartTimeFieldID)

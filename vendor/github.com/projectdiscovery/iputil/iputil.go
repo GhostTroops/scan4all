@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/projectdiscovery/mapcidr"
 	"github.com/projectdiscovery/stringsutil"
 	"go.uber.org/multierr"
 )
@@ -80,16 +79,6 @@ func IsCIDR(str string) bool {
 func IsCidrWithExpansion(str string) bool {
 	str = strings.ReplaceAll(str, "-", "/")
 	return IsCIDR(str)
-}
-
-// CountIPsInCIDR counts the number of ips in cidr
-func CountIPsInCIDR(includeBase, includeBroadcast bool, cidr string) int64 {
-	_, c, err := net.ParseCIDR(cidr)
-	if err != nil {
-		return 0
-	}
-
-	return mapcidr.CountIPsInCIDR(includeBase, includeBroadcast, c).Int64()
 }
 
 // ToCidr converts a cidr string to net.IPNet pointer

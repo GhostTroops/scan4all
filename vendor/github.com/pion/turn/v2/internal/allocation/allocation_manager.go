@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package allocation
 
 import (
@@ -14,6 +17,7 @@ type ManagerConfig struct {
 	LeveledLogger      logging.LeveledLogger
 	AllocatePacketConn func(network string, requestedPort int) (net.PacketConn, net.Addr, error)
 	AllocateConn       func(network string, requestedPort int) (net.Conn, net.Addr, error)
+	PermissionHandler  func(sourceAddr net.Addr, peerIP net.IP) bool
 }
 
 type reservation struct {
@@ -31,6 +35,7 @@ type Manager struct {
 
 	allocatePacketConn func(network string, requestedPort int) (net.PacketConn, net.Addr, error)
 	allocateConn       func(network string, requestedPort int) (net.Conn, net.Addr, error)
+	permissionHandler  func(sourceAddr net.Addr, peerIP net.IP) bool
 }
 
 // NewManager creates a new instance of Manager.
@@ -49,6 +54,7 @@ func NewManager(config ManagerConfig) (*Manager, error) {
 		allocations:        make(map[string]*Allocation, 64),
 		allocatePacketConn: config.AllocatePacketConn,
 		allocateConn:       config.AllocateConn,
+		permissionHandler:  config.PermissionHandler,
 	}, nil
 }
 
@@ -107,7 +113,7 @@ func (m *Manager) CreateAllocation(fiveTuple *FiveTuple, turnSocket net.PacketCo
 	a.RelaySocket = conn
 	a.RelayAddr = relayAddr
 
-	m.log.Debugf("listening on relay addr: %s", a.RelayAddr.String())
+	m.log.Debugf("Listening on relay address: %s", a.RelayAddr.String())
 
 	a.lifetimeTimer = time.AfterFunc(lifetime, func() {
 		m.DeleteAllocation(a.fiveTuple)
@@ -194,4 +200,19 @@ func (m *Manager) GetRandomEvenPort() (int, error) {
 		}
 	}
 	return 0, errFailedToAllocateEvenPort
+}
+
+// GrantPermission handles permission requests by calling the permission handler callback
+// associated with the TURN server listener socket
+func (m *Manager) GrantPermission(sourceAddr net.Addr, peerIP net.IP) error {
+	// No permission handler: open
+	if m.permissionHandler == nil {
+		return nil
+	}
+
+	if m.permissionHandler(sourceAddr, peerIP) {
+		return nil
+	}
+
+	return errAdminProhibited
 }

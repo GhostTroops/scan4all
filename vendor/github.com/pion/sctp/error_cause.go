@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package sctp
 
 import (
@@ -18,7 +21,10 @@ type errorCause interface {
 	errorCauseCode() errorCauseCode
 }
 
-var errBuildErrorCaseHandle = errors.New("BuildErrorCause does not handle")
+// Error and abort chunk errors
+var (
+	ErrBuildErrorCaseHandle = errors.New("BuildErrorCause does not handle")
+)
 
 // buildErrorCause delegates the building of a error cause from raw bytes to the correct structure
 func buildErrorCause(raw []byte) (errorCause, error) {
@@ -35,7 +41,7 @@ func buildErrorCause(raw []byte) (errorCause, error) {
 	case userInitiatedAbort:
 		e = &errorCauseUserInitiatedAbort{}
 	default:
-		return nil, fmt.Errorf("%w: %s", errBuildErrorCaseHandle, c.String())
+		return nil, fmt.Errorf("%w: %s", ErrBuildErrorCaseHandle, c.String())
 	}
 
 	if err := e.unmarshal(raw); err != nil {

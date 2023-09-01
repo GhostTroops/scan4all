@@ -1,4 +1,4 @@
-// +build windows freebsd dragonfly plan9
+//go:build windows || freebsd || dragonfly || plan9
 
 package autofdmax
 

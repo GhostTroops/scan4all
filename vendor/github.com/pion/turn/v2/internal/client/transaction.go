@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package client
 
 import (
@@ -26,18 +29,18 @@ type TransactionConfig struct {
 	Raw          []byte
 	To           net.Addr
 	Interval     time.Duration
-	IgnoreResult bool // true to throw away the result of this transaction (it will not be readable using WaitForResult)
+	IgnoreResult bool // True to throw away the result of this transaction (it will not be readable using WaitForResult)
 }
 
 // Transaction represents a transaction
 type Transaction struct {
-	Key      string                 // read-only
-	Raw      []byte                 // read-only
-	To       net.Addr               // read-only
-	nRtx     int                    // modified only by the timer thread
-	interval time.Duration          // modified only by the timer thread
-	timer    *time.Timer            // thread-safe, set only by the creator, and stopper
-	resultCh chan TransactionResult // thread-safe
+	Key      string                 // Read-only
+	Raw      []byte                 // Read-only
+	To       net.Addr               // Read-only
+	nRtx     int                    // Modified only by the timer thread
+	interval time.Duration          // Modified only by the timer thread
+	timer    *time.Timer            // Thread-safe, set only by the creator, and stopper
+	resultCh chan TransactionResult // Thread-safe
 	mutex    sync.RWMutex
 }
 
@@ -49,11 +52,11 @@ func NewTransaction(config *TransactionConfig) *Transaction {
 	}
 
 	return &Transaction{
-		Key:      config.Key,      // read-only
-		Raw:      config.Raw,      // read-only
-		To:       config.To,       // read-only
-		interval: config.Interval, // modified only by the timer thread
-		resultCh: resultCh,        // thread-safe
+		Key:      config.Key,      // Read-only
+		Raw:      config.Raw,      // Read-only
+		To:       config.To,       // Read-only
+		interval: config.Interval, // Modified only by the timer thread
+		resultCh: resultCh,        // Thread-safe
 	}
 }
 

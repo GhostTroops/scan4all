@@ -5,6 +5,16 @@
 * [ENHANCEMENT]
 * [BUGFIX]
 
+## v1.36.0
+
+This release now requires Go 1.20 or higher.
+
+* [ENHANCEMENT] Allow sending v1 traps that have no varbinds #426
+* [BUGFIX] Fix getBulk SnmpPacket MaxRepetitions value #413
+* [BUGFIX] Refactor security logger #422
+* [BUGFIX] Add privacy passphrase in extendKeyBlumenthal cacheKey call #425
+* [BUGFIX] unmarshal: fix panic from reading beyond slice #441
+
 ## v1.35.0
 
 This release now requires Go 1.17 or higher.

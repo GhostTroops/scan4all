@@ -1,10 +1,9 @@
 package hydra
 
 import (
+	"encoding/json"
 	"fmt"
-	Const "github.com/hktalent/go-utils"
 	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg"
 	"github.com/logrusorgru/aurora"
 	"log"
 	"strconv"
@@ -26,14 +25,6 @@ func init() {
 		}
 		//加载自定义字典
 		InitCustomAuthMap(a1, a2)
-		// util.EngineFuncFactory(Const.ScanType_WeakPassword, func(evt *models.EventData, args ...interface{}) {
-		if nil != util.EngineFuncFactory {
-			util.EngineFuncFactory(Const.ScanType_WeakPassword, func(evt *Const.EventData, args ...interface{}) {
-				if pkg.Contains(ProtocolList, evt.EventData[2].(string)) {
-					Start(evt.EventData[0].(string), evt.EventData[1].(int), evt.EventData[2].(string))
-				}
-			})
-		}
 	})
 }
 
@@ -52,8 +43,8 @@ func Start(IPAddr string, Port int, Protocol string) {
 	for info := range crack.Out {
 		out = info
 		if nil != &out && "" != out.Protocol && out.IPAddr != "" && "" != out.Auth.Username {
-			util.SendAData[AuthInfo](fmt.Sprintf("%s:%d", out.IPAddr, out.Port), []AuthInfo{out}, Const.GetTypeName(Const.ScanType_WeakPassword))
-			data, _ := util.Json.Marshal(out)
+			util.SendAData[AuthInfo](fmt.Sprintf("%s:%d", out.IPAddr, out.Port), []AuthInfo{out}, util.Hydra)
+			data, _ := json.Marshal(out)
 			fmt.Println("Successful password cracking：", aurora.BrightRed(string(data)))
 		}
 	}

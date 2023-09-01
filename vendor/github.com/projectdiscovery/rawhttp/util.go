@@ -5,12 +5,11 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
-	stdurl "net/url"
 	"strings"
 
 	"github.com/projectdiscovery/rawhttp/client"
+	urlutil "github.com/projectdiscovery/utils/url"
 )
 
 // StatusError is a HTTP status error object
@@ -114,7 +113,7 @@ func DumpRequestRaw(method, url, uripath string, headers map[string][]string, bo
 	if headers == nil {
 		headers = make(map[string][]string)
 	}
-	u, err := stdurl.ParseRequestURI(url)
+	u, err := urlutil.ParseURL(url, true)
 	if err != nil {
 		return nil, err
 	}
@@ -131,8 +130,8 @@ func DumpRequestRaw(method, url, uripath string, headers map[string][]string, bo
 	if path == "" {
 		path = "/"
 	}
-	if u.RawQuery != "" {
-		path += "?" + u.RawQuery
+	if !u.Params.IsEmpty() {
+		path += "?" + u.Params.Encode()
 	}
 	// override if custom one is specified
 	if uripath != "" {
@@ -167,7 +166,7 @@ func DumpRequestRaw(method, url, uripath string, headers map[string][]string, bo
 	if req.Body != nil {
 		var buf bytes.Buffer
 		tee := io.TeeReader(req.Body, &buf)
-		body, err := ioutil.ReadAll(tee)
+		body, err := io.ReadAll(tee)
 		if err != nil {
 			return nil, err
 		}

@@ -21,7 +21,7 @@ func Check(Host, Username, Domain, Password string, Port int) (bool, error) {
 		Workstation: "",
 	}
 	//开始进行SMB连接
-	util.DefaultPool.Submit(func() {
+	go func() {
 		session, err := smb.NewSession(options, false)
 		if err != nil {
 			status <- err
@@ -33,7 +33,7 @@ func Check(Host, Username, Domain, Password string, Port int) (bool, error) {
 			return
 		}
 		status <- nil
-	})
+	}()
 
 	select {
 	case <-ctx.Done():

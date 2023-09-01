@@ -1,16 +1,15 @@
 package hybrid
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
 	"time"
 
-	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/hmap/store/cache"
 	"github.com/projectdiscovery/hmap/store/disk"
-	"github.com/projectdiscovery/stringsutil"
+	fileutil "github.com/projectdiscovery/utils/file"
+	stringsutil "github.com/projectdiscovery/utils/strings"
 )
 
 type MapType int
@@ -25,10 +24,9 @@ type DBType int
 
 const (
 	LevelDB DBType = iota
-	BadgerDB
 	PogrebDB
 	BBoltDB
-	PebbleDB
+	BuntDB
 )
 
 type Options struct {
@@ -43,6 +41,7 @@ type Options struct {
 	MemoryGuardTime      time.Duration
 	Path                 string
 	Cleanup              bool
+	Name                 string
 	// Remove temporary hmap in the temporary folder older than duration
 	RemoveOlderThan time.Duration
 }
@@ -66,7 +65,7 @@ var DefaultDiskOptions = Options{
 
 var DefaultHybridOptions = Options{
 	Type:                 Hybrid,
-	DBType:               LevelDB,
+	DBType:               PogrebDB,
 	MemoryExpirationTime: time.Duration(5) * time.Minute,
 	JanitorTime:          time.Duration(1) * time.Minute,
 }
@@ -122,7 +121,7 @@ func New(options Options) (*HybridMap, error) {
 		diskmapPathm := options.Path
 		if diskmapPathm == "" {
 			var err error
-			diskmapPathm, err = ioutil.TempDir("", executableName)
+			diskmapPathm, err = os.MkdirTemp("", executableName)
 			if err != nil {
 				return nil, err
 			}
@@ -130,13 +129,10 @@ func New(options Options) (*HybridMap, error) {
 
 		hm.diskmapPath = diskmapPathm
 		switch options.DBType {
-		case BadgerDB:
-			db, err := disk.OpenBadgerDB(diskmapPathm)
-			if err != nil {
-				return nil, err
-			}
-			hm.diskmap = db
 		case PogrebDB:
+			if disk.OpenPogrebDB == nil {
+				return nil, disk.ErrNotSupported
+			}
 			db, err := disk.OpenPogrebDB(diskmapPathm)
 			if err != nil {
 				return nil, err
@@ -147,9 +143,10 @@ func New(options Options) (*HybridMap, error) {
 			if err != nil {
 				return nil, err
 			}
+			db.BucketName = options.Name
 			hm.diskmap = db
-		case PebbleDB:
-			db, err := disk.OpenPebbleDB(diskmapPathm)
+		case BuntDB:
+			db, err := disk.OpenBuntDB(filepath.Join(diskmapPathm, "bunt"))
 			if err != nil {
 				return nil, err
 			}
@@ -167,7 +164,7 @@ func New(options Options) (*HybridMap, error) {
 
 	if options.Type == Hybrid {
 		hm.memorymap.OnEvicted(func(k string, v interface{}) {
-			hm.diskmap.Set(k, v.([]byte), 0)
+			_ = hm.diskmap.Set(k, v.([]byte), 0)
 		})
 	}
 
@@ -182,7 +179,7 @@ func New(options Options) (*HybridMap, error) {
 }
 
 func (hm *HybridMap) Close() error {
-	if hm.diskmap != nil {
+	if hm.diskmap != (disk.DB)(nil) {
 		hm.diskmap.Close()
 	}
 	if hm.diskmapPath != "" && hm.options.Cleanup {
@@ -267,7 +264,7 @@ func (hm *HybridMap) Size() int64 {
 	if hm.memorymap != nil {
 		count += int64(hm.memorymap.ItemCount())
 	}
-	if hm.diskmap != nil {
+	if hm.diskmap != (disk.DB)(nil) {
 		count += hm.diskmap.Size()
 	}
 	return count

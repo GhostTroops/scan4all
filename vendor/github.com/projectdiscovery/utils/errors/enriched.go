@@ -50,11 +50,11 @@ func (e *enrichedError) Error() string {
 	}()
 	var buff bytes.Buffer
 	label := fmt.Sprintf("[%v:%v]", strings.Join(e.Tags, ","), e.Level.String())
-	buff.WriteString(fmt.Sprintf("%v %v\n", label, e.errString))
+	buff.WriteString(fmt.Sprintf("%v %v", label, e.errString))
 
 	if ShowStackTrace {
 		e.captureStack()
-		buff.WriteString(fmt.Sprintf("Stacktrace:\n%v\n", e.StackTrace))
+		buff.WriteString(fmt.Sprintf("Stacktrace:\n%v", e.StackTrace))
 	}
 	return buff.String()
 }

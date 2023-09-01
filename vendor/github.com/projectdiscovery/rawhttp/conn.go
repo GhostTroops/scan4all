@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/projectdiscovery/fastdialer/fastdialer"
 	"github.com/projectdiscovery/rawhttp/client"
 	"github.com/projectdiscovery/rawhttp/proxy"
 )
@@ -111,21 +112,32 @@ func clientDial(protocol, addr string, timeout time.Duration, options *Options) 
 	}
 
 	// https
-	tlsConfig := &tls.Config{InsecureSkipVerify: true}
+	tlsConfig := &tls.Config{InsecureSkipVerify: true, Renegotiation: tls.RenegotiateOnceAsClient}
 	if options.SNI != "" {
 		tlsConfig.ServerName = options.SNI
 	}
-	if options.FastDialer != nil {
-		return options.FastDialer.DialTLSWithConfig(ctx, "tcp", addr, tlsConfig)
-	} else if timeout > 0 {
-		conn, err := net.DialTimeout("tcp", addr, timeout)
-		if err != nil {
-			return nil, err
+
+	if options.FastDialer == nil {
+		// always use fastdialer tls dial if available
+		opts := fastdialer.DefaultOptions
+		if timeout > 0 {
+			opts.DialerTimeout = timeout
 		}
-		tlsConn := tls.Client(conn, tlsConfig)
-		return tlsConn, tlsConn.HandshakeContext(ctx)
+		var err error
+		options.FastDialer, err = fastdialer.NewDialer(opts)
+		// use net.Dialer if fastdialer tls dial is not available
+		if err != nil {
+			var dialer *net.Dialer
+			if timeout > 0 {
+				dialer = &net.Dialer{Timeout: timeout}
+			} else {
+				dialer = &net.Dialer{Timeout: 8 * time.Second} // should be more than enough
+			}
+			return tls.DialWithDialer(dialer, "tcp", addr, tlsConfig)
+		}
 	}
-	return tls.Dial("tcp", addr, tlsConfig)
+
+	return options.FastDialer.DialTLS(ctx, "tcp", addr)
 }
 
 // TlsHandshake tls handshake on a plain connection
@@ -152,7 +164,6 @@ func TlsHandshake(conn net.Conn, addr string, timeout time.Duration) (net.Conn, 
 		ServerName:         hostname,
 	})
 	if err := tlsConn.HandshakeContext(ctx); err != nil {
-		conn.Close()
 		return nil, err
 	}
 	return tlsConn, nil

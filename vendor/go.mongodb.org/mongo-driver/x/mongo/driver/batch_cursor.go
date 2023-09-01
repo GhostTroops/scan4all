@@ -11,10 +11,10 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"go.mongodb.org/mongo-driver/event"
+	"go.mongodb.org/mongo-driver/internal"
 	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/x/bsonx/bsoncore"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
@@ -305,7 +305,25 @@ func (bc *BatchCursor) KillCursor(ctx context.Context) error {
 		Legacy:         LegacyKillCursors,
 		CommandMonitor: bc.cmdMonitor,
 		ServerAPI:      bc.serverAPI,
-	}.Execute(ctx, nil)
+	}.Execute(ctx)
+}
+
+// calcGetMoreBatchSize calculates the number of documents to return in the
+// response of a "getMore" operation based on the given limit, batchSize, and
+// number of documents already returned. Returns false if a non-trivial limit is
+// lower than or equal to the number of documents already returned.
+func calcGetMoreBatchSize(bc BatchCursor) (int32, bool) {
+	gmBatchSize := bc.batchSize
+
+	// Account for legacy operations that don't support setting a limit.
+	if bc.limit != 0 && bc.numReturned+bc.batchSize >= bc.limit {
+		gmBatchSize = bc.limit - bc.numReturned
+		if gmBatchSize <= 0 {
+			return gmBatchSize, false
+		}
+	}
+
+	return gmBatchSize, true
 }
 
 func (bc *BatchCursor) getMore(ctx context.Context) {
@@ -314,17 +332,13 @@ func (bc *BatchCursor) getMore(ctx context.Context) {
 		return
 	}
 
-	// Required for legacy operations which don't support limit.
-	numToReturn := bc.batchSize
-	if bc.limit != 0 && bc.numReturned+bc.batchSize >= bc.limit {
-		numToReturn = bc.limit - bc.numReturned
-		if numToReturn <= 0 {
-			err := bc.Close(ctx)
-			if err != nil {
-				bc.err = err
-			}
-			return
+	numToReturn, ok := calcGetMoreBatchSize(*bc)
+	if !ok {
+		if err := bc.Close(ctx); err != nil {
+			bc.err = err
 		}
+
+		return
 	}
 
 	bc.err = Operation{
@@ -384,7 +398,7 @@ func (bc *BatchCursor) getMore(ctx context.Context) {
 		CommandMonitor: bc.cmdMonitor,
 		Crypt:          bc.crypt,
 		ServerAPI:      bc.serverAPI,
-	}.Execute(ctx, nil)
+	}.Execute(ctx)
 
 	// Once the cursor has been drained, we can unpin the connection if one is currently pinned.
 	if bc.id == 0 {
@@ -455,14 +469,9 @@ func (lbcd *loadBalancedCursorDeployment) Connection(_ context.Context) (Connect
 	return lbcd.conn, nil
 }
 
-// MinRTT always returns 0. It implements the driver.Server interface.
-func (lbcd *loadBalancedCursorDeployment) MinRTT() time.Duration {
-	return 0
-}
-
-// RTT90 always returns 0. It implements the driver.Server interface.
-func (lbcd *loadBalancedCursorDeployment) RTT90() time.Duration {
-	return 0
+// RTTMonitor implements the driver.Server interface.
+func (lbcd *loadBalancedCursorDeployment) RTTMonitor() RTTMonitor {
+	return &internal.ZeroRTTMonitor{}
 }
 
 func (lbcd *loadBalancedCursorDeployment) ProcessError(err error, conn Connection) ProcessErrorResult {

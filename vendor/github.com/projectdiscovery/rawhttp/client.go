@@ -3,13 +3,14 @@ package rawhttp
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
-	stdurl "net/url"
 	"strings"
 	"time"
 
+	"github.com/projectdiscovery/fastdialer/fastdialer"
+	"github.com/projectdiscovery/gologger"
 	retryablehttp "github.com/projectdiscovery/retryablehttp-go"
+	urlutil "github.com/projectdiscovery/utils/url"
 )
 
 // Client is a client for making raw http requests with go
@@ -33,6 +34,13 @@ func NewClient(options *Options) *Client {
 	client := &Client{
 		dialer:  new(dialer),
 		Options: options,
+	}
+	if options.FastDialer == nil {
+		var err error
+		options.FastDialer, err = fastdialer.NewDialer(fastdialer.DefaultOptions)
+		if err != nil {
+			gologger.Error().Msgf("Could not create fast dialer: %s\n", err)
+		}
 	}
 	return client
 }
@@ -92,6 +100,13 @@ func (c *Client) DoRawWithOptions(method, url, uripath string, headers map[strin
 	return c.do(method, url, uripath, headers, body, redirectstatus, options)
 }
 
+// Close closes client and any resources it holds
+func (c *Client) Close() {
+	if c.Options.FastDialer != nil {
+		c.Options.FastDialer.Close()
+	}
+}
+
 func (c *Client) getConn(protocol, host string, options *Options) (Conn, error) {
 	if options.Proxy != "" {
 		return c.dialer.DialWithProxy(protocol, host, c.Options.Proxy, c.Options.ProxyDialTimeout, options)
@@ -115,7 +130,7 @@ func (c *Client) do(method, url, uripath string, headers map[string][]string, bo
 	if headers == nil {
 		headers = make(map[string][]string)
 	}
-	u, err := stdurl.ParseRequestURI(url)
+	u, err := urlutil.ParseURL(url, true)
 	if err != nil {
 		return nil, err
 	}
@@ -139,8 +154,8 @@ func (c *Client) do(method, url, uripath string, headers map[string][]string, bo
 	if path == "" {
 		path = "/"
 	}
-	if u.RawQuery != "" {
-		path += "?" + u.RawQuery
+	if !u.Params.IsEmpty() {
+		path += "?" + u.Params.Encode()
 	}
 	// override if custom one is specified
 	if uripath != "" {
@@ -180,7 +195,7 @@ func (c *Client) do(method, url, uripath string, headers map[string][]string, bo
 
 	if resp.Status.IsRedirect() && redirectstatus.FollowRedirects && redirectstatus.Current <= redirectstatus.MaxRedirects {
 		// consume the response body
-		_, err := io.Copy(ioutil.Discard, r.Body)
+		_, err := io.Copy(io.Discard, r.Body)
 		if err := firstErr(err, r.Body.Close()); err != nil {
 			return nil, err
 		}

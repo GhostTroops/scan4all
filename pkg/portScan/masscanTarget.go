@@ -1,7 +1,8 @@
 package portScan
 
 import (
-	Const "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/goSqlite_gorm/lib/scan/Const"
+	"github.com/hktalent/scan4all/lib/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
 	"log"
 	"strings"
@@ -26,31 +27,32 @@ output-filename = scan.xml
 Ports = 0-65535
 range = 0.0.0.0-255.255.255.255
 excludefile = exclude.txt
+
 */
 func init() {
 	util.RegInitFunc(func() {
 		// 每个端口大约10小时内扫描整个互联网（减去排除值）（如果扫描所有端口，则扫描655,360小时）
 		// 与nmap兼容的“隐形”选项：-sS -Pn -n --randomize-hosts --send-eth
-		util.EngineFuncFactory(Const.ScanType_Masscan, func(evt *Const.EventData, args ...interface{}) {
+		util.EngineFuncFactory(Const.ScanType_Masscan, func(evt *models.EventData, args ...interface{}) {
 			ip := strings.Join(evt.Target2Ip(), ",")
 			if "" == ip {
 				return
 			}
-			// s1 := fmt.Sprintf("%x", ip)
+			//s1 := fmt.Sprintf("%x", ip)
 			ms := New()
 			ms.Evt = evt
 			ms.Target = TargetStr(ip)
 			ms.Rate = "5000"
 			ms.Ports = "0-65535" // -p-  , "-p-"
 			ms.Args = []string{
-				// "--banners",
-				// "-oX", s1 + ".xml",
+				//"--banners",
+				//"-oX", s1 + ".xml",
 				"--max-rate", string(ms.Rate),
 			}
 			util.MergeParms2Obj(&ms, args...)
-			var hosts []interface{}
-			err := ms.Run(func(host interface{}) {
-				hosts = append(hosts, host)
+			var hosts []models.Host
+			err := ms.Run(func(host *models.Host) {
+				hosts = append(hosts, *host)
 			})
 			if nil != err {
 				log.Println("ms.Run is error ", err)

@@ -132,7 +132,9 @@ func (p Params) Decode(raw string) {
 			if AllowLegacySeperator {
 				arr = append(arr, tbuff.String())
 				tbuff.Reset()
+				continue
 			}
+			tbuff.WriteRune(v)
 		default:
 			tbuff.WriteRune(v)
 		}

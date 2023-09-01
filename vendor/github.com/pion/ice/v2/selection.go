@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package ice
 
 import (
@@ -40,7 +43,7 @@ func (s *controllingSelector) isNominatable(c Candidate) bool {
 		return time.Since(s.startTime).Nanoseconds() > s.agent.relayAcceptanceMinWait.Nanoseconds()
 	}
 
-	s.log.Errorf("isNominatable invalid candidate type %s", c.Type().String())
+	s.log.Errorf("Invalid candidate type: %s", c.Type())
 	return false
 }
 
@@ -48,7 +51,7 @@ func (s *controllingSelector) ContactCandidates() {
 	switch {
 	case s.agent.getSelectedPair() != nil:
 		if s.agent.validateSelectedPair() {
-			s.log.Trace("checking keepalive")
+			s.log.Trace("Checking keepalive")
 			s.agent.checkKeepalive()
 		}
 	case s.nominatedPair != nil:
@@ -84,7 +87,7 @@ func (s *controllingSelector) nominatePair(pair *CandidatePair) {
 		return
 	}
 
-	s.log.Tracef("ping STUN (nominate candidate pair) from %s to %s", pair.Local.String(), pair.Remote.String())
+	s.log.Tracef("Ping STUN (nominate candidate pair) from %s to %s", pair.Local.String(), pair.Remote.String())
 	s.agent.sendBindingRequest(msg, pair.Local, pair.Remote)
 }
 
@@ -114,7 +117,7 @@ func (s *controllingSelector) HandleBindingRequest(m *stun.Message, local, remot
 func (s *controllingSelector) HandleSuccessResponse(m *stun.Message, local, remote Candidate, remoteAddr net.Addr) {
 	ok, pendingRequest := s.agent.handleInboundBindingSuccess(m.TransactionID)
 	if !ok {
-		s.log.Warnf("discard message from (%s), unknown TransactionID 0x%x", remote, m.TransactionID)
+		s.log.Warnf("Discard message from (%s), unknown TransactionID 0x%x", remote, m.TransactionID)
 		return
 	}
 
@@ -123,11 +126,11 @@ func (s *controllingSelector) HandleSuccessResponse(m *stun.Message, local, remo
 	// Assert that NAT is not symmetric
 	// https://tools.ietf.org/html/rfc8445#section-7.2.5.2.1
 	if !addrEqual(transactionAddr, remoteAddr) {
-		s.log.Debugf("discard message: transaction source and destination does not match expected(%s), actual(%s)", transactionAddr, remote)
+		s.log.Debugf("Discard message: transaction source and destination does not match expected(%s), actual(%s)", transactionAddr, remote)
 		return
 	}
 
-	s.log.Tracef("inbound STUN (SuccessResponse) from %s to %s", remote.String(), local.String())
+	s.log.Tracef("Inbound STUN (SuccessResponse) from %s to %s", remote.String(), local.String())
 	p := s.agent.findPair(local, remote)
 
 	if p == nil {
@@ -170,7 +173,7 @@ func (s *controlledSelector) Start() {
 func (s *controlledSelector) ContactCandidates() {
 	if s.agent.getSelectedPair() != nil {
 		if s.agent.validateSelectedPair() {
-			s.log.Trace("checking keepalive")
+			s.log.Trace("Checking keepalive")
 			s.agent.checkKeepalive()
 		}
 	} else {
@@ -195,7 +198,7 @@ func (s *controlledSelector) PingCandidate(local, remote Candidate) {
 }
 
 func (s *controlledSelector) HandleSuccessResponse(m *stun.Message, local, remote Candidate, remoteAddr net.Addr) {
-	// nolint:godox
+	//nolint:godox
 	// TODO according to the standard we should specifically answer a failed nomination:
 	// https://tools.ietf.org/html/rfc8445#section-7.3.1.5
 	// If the controlled agent does not accept the request from the
@@ -205,7 +208,7 @@ func (s *controlledSelector) HandleSuccessResponse(m *stun.Message, local, remot
 
 	ok, pendingRequest := s.agent.handleInboundBindingSuccess(m.TransactionID)
 	if !ok {
-		s.log.Warnf("discard message from (%s), unknown TransactionID 0x%x", remote, m.TransactionID)
+		s.log.Warnf("Discard message from (%s), unknown TransactionID 0x%x", remote, m.TransactionID)
 		return
 	}
 
@@ -214,11 +217,11 @@ func (s *controlledSelector) HandleSuccessResponse(m *stun.Message, local, remot
 	// Assert that NAT is not symmetric
 	// https://tools.ietf.org/html/rfc8445#section-7.2.5.2.1
 	if !addrEqual(transactionAddr, remoteAddr) {
-		s.log.Debugf("discard message: transaction source and destination does not match expected(%s), actual(%s)", transactionAddr, remote)
+		s.log.Debugf("Discard message: transaction source and destination does not match expected(%s), actual(%s)", transactionAddr, remote)
 		return
 	}
 
-	s.log.Tracef("inbound STUN (SuccessResponse) from %s to %s", remote.String(), local.String())
+	s.log.Tracef("Inbound STUN (SuccessResponse) from %s to %s", remote.String(), local.String())
 
 	p := s.agent.findPair(local, remote)
 	if p == nil {
@@ -234,7 +237,7 @@ func (s *controlledSelector) HandleSuccessResponse(m *stun.Message, local, remot
 			(selectedPair != p && selectedPair.priority() <= p.priority()) {
 			s.agent.setSelectedPair(p)
 		} else if selectedPair != p {
-			s.log.Tracef("ignore nominate new pair %s, already nominated pair %s", p, selectedPair)
+			s.log.Tracef("Ignore nominate new pair %s, already nominated pair %s", p, selectedPair)
 		}
 	}
 }
@@ -259,7 +262,7 @@ func (s *controlledSelector) HandleBindingRequest(m *stun.Message, local, remote
 				(selectedPair != p && selectedPair.priority() <= p.priority()) {
 				s.agent.setSelectedPair(p)
 			} else if selectedPair != p {
-				s.log.Tracef("ignore nominate new pair %s, already nominated pair %s", p, selectedPair)
+				s.log.Tracef("Ignore nominate new pair %s, already nominated pair %s", p, selectedPair)
 			}
 		} else {
 			// If the received Binding request triggered a new check to be
@@ -285,8 +288,8 @@ type liteSelector struct {
 // A lite selector should not contact candidates
 func (s *liteSelector) ContactCandidates() {
 	if _, ok := s.pairCandidateSelector.(*controllingSelector); ok {
-		// nolint:godox
-		// pion/ice#96
+		//nolint:godox
+		// https://github.com/pion/ice/issues/96
 		// TODO: implement lite controlling agent. For now falling back to full agent.
 		// This only happens if both peers are lite. See RFC 8445 S6.1.1 and S6.2
 		s.pairCandidateSelector.ContactCandidates()

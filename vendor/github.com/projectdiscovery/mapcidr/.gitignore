@@ -1,3 +1,9 @@
-
-cmd/mapcidr/mapcidr
 .vscode
+mapcidr
+cmd/mapcidr/mapcidr
+cmd/integration-test/mapcidr
+cmd/integration-test/integration-test
+integration_tests/mapcidr
+integration_tests/tests
+integration_tests/integration-test
+dist

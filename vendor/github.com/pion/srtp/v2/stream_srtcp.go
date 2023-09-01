@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package srtp
 
 import (
@@ -7,7 +10,7 @@ import (
 	"time"
 
 	"github.com/pion/rtcp"
-	"github.com/pion/transport/packetio"
+	"github.com/pion/transport/v2/packetio"
 )
 
 // Limit the buffer size to 100KB
@@ -17,11 +20,11 @@ const srtcpBufferSize = 100 * 1000
 type ReadStreamSRTCP struct {
 	mu sync.Mutex
 
-	isInited bool
 	isClosed chan bool
 
-	session *SessionSRTCP
-	ssrc    uint32
+	session  *SessionSRTCP
+	ssrc     uint32
+	isInited bool
 
 	buffer io.ReadWriteCloser
 }

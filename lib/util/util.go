@@ -3,21 +3,16 @@ package util
 import (
 	"bufio"
 	"bytes"
-	"crypto"
-	crand "crypto/rand"
-	"crypto/rsa"
-	"crypto/sha1"
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/gob"
-	"encoding/pem"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/codegangsta/inject"
 	"github.com/corpix/uarand"
 	"github.com/hbakhtiyor/strsim"
 	"github.com/hktalent/PipelineHttp"
-	Const "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/goSqlite_gorm/pkg/models"
 	"github.com/karlseguin/ccache"
 	"io"
 	"io/ioutil"
@@ -426,12 +421,12 @@ func RetrieveCallInfo() *map[string]interface{} {
 // convert  bufio.Scanner to io.Reader
 func ScannerToReader(scanner *bufio.Scanner) io.Reader {
 	reader, writer := io.Pipe()
-	DefaultPool.Submit(func() {
+	go func() {
 		defer writer.Close()
 		for scanner.Scan() {
 			writer.Write(scanner.Bytes())
 		}
-	})
+	}()
 
 	return reader
 }
@@ -458,16 +453,16 @@ func DeepCopy(src, dist interface{}) (err error) {
 	return gob.NewDecoder(&buf).Decode(dist)
 }
 
-type EngineFuncType func(evt *Const.EventData, args ...interface{})
+type EngineFuncType func(evt *models.EventData, args ...interface{})
 
 // 工厂方法
 //
 //	便于同一、规范引擎调用的方法、参数约束
-var EngineFuncFactory func(nT uint64, fnCbk EngineFuncType) = func(nT uint64, fnCbk EngineFuncType) {}
+var EngineFuncFactory func(nT int64, fnCbk interface{})
 
 // 全局引擎
 var G_Engine interface{}
-var SendEvent func(evt *Const.EventData, argsTypes ...uint64) = func(evt *Const.EventData, argsTypes ...uint64) {}
+var SendEvent func(evt *models.EventData, argsTypes ...int64)
 
 // 反射调用
 func Invoke(iFunc interface{}, args ...interface{}) {
@@ -495,44 +490,6 @@ func DoGet(szUrl string, hd map[string]string) (resp *http.Response, err error) 
 	return resp, err
 }
 
-// 检查 aT中是否包含 cT
-func CheckEventType(aT uint64, cT ...uint64) bool {
-	for _, x := range cT {
-		if aT&x == x {
-			return true
-		}
-	}
-	return false
-}
-
-// 检查目标漏洞
-// bAnd true 表示 aCheck全部匹配才有vul
-func DoCheckGet(szUrl string, aPath *[]string, aCheck *[]string, bAnd bool) (string, bool) {
-	if oU, err := url.Parse(szUrl); nil == err {
-		for _, k := range *aPath {
-			szU001 := oU.Scheme + "://" + oU.Host + k
-			if r1, err := DoGet(szU001, map[string]string{}); nil == err && nil != r1 {
-				if data, err := ioutil.ReadAll(r1.Body); nil == err {
-					s := strings.TrimSpace(string(data))
-					nC := 0
-					for _, x := range *aCheck {
-						if strings.Contains(s, x) {
-							if !bAnd {
-								return szU001, true
-							}
-							nC++
-						}
-					}
-					if nC == len(*aCheck) {
-						return szU001, true
-					}
-				}
-			}
-		}
-	}
-	return szUrl, false
-}
-
 func DoPost(szUrl string, hd map[string]string, data io.Reader) (resp *http.Response, err error) {
 	if c1 := GetClient(szUrl); nil != c1 {
 		c1.DoGetWithClient4SetHd(nil, szUrl, "POST", data, func(resp1 *http.Response, err1 error, szU string) {
@@ -546,52 +503,4 @@ func DoPost(szUrl string, hd map[string]string, data io.Reader) (resp *http.Resp
 		}, false)
 	}
 	return resp, err
-}
-
-// base64 解码
-func Base64Decode(s string) string {
-	rawDecodedText, err := base64.StdEncoding.DecodeString(s)
-	if err != nil {
-		return ""
-	}
-	return string(rawDecodedText)
-}
-
-// 编码 base64
-func Base64Encode(s string) string {
-	return base64.StdEncoding.EncodeToString([]byte(s))
-}
-
-// 签名
-func RsaSignWithSha1(data []byte, keyBytes []byte) []byte {
-	//h := sha256.New()
-	//h.Write(data)
-	//hashed := h.Sum(nil)
-
-	h := sha1.New()
-	h.Write(data)
-	hashed := h.Sum(nil)
-
-	block, _ := pem.Decode(keyBytes)
-	if block == nil {
-		panic(errors.New("private key error"))
-	}
-	privateKey, err := x509.ParsePKCS1PrivateKey(block.Bytes)
-	if err != nil {
-		fmt.Println("ParsePKCS8PrivateKey err", err)
-		panic(err)
-	}
-
-	//signature, err := rsa.SignPKCS1v15(rand.Reader, privateKey, crypto.SHA256, hashed)
-	signature, err := rsa.SignPKCS1v15(crand.Reader, privateKey, crypto.SHA1, hashed)
-	if err != nil {
-		fmt.Printf("Error from signing: %s\n", err)
-		panic(err)
-	}
-
-	return signature
-}
-func GetSig(src string, prvKey []byte) string {
-	signData := RsaSignWithSha1([]byte(src), prvKey)
-	return strings.ReplaceAll(base64.StdEncoding.EncodeToString(signData), "\n", "")
 }

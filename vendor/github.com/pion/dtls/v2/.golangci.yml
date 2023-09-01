@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+# SPDX-License-Identifier: MIT
+
 linters-settings:
   govet:
     check-shadowing: true
@@ -10,7 +13,14 @@ linters-settings:
       modules:
         - github.com/pkg/errors:
             recommendations:
-            - errors
+              - errors
+  forbidigo:
+    forbid:
+      - ^fmt.Print(f|ln)?$
+      - ^log.(Panic|Fatal|Print)(f|ln)?$
+      - ^os.Exit$
+      - ^panic$
+      - ^print(ln)?$
 
 linters:
   enable:
@@ -18,7 +28,6 @@ linters:
     - bidichk          # Checks for dangerous unicode character sequences
     - bodyclose        # checks whether HTTP response body is closed successfully
     - contextcheck     # check the function whether use a non-inherited context
-    - deadcode         # Finds unused code
     - decorder         # check declaration order and count of types, constants, variables and functions
     - depguard         # Go linter that checks if package imports are in a list of acceptable packages
     - dogsled          # Checks assignments with too many blank identifiers (e.g. x, _, _, _, := f())
@@ -30,6 +39,7 @@ linters:
     - errorlint        # errorlint is a linter for that can be used to find code that will cause problems with the error wrapping scheme introduced in Go 1.13.
     - exhaustive       # check exhaustiveness of enum switch statements
     - exportloopref    # checks for pointers to enclosing loop variables
+    - forbidigo        # Forbids identifiers
     - forcetypeassert  # finds forced type assertions
     - gci              # Gci control golang package import order and make it always deterministic.
     - gochecknoglobals # Checks that no globals are present in Go code
@@ -60,7 +70,6 @@ linters:
     - predeclared      # find code that shadows one of Go's predeclared identifiers
     - revive           # golint replacement, finds style mistakes
     - staticcheck      # Staticcheck is a go vet on steroids, applying a ton of static analysis checks
-    - structcheck      # Finds unused struct fields
     - stylecheck       # Stylecheck is a replacement for golint
     - tagliatelle      # Checks the struct tags.
     - tenv             # tenv is analyzer that detects using os.Setenv instead of t.Setenv since Go1.17
@@ -69,14 +78,12 @@ linters:
     - unconvert        # Remove unnecessary type conversions
     - unparam          # Reports unused function parameters
     - unused           # Checks Go code for unused constants, variables, functions and types
-    - varcheck         # Finds unused global variables and constants
     - wastedassign     # wastedassign finds wasted assignment statements
     - whitespace       # Tool for detection of leading and trailing whitespace
   disable:
     - containedctx     # containedctx is a linter that detects struct contained context.Context field
     - cyclop           # checks function and package cyclomatic complexity
     - exhaustivestruct # Checks if all struct's fields are initialized
-    - forbidigo        # Forbids identifiers
     - funlen           # Tool for detection of long functions
     - gocyclo          # Computes and checks the cyclomatic complexity of functions
     - godot            # Check if comments end in a period
@@ -108,12 +115,23 @@ issues:
     - path: _test\.go
       linters:
         - gocognit
+        - forbidigo
 
     # Allow complex main function in examples
     - path: examples
       text: "of func `main` is high"
       linters:
         - gocognit
+    
+    # Allow forbidden identifiers in examples
+    - path: examples
+      linters:
+        - forbidigo
+
+    # Allow forbidden identifiers in CLI commands
+    - path: cmd
+      linters:
+        - forbidigo
 
 run:
   skip-dirs-use-default: false

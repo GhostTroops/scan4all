@@ -12,6 +12,6 @@ func TestWriteUInt16LE(t *testing.T) {
 	result := hex.EncodeToString(buff.Bytes())
 	expected := "ea030100"
 	if result != expected {
-		//t.Error(result, "not equals to", expected)
+		t.Error(result, "not equals to", expected)
 	}
 }

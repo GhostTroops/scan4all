@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package allocation
 
 import (
@@ -11,7 +14,7 @@ const permissionTimeout = time.Duration(5) * time.Minute
 
 // Permission represents a TURN permission. TURN permissions mimic the address-restricted
 // filtering mechanism of NATs that comply with [RFC4787].
-// https://tools.ietf.org/html/rfc5766#section-2.3
+// See: https://tools.ietf.org/html/rfc5766#section-2.3
 type Permission struct {
 	Addr          net.Addr
 	allocation    *Allocation

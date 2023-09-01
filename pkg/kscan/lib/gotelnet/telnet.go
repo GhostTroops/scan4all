@@ -138,7 +138,7 @@ func (c *Client) Connect() error {
 	}
 	c.conn = conn
 	//开启输入监听
-	util.DefaultPool.Submit(func() {
+	go func() {
 		for {
 			buf, err := c.read()
 			if err != nil {
@@ -160,7 +160,7 @@ func (c *Client) Connect() error {
 				c.LastResponse += string(displayBuf)
 			}
 		}
-	})
+	}()
 	//等待初始化
 	time.Sleep(time.Second * 3)
 	return nil

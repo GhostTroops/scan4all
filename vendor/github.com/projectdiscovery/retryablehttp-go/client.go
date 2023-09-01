@@ -2,6 +2,7 @@ package retryablehttp
 
 import (
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	"golang.org/x/net/http2"
@@ -15,7 +16,7 @@ type Client struct {
 	// HTTPClient is the internal HTTP client configured to fallback to native http2 at transport level
 	HTTPClient2 *http.Client
 
-	requestCounter uint32
+	requestCounter atomic.Uint32
 
 	// RequestLogHook allows a user-supplied function to be called
 	// before each retry.
@@ -91,8 +92,10 @@ func NewClient(options Options) *Client {
 	var httpclient *http.Client
 	if options.HttpClient != nil {
 		httpclient = options.HttpClient
-	} else {
+	} else if options.KillIdleConn {
 		httpclient = DefaultClient()
+	} else {
+		httpclient = DefaultPooledClient()
 	}
 
 	httpclient2 := DefaultClient()

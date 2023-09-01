@@ -1,6 +1,7 @@
 package converters
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"math"
@@ -10,6 +11,17 @@ import (
 BINARY_FLOAT and BINARY_DOUBLE encoding observed using
 SELECT dump(cast(xxx as binary_yyy) FROM dual;
 */
+func EncodeBool(val bool) []byte {
+	if val {
+		return []byte{1, 1}
+	} else {
+		return []byte{1, 0}
+	}
+}
+
+func DecodeBool(data []byte) bool {
+	return bytes.Compare(data, []byte{1, 1}) == 0
+}
 
 func ConvertBinaryFloat(bytes []byte) float32 {
 	if bytes[0]&128 != 0 {

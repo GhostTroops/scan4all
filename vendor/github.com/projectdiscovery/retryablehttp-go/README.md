@@ -8,8 +8,6 @@ Example of using `retryablehttp` in Go Code is available in [examples](examples/
 Examples of using Nuclei From Go Code to run templates on targets are provided in the examples folder.
 
 
-
-
 ### url encoding and parsing issues
 
 `retryablehttp.Request` by default handles some [url encoding and parameters issues](https://github.com/projectdiscovery/utils/blob/main/url/README.md). since `http.Request` internally uses `url.Parse()` to parse url specified in request it creates some inconsistencies for below urls and other non-RFC compilant urls 

@@ -38,10 +38,8 @@ func (tee *Tee) Format(event *LogEvent) (bts []byte, err error) {
 		return
 	}
 
-	if _, err = tee.w.Write(append(bts, []byte("\n")...)); err != nil {
-		// ignore write error to prevent complete loss of data
-		err = nil
-	}
+	// ignore write error to prevent complete loss of data
+	_, _ = tee.w.Write(append(bts, []byte("\n")...))
 
 	return tee.Wrapper.Format(event)
 }

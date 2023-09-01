@@ -109,6 +109,7 @@ func executeXrayPoc(oReq *http.Request, target string, poc *xray_structs.Poc) (i
 			switch v.(type) {
 			case *xray_structs.Reverse:
 				cel.PutReverse(v)
+			default:
 			}
 		}
 		VariableMapPool.Put(variableMap)

@@ -13,6 +13,7 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson/bsontype"
 	"go.mongodb.org/mongo-driver/event"
+	"go.mongodb.org/mongo-driver/internal/logger"
 	"go.mongodb.org/mongo-driver/mongo/description"
 	"go.mongodb.org/mongo-driver/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -34,7 +35,7 @@ type Find struct {
 	let                 bsoncore.Document
 	limit               *int64
 	max                 bsoncore.Document
-	maxTimeMS           *int64
+	maxTime             *time.Duration
 	min                 bsoncore.Document
 	noCursorTimeout     *bool
 	oplogReplay         *bool
@@ -60,6 +61,7 @@ type Find struct {
 	result              driver.CursorResponse
 	serverAPI           *driver.ServerAPIOptions
 	timeout             *time.Duration
+	logger              *logger.Logger
 }
 
 // NewFind constructs and returns a new Find.
@@ -98,13 +100,15 @@ func (f *Find) Execute(ctx context.Context) error {
 		Crypt:             f.crypt,
 		Database:          f.database,
 		Deployment:        f.deployment,
+		MaxTime:           f.maxTime,
 		ReadConcern:       f.readConcern,
 		ReadPreference:    f.readPreference,
 		Selector:          f.selector,
 		Legacy:            driver.LegacyFind,
 		ServerAPI:         f.serverAPI,
 		Timeout:           f.timeout,
-	}.Execute(ctx, nil)
+		Logger:            f.logger,
+	}.Execute(ctx)
 
 }
 
@@ -148,10 +152,6 @@ func (f *Find) command(dst []byte, desc description.SelectedServer) ([]byte, err
 	}
 	if f.max != nil {
 		dst = bsoncore.AppendDocumentElement(dst, "max", f.max)
-	}
-	// Only append specified maxTimeMS if timeout is not also specified.
-	if f.maxTimeMS != nil && f.timeout == nil {
-		dst = bsoncore.AppendInt64Element(dst, "maxTimeMS", *f.maxTimeMS)
 	}
 	if f.min != nil {
 		dst = bsoncore.AppendDocumentElement(dst, "min", f.min)
@@ -299,13 +299,13 @@ func (f *Find) Max(max bsoncore.Document) *Find {
 	return f
 }
 
-// MaxTimeMS specifies the maximum amount of time to allow the query to run.
-func (f *Find) MaxTimeMS(maxTimeMS int64) *Find {
+// MaxTime specifies the maximum amount of time to allow the query to run on the server.
+func (f *Find) MaxTime(maxTime *time.Duration) *Find {
 	if f == nil {
 		f = new(Find)
 	}
 
-	f.maxTimeMS = &maxTimeMS
+	f.maxTime = maxTime
 	return f
 }
 
@@ -547,5 +547,15 @@ func (f *Find) Timeout(timeout *time.Duration) *Find {
 	}
 
 	f.timeout = timeout
+	return f
+}
+
+// Logger sets the logger for this operation.
+func (f *Find) Logger(logger *logger.Logger) *Find {
+	if f == nil {
+		f = new(Find)
+	}
+
+	f.logger = logger
 	return f
 }

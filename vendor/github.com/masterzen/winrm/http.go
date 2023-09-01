@@ -17,8 +17,7 @@ var soapXML = "application/soap+xml"
 
 // body func reads the response body and return it as a string
 func body(response *http.Response) (string, error) {
-
-	// if we recived the content we expected
+	// if we received the content we expected
 	if strings.Contains(response.Header.Get("Content-Type"), "application/soap+xml") {
 		body, err := ioutil.ReadAll(response.Body)
 		defer func() {
@@ -45,7 +44,6 @@ type clientRequest struct {
 }
 
 func (c *clientRequest) Transport(endpoint *Endpoint) error {
-
 	dial := (&net.Dialer{
 		Timeout:   30 * time.Second,
 		KeepAlive: 30 * time.Second,
@@ -60,6 +58,7 @@ func (c *clientRequest) Transport(endpoint *Endpoint) error {
 		proxyfunc = c.proxyfunc
 	}
 
+	//nolint:gosec
 	transport := &http.Transport{
 		Proxy: proxyfunc,
 		TLSClientConfig: &tls.Config{
@@ -88,6 +87,7 @@ func (c *clientRequest) Transport(endpoint *Endpoint) error {
 func (c clientRequest) Post(client *Client, request *soap.SoapMessage) (string, error) {
 	httpClient := &http.Client{Transport: c.transport}
 
+	//nolint:noctx
 	req, err := http.NewRequest("POST", client.url, strings.NewReader(request.String()))
 	if err != nil {
 		return "", fmt.Errorf("impossible to create http request %w", err)

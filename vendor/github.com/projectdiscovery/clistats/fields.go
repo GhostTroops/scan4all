@@ -1,18 +1,15 @@
 package clistats
 
-import "go.uber.org/atomic"
+import "sync/atomic"
 
-// counterStatistic is a counter stats field
-type counterStatistic struct {
-	value uint64
-}
-
-// AddCounter adds a uint64 counter field to the statistics client.
+// AddCounter adds an uint64 counter field to the statistics client.
 //
 // A counter is used to track an increasing quantity, like requests,
 // errors etc.
 func (s *Statistics) AddCounter(id string, value uint64) {
-	s.counters[id] = atomic.NewUint64(value)
+	newUint64 := &atomic.Uint64{}
+	newUint64.Store(value)
+	s.counters[id] = newUint64
 }
 
 // GetCounter returns the current value of a counter.

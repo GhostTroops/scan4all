@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsoncodec"
 	"go.mongodb.org/mongo-driver/event"
+	"go.mongodb.org/mongo-driver/internal/logger"
 	"go.mongodb.org/mongo-driver/x/mongo/driver"
 	"go.mongodb.org/mongo-driver/x/mongo/driver/session"
 )
@@ -36,6 +37,7 @@ type serverConfig struct {
 	minConns             uint64
 	maxConnecting        uint64
 	poolMonitor          *event.PoolMonitor
+	logger               *logger.Logger
 	poolMaxIdleTime      time.Duration
 	poolMaintainInterval time.Duration
 }
@@ -59,6 +61,12 @@ func newServerConfig(opts ...ServerOption) *serverConfig {
 
 // ServerOption configures a server.
 type ServerOption func(*serverConfig)
+
+// ServerAPIFromServerOptions will return the server API options if they have been functionally set on the ServerOption
+// slice.
+func ServerAPIFromServerOptions(opts []ServerOption) *driver.ServerAPIOptions {
+	return newServerConfig(opts...).serverAPI
+}
 
 func withMonitoringDisabled(fn func(bool) bool) ServerOption {
 	return func(cfg *serverConfig) {
@@ -185,5 +193,12 @@ func WithServerAPI(fn func(serverAPI *driver.ServerAPIOptions) *driver.ServerAPI
 func WithServerLoadBalanced(fn func(bool) bool) ServerOption {
 	return func(cfg *serverConfig) {
 		cfg.loadBalanced = fn(cfg.loadBalanced)
+	}
+}
+
+// withLogger configures the logger for the server to use.
+func withLogger(fn func() *logger.Logger) ServerOption {
+	return func(cfg *serverConfig) {
+		cfg.logger = fn()
 	}
 }

@@ -1,17 +1,23 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package twcc
 
 import (
+	"errors"
 	"sync/atomic"
 
 	"github.com/pion/interceptor"
 	"github.com/pion/rtp"
 )
 
+var errHeaderIsNil = errors.New("header is nil")
+
 // HeaderExtensionInterceptorFactory is a interceptor.Factory for a HeaderExtensionInterceptor
 type HeaderExtensionInterceptorFactory struct{}
 
 // NewInterceptor constructs a new HeaderExtensionInterceptor
-func (h *HeaderExtensionInterceptorFactory) NewInterceptor(id string) (interceptor.Interceptor, error) {
+func (h *HeaderExtensionInterceptorFactory) NewInterceptor(_ string) (interceptor.Interceptor, error) {
 	return &HeaderExtensionInterceptor{}, nil
 }
 
@@ -47,6 +53,9 @@ func (h *HeaderExtensionInterceptor) BindLocalStream(info *interceptor.StreamInf
 		tcc, err := (&rtp.TransportCCExtension{TransportSequence: uint16(sequenceNumber)}).Marshal()
 		if err != nil {
 			return 0, err
+		}
+		if header == nil {
+			return 0, errHeaderIsNil
 		}
 		err = header.SetExtension(hdrExtID, tcc)
 		if err != nil {

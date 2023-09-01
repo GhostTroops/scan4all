@@ -60,8 +60,7 @@ func GetHahsMd5(body []byte) (hash string, md5R string) {
 }
 
 // 求url host hash和md5
-//
-//	key: cache key
+//  key: cache key
 func Favicohash4key(host, key string) (hash string, md5R string) {
 	k1 := host + key
 	body, err := util.Cache1.Get(k1)

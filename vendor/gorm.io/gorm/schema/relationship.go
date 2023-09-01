@@ -27,6 +27,8 @@ type Relationships struct {
 	HasMany   []*Relationship
 	Many2Many []*Relationship
 	Relations map[string]*Relationship
+
+	EmbeddedRelations map[string]*Relationships
 }
 
 type Relationship struct {
@@ -106,7 +108,7 @@ func (schema *Schema) parseRelation(field *Field) *Relationship {
 	}
 
 	if schema.err == nil {
-		schema.Relationships.Relations[relation.Name] = relation
+		schema.setRelation(relation)
 		switch relation.Type {
 		case HasOne:
 			schema.Relationships.HasOne = append(schema.Relationships.HasOne, relation)
@@ -122,17 +124,51 @@ func (schema *Schema) parseRelation(field *Field) *Relationship {
 	return relation
 }
 
+func (schema *Schema) setRelation(relation *Relationship) {
+	// set non-embedded relation
+	if rel := schema.Relationships.Relations[relation.Name]; rel != nil {
+		if len(rel.Field.BindNames) > 1 {
+			schema.Relationships.Relations[relation.Name] = relation
+		}
+	} else {
+		schema.Relationships.Relations[relation.Name] = relation
+	}
+
+	// set embedded relation
+	if len(relation.Field.BindNames) <= 1 {
+		return
+	}
+	relationships := &schema.Relationships
+	for i, name := range relation.Field.BindNames {
+		if i < len(relation.Field.BindNames)-1 {
+			if relationships.EmbeddedRelations == nil {
+				relationships.EmbeddedRelations = map[string]*Relationships{}
+			}
+			if r := relationships.EmbeddedRelations[name]; r == nil {
+				relationships.EmbeddedRelations[name] = &Relationships{}
+			}
+			relationships = relationships.EmbeddedRelations[name]
+		} else {
+			if relationships.Relations == nil {
+				relationships.Relations = map[string]*Relationship{}
+			}
+			relationships.Relations[relation.Name] = relation
+		}
+	}
+}
+
 // User has many Toys, its `Polymorphic` is `Owner`, Pet has one Toy, its `Polymorphic` is `Owner`
-//     type User struct {
-//       Toys []Toy `gorm:"polymorphic:Owner;"`
-//     }
-//     type Pet struct {
-//       Toy Toy `gorm:"polymorphic:Owner;"`
-//     }
-//     type Toy struct {
-//       OwnerID   int
-//       OwnerType string
-//     }
+//
+//	type User struct {
+//	  Toys []Toy `gorm:"polymorphic:Owner;"`
+//	}
+//	type Pet struct {
+//	  Toy Toy `gorm:"polymorphic:Owner;"`
+//	}
+//	type Toy struct {
+//	  OwnerID   int
+//	  OwnerType string
+//	}
 func (schema *Schema) buildPolymorphicRelation(relation *Relationship, field *Field, polymorphic string) {
 	relation.Polymorphic = &Polymorphic{
 		Value:           schema.Table,
@@ -163,6 +199,11 @@ func (schema *Schema) buildPolymorphicRelation(relation *Relationship, field *Fi
 			if primaryKeyField = schema.LookUpField(relation.foreignKeys[0]); primaryKeyField == nil || len(relation.foreignKeys) > 1 {
 				schema.err = fmt.Errorf("invalid polymorphic foreign keys %+v for %v on field %s", relation.foreignKeys, schema, field.Name)
 			}
+		}
+
+		if primaryKeyField == nil {
+			schema.err = fmt.Errorf("invalid polymorphic type %v for %v on field %s, missing primaryKey field", relation.FieldSchema, schema, field.Name)
+			return
 		}
 
 		// use same data type for foreign keys
@@ -427,7 +468,7 @@ func (schema *Schema) guessRelation(relation *Relationship, field *Field, cgl gu
 			foreignFields = append(foreignFields, f)
 		}
 	} else {
-		var primarySchemaName = primarySchema.Name
+		primarySchemaName := primarySchema.Name
 		if primarySchemaName == "" {
 			primarySchemaName = relation.FieldSchema.Name
 		}
@@ -442,6 +483,7 @@ func (schema *Schema) guessRelation(relation *Relationship, field *Field, cgl gu
 			primaryFields = primarySchema.PrimaryFields
 		}
 
+	primaryFieldLoop:
 		for _, primaryField := range primaryFields {
 			lookUpName := primarySchemaName + primaryField.Name
 			if gl == guessBelongs {
@@ -454,10 +496,17 @@ func (schema *Schema) guessRelation(relation *Relationship, field *Field, cgl gu
 			}
 
 			for _, name := range lookUpNames {
+				if f := foreignSchema.LookUpFieldByBindName(field.BindNames, name); f != nil {
+					foreignFields = append(foreignFields, f)
+					primaryFields = append(primaryFields, primaryField)
+					continue primaryFieldLoop
+				}
+			}
+			for _, name := range lookUpNames {
 				if f := foreignSchema.LookUpField(name); f != nil {
 					foreignFields = append(foreignFields, f)
 					primaryFields = append(primaryFields, primaryField)
-					break
+					continue primaryFieldLoop
 				}
 			}
 		}

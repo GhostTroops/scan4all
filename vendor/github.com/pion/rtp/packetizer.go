@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package rtp
 
 import (
@@ -17,13 +20,16 @@ type Packetizer interface {
 }
 
 type packetizer struct {
-	MTU              uint16
-	PayloadType      uint8
-	SSRC             uint32
-	Payloader        Payloader
-	Sequencer        Sequencer
-	Timestamp        uint32
-	ClockRate        uint32
+	MTU         uint16
+	PayloadType uint8
+	SSRC        uint32
+	Payloader   Payloader
+	Sequencer   Sequencer
+	Timestamp   uint32
+
+	// Deprecated: will be removed in a future version.
+	ClockRate uint32
+
 	extensionNumbers struct { // put extension numbers in here. If they're 0, the extension is disabled (0 is not a legal extension number)
 		AbsSendTime int // http://www.webrtc.org/experiments/rtp-hdrext/abs-send-time
 	}
@@ -69,6 +75,7 @@ func (p *packetizer) Packetize(payload []byte, samples uint32) []*Packet {
 				SequenceNumber: p.Sequencer.NextSequenceNumber(),
 				Timestamp:      p.Timestamp, // Figure out how to do timestamps
 				SSRC:           p.SSRC,
+				CSRC:           []uint32{},
 			},
 			Payload: pp,
 		}

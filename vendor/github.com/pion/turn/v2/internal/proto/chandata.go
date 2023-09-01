@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package proto
 
 import (
@@ -11,8 +14,8 @@ import (
 //
 // See RFC 5766 Section 11.4
 type ChannelData struct {
-	Data   []byte // can be sub slice of Raw
-	Length int    // ignored while encoding, len(Data) is used
+	Data   []byte // Can be sub slice of Raw
+	Length int    // Ignored while encoding, len(Data) is used
 	Number ChannelNumber
 	Raw    []byte
 }
@@ -34,7 +37,7 @@ func (c *ChannelData) Equal(b *ChannelData) bool {
 	return bytes.Equal(c.Data, b.Data)
 }
 
-// grow ensures that internal buffer will fit v more bytes and
+// Grow ensures that internal buffer will fit v more bytes and
 // increases it capacity if necessary.
 //
 // Similar to stun.Message.grow method.

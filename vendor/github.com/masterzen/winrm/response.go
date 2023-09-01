@@ -109,7 +109,7 @@ func ParseSlurpOutputResponse(response string, stream io.Writer, streamType stri
 	nodes, _ := xPath(doc, fmt.Sprintf("//rsp:Stream[@Name='%s']", streamType))
 	for _, node := range nodes {
 		content, _ := base64.StdEncoding.DecodeString(node.ResValue())
-		stream.Write(content)
+		_, _ = stream.Write(content)
 	}
 
 	ended, _ := any(doc, "//*[@State='http://schemas.microsoft.com/wbem/wsman/1/windows/shell/CommandState/Done']")

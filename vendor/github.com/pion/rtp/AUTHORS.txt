@@ -2,7 +2,8 @@
 # we would love to have you https://github.com/pion/webrtc/wiki/Contributing
 #
 # This file is auto generated, using git to list all individuals contributors.
-# see `.github/generate-authors.sh` for the scripting
+# see https://github.com/pion/.goassets/blob/master/scripts/generate-authors.sh for the scripting
+Aaron Boushley <boushley@pretzelaux.com>
 adwpc <adwpc@hotmail.com>
 aler9 <46489434+aler9@users.noreply.github.com>
 Antoine Baché <antoine.bache@epitech.eu>
@@ -18,7 +19,9 @@ Haiyang Wang <ocean2811@outlook.com>
 Hugo Arregui <hugo@decentraland.org>
 John Bradley <jrb@turrettech.com>
 Juliusz Chroboczek <jch@irif.fr>
+kawaway <kawawa.y@gmail.com>
 Kazuyuki Honda <hakobera@gmail.com>
+Kevin Wang <kevmo314@gmail.com>
 Luke Curley <kixelated@gmail.com>
 lxb <xiangbing.li@uama.com.cn>
 Michael MacDonald <github@macdonald.cx>
@@ -27,10 +30,16 @@ Michael Uti <utimichael9@gmail.com>
 Raphael Derosso Pereira <raphaelpereira@gmail.com>
 Rob Lofthouse <ri.lofthouse@gmail.com>
 Robin Raymond <robin@goheadroom.com>
+Sean <sean@pion.ly>
 Sean DuBois <duboisea@twitch.tv>
 Sean DuBois <seaduboi@amazon.com>
+Sean DuBois <sean@pion.ly>
 Sean DuBois <sean@siobud.com>
 Simone Gotti <simone.gotti@gmail.com>
+Steffen Vogel <post@steffenvogel.de>
 Tarrence van As <tarrence13@gmail.com>
 wangzixiang <wangzixiang@onething.net>
 Woodrow Douglass <wdouglass@carnegierobotics.com>
+
+# List of contributors not appearing in Git history
+

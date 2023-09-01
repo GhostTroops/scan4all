@@ -1,6 +1,7 @@
 package go_utils
 
 import (
+	"fmt"
 	"github.com/coreos/etcd/raft"
 	"github.com/dgraph-io/badger"
 	"io/ioutil"
@@ -71,6 +72,29 @@ func (r *KvCachedb) init(szDb string) error {
 	}
 	r.DbConn = db
 	return nil
+}
+
+// 遍历所有数据
+func (r *KvCachedb) ScanAllData(f func(k string, value []byte)) {
+	Cache1.DbConn.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		opts.PrefetchSize = 10
+		it := txn.NewIterator(opts)
+		defer it.Close()
+		for it.Rewind(); it.Valid(); it.Next() {
+			item := it.Item()
+			k := item.Key()
+			err := item.Value(func(v []byte) error {
+				fmt.Printf("key=%s, value=%s\n", k, v)
+				f(string(k), v)
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
 
 func (r *KvCachedb) Delete(key string) error {

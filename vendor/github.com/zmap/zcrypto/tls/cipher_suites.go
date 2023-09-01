@@ -105,9 +105,9 @@ type tlsAead interface {
 
 // Incidences of unsupported cipher-suites are annotated in-line with comments
 // The following guidelines should be noted:
-//  * DSS Suites: certificates are not supported (Certificate)
-//  * PSK Suites: Not supported/implemented (Symmetric Key)
-//  * Non-ephemeral, Anonymous DH: Not supported/implemented (Kex)
+//   - DSS Suites: certificates are not supported (Certificate)
+//   - PSK Suites: Not supported/implemented (Symmetric Key)
+//   - Non-ephemeral, Anonymous DH: Not supported/implemented (Kex)
 var implementedCipherSuites = []*cipherSuite{
 	{TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256, 32, 0, 12, 32, ecdheECDSAKA, suiteECDHE | suiteECDSA | suiteTLS12, nil, nil, aeadCHACHA20POLY1305},
 	{TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256, 32, 0, 12, 32, ecdheRSAKA, suiteECDHE | suiteTLS12, nil, nil, aeadCHACHA20POLY1305},

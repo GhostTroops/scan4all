@@ -141,7 +141,7 @@ func NewScanner(options *Options) (*Scanner, error) {
 
 	if options.ExcludeCdn {
 		var err error
-		scanner.cdn, err = cdncheck.NewWithCache()
+		scanner.cdn, err = cdncheck.NewWithOpts(3, nil)
 		if err != nil {
 			return nil, err
 		}

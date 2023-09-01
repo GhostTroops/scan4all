@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package codecs
 
 // VP8Payloader payloads VP8 packets
@@ -127,12 +130,11 @@ func (p *VP8Packet) Unmarshal(payload []byte) ([]byte, error) {
 
 	payloadLen := len(payload)
 
-	if payloadLen < 4 {
-		return nil, errShortPacket
-	}
-
 	payloadIndex := 0
 
+	if payloadIndex >= payloadLen {
+		return nil, errShortPacket
+	}
 	p.X = (payload[payloadIndex] & 0x80) >> 7
 	p.N = (payload[payloadIndex] & 0x20) >> 5
 	p.S = (payload[payloadIndex] & 0x10) >> 4
@@ -141,14 +143,25 @@ func (p *VP8Packet) Unmarshal(payload []byte) ([]byte, error) {
 	payloadIndex++
 
 	if p.X == 1 {
+		if payloadIndex >= payloadLen {
+			return nil, errShortPacket
+		}
 		p.I = (payload[payloadIndex] & 0x80) >> 7
 		p.L = (payload[payloadIndex] & 0x40) >> 6
 		p.T = (payload[payloadIndex] & 0x20) >> 5
 		p.K = (payload[payloadIndex] & 0x10) >> 4
 		payloadIndex++
+	} else {
+		p.I = 0
+		p.L = 0
+		p.T = 0
+		p.K = 0
 	}
 
 	if p.I == 1 { // PID present?
+		if payloadIndex >= payloadLen {
+			return nil, errShortPacket
+		}
 		if payload[payloadIndex]&0x80 > 0 { // M == 1, PID is 16bit
 			p.PictureID = (uint16(payload[payloadIndex]&0x7F) << 8) | uint16(payload[payloadIndex+1])
 			payloadIndex += 2
@@ -156,41 +169,58 @@ func (p *VP8Packet) Unmarshal(payload []byte) ([]byte, error) {
 			p.PictureID = uint16(payload[payloadIndex])
 			payloadIndex++
 		}
-	}
-
-	if payloadIndex >= payloadLen {
-		return nil, errShortPacket
+	} else {
+		p.PictureID = 0
 	}
 
 	if p.L == 1 {
+		if payloadIndex >= payloadLen {
+			return nil, errShortPacket
+		}
 		p.TL0PICIDX = payload[payloadIndex]
 		payloadIndex++
-	}
-
-	if payloadIndex >= payloadLen {
-		return nil, errShortPacket
+	} else {
+		p.TL0PICIDX = 0
 	}
 
 	if p.T == 1 || p.K == 1 {
+		if payloadIndex >= payloadLen {
+			return nil, errShortPacket
+		}
 		if p.T == 1 {
 			p.TID = payload[payloadIndex] >> 6
 			p.Y = (payload[payloadIndex] >> 5) & 0x1
+		} else {
+			p.TID = 0
+			p.Y = 0
 		}
 		if p.K == 1 {
 			p.KEYIDX = payload[payloadIndex] & 0x1F
+		} else {
+			p.KEYIDX = 0
 		}
 		payloadIndex++
+	} else {
+		p.TID = 0
+		p.Y = 0
+		p.KEYIDX = 0
 	}
 
-	if payloadIndex >= payloadLen {
-		return nil, errShortPacket
-	}
 	p.Payload = payload[payloadIndex:]
 	return p.Payload, nil
 }
 
-// VP8PartitionHeadChecker is obsolete
+// VP8PartitionHeadChecker checks VP8 partition head
+//
+// Deprecated: replaced by VP8Packet.IsPartitionHead()
 type VP8PartitionHeadChecker struct{}
+
+// IsPartitionHead checks whether if this is a head of the VP8 partition.
+//
+// Deprecated: replaced by VP8Packet.IsPartitionHead()
+func (*VP8PartitionHeadChecker) IsPartitionHead(packet []byte) bool {
+	return (&VP8Packet{}).IsPartitionHead(packet)
+}
 
 // IsPartitionHead checks whether if this is a head of the VP8 partition
 func (*VP8Packet) IsPartitionHead(payload []byte) bool {

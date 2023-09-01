@@ -3,7 +3,14 @@ package sliceutil
 import (
 	"math/rand"
 	"strconv"
+	"time"
 )
+
+// As specified here https://stackoverflow.com/a/12321192/8155097
+// it's better to set the seed only once.
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 // PruneEmptyStrings from the slice
 func PruneEmptyStrings(v []string) []string {
@@ -11,61 +18,53 @@ func PruneEmptyStrings(v []string) []string {
 }
 
 // PruneEqual removes items from the slice equal to the specified value
-func PruneEqual(v []string, equalTo string) (r []string) {
-	for i := range v {
-		if v[i] != equalTo {
-			r = append(r, v[i])
+func PruneEqual[T comparable](inputSlice []T, equalTo T) (r []T) {
+	for i := range inputSlice {
+		if inputSlice[i] != equalTo {
+			r = append(r, inputSlice[i])
 		}
 	}
+
 	return
 }
 
-// Dedupe removes duplicates from a slice of strings preserving the order
-func Dedupe(v []string) (r []string) {
-	seen := make(map[string]struct{})
-	for _, vv := range v {
-		if _, ok := seen[vv]; !ok {
-			seen[vv] = struct{}{}
-			r = append(r, vv)
+// Dedupe removes duplicates from a slice of elements preserving the order
+func Dedupe[T comparable](inputSlice []T) (result []T) {
+	seen := make(map[T]struct{})
+	for _, inputValue := range inputSlice {
+		if _, ok := seen[inputValue]; !ok {
+			seen[inputValue] = struct{}{}
+			result = append(result, inputValue)
 		}
 	}
+
 	return
 }
 
-// Dedupe removes duplicates from a slice of ints preserving the order
-func DedupeInt(v []int) (r []int) {
-	seen := make(map[int]struct{})
-	for _, vv := range v {
-		if _, ok := seen[vv]; !ok {
-			seen[vv] = struct{}{}
-			r = append(r, vv)
-		}
-	}
-	return
-}
-
-// PickRandom item from a slice of strings
-func PickRandom(v []string) string {
+// PickRandom item from a slice of elements
+func PickRandom[T any](v []T) T {
 	return v[rand.Intn(len(v))]
 }
 
 // Contains if a slice contains an element
-func Contains(s []string, e string) bool {
-	for _, a := range s {
-		if a == e {
+func Contains[T comparable](inputSlice []T, element T) bool {
+	for _, inputValue := range inputSlice {
+		if inputValue == element {
 			return true
 		}
 	}
+
 	return false
 }
 
 // ContainsItems checks if s1 contains s2
-func ContainsItems(s1 []string, s2 []string) bool {
+func ContainsItems[T comparable](s1 []T, s2 []T) bool {
 	for _, e := range s2 {
 		if !Contains(s1, e) {
 			return false
 		}
 	}
+
 	return true
 }
 
@@ -79,5 +78,6 @@ func ToInt(s []string) ([]int, error) {
 		}
 		ns = append(ns, n)
 	}
+
 	return ns, nil
 }

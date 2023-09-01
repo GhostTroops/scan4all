@@ -5,6 +5,7 @@
 *.exe~
 *.dll
 *.so
+tmp/
 db/51pwnCc/
 db/sqlite3.db
 *.dylib

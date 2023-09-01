@@ -15,4 +15,3 @@ server_admin
 test
 tomcat
 xampp
-minioadmin

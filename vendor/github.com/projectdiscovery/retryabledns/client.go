@@ -2,6 +2,7 @@ package retryabledns
 
 import (
 	"bytes"
+	"context"
 	"encoding/gob"
 	"encoding/json"
 	"errors"
@@ -14,18 +15,16 @@ import (
 	"time"
 
 	"github.com/miekg/dns"
-	"github.com/projectdiscovery/iputil"
 	"github.com/projectdiscovery/retryabledns/doh"
 	"github.com/projectdiscovery/retryabledns/hostsfile"
-	"github.com/projectdiscovery/retryablehttp-go"
-	"github.com/projectdiscovery/sliceutil"
+	iputil "github.com/projectdiscovery/utils/ip"
+	mapsutil "github.com/projectdiscovery/utils/maps"
+	sliceutil "github.com/projectdiscovery/utils/slice"
 )
 
 var internalRangeCheckerInstance *internalRangeChecker
 
 func init() {
-	rand.Seed(time.Now().UnixNano())
-
 	var err error
 	internalRangeCheckerInstance, err = newInternalRangeChecker()
 	if err != nil {
@@ -40,6 +39,7 @@ type Client struct {
 	serversIndex uint32
 	TCPFallback  bool
 	udpClient    *dns.Client
+	udpConnPool  mapsutil.SyncLockMap[string, *ConnPool]
 	tcpClient    *dns.Client
 	dohClient    *doh.Client
 	dotClient    *dns.Client
@@ -61,20 +61,60 @@ func NewWithOptions(options Options) (*Client, error) {
 	if options.Hostsfile {
 		knownHosts, _ = hostsfile.ParseDefault()
 	}
-	httpOptions := retryablehttp.DefaultOptionsSingle
-	httpOptions.Timeout = options.Timeout
+
+	httpClient := doh.NewHttpClientWithTimeout(options.Timeout)
+
 	client := Client{
 		options:   options,
 		resolvers: parsedBaseResolvers,
-		udpClient: &dns.Client{Net: "", Timeout: options.Timeout},
-		tcpClient: &dns.Client{Net: TCP.String(), Timeout: options.Timeout},
+		udpClient: &dns.Client{
+			Net:     "",
+			Timeout: options.Timeout,
+			Dialer: &net.Dialer{
+				LocalAddr: options.GetLocalAddr(UDP),
+			},
+		},
+		tcpClient: &dns.Client{
+			Net:     TCP.String(),
+			Timeout: options.Timeout,
+			Dialer: &net.Dialer{
+				LocalAddr: options.GetLocalAddr(TCP),
+			},
+		},
 		dohClient: doh.NewWithOptions(
 			doh.Options{
-				HttpClient: retryablehttp.NewClient(httpOptions),
+				HttpClient: httpClient,
 			},
 		),
-		dotClient:  &dns.Client{Net: "tcp-tls", Timeout: options.Timeout},
+		dotClient: &dns.Client{
+			Net:     "tcp-tls",
+			Timeout: options.Timeout,
+			Dialer: &net.Dialer{
+				LocalAddr: options.GetLocalAddr(TCP),
+			},
+		},
 		knownHosts: knownHosts,
+	}
+	if options.ConnectionPoolThreads > 1 {
+		client.udpConnPool = mapsutil.SyncLockMap[string, *ConnPool]{
+			Map: make(mapsutil.Map[string, *ConnPool]),
+		}
+		for _, resolver := range client.resolvers {
+			resolverHost, resolverPort, err := net.SplitHostPort(resolver.String())
+			if err != nil {
+				return nil, err
+			}
+			networkResolver := NetworkResolver{
+				Protocol: UDP,
+				Port:     resolverPort,
+				Host:     resolverHost,
+			}
+			udpConnPool, err := NewConnPool(networkResolver, options.ConnectionPoolThreads)
+			if err != nil {
+				return nil, err
+			}
+			_ = client.udpConnPool.Set(resolver.String(), udpConnPool)
+		}
 	}
 	return &client, nil
 }
@@ -118,7 +158,13 @@ func (c *Client) Do(msg *dns.Msg) (*dns.Msg, error) {
 			case TCP:
 				resp, _, err = c.tcpClient.Exchange(msg, resolver.String())
 			case UDP:
-				resp, _, err = c.udpClient.Exchange(msg, resolver.String())
+				if c.options.ConnectionPoolThreads > 1 {
+					if udpConnPool, ok := c.udpConnPool.Get(resolver.String()); ok {
+						resp, _, err = udpConnPool.Exchange(context.TODO(), c.udpClient, msg)
+					}
+				} else {
+					resp, _, err = c.udpClient.Exchange(msg, resolver.String())
+				}
 			case DOT:
 				resp, _, err = c.dotClient.Exchange(msg, resolver.String())
 			}
@@ -179,9 +225,19 @@ func (c *Client) TXT(host string) (*DNSData, error) {
 	return c.QueryMultiple(host, []uint16{dns.TypeTXT})
 }
 
+// SRV helper function
+func (c *Client) SRV(host string) (*DNSData, error) {
+	return c.QueryMultiple(host, []uint16{dns.TypeSRV})
+}
+
 // PTR helper function
 func (c *Client) PTR(host string) (*DNSData, error) {
 	return c.QueryMultiple(host, []uint16{dns.TypePTR})
+}
+
+// ANY helper function
+func (c *Client) ANY(host string) (*DNSData, error) {
+	return c.QueryMultiple(host, []uint16{dns.TypeANY})
 }
 
 // NS helper function
@@ -211,8 +267,9 @@ func (c *Client) QueryMultiple(host string, requestTypes []uint16) (*DNSData, er
 // QueryMultiple sends a provided dns request and return the data
 func (c *Client) queryMultiple(host string, requestTypes []uint16, resolver Resolver) (*DNSData, error) {
 	var (
-		dnsdata DNSData
-		err     error
+		hasResolver bool = resolver != nil
+		dnsdata     DNSData
+		err         error
 	)
 
 	// integrate data with known hosts in case
@@ -268,7 +325,7 @@ func (c *Client) queryMultiple(host string, requestTypes []uint16, resolver Reso
 		)
 		for i := 0; i < c.options.MaxRetries; i++ {
 			index := atomic.AddUint32(&c.serversIndex, 1)
-			if resolver == nil {
+			if !hasResolver {
 				resolver = c.resolvers[index%uint32(len(c.resolvers))]
 			}
 			switch r := resolver.(type) {
@@ -296,7 +353,13 @@ func (c *Client) queryMultiple(host string, requestTypes []uint16, resolver Reso
 					case TCP:
 						resp, _, err = c.tcpClient.Exchange(msg, resolver.String())
 					case UDP:
-						resp, _, err = c.udpClient.Exchange(msg, resolver.String())
+						if c.options.ConnectionPoolThreads > 1 {
+							if udpConnPool, ok := c.udpConnPool.Get(resolver.String()); ok {
+								resp, _, err = udpConnPool.Exchange(context.TODO(), c.udpClient, msg)
+							}
+						} else {
+							resp, _, err = c.udpClient.Exchange(msg, resolver.String())
+						}
 					case DOT:
 						resp, _, err = c.dotClient.Exchange(msg, resolver.String())
 					}
@@ -508,19 +571,27 @@ func (c *Client) axfr(host string) (*AXFRData, error) {
 	return &AXFRData{Host: host, DNSData: data}, nil
 }
 
+func (c *Client) Close() {
+	_ = c.udpConnPool.Iterate(func(_ string, connPool *ConnPool) error {
+		connPool.Close()
+		return nil
+	})
+}
+
 // DNSData is the data for a DNS request response
 type DNSData struct {
 	Host           string     `json:"host,omitempty"`
-	TTL            int        `json:"ttl,omitempty"`
+	TTL            uint32     `json:"ttl,omitempty"`
 	Resolver       []string   `json:"resolver,omitempty"`
 	A              []string   `json:"a,omitempty"`
 	AAAA           []string   `json:"aaaa,omitempty"`
 	CNAME          []string   `json:"cname,omitempty"`
 	MX             []string   `json:"mx,omitempty"`
 	PTR            []string   `json:"ptr,omitempty"`
-	SOA            []string   `json:"soa,omitempty"`
+	SOA            []SOA      `json:"soa,omitempty"`
 	NS             []string   `json:"ns,omitempty"`
 	TXT            []string   `json:"txt,omitempty"`
+	SRV            []string   `json:"srv,omitempty"`
 	CAA            []string   `json:"caa,omitempty"`
 	AllRecords     []string   `json:"all,omitempty"`
 	Raw            string     `json:"raw,omitempty"`
@@ -535,12 +606,26 @@ type DNSData struct {
 	HostsFile      bool       `json:"hosts_file,omitempty"`
 }
 
+type SOA struct {
+	Name    string `json:"name,omitempty"`
+	NS      string `json:"ns,omitempty"`
+	Mbox    string `json:"mailbox,omitempty"`
+	Serial  uint32 `json:"serial,omitempty"`
+	Refresh uint32 `json:"refresh,omitempty"`
+	Retry   uint32 `json:"retry,omitempty"`
+	Expire  uint32 `json:"expire,omitempty"`
+	Minttl  uint32 `json:"minttl,omitempty"`
+}
+
 // CheckInternalIPs when set to true returns if DNS response IPs
 // belong to internal IP ranges.
 var CheckInternalIPs = false
 
 func (d *DNSData) ParseFromRR(rrs []dns.RR) error {
 	for _, record := range rrs {
+		if d.TTL == 0 && record.Header().Ttl > 0 {
+			d.TTL = record.Header().Ttl
+		}
 		switch recordType := record.(type) {
 		case *dns.A:
 			if CheckInternalIPs && internalRangeCheckerInstance != nil && internalRangeCheckerInstance.ContainsIPv4(recordType.A) {
@@ -553,8 +638,17 @@ func (d *DNSData) ParseFromRR(rrs []dns.RR) error {
 		case *dns.CNAME:
 			d.CNAME = append(d.CNAME, trimChars(recordType.Target))
 		case *dns.SOA:
-			d.SOA = append(d.SOA, trimChars(recordType.Ns))
-			d.SOA = append(d.SOA, trimChars(recordType.Mbox))
+			d.SOA = append(d.SOA, SOA{
+				Name:    trimChars(recordType.Hdr.Name),
+				NS:      trimChars(recordType.Ns),
+				Mbox:    trimChars(recordType.Mbox),
+				Serial:  recordType.Serial,
+				Refresh: recordType.Refresh,
+				Retry:   recordType.Retry,
+				Expire:  recordType.Expire,
+				Minttl:  recordType.Minttl,
+			},
+			)
 		case *dns.PTR:
 			d.PTR = append(d.PTR, trimChars(recordType.Ptr))
 		case *dns.MX:
@@ -565,6 +659,8 @@ func (d *DNSData) ParseFromRR(rrs []dns.RR) error {
 			for _, txt := range recordType.Txt {
 				d.TXT = append(d.TXT, trimChars(txt))
 			}
+		case *dns.SRV:
+			d.SRV = append(d.SRV, trimChars(recordType.Target))
 		case *dns.AAAA:
 			if CheckInternalIPs && internalRangeCheckerInstance.ContainsIPv6(recordType.AAAA) {
 				d.HasInternalIPs = true
@@ -596,7 +692,7 @@ func (d *DNSData) ParseFromEnvelopeChan(envChan chan *dns.Envelope) error {
 }
 
 func (d *DNSData) contains() bool {
-	return len(d.A) > 0 || len(d.AAAA) > 0 || len(d.CNAME) > 0 || len(d.MX) > 0 || len(d.NS) > 0 || len(d.PTR) > 0 || len(d.TXT) > 0 || len(d.SOA) > 0 || len(d.CAA) > 0
+	return len(d.A) > 0 || len(d.AAAA) > 0 || len(d.CNAME) > 0 || len(d.MX) > 0 || len(d.NS) > 0 || len(d.PTR) > 0 || len(d.TXT) > 0 || len(d.SRV) > 0 || len(d.SOA) > 0 || len(d.CAA) > 0
 }
 
 // JSON returns the object as json string
@@ -616,9 +712,9 @@ func (d *DNSData) dedupe() {
 	d.CNAME = sliceutil.Dedupe(d.CNAME)
 	d.MX = sliceutil.Dedupe(d.MX)
 	d.PTR = sliceutil.Dedupe(d.PTR)
-	d.SOA = sliceutil.Dedupe(d.SOA)
 	d.NS = sliceutil.Dedupe(d.NS)
 	d.TXT = sliceutil.Dedupe(d.TXT)
+	d.SRV = sliceutil.Dedupe(d.SRV)
 	d.CAA = sliceutil.Dedupe(d.CAA)
 	d.AllRecords = sliceutil.Dedupe(d.AllRecords)
 }
@@ -649,4 +745,13 @@ type TraceData struct {
 type AXFRData struct {
 	Host    string     `json:"host,omitempty"`
 	DNSData []*DNSData `json:"chain,omitempty"`
+}
+
+// GetSOARecords returns the NS and Mbox of all SOA records as a string slice
+func (d *DNSData) GetSOARecords() []string {
+	var soaRecords []string
+	for _, soa := range d.SOA {
+		soaRecords = append(soaRecords, soa.NS, soa.Mbox)
+	}
+	return soaRecords
 }

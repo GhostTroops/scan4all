@@ -4,7 +4,7 @@ import (
 	"github.com/hktalent/scan4all/lib/util"
 )
 
-// version 通达 OA V11.8 api.ali.php 任意文件上传
+//version 通达 OA V11.8 api.ali.php 任意文件上传
 func File_upload(url string) bool {
 	if req, err := util.HttpRequset(url+"/mobile/api/api.ali.php", "GET", "", false, nil); err == nil {
 		if req.StatusCode == 200 {

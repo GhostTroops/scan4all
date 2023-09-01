@@ -12,7 +12,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsontype"
@@ -73,11 +72,7 @@ func (iv IndexView) List(ctx context.Context, opts ...*options.ListIndexesOption
 
 	sess := sessionFromContext(ctx)
 	if sess == nil && iv.coll.client.sessionPool != nil {
-		var err error
-		sess, err = session.NewClientSession(iv.coll.client.sessionPool, iv.coll.client.id, session.Implicit)
-		if err != nil {
-			return nil, err
-		}
+		sess = session.NewImplicitClientSession(iv.coll.client.sessionPool, iv.coll.client.id)
 	}
 
 	err := iv.coll.client.validSession(sess)
@@ -104,9 +99,7 @@ func (iv IndexView) List(ctx context.Context, opts ...*options.ListIndexesOption
 		op = op.BatchSize(*lio.BatchSize)
 		cursorOpts.BatchSize = *lio.BatchSize
 	}
-	if lio.MaxTime != nil {
-		op = op.MaxTimeMS(int64(*lio.MaxTime / time.Millisecond))
-	}
+	op = op.MaxTime(lio.MaxTime)
 	retry := driver.RetryNone
 	if iv.coll.client.retryReads {
 		retry = driver.RetryOncePerCommand
@@ -129,7 +122,7 @@ func (iv IndexView) List(ctx context.Context, opts ...*options.ListIndexesOption
 		closeImplicitSession(sess)
 		return nil, replaceErrors(err)
 	}
-	cursor, err := newCursorWithSession(bc, iv.coll.registry, sess)
+	cursor, err := newCursorWithSession(bc, iv.coll.bsonOpts, iv.coll.registry, sess)
 	return cursor, replaceErrors(err)
 }
 
@@ -188,7 +181,11 @@ func (iv IndexView) CreateMany(ctx context.Context, models []IndexModel, opts ..
 			return nil, fmt.Errorf("index model keys cannot be nil")
 		}
 
-		keys, err := transformBsoncoreDocument(iv.coll.registry, model.Keys, false, "keys")
+		if isUnorderedMap(model.Keys) {
+			return nil, ErrMapForOrderedArgument{"keys"}
+		}
+
+		keys, err := marshal(model.Keys, iv.coll.bsonOpts, iv.coll.registry)
 		if err != nil {
 			return nil, err
 		}
@@ -230,10 +227,7 @@ func (iv IndexView) CreateMany(ctx context.Context, models []IndexModel, opts ..
 	sess := sessionFromContext(ctx)
 
 	if sess == nil && iv.coll.client.sessionPool != nil {
-		sess, err = session.NewClientSession(iv.coll.client.sessionPool, iv.coll.client.id, session.Implicit)
-		if err != nil {
-			return nil, err
-		}
+		sess = session.NewImplicitClientSession(iv.coll.client.sessionPool, iv.coll.client.id)
 		defer sess.EndSession()
 	}
 
@@ -258,13 +252,9 @@ func (iv IndexView) CreateMany(ctx context.Context, models []IndexModel, opts ..
 		Session(sess).WriteConcern(wc).ClusterClock(iv.coll.client.clock).
 		Database(iv.coll.db.name).Collection(iv.coll.name).CommandMonitor(iv.coll.client.monitor).
 		Deployment(iv.coll.client.deployment).ServerSelector(selector).ServerAPI(iv.coll.client.serverAPI).
-		Timeout(iv.coll.client.timeout)
-
-	if option.MaxTime != nil {
-		op.MaxTimeMS(int64(*option.MaxTime / time.Millisecond))
-	}
+		Timeout(iv.coll.client.timeout).MaxTime(option.MaxTime)
 	if option.CommitQuorum != nil {
-		commitQuorum, err := transformValue(iv.coll.registry, option.CommitQuorum, true, "commitQuorum")
+		commitQuorum, err := marshalValue(option.CommitQuorum, iv.coll.bsonOpts, iv.coll.registry)
 		if err != nil {
 			return nil, err
 		}
@@ -296,7 +286,7 @@ func (iv IndexView) createOptionsDoc(opts *options.IndexOptions) (bsoncore.Docum
 		optsDoc = bsoncore.AppendBooleanElement(optsDoc, "sparse", *opts.Sparse)
 	}
 	if opts.StorageEngine != nil {
-		doc, err := transformBsoncoreDocument(iv.coll.registry, opts.StorageEngine, true, "storageEngine")
+		doc, err := marshal(opts.StorageEngine, iv.coll.bsonOpts, iv.coll.registry)
 		if err != nil {
 			return nil, err
 		}
@@ -319,7 +309,7 @@ func (iv IndexView) createOptionsDoc(opts *options.IndexOptions) (bsoncore.Docum
 		optsDoc = bsoncore.AppendInt32Element(optsDoc, "textIndexVersion", *opts.TextVersion)
 	}
 	if opts.Weights != nil {
-		doc, err := transformBsoncoreDocument(iv.coll.registry, opts.Weights, true, "weights")
+		doc, err := marshal(opts.Weights, iv.coll.bsonOpts, iv.coll.registry)
 		if err != nil {
 			return nil, err
 		}
@@ -342,7 +332,7 @@ func (iv IndexView) createOptionsDoc(opts *options.IndexOptions) (bsoncore.Docum
 		optsDoc = bsoncore.AppendInt32Element(optsDoc, "bucketSize", *opts.BucketSize)
 	}
 	if opts.PartialFilterExpression != nil {
-		doc, err := transformBsoncoreDocument(iv.coll.registry, opts.PartialFilterExpression, true, "partialFilterExpression")
+		doc, err := marshal(opts.PartialFilterExpression, iv.coll.bsonOpts, iv.coll.registry)
 		if err != nil {
 			return nil, err
 		}
@@ -353,7 +343,7 @@ func (iv IndexView) createOptionsDoc(opts *options.IndexOptions) (bsoncore.Docum
 		optsDoc = bsoncore.AppendDocumentElement(optsDoc, "collation", bsoncore.Document(opts.Collation.ToDocument()))
 	}
 	if opts.WildcardProjection != nil {
-		doc, err := transformBsoncoreDocument(iv.coll.registry, opts.WildcardProjection, true, "wildcardProjection")
+		doc, err := marshal(opts.WildcardProjection, iv.coll.bsonOpts, iv.coll.registry)
 		if err != nil {
 			return nil, err
 		}
@@ -374,11 +364,7 @@ func (iv IndexView) drop(ctx context.Context, name string, opts ...*options.Drop
 
 	sess := sessionFromContext(ctx)
 	if sess == nil && iv.coll.client.sessionPool != nil {
-		var err error
-		sess, err = session.NewClientSession(iv.coll.client.sessionPool, iv.coll.client.id, session.Implicit)
-		if err != nil {
-			return nil, err
-		}
+		sess = session.NewImplicitClientSession(iv.coll.client.sessionPool, iv.coll.client.id)
 		defer sess.EndSession()
 	}
 
@@ -403,10 +389,7 @@ func (iv IndexView) drop(ctx context.Context, name string, opts ...*options.Drop
 		ServerSelector(selector).ClusterClock(iv.coll.client.clock).
 		Database(iv.coll.db.name).Collection(iv.coll.name).
 		Deployment(iv.coll.client.deployment).ServerAPI(iv.coll.client.serverAPI).
-		Timeout(iv.coll.client.timeout)
-	if dio.MaxTime != nil {
-		op.MaxTimeMS(int64(*dio.MaxTime / time.Millisecond))
-	}
+		Timeout(iv.coll.client.timeout).MaxTime(dio.MaxTime)
 
 	err = op.Execute(ctx)
 	if err != nil {

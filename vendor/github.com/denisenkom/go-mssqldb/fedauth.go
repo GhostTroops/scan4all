@@ -34,6 +34,9 @@ const (
 
 	// FedAuthADALWorkflowMSI uses the managed identity service to obtain a token
 	FedAuthADALWorkflowMSI = 0x03
+
+	// FedAuthADALWorkflowNone does not need to obtain token
+	FedAuthADALWorkflowNone = 0x04
 )
 
 // newSecurityTokenConnector creates a new connector from a Config and a token provider.

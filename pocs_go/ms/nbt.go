@@ -1,16 +1,14 @@
 package ms
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
-	jsoniter "github.com/json-iterator/go"
 	"golang.org/x/time/rate"
 	"os"
 	"sync"
 	"time"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type ScanResult struct {
 	Host  string            `json:"host"`

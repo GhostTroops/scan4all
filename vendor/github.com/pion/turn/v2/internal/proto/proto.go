@@ -1,6 +1,7 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 // Package proto implements RFC 5766 Traversal Using Relays around NAT.
-//
-// Merged from gortc/turn v0.80.
 package proto
 
 import (

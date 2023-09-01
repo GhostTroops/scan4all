@@ -82,7 +82,9 @@ var (
 		return 1
 	}()
 
-	defaultLogger = Logger(log.New(os.Stderr, "", log.LstdFlags))
+	// log.Lmsgprefix is not available in go1.13, just make an identical value for it.
+	logLmsgprefix = 64
+	defaultLogger = Logger(log.New(os.Stderr, "[ants]: ", log.LstdFlags|logLmsgprefix|log.Lmicroseconds))
 
 	// Init an instance pool when importing ants.
 	defaultAntsPool, _ = NewPool(DefaultAntsPoolSize)
@@ -119,6 +121,11 @@ func Free() int {
 // Release Closes the default pool.
 func Release() {
 	defaultAntsPool.Release()
+}
+
+// ReleaseTimeout is like Release but with a timeout, it waits all workers to exit before timing out.
+func ReleaseTimeout(timeout time.Duration) error {
+	return defaultAntsPool.ReleaseTimeout(timeout)
 }
 
 // Reboot reboots the default pool.

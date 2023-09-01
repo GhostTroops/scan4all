@@ -8,10 +8,10 @@ import (
 	"sync/atomic"
 
 	"github.com/projectdiscovery/hmap/store/hybrid"
-	"github.com/projectdiscovery/iputil"
 	"github.com/projectdiscovery/mapcidr"
 	"github.com/projectdiscovery/networkpolicy"
-	"github.com/projectdiscovery/stringsutil"
+	iputil "github.com/projectdiscovery/utils/ip"
+	stringsutil "github.com/projectdiscovery/utils/strings"
 	"github.com/yl2chen/cidranger"
 )
 
@@ -94,12 +94,7 @@ func (ir *IPRanger) Add(host string) error {
 		return errors.New("invalid ip")
 	}
 
-	// cidrs => add
-	if iputil.IsCIDR(host) {
-		return ir.add(host)
-	}
-
-	return errors.New("only ip/cidr can be added")
+	return ir.add(host)
 }
 
 func (ir *IPRanger) asIPNet(host string) (*net.IPNet, error) {
@@ -125,14 +120,16 @@ func (ir *IPRanger) add(host string) error {
 	ir.Lock()
 	defer ir.Unlock()
 
-	network, err := ir.asIPNet(host)
-	if err != nil {
-		return err
+	if iputil.IsIP(host) || iputil.IsCIDR(host) {
+		network, err := ir.asIPNet(host)
+		if err != nil {
+			return err
+		}
+		atomic.AddUint64(&ir.Stats.IPS, mapcidr.AddressCountIpnet(network))
+		return ir.iprangerop.Insert(cidranger.NewBasicRangerEntry(*network))
 	}
 
-	atomic.AddUint64(&ir.Stats.IPS, mapcidr.AddressCountIpnet(network))
-
-	return ir.iprangerop.Insert(cidranger.NewBasicRangerEntry(*network))
+	return nil
 }
 
 func (ir *IPRanger) IsValid(host string) bool {
@@ -169,6 +166,7 @@ func (ir *IPRanger) AddHostWithMetadata(host, metadata string) error {
 	}
 	// cache ip/cidr
 	_ = ir.Add(host)
+
 	// dedupe all the hosts and also keep track of ip => host for the output - just append new hostname
 	if data, ok := ir.Hosts.Get(host); ok {
 		// check if fqdn not contained

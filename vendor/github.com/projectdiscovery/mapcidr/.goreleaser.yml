@@ -1,28 +1,35 @@
+before:
+  hooks:
+    - go mod tidy
+
 builds:
-    - binary: mapcidr
-      main: cmd/mapcidr/main.go
-      goos:
-        - linux
-        - windows
-        - darwin
-      goarch:
-        - amd64
-        - 386
-        - arm
-        - arm64
-  
+- binary: '{{ .ProjectName }}'
+  main: cmd/mapcidr/main.go
+  goos: [windows,linux,darwin]
+  goarch: [amd64,386,arm,arm64]
+  ignore:
+    - goos: darwin
+      goarch: 386
+    - goos: windows
+      goarch: arm
+    - goos: windows
+      goarch: arm64
+
 archives:
-    - id: tgz
-      format: tar.gz
-      replacements:
-          darwin: macOS
-      format_overrides:
-          - goos: windows
-            format: zip
+- format: zip
+  replacements:
+      darwin: macOS
+
+checksum:
+  algorithm: sha256
 
 announce:
   slack:
     enabled: true
     channel: '#release'
     username: GoReleaser
-    message_template: '{{ .ProjectName }} {{ .Tag }} is out! Check it out at {{ .ReleaseURL }}'
+    message_template: 'New Release: {{ .ProjectName }} {{.Tag}} is published! Check it out at {{ .ReleaseURL }}'
+
+  discord:
+    enabled: true
+    message_template: '**New Release: {{ .ProjectName }} {{.Tag}}** is published! Check it out at {{ .ReleaseURL }}'
