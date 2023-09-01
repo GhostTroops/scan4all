@@ -537,15 +537,7 @@ func RegInitFunc4Hd(cbk func()) {
 func DoInit(config *embed.FS) {
 	Init1(config)
 	rand.Seed(time.Now().UnixNano())
-	var wg sync.WaitGroup
-	for _, x := range []string{"nuclei", "naabu", "httpx", "dnsx", "subfinder", "katana", "uncover", "tlsx"} {
-		wg.Add(1)
-		go func(s string) {
-			defer wg.Done()
-			util1.UpdateScan4allVersionToLatest(true, "projectdiscovery", s, util1.SzPwd+"/config/"+runtime.GOOS+"/")
-		}(x)
-	}
-	wg.Wait()
+
 	//	log.Println("start init for fnInitHd ", len(fnInitHd))
 	//	for _, x := range fnInitHd {
 	//		x()
@@ -568,6 +560,27 @@ func DoInit(config *embed.FS) {
 	}
 	fnInit = nil
 	fnInitHd = nil
+	var wg sync.WaitGroup
+	if "" == util1.SzPwd {
+		if s, err := os.Getwd(); nil == err {
+			util1.SzPwd = s
+		}
+	}
+	if "" == util1.SzPwd {
+		util1.SzPwd = "."
+	}
+	szPath := util1.SzPwd + "/config/" + runtime.GOOS
+	if err := os.MkdirAll(szPath, os.ModePerm); nil != err {
+		log.Println(err, szPath)
+	}
+	for _, x := range []string{"nuclei", "naabu", "httpx", "dnsx", "subfinder", "katana", "uncover", "tlsx"} {
+		wg.Add(1)
+		go func(s string) {
+			defer wg.Done()
+			util1.UpdateScan4allVersionToLatest(true, "projectdiscovery", s, szPath)
+		}(x)
+	}
+	wg.Wait()
 }
 
 func RemoveDuplication_map(arr []string) []string {
