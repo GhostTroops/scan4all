@@ -163,11 +163,11 @@ func (ld *ListDatabases) Execute(ctx context.Context) error {
 		Crypt:          ld.crypt,
 		ServerAPI:      ld.serverAPI,
 		Timeout:        ld.timeout,
-	}.Execute(ctx, nil)
+	}.Execute(ctx)
 
 }
 
-func (ld *ListDatabases) command(dst []byte, desc description.SelectedServer) ([]byte, error) {
+func (ld *ListDatabases) command(dst []byte, _ description.SelectedServer) ([]byte, error) {
 	dst = bsoncore.AppendInt32Element(dst, "listDatabases", 1)
 	if ld.filter != nil {
 

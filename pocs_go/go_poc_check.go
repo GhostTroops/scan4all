@@ -2,9 +2,10 @@ package pocs_go
 
 import (
 	"fmt"
-	Const "github.com/hktalent/go-utils"
 	"github.com/hktalent/scan4all/brute"
 	"github.com/hktalent/scan4all/lib/Smuggling"
+	"github.com/hktalent/scan4all/lib/goSqlite_gorm/lib/scan/Const"
+	"github.com/hktalent/scan4all/lib/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"github.com/hktalent/scan4all/pocs_go/Springboot"
@@ -334,25 +335,19 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 func init() {
 	util.RegInitFunc(func() {
 		// 基于工厂方法构建
-		util.EngineFuncFactory(Const.ScanType_GoPoc, func(evt *Const.EventData, args ...interface{}) {
-			var pocs []string
-			for _, x := range evt.EventData {
-				szTarget := fmt.Sprintf("%v", x)
-				_, fileFuzzTechnologies := brute.FileFuzz(szTarget, 200, 100, "")
-
-				resp1, reqbody, _, err := util.GetResponse("", "", szTarget, "GET", "", false, nil)
-				if nil == err && nil != resp1 {
-					a, _ := fingerprint.FingerScan(*resp1.Header, []byte(reqbody), "", szTarget, strconv.Itoa(resp1.StatusCode))
-					if 0 < len(a) {
-						fileFuzzTechnologies = append(fileFuzzTechnologies, a...)
-					}
+		util.EngineFuncFactory(Const.ScanType_GoPoc, func(evt *models.EventData, args ...interface{}) {
+			_, fileFuzzTechnologies := brute.FileFuzz(evt.Task.ScanWeb, 200, 100, "")
+			resp1, reqbody, _, err := util.GetResponse("", "", evt.Task.ScanWeb, "GET", "", false, nil)
+			if nil == err && nil != resp1 {
+				a, _ := fingerprint.FingerScan(*resp1.Header, []byte(reqbody), "", evt.Task.ScanWeb, strconv.Itoa(resp1.StatusCode))
+				if 0 < len(a) {
+					fileFuzzTechnologies = append(fileFuzzTechnologies, a...)
 				}
-				// 一旦开启nmap等，其他的结果，将在其他流程中反馈，并做防止重复的处理
-				pocs = append(pocs, POCcheck(fileFuzzTechnologies, szTarget, szTarget, true)...)
 			}
-			if 0 < len(pocs) {
-				util.SendEngineLog(evt, Const.ScanType_GoPoc, pocs)
-			}
+			util.SendEvent(evt, Const.ScanType_Nmap, Const.ScanType_Masscan)
+			// 一旦开启nmap等，其他的结果，将在其他流程中反馈，并做防止重复的处理
+			pocs := POCcheck(fileFuzzTechnologies, evt.Task.ScanWeb, evt.Task.ScanWeb, true)
+			util.SendEngineLog(evt, Const.ScanType_GoPoc, pocs)
 		})
 	})
 }

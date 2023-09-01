@@ -115,6 +115,11 @@ func GetIdentityFieldValuesMap(ctx context.Context, reflectValue reflect.Value, 
 		notZero, zero bool
 	)
 
+	if reflectValue.Kind() == reflect.Ptr ||
+		reflectValue.Kind() == reflect.Interface {
+		reflectValue = reflectValue.Elem()
+	}
+
 	switch reflectValue.Kind() {
 	case reflect.Struct:
 		results = [][]interface{}{make([]interface{}, len(fields))}
@@ -133,7 +138,7 @@ func GetIdentityFieldValuesMap(ctx context.Context, reflectValue reflect.Value, 
 		for i := 0; i < reflectValue.Len(); i++ {
 			elem := reflectValue.Index(i)
 			elemKey := elem.Interface()
-			if elem.Kind() != reflect.Ptr {
+			if elem.Kind() != reflect.Ptr && elem.CanAddr() {
 				elemKey = elem.Addr().Interface()
 			}
 

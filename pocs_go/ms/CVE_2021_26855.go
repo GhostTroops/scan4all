@@ -95,7 +95,7 @@ const (
 	negotiateAlwaysSign = 0x8000 // Sign for all security levels
 )
 
-// ntlm type1
+//ntlm type1
 func Negotiate() []byte {
 	var ret []byte
 	flags := negotiateAlwaysSign | negotiateNTLM | requestTarget | negotiateOEM
@@ -128,7 +128,7 @@ var (
 	reg6 = regexp.MustCompile(`\x04\x00.|\x03|\x00`)
 )
 
-// ntlm type2 fqdn
+//ntlm type2 fqdn
 func Ntlminfo(targetUrl string) (fqdn string, domain string) {
 	//var fqdn string
 	if c1 := util.GetClient(targetUrl); c1 != nil {

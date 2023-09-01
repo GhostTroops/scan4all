@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package dtls
 
 import (
@@ -54,6 +57,7 @@ var (
 	errServerNoMatchingSRTPProfile       = &FatalError{Err: errors.New("client requested SRTP but we have no matching profiles")}                                   //nolint:goerr113
 	errServerRequiredButNoClientEMS      = &FatalError{Err: errors.New("server requires the Extended Master Secret extension, but the client does not support it")} //nolint:goerr113
 	errVerifyDataMismatch                = &FatalError{Err: errors.New("expected and actual verify data does not match")}                                           //nolint:goerr113
+	errNotAcceptableCertificateChain     = &FatalError{Err: errors.New("certificate chain is not signed by an acceptable CA")}                                      //nolint:goerr113
 
 	errInvalidFlight                     = &InternalError{Err: errors.New("invalid flight number")}                           //nolint:goerr113
 	errKeySignatureGenerateUnimplemented = &InternalError{Err: errors.New("unable to generate key signature, unimplemented")} //nolint:goerr113

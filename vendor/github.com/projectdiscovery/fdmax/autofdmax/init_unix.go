@@ -1,4 +1,4 @@
-// +build linux openbsd netbsd
+//go:build linux || openbsd || netbsd
 
 package autofdmax
 
@@ -7,5 +7,5 @@ import (
 )
 
 func init() {
-	fdmax.Set(fdmax.UnixMax)
+	_ = fdmax.Set(fdmax.UnixMax)
 }

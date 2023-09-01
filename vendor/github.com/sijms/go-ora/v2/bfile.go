@@ -24,14 +24,14 @@ func NewBFile(connection *Connection, dirName, fileName string) (*BFile, error) 
 		return nil, err
 	}
 	if len(dirName) > 0 {
-		locatorBuffer.Write(connection.strConv.Encode(dirName))
+		locatorBuffer.Write(connection.sStrConv.Encode(dirName))
 	}
 	err = binary.Write(locatorBuffer, binary.BigEndian, uint16(len(fileName)))
 	if err != nil {
 		return nil, err
 	}
 	if len(fileName) > 0 {
-		locatorBuffer.Write(connection.strConv.Encode(fileName))
+		locatorBuffer.Write(connection.sStrConv.Encode(fileName))
 	}
 	return &BFile{lob: Lob{
 		connection:    connection,

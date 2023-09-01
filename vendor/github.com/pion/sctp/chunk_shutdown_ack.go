@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package sctp
 
 import (
@@ -18,7 +21,10 @@ type chunkShutdownAck struct {
 	chunkHeader
 }
 
-var errChunkTypeNotShutdownAck = errors.New("ChunkType is not of type SHUTDOWN-ACK")
+// Shutdown ack chunk errors
+var (
+	ErrChunkTypeNotShutdownAck = errors.New("ChunkType is not of type SHUTDOWN-ACK")
+)
 
 func (c *chunkShutdownAck) unmarshal(raw []byte) error {
 	if err := c.chunkHeader.unmarshal(raw); err != nil {
@@ -26,7 +32,7 @@ func (c *chunkShutdownAck) unmarshal(raw []byte) error {
 	}
 
 	if c.typ != ctShutdownAck {
-		return fmt.Errorf("%w: actually is %s", errChunkTypeNotShutdownAck, c.typ.String())
+		return fmt.Errorf("%w: actually is %s", ErrChunkTypeNotShutdownAck, c.typ.String())
 	}
 
 	return nil

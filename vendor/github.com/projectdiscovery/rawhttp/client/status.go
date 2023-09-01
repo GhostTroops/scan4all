@@ -61,16 +61,34 @@ type Status struct {
 	Reason string
 }
 
+func (s Status) String() string {
+	return fmt.Sprintf("%d %s", s.Code, s.Reason)
+}
 
-func (s Status) String() string { return fmt.Sprintf("%d %s", s.Code, s.Reason) }
+func (s Status) IsInformational() bool {
+	return s.Code >= INFO_CONTINUE && s.Code < SUCCESS_OK
+}
 
-func (s Status) IsInformational() bool { return s.Code >= INFO_CONTINUE && s.Code < SUCCESS_OK }
-func (s Status) IsSuccess() bool       { return s.Code >= SUCCESS_OK && s.Code < REDIRECTION_MULTIPLE_CHOICES }
+func (s Status) IsSuccess() bool {
+	return s.Code >= SUCCESS_OK && s.Code < REDIRECTION_MULTIPLE_CHOICES
+}
+
 func (s Status) IsRedirect() bool {
+	// Per RFC 9110 section 15.4.5 a 304 response is terminated by the end of the header section and it refers to a local resource.
+	// No further requests are supposed to be issued after a 304 response is received.
+	if s.Code == REDIRECTION_NOT_MODIFIED {
+		return false
+	}
 	return s.Code >= REDIRECTION_MULTIPLE_CHOICES && s.Code < CLIENT_ERROR_BAD_REQUEST
 }
-func (s Status) IsError() bool { return s.Code >= CLIENT_ERROR_BAD_REQUEST }
+func (s Status) IsError() bool {
+	return s.Code >= CLIENT_ERROR_BAD_REQUEST
+}
+
 func (s Status) IsClientError() bool {
 	return s.Code >= CLIENT_ERROR_BAD_REQUEST && s.Code < SERVER_ERROR_INTERNAL
 }
-func (s Status) IsServerError() bool { return s.Code >= SERVER_ERROR_INTERNAL }
+
+func (s Status) IsServerError() bool {
+	return s.Code >= SERVER_ERROR_INTERNAL
+}

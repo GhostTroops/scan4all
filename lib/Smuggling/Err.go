@@ -9,6 +9,7 @@ import (
 var ErrPayload = []string{`
 POST %s HTTP/1.1
 Host: %s%s
+Connection: Keep-Alive
 Content-Length: 6
 Content-Length: 5
 
@@ -17,12 +18,14 @@ Host: localhost
 
 `, `GET %s HTTP/1.1
 Host: %s%s
+Connection: Keep-Alive
 X-Something: ` + "\x00" + ` something
 X-Foo: Bar
 GET /index.html?bar=1 HTTP/1.1
 Host: localhost
 `, `GET %s HTTP/1.1
 Host: %s%s
+Connection: Keep-Alive
 X-Something: ` + "\x00" + ` something
 GET http://localhost:7001/ws_utc/resources/setting/options/general?timestamp=1571211853278 HTTP/1.1`, `GET %s HTTP/1.1
 Host: %s%s
@@ -32,6 +35,7 @@ GET /index.html?bar=1 HTTP/1.1
 Host: localhost
 `, `GET %s HTTP/1.1
 Host: %s%s
+Connection: Keep-Alive
 X-Something: ` + "\x00" + ` something
 GET http://localhost:7001/ws_utc/resources/setting/options/general?timestamp=1571211853278 HTTP/1.1`}
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package client
 
 import (
@@ -27,13 +30,13 @@ const (
 )
 
 type binding struct {
-	number       uint16          // read-only
-	st           bindingState    // thread-safe (atomic op)
-	addr         net.Addr        // read-only
-	mgr          *bindingManager // read-only
-	muBind       sync.Mutex      // thread-safe, for ChannelBind ops
-	_refreshedAt time.Time       // protected by mutex
-	mutex        sync.RWMutex    // thread-safe
+	number       uint16          // Read-only
+	st           bindingState    // Thread-safe (atomic op)
+	addr         net.Addr        // Read-only
+	mgr          *bindingManager // Read-only
+	muBind       sync.Mutex      // Thread-safe, for ChannelBind ops
+	_refreshedAt time.Time       // Protected by mutex
+	mutex        sync.RWMutex    // Thread-safe
 }
 
 func (b *binding) setState(state bindingState) {

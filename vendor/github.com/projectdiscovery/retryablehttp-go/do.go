@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"sync/atomic"
 	"time"
 
 	dac "github.com/Mzack9999/go-http-digest-auth-client"
@@ -38,7 +37,6 @@ func (c *Client) Do(req *Request) (*http.Response, error) {
 	for i := 0; ; i++ {
 		// request body can be read multiple times
 		// hence no need to rewind it
-
 		if c.RequestLogHook != nil {
 			c.RequestLogHook(req.Request, i)
 		}
@@ -142,11 +140,10 @@ const closeConnectionsCounter = 100
 
 func (c *Client) closeIdleConnections() {
 	if c.options.KillIdleConn {
-		requestCounter := atomic.LoadUint32(&c.requestCounter)
-		if requestCounter < closeConnectionsCounter {
-			atomic.AddUint32(&c.requestCounter, 1)
+		if c.requestCounter.Load() < closeConnectionsCounter {
+			c.requestCounter.Add(1)
 		} else {
-			atomic.StoreUint32(&c.requestCounter, 0)
+			c.requestCounter.Store(0)
 			c.HTTPClient.CloseIdleConnections()
 		}
 	}

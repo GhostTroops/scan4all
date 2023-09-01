@@ -1,14 +1,12 @@
 package Funcs
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 	Configs "github.com/hktalent/scan4all/webScan/config"
-	jsoniter "github.com/json-iterator/go"
 	"log"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type results struct {
 	res bool

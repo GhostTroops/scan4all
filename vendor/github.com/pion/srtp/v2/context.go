@@ -1,9 +1,12 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package srtp
 
 import (
 	"fmt"
 
-	"github.com/pion/transport/replaydetector"
+	"github.com/pion/transport/v2/replaydetector"
 )
 
 const (
@@ -27,8 +30,8 @@ const (
 // Encrypt/Decrypt state for a single SRTP SSRC
 type srtpSSRCState struct {
 	ssrc                 uint32
-	index                uint64
 	rolloverHasProcessed bool
+	index                uint64
 	replayDetector       replaydetector.ReplayDetector
 }
 
@@ -85,7 +88,7 @@ func CreateContext(masterKey, masterSalt []byte, profile ProtectionProfile, opts
 	}
 
 	switch profile {
-	case ProtectionProfileAeadAes128Gcm:
+	case ProtectionProfileAeadAes128Gcm, ProtectionProfileAeadAes256Gcm:
 		c.cipher, err = newSrtpCipherAeadAesGcm(profile, masterKey, masterSalt)
 	case ProtectionProfileAes128CmHmacSha1_32, ProtectionProfileAes128CmHmacSha1_80:
 		c.cipher, err = newSrtpCipherAesCmHmacSha1(profile, masterKey, masterSalt)
@@ -201,7 +204,8 @@ func (c *Context) ROC(ssrc uint32) (uint32, bool) {
 // SetROC sets SRTP rollover counter value of specified SSRC.
 func (c *Context) SetROC(ssrc uint32, roc uint32) {
 	s := c.getSRTPSSRCState(ssrc)
-	s.index = uint64(roc)<<16 | (s.index & (seqNumMax - 1))
+	s.index = uint64(roc) << 16
+	s.rolloverHasProcessed = false
 }
 
 // Index returns SRTCP index value of specified SSRC.

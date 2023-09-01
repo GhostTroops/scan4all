@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
 	"regexp"
 	"time"
 )
@@ -31,7 +30,7 @@ func main() {
 	fmt.Printf("%+v", DeleteMe.FindAllStringIndex("lsjdfld=sjfls;jflsd=jfxxxx;rememberMe=deleteMe;sdfdsfsf", -1))
 
 	var CloseAll = make(chan interface{})
-	util.DefaultPool.Submit(func() {
+	go func() {
 		for {
 			select {
 			case _, ok := <-CloseAll:
@@ -41,7 +40,7 @@ func main() {
 				}
 			}
 		}
-	})
+	}()
 	CloseAll <- "ok"
 	time.Sleep(3 * time.Second)
 	close(CloseAll)

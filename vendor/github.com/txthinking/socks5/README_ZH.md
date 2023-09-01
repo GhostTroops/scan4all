@@ -5,10 +5,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/txthinking/socks5)](https://goreportcard.com/report/github.com/txthinking/socks5)
 [![GoDoc](https://godoc.org/github.com/txthinking/socks5?status.svg)](https://godoc.org/github.com/txthinking/socks5)
 
-[🗣 News](https://t.me/txthinking_news)
-[💬 Chat](https://join.txthinking.com)
-[🩸 Youtube](https://www.youtube.com/txthinking) 
-[❤️ Sponsor](https://github.com/sponsors/txthinking)
+[🗣 News](https://t.me/s/txthinking_news)
+[🩸 Youtube](https://www.youtube.com/txthinking)
 
 SOCKS Protocol Version 5 Library.
 
@@ -61,7 +59,9 @@ $ go get github.com/txthinking/socks5
 
 ### 高级 API
 
-**Server**. 你可以自己处理client请求在读取**Request**后. 同时, 这里有一个高级接口
+> 这可以满足经典场景，特殊场景推荐你选择上面的小API来自定义。
+
+**Server**: 支持UDP和TCP
 
 * `type Server struct`
 * `type Handler interface`
@@ -71,28 +71,31 @@ $ go get github.com/txthinking/socks5
 举例:
 
 ```
-s, _ := NewClassicServer(addr, ip, username, password, tcpTimeout, udpTimeout)
-s.ListenAndServe(Handler)
+server, _ := NewClassicServer(addr, ip, username, password, tcpTimeout, udpTimeout)
+server.ListenAndServe(Handler)
 ```
 
-* 如果你想要一个标准socks5 server, 传入nil即可
-* 如果你想要自己处理请求, 传入一个你自己的Handler
-
-**Client**. 这里有个socks5 client, 支持TCP和UDP, 返回net.Conn.
+**Client**: 支持TCP和UDP, 返回net.Conn
 
 * `type Client struct`
 
 举例:
 
 ```
-c, _ := socks5.NewClient(server, username, password, tcpTimeout, udpTimeout)
-conn, _ := c.Dial(network, addr)
+client, _ := socks5.NewClient(server, username, password, tcpTimeout, udpTimeout)
+conn, _ := client.Dial(network, addr)
 ```
 
-### 用户:
 
- * Brook [https://github.com/txthinking/brook](https://github.com/txthinking/brook)
- * Shiliew [https://www.shiliew.com](https://www.shiliew.com)
+### 谁在使用此项目
+
+-   Brook: https://github.com/txthinking/brook
+-   Shiliew: https://www.txthinking.com/shiliew.html
+-   dismap: https://github.com/zhzyker/dismap
+-   emp3r0r: https://github.com/jm33-m0/emp3r0r
+-   hysteria: https://github.com/apernet/hysteria
+-   mtg: https://github.com/9seconds/mtg
+-   trojan-go: https://github.com/p4gefau1t/trojan-go
 
 ## 开源协议
 

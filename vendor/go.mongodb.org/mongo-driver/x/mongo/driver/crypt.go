@@ -59,6 +59,8 @@ type Crypt interface {
 	CreateDataKey(ctx context.Context, kmsProvider string, opts *options.DataKeyOptions) (bsoncore.Document, error)
 	// EncryptExplicit encrypts the given value with the given options.
 	EncryptExplicit(ctx context.Context, val bsoncore.Value, opts *options.ExplicitEncryptionOptions) (byte, []byte, error)
+	// EncryptExplicitExpression encrypts the given expression with the given options.
+	EncryptExplicitExpression(ctx context.Context, val bsoncore.Document, opts *options.ExplicitEncryptionOptions) (bsoncore.Document, error)
 	// DecryptExplicit decrypts the given encrypted value.
 	DecryptExplicit(ctx context.Context, subtype byte, data []byte) (bsoncore.Value, error)
 	// Close cleans up any resources associated with the Crypt instance.
@@ -84,7 +86,7 @@ type crypt struct {
 
 // NewCrypt creates a new Crypt instance configured with the given AutoEncryptionOptions.
 func NewCrypt(opts *CryptOptions) Crypt {
-	return &crypt{
+	c := &crypt{
 		mongoCrypt:           opts.MongoCrypt,
 		collInfoFn:           opts.CollInfoFn,
 		keyFn:                opts.KeyFn,
@@ -92,6 +94,7 @@ func NewCrypt(opts *CryptOptions) Crypt {
 		tlsConfig:            opts.TLSConfig,
 		bypassAutoEncryption: opts.BypassAutoEncryption,
 	}
+	return c
 }
 
 // Encrypt encrypts the given command.
@@ -203,6 +206,27 @@ func (c *crypt) EncryptExplicit(ctx context.Context, val bsoncore.Value, opts *o
 	return sub, data, nil
 }
 
+// EncryptExplicitExpression encrypts the given expression with the given options.
+func (c *crypt) EncryptExplicitExpression(ctx context.Context, expr bsoncore.Document, opts *options.ExplicitEncryptionOptions) (bsoncore.Document, error) {
+	idx, doc := bsoncore.AppendDocumentStart(nil)
+	doc = bsoncore.AppendDocumentElement(doc, "v", expr)
+	doc, _ = bsoncore.AppendDocumentEnd(doc, idx)
+
+	cryptCtx, err := c.mongoCrypt.CreateExplicitEncryptionExpressionContext(doc, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cryptCtx.Close()
+
+	res, err := c.executeStateMachine(ctx, cryptCtx, "")
+	if err != nil {
+		return nil, err
+	}
+
+	encryptedExpr := res.Lookup("v").Document()
+	return encryptedExpr, nil
+}
+
 // DecryptExplicit decrypts the given encrypted value.
 func (c *crypt) DecryptExplicit(ctx context.Context, subtype byte, data []byte) (bsoncore.Value, error) {
 	idx, doc := bsoncore.AppendDocumentStart(nil)
@@ -249,6 +273,8 @@ func (c *crypt) executeStateMachine(ctx context.Context, cryptCtx *mongocrypt.Co
 			return cryptCtx.Finish()
 		case mongocrypt.Done:
 			return nil, nil
+		case mongocrypt.NeedKmsCredentials:
+			err = c.provideKmsProviders(ctx, cryptCtx)
 		default:
 			return nil, fmt.Errorf("invalid Crypt state: %v", state)
 		}
@@ -381,4 +407,12 @@ func (c *crypt) decryptKey(kmsCtx *mongocrypt.KmsContext) error {
 			return err
 		}
 	}
+}
+
+func (c *crypt) provideKmsProviders(ctx context.Context, cryptCtx *mongocrypt.Context) error {
+	kmsProviders, err := c.mongoCrypt.GetKmsProviders(ctx)
+	if err != nil {
+		return err
+	}
+	return cryptCtx.ProvideKmsProviders(kmsProviders)
 }

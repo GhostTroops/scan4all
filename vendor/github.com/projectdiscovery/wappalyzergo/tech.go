@@ -160,3 +160,26 @@ func (s *Wappalyze) FingerprintWithTitle(headers map[string][]string, body []byt
 	}
 	return uniqueFingerprints.getValues(), ""
 }
+
+// FingerprintWithInfo identifies technologies on a target,
+// based on the received response headers and body.
+// It also returns basic information about the technology, such as description
+// and website URL.
+//
+// Body should not be mutated while this function is being called, or it may
+// lead to unexpected things.
+func (s *Wappalyze) FingerprintWithInfo(headers map[string][]string, body []byte) map[string]AppInfo {
+	apps := s.Fingerprint(headers, body)
+	result := make(map[string]AppInfo, len(apps))
+
+	for app := range apps {
+		if fingerprint, ok := s.fingerprints.Apps[app]; ok {
+			result[app] = AppInfo{
+				Description: fingerprint.description,
+				Website:     fingerprint.website,
+			}
+		}
+	}
+
+	return result
+}

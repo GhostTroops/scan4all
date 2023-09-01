@@ -2,6 +2,7 @@ package fingerprint
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
 	"log"

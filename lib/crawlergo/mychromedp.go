@@ -7,7 +7,6 @@ import (
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 	"github.com/chromedp/chromedp/kb"
-	"github.com/hktalent/scan4all/lib/util"
 	"io/ioutil"
 	"log"
 	"os"
@@ -37,7 +36,7 @@ func (r *MyChromedp) DisableImageLoad(ctx context.Context) func(event interface{
 	return func(event interface{}) {
 		switch ev := event.(type) {
 		case *fetch.EventRequestPaused:
-			util.DefaultPool.Submit(func() {
+			go func() {
 				c := chromedp.FromContext(ctx)
 				ctx := cdp.WithExecutor(ctx, c.Target)
 
@@ -46,16 +45,15 @@ func (r *MyChromedp) DisableImageLoad(ctx context.Context) func(event interface{
 				} else {
 					fetch.ContinueRequest(ev.RequestID).Do(ctx)
 				}
-			})
+			}()
 		}
 	}
 }
 
 // 获取值
-//
-//	输入框最后追加值
-//	发送键盘
-//	download: https://github.com/chromedp/examples/blob/2f7adc7ded326214db81cc6c13d48ecd31af8d31/download_file/main.go
+//  输入框最后追加值
+//  发送键盘
+//  download: https://github.com/chromedp/examples/blob/2f7adc7ded326214db81cc6c13d48ecd31af8d31/download_file/main.go
 func (r *MyChromedp) sendkeys(host string, val1, val2, val3, val4 *string) chromedp.Tasks {
 	return chromedp.Tasks{
 		chromedp.Navigate(host),

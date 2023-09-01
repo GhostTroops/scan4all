@@ -8,6 +8,9 @@ package options
 
 import (
 	"crypto/tls"
+	"net/http"
+
+	"go.mongodb.org/mongo-driver/internal"
 )
 
 // AutoEncryptionOptions represents options used to configure auto encryption/decryption behavior for a mongo.Client
@@ -32,13 +35,16 @@ type AutoEncryptionOptions struct {
 	BypassAutoEncryption  *bool
 	ExtraOptions          map[string]interface{}
 	TLSConfig             map[string]*tls.Config
+	HTTPClient            *http.Client
 	EncryptedFieldsMap    map[string]interface{}
 	BypassQueryAnalysis   *bool
 }
 
 // AutoEncryption creates a new AutoEncryptionOptions configured with default values.
 func AutoEncryption() *AutoEncryptionOptions {
-	return &AutoEncryptionOptions{}
+	return &AutoEncryptionOptions{
+		HTTPClient: internal.DefaultHTTPClient,
+	}
 }
 
 // SetKeyVaultClientOptions specifies options for the client used to communicate with the key vault collection.
@@ -94,7 +100,7 @@ func (a *AutoEncryptionOptions) SetBypassAutoEncryption(bypass bool) *AutoEncryp
 
 // SetExtraOptions specifies a map of options to configure the mongocryptd process or mongo_crypt shared library.
 //
-// Supported Extra Options
+// # Supported Extra Options
 //
 // "mongocryptdURI" - The mongocryptd URI. Allows setting a custom URI used to communicate with the
 // mongocryptd process. The default is "mongodb://localhost:27020", which works with the default
@@ -145,7 +151,6 @@ func (a *AutoEncryptionOptions) SetTLSConfig(tlsOpts map[string]*tls.Config) *Au
 
 // SetEncryptedFieldsMap specifies a map from namespace to local EncryptedFieldsMap document.
 // EncryptedFieldsMap is used for Queryable Encryption.
-// Queryable Encryption is in Public Technical Preview. Queryable Encryption should not be used in production and is subject to backwards breaking changes.
 func (a *AutoEncryptionOptions) SetEncryptedFieldsMap(ef map[string]interface{}) *AutoEncryptionOptions {
 	a.EncryptedFieldsMap = ef
 	return a
@@ -153,13 +158,15 @@ func (a *AutoEncryptionOptions) SetEncryptedFieldsMap(ef map[string]interface{})
 
 // SetBypassQueryAnalysis specifies whether or not query analysis should be used for automatic encryption.
 // Use this option when using explicit encryption with Queryable Encryption.
-// Queryable Encryption is in Public Technical Preview. Queryable Encryption should not be used in production and is subject to backwards breaking changes.
 func (a *AutoEncryptionOptions) SetBypassQueryAnalysis(bypass bool) *AutoEncryptionOptions {
 	a.BypassQueryAnalysis = &bypass
 	return a
 }
 
 // MergeAutoEncryptionOptions combines the argued AutoEncryptionOptions in a last-one wins fashion.
+//
+// Deprecated: Merging options structs will not be supported in Go Driver 2.0. Users should create a
+// single options struct instead.
 func MergeAutoEncryptionOptions(opts ...*AutoEncryptionOptions) *AutoEncryptionOptions {
 	aeo := AutoEncryption()
 	for _, opt := range opts {
@@ -193,6 +200,9 @@ func MergeAutoEncryptionOptions(opts ...*AutoEncryptionOptions) *AutoEncryptionO
 		}
 		if opt.BypassQueryAnalysis != nil {
 			aeo.BypassQueryAnalysis = opt.BypassQueryAnalysis
+		}
+		if opt.HTTPClient != nil {
+			aeo.HTTPClient = opt.HTTPClient
 		}
 	}
 

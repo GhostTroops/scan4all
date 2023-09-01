@@ -3,7 +3,8 @@ package portScan
 import (
 	"context"
 	"github.com/Ullaakut/nmap"
-	Const "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/goSqlite_gorm/lib/scan/Const"
+	"github.com/hktalent/scan4all/lib/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
 	"io"
 	"log"
@@ -12,9 +13,8 @@ import (
 
 func init() {
 	util.RegInitFunc(func() {
-		// 基于工厂方法构建，这里需要考虑策略，是出一条结果反馈一次，还是所有结果处理后统一反馈
-		// 当前：所有结果统一、一次反馈
-		util.EngineFuncFactory(Const.ScanType_Nmap, func(evt *Const.EventData, args ...interface{}) {
+		// 基于工厂方法构建
+		util.EngineFuncFactory(Const.ScanType_Nmap, func(evt *models.EventData, args ...interface{}) {
 			var Targets []string = args[0].([]string)
 			var Ports []string = args[1].([]string)
 			x1 := &Scanner{Targets: Targets, Ports: Ports}

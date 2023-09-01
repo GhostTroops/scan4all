@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package turn
 
 import (
@@ -23,6 +26,19 @@ type RelayAddressGenerator interface {
 	AllocateConn(network string, requestedPort int) (net.Conn, net.Addr, error)
 }
 
+// PermissionHandler is a callback to filter incoming CreatePermission and ChannelBindRequest
+// requests based on the client IP address and port and the peer IP address the client intends to
+// connect to. If the client is behind a NAT then the filter acts on the server reflexive
+// ("mapped") address instead of the real client IP address and port. Note that TURN permissions
+// are per-allocation and per-peer-IP-address, to mimic the address-restricted filtering mechanism
+// of NATs that comply with [RFC4787], see https://tools.ietf.org/html/rfc5766#section-2.3.
+type PermissionHandler func(clientAddr net.Addr, peerIP net.IP) (ok bool)
+
+// DefaultPermissionHandler is convince function that grants permission to all peers
+func DefaultPermissionHandler(net.Addr, net.IP) (ok bool) {
+	return true
+}
+
 // PacketConnConfig is a single net.PacketConn to listen/write on. This will be used for UDP listeners
 type PacketConnConfig struct {
 	PacketConn net.PacketConn
@@ -30,6 +46,11 @@ type PacketConnConfig struct {
 	// When an allocation is generated the RelayAddressGenerator
 	// creates the net.PacketConn and returns the IP/Port it is available at
 	RelayAddressGenerator RelayAddressGenerator
+
+	// PermissionHandler is a callback to filter peer addresses. Can be set as nil, in which
+	// case the DefaultPermissionHandler is automatically instantiated to admit all peer
+	// connections
+	PermissionHandler PermissionHandler
 }
 
 func (c *PacketConnConfig) validate() error {
@@ -50,6 +71,11 @@ type ListenerConfig struct {
 	// When an allocation is generated the RelayAddressGenerator
 	// creates the net.PacketConn and returns the IP/Port it is available at
 	RelayAddressGenerator RelayAddressGenerator
+
+	// PermissionHandler is a callback to filter peer addresses. Can be set as nil, in which
+	// case the DefaultPermissionHandler is automatically instantiated to admit all peer
+	// connections
+	PermissionHandler PermissionHandler
 }
 
 func (c *ListenerConfig) validate() error {

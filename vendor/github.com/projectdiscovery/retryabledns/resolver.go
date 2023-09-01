@@ -4,7 +4,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/projectdiscovery/stringsutil"
+	stringsutil "github.com/projectdiscovery/utils/strings"
 )
 
 type Protocol string

@@ -54,15 +54,15 @@ func newAuthObject(username string, password string, tcpNego *TCPNego, conn *Con
 			return nil, err
 		}
 		switch messageCode {
-		case 4:
-			session.Summary, err = network.NewSummary(session)
-			if err != nil {
-				return nil, err
-			}
-			if session.HasError() {
-				return nil, session.GetError()
-			}
-			loop = false
+		//case 4:
+		//	session.Summary, err = network.NewSummary(session)
+		//	if err != nil {
+		//		return nil, err
+		//	}
+		//	if session.HasError() {
+		//		return nil, session.GetError()
+		//	}
+		//	loop = false
 		case 8:
 			dictLen, err := session.GetInt(4, true, true)
 			if err != nil {
@@ -120,25 +120,35 @@ func newAuthObject(username string, password string, tcpNego *TCPNego, conn *Con
 					}
 				}
 			}
-		case 15:
-			warning, err := network.NewWarningObject(conn.session)
-			if err != nil {
-				return nil, err
-			}
-			if warning != nil {
-				fmt.Println(warning)
-			}
-		case 23:
-			opCode, err := conn.session.GetByte()
-			if err != nil {
-				return nil, err
-			}
-			err = conn.getServerNetworkInformation(opCode)
-			if err != nil {
-				return nil, err
-			}
+		//case 15:
+		//	warning, err := network.NewWarningObject(conn.session)
+		//	if err != nil {
+		//		return nil, err
+		//	}
+		//	if warning != nil {
+		//		fmt.Println(warning)
+		//	}
+		//case 23:
+		//	opCode, err := conn.session.GetByte()
+		//	if err != nil {
+		//		return nil, err
+		//	}
+		//	err = conn.getServerNetworkInformation(opCode)
+		//	if err != nil {
+		//		return nil, err
+		//	}
 		default:
-			return nil, errors.New(fmt.Sprintf("message code error: received code %d and expected code is 8", messageCode))
+			err = conn.readResponse(messageCode)
+			if err != nil {
+				return nil, err
+			}
+			if messageCode == 4 {
+				if session.HasError() {
+					return nil, session.GetError()
+				}
+				loop = false
+			}
+			//return nil, errors.New(fmt.Sprintf("message code error: received code %d and expected code is 8", messageCode))
 		}
 	}
 	if len(ret.EServerSessKey) != 64 && len(ret.EServerSessKey) != 96 {
@@ -294,7 +304,8 @@ func (obj *AuthObject) Write(connOption *network.ConnectionOption, mode LogonMod
 		tz = fmt.Sprintf("%+03d:%02d", hours, minutes)
 	}
 	appendKeyVal("AUTH_ALTER_SESSION",
-		fmt.Sprintf("ALTER SESSION SET NLS_LANGUAGE='AMERICAN' NLS_TERRITORY='AMERICA'  TIME_ZONE='%s'\x00", tz), 1)
+		fmt.Sprintf("ALTER SESSION SET NLS_LANGUAGE='%s' NLS_TERRITORY='%s'  TIME_ZONE='%s'\x00",
+			connOption.Language, connOption.Territory, tz), 1)
 	index++
 	if len(connOption.ProxyClientName) > 0 {
 		appendKeyVal("PROXY_CLIENT_NAME", connOption.ProxyClientName, 0)

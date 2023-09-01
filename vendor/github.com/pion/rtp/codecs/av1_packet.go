@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package codecs
 
 import (
@@ -17,64 +20,91 @@ const (
 	nMask     = byte(0b00001000)
 	nBitshift = 3
 
+	obuFrameTypeMask     = byte(0b01111000)
+	obuFrameTypeBitshift = 3
+
+	obuFameTypeSequenceHeader = 1
+
 	av1PayloaderHeadersize = 1
+
+	leb128Size = 1
 )
 
 // AV1Payloader payloads AV1 packets
-type AV1Payloader struct{}
+type AV1Payloader struct {
+	sequenceHeader []byte
+}
 
 // Payload fragments a AV1 packet across one or more byte arrays
 // See AV1Packet for description of AV1 Payload Header
 func (p *AV1Payloader) Payload(mtu uint16, payload []byte) (payloads [][]byte) {
-	maxFragmentSize := int(mtu) - av1PayloaderHeadersize - 2
-	payloadDataRemaining := len(payload)
 	payloadDataIndex := 0
+	payloadDataRemaining := len(payload)
 
-	// Make sure the fragment/payload size is correct
-	if min(maxFragmentSize, payloadDataRemaining) <= 0 {
+	// Payload Data and MTU is non-zero
+	if mtu <= 0 || payloadDataRemaining <= 0 {
 		return payloads
 	}
 
+	// Cache Sequence Header and packetize with next payload
+	frameType := (payload[0] & obuFrameTypeMask) >> obuFrameTypeBitshift
+	if frameType == obuFameTypeSequenceHeader {
+		p.sequenceHeader = payload
+		return
+	}
+
 	for payloadDataRemaining > 0 {
-		currentFragmentSize := min(maxFragmentSize, payloadDataRemaining)
-		leb128Size := 1
-		if currentFragmentSize >= 127 {
-			leb128Size = 2
+		obuCount := byte(1)
+		metadataSize := av1PayloaderHeadersize
+		if len(p.sequenceHeader) != 0 {
+			obuCount++
+			metadataSize += leb128Size + len(p.sequenceHeader)
 		}
 
-		out := make([]byte, av1PayloaderHeadersize+leb128Size+currentFragmentSize)
-		leb128Value := obu.EncodeLEB128(uint(currentFragmentSize))
-		if leb128Size == 1 {
-			out[1] = byte(leb128Value)
-		} else {
-			out[1] = byte(leb128Value >> 8)
-			out[2] = byte(leb128Value)
+		out := make([]byte, min(int(mtu), payloadDataRemaining+metadataSize))
+		outOffset := av1PayloaderHeadersize
+		out[0] = obuCount << wBitshift
+
+		if obuCount == 2 {
+			// This Payload contain the start of a Coded Video Sequence
+			out[0] ^= nMask
+
+			out[1] = byte(obu.EncodeLEB128(uint(len(p.sequenceHeader))))
+			copy(out[2:], p.sequenceHeader)
+
+			outOffset += leb128Size + len(p.sequenceHeader)
+
+			p.sequenceHeader = nil
 		}
 
-		copy(out[av1PayloaderHeadersize+leb128Size:], payload[payloadDataIndex:payloadDataIndex+currentFragmentSize])
-		payloads = append(payloads, out)
+		outBufferRemaining := len(out) - outOffset
+		copy(out[outOffset:], payload[payloadDataIndex:payloadDataIndex+outBufferRemaining])
+		payloadDataRemaining -= outBufferRemaining
+		payloadDataIndex += outBufferRemaining
 
-		payloadDataRemaining -= currentFragmentSize
-		payloadDataIndex += currentFragmentSize
-
-		if len(payloads) > 1 {
+		// Does this Fragment contain an OBU that started in a previous payload
+		if len(payloads) > 0 {
 			out[0] ^= zMask
 		}
+
+		// This OBU will be continued in next Payload
 		if payloadDataRemaining != 0 {
 			out[0] ^= yMask
 		}
+
+		payloads = append(payloads, out)
 	}
 
 	return payloads
 }
 
 // AV1Packet represents a depacketized AV1 RTP Packet
-//
-//  0 1 2 3 4 5 6 7
-// +-+-+-+-+-+-+-+-+
-// |Z|Y| W |N|-|-|-|
-// +-+-+-+-+-+-+-+-+
-//
+/*
+*  0 1 2 3 4 5 6 7
+* +-+-+-+-+-+-+-+-+
+* |Z|Y| W |N|-|-|-|
+* +-+-+-+-+-+-+-+-+
+**/
 // https://aomediacodec.github.io/av1-rtp-spec/#44-av1-aggregation-header
 type AV1Packet struct {
 	// Z: MUST be set to 1 if the first OBU element is an

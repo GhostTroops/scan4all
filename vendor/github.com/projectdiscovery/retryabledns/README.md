@@ -3,7 +3,7 @@ Based on `miekg/dns` and freely inspired by `bogdanovich/dns_resolver`.
 
 ## Features
 - Supports system default resolvers along with user supplied ones
-- Retries dns requests in case of I/O/Time/Network failures
+- Retries dns requests in case of I/O, Time, Network failures
 - Allows arbitrary query types
 - Resolution with random resolvers
 
@@ -42,8 +42,8 @@ func main() {
 
     log.Println(ips)
 
-    // Query Types: dns.TypeA, dns.TypeNS, dns.TypeCNAME, dns.TypeSOA, dns.TypePTR, dns.TypeMX
-    // dns.TypeTXT, dns.TypeAAAA (from github.com/miekg/dns)
+    // Query Types: dns.TypeA, dns.TypeNS, dns.TypeCNAME, dns.TypeSOA, dns.TypePTR, dns.TypeMX, dns.TypeANY
+    // dns.TypeTXT, dns.TypeAAAA, dns.TypeSRV (from github.com/miekg/dns)
     dnsResponses, err := dnsClient.Query(hostname, dns.TypeA)
     if err != nil {
         log.Fatal(err)

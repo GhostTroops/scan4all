@@ -27,6 +27,8 @@ const (
 	Reportable   SnmpV3MsgFlags = 0x4 // Report PDU must be sent.
 )
 
+//go:generate stringer -type=SnmpV3MsgFlags
+
 // SnmpV3SecurityModel describes the security model used by a SnmpV3 connection
 type SnmpV3SecurityModel uint8
 
@@ -35,11 +37,14 @@ const (
 	UserSecurityModel SnmpV3SecurityModel = 3
 )
 
+//go:generate stringer -type=SnmpV3SecurityModel
+
 // SnmpV3SecurityParameters is a generic interface type to contain various implementations of SnmpV3SecurityParameters
 type SnmpV3SecurityParameters interface {
 	Log()
 	Copy() SnmpV3SecurityParameters
 	Description() string
+	SafeString() string
 	validate(flags SnmpV3MsgFlags) error
 	init(log Logger) error
 	initPacket(packet *SnmpPacket) error

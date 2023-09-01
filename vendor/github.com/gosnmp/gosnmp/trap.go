@@ -18,7 +18,7 @@ import (
 // Sending Traps ie GoSNMP acting as an Agent
 //
 
-// SendTrap sends a SNMP Trap (v2c/v3 only)
+// SendTrap sends a SNMP Trap
 //
 // pdus[0] can a pdu of Type TimeTicks (with the desired uint32 epoch
 // time).  Otherwise a TimeTicks pdu will be prepended, with time set to
@@ -33,21 +33,21 @@ import (
 func (x *GoSNMP) SendTrap(trap SnmpTrap) (result *SnmpPacket, err error) {
 	var pdutype PDUType
 
-	if len(trap.Variables) == 0 {
-		return nil, fmt.Errorf("function SendTrap requires at least 1 PDU")
-	}
-
-	if trap.Variables[0].Type == TimeTicks {
-		// check is uint32
-		if _, ok := trap.Variables[0].Value.(uint32); !ok {
-			return nil, fmt.Errorf("function SendTrap TimeTick must be uint32")
-		}
-	}
-
 	switch x.Version {
 	case Version2c, Version3:
 		// Default to a v2 trap.
 		pdutype = SNMPv2Trap
+
+		if len(trap.Variables) == 0 {
+			return nil, fmt.Errorf("function SendTrap requires at least 1 PDU")
+		}
+
+		if trap.Variables[0].Type == TimeTicks {
+			// check is uint32
+			if _, ok := trap.Variables[0].Value.(uint32); !ok {
+				return nil, fmt.Errorf("function SendTrap TimeTick must be uint32")
+			}
+		}
 
 		switch x.MsgFlags {
 		// as per https://www.rfc-editor.org/rfc/rfc3412.html#section-6.4

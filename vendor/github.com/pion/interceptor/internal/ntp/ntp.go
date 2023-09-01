@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 // Package ntp provides conversion methods between time.Time and NTP timestamps
 // stored in uint64
 package ntp

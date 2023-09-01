@@ -15,7 +15,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/projectdiscovery/stringsutil"
+	stringsutil "github.com/projectdiscovery/utils/strings"
 )
 
 const (

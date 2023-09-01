@@ -3,11 +3,6 @@
 [![GoDoc](https://img.shields.io/badge/Go-Doc-blue.svg)](https://godoc.org/github.com/txthinking/runnergroup)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/txthinking/runnergroup/blob/master/LICENSE)
 
-[🗣 News](https://t.me/txthinking_news)
-[💬 Chat](https://join.txthinking.com)
-[🩸 Youtube](https://www.youtube.com/txthinking) 
-[❤️ Sponsor](https://github.com/sponsors/txthinking)
-
 RunnerGroup is like [sync.WaitGroup](https://pkg.go.dev/sync?tab=doc#WaitGroup), the diffrence is if one task stops, all will be stopped.
 
 ❤️ A project by [txthinking.com](https://www.txthinking.com)

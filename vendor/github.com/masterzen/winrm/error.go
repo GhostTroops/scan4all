@@ -1,13 +1,11 @@
 package winrm
 
-import "fmt"
-
-// errWinrm generic error struct
-type errWinrm struct {
+// winrmError generic error struct
+type winrmError struct {
 	message string
 }
 
 // ErrWinrm implements the Error type interface
-func (e errWinrm) Error() string {
-	return fmt.Sprintf("%s", e.message)
+func (e winrmError) Error() string {
+	return e.message
 }

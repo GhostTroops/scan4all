@@ -4,89 +4,95 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
-	"github.com/sijms/go-ora/v2/converters"
-	"github.com/sijms/go-ora/v2/network"
+	"fmt"
 	"math"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/sijms/go-ora/v2/converters"
+	"github.com/sijms/go-ora/v2/network"
 )
 
-type OracleType int
+type TNSType int
 type ParameterDirection int
 
-//func (n *NVarChar) ConvertValue(v interface{}) (driver.Value, error) {
+// func (n *NVarChar) ConvertValue(v interface{}) (driver.Value, error) {
 //	return driver.Value(string(*n)), nil
-//}
+// }
 
 const (
 	Input  ParameterDirection = 1
 	Output ParameterDirection = 2
 	InOut  ParameterDirection = 3
-	RetVal ParameterDirection = 9
+	//RetVal ParameterDirection = 9
 )
 
 type Out struct {
 	Dest driver.Value
 	Size int
+	In   bool
 }
 
-//internal enum BindDirection
-//{
-//Output = 16,
-//Input = 32,
-//InputOutput = 48,
-//}
+// internal enum BindDirection
+// {
+// Output = 16,
+// Input = 32,
+// InputOutput = 48,
+// }
 
-//go:generate stringer -type=OracleType
+//go:generate stringer -type=TNSType
 
 const (
-	NCHAR            OracleType = 1
-	NUMBER           OracleType = 2
-	SB1              OracleType = 3
-	SB2              OracleType = 3
-	SB4              OracleType = 3
-	FLOAT            OracleType = 4
-	NullStr          OracleType = 5
-	VarNum           OracleType = 6
-	LONG             OracleType = 8
-	VARCHAR          OracleType = 9
-	ROWID            OracleType = 11
-	DATE             OracleType = 12
-	VarRaw           OracleType = 15
-	BFloat           OracleType = 21
-	BDouble          OracleType = 22
-	RAW              OracleType = 23
-	LongRaw          OracleType = 24
-	UINT             OracleType = 68
-	LongVarChar      OracleType = 94
-	LongVarRaw       OracleType = 95
-	CHAR             OracleType = 96
-	CHARZ            OracleType = 97
-	IBFloat          OracleType = 100
-	IBDouble         OracleType = 101
-	REFCURSOR        OracleType = 102
-	OCIXMLType       OracleType = 108
-	XMLType          OracleType = 109
-	OCIRef           OracleType = 110
-	OCIClobLocator   OracleType = 112
-	OCIBlobLocator   OracleType = 113
-	OCIFileLocator   OracleType = 114
-	ResultSet        OracleType = 116
-	OCIString        OracleType = 155
-	OCIDate          OracleType = 156
-	TimeStampDTY     OracleType = 180
-	TimeStampTZ_DTY  OracleType = 181
-	IntervalYM_DTY   OracleType = 182
-	IntervalDS_DTY   OracleType = 183
-	TimeTZ           OracleType = 186
-	TIMESTAMP        OracleType = 187
-	TimeStampTZ      OracleType = 188
-	IntervalYM       OracleType = 189
-	IntervalDS       OracleType = 190
-	UROWID           OracleType = 208
-	TimeStampLTZ_DTY OracleType = 231
-	TimeStampeLTZ    OracleType = 232
+	NCHAR    TNSType = 1
+	NUMBER   TNSType = 2
+	BInteger TNSType = 3
+	//SB1              TNSType = 3
+	//SB2              TNSType = 3
+	//SB4              TNSType = 3
+	FLOAT            TNSType = 4
+	NullStr          TNSType = 5
+	VarNum           TNSType = 6
+	LONG             TNSType = 8
+	VARCHAR          TNSType = 9
+	ROWID            TNSType = 11
+	DATE             TNSType = 12
+	VarRaw           TNSType = 15
+	BFloat           TNSType = 21
+	BDouble          TNSType = 22
+	RAW              TNSType = 23
+	LongRaw          TNSType = 24
+	UINT             TNSType = 68
+	LongVarChar      TNSType = 94
+	LongVarRaw       TNSType = 95
+	CHAR             TNSType = 96
+	CHARZ            TNSType = 97
+	IBFloat          TNSType = 100
+	IBDouble         TNSType = 101
+	REFCURSOR        TNSType = 102
+	OCIXMLType       TNSType = 108
+	XMLType          TNSType = 109
+	OCIRef           TNSType = 110
+	OCIClobLocator   TNSType = 112
+	OCIBlobLocator   TNSType = 113
+	OCIFileLocator   TNSType = 114
+	ResultSet        TNSType = 116
+	OCIString        TNSType = 155
+	OCIDate          TNSType = 156
+	TimeStampDTY     TNSType = 180
+	TimeStampTZ_DTY  TNSType = 181
+	IntervalYM_DTY   TNSType = 182
+	IntervalDS_DTY   TNSType = 183
+	TimeTZ           TNSType = 186
+	TIMESTAMP        TNSType = 187
+	TIMESTAMPTZ      TNSType = 188
+	IntervalYM       TNSType = 189
+	IntervalDS       TNSType = 190
+	UROWID           TNSType = 208
+	TimeStampLTZ_DTY TNSType = 231
+	TimeStampeLTZ    TNSType = 232
+	Boolean          TNSType = 0xFC
 )
 
 type ParameterType int
@@ -103,7 +109,7 @@ type ParameterInfo struct {
 	IsNull               bool
 	AllowNull            bool
 	ColAlias             string
-	DataType             OracleType
+	DataType             TNSType
 	IsXmlType            bool
 	Flag                 uint8
 	Precision            uint8
@@ -118,6 +124,8 @@ type ParameterInfo struct {
 	CharsetForm          int
 	BValue               []byte
 	Value                driver.Value
+	iPrimValue           driver.Value
+	oPrimValue           driver.Value
 	OutputVarPtr         interface{}
 	getDataFromServer    bool
 	oaccollid            int
@@ -132,14 +140,14 @@ func (par *ParameterInfo) load(conn *Connection) error {
 	if err != nil {
 		return err
 	}
-	par.DataType = OracleType(dataType)
+	par.DataType = TNSType(dataType)
 	par.Flag, err = session.GetByte()
 	if err != nil {
 		return err
 	}
 	par.Precision, err = session.GetByte()
-	//precision, err := session.GetInt(1, false, false)
-	//var scale int
+	// precision, err := session.GetInt(1, false, false)
+	// var scale int
 	switch par.DataType {
 	case NUMBER:
 		fallthrough
@@ -151,7 +159,7 @@ func (par *ParameterInfo) load(conn *Connection) error {
 		fallthrough
 	case TIMESTAMP:
 		fallthrough
-	case TimeStampTZ:
+	case TIMESTAMPTZ:
 		fallthrough
 	case IntervalDS:
 		fallthrough
@@ -170,18 +178,18 @@ func (par *ParameterInfo) load(conn *Connection) error {
 		}
 	default:
 		par.Scale, err = session.GetByte()
-		//scale, err = session.GetInt(1, false, false)
+		// scale, err = session.GetInt(1, false, false)
 	}
-	//if par.Scale == uint8(-127) {
+	// if par.Scale == uint8(-127) {
 	//
-	//}
+	// }
 	if par.DataType == NUMBER && par.Precision == 0 && (par.Scale == 0 || par.Scale == 0xFF) {
 		par.Precision = 38
 		par.Scale = 0xFF
 	}
 
-	//par.Scale = uint16(scale)
-	//par.Precision = uint16(precision)
+	// par.Scale = uint16(scale)
+	// par.Precision = uint16(precision)
 	par.MaxLen, err = session.GetInt(4, true, true)
 	if err != nil {
 		return err
@@ -190,13 +198,13 @@ func (par *ParameterInfo) load(conn *Connection) error {
 	case ROWID:
 		par.MaxLen = 128
 	case DATE:
-		par.MaxLen = 7
+		par.MaxLen = converters.MAX_LEN_DATE
 	case IBFloat:
 		par.MaxLen = 4
 	case IBDouble:
 		par.MaxLen = 8
 	case TimeStampTZ_DTY:
-		par.MaxLen = 13
+		par.MaxLen = converters.MAX_LEN_TIMESTAMP
 	case IntervalYM_DTY:
 		fallthrough
 	case IntervalDS_DTY:
@@ -261,7 +269,8 @@ func (par *ParameterInfo) load(conn *Connection) error {
 	if par.DataType == XMLType && par.TypeName != "XMLTYPE" {
 		for typName, cusTyp := range conn.cusTyp {
 			if typName == par.TypeName {
-				par.cusType = &cusTyp
+				par.cusType = new(customType)
+				*par.cusType = cusTyp
 			}
 		}
 	}
@@ -284,6 +293,7 @@ func (par *ParameterInfo) load(conn *Connection) error {
 func (par *ParameterInfo) write(session *network.Session) error {
 	session.PutBytes(uint8(par.DataType), par.Flag, par.Precision, par.Scale)
 	session.PutUint(par.MaxLen, 4, true, true)
+	// MaxNoOfArrayElements should be 0 in case of XML type
 	session.PutInt(par.MaxNoOfArrayElements, 4, true, true)
 	if session.TTCVersion >= 10 {
 		session.PutInt(par.ContFlag, 8, true, true)
@@ -292,7 +302,7 @@ func (par *ParameterInfo) write(session *network.Session) error {
 	}
 	if par.ToID == nil {
 		session.PutBytes(0)
-		//session.PutInt(0, 1, false, false)
+		// session.PutInt(0, 1, false, false)
 	} else {
 		session.PutInt(len(par.ToID), 4, true, true)
 		session.PutClr(par.ToID)
@@ -300,7 +310,7 @@ func (par *ParameterInfo) write(session *network.Session) error {
 	session.PutUint(par.Version, 2, true, true)
 	session.PutUint(par.CharsetID, 2, true, true)
 	session.PutBytes(uint8(par.CharsetForm))
-	//session.PutUint(par.CharsetForm, 1, false, false)
+	// session.PutUint(par.CharsetForm, 1, false, false)
 	session.PutUint(par.MaxCharLen, 4, true, true)
 	if session.TTCVersion >= 8 {
 		session.PutInt(par.oaccollid, 4, true, true)
@@ -313,11 +323,23 @@ func (par *ParameterInfo) setParameterValue(newValue driver.Value) error {
 		par.Value = newValue
 		return nil
 	}
+
+	if temp, ok := par.Value.(sql.Scanner); ok {
+		if temp != nil && !reflect.ValueOf(temp).IsNil() {
+			return temp.Scan(newValue)
+		}
+	}
 	switch value := par.Value.(type) {
 	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
 		par.Value = newValue
 	case float32, float64, string, []byte:
 		par.Value = newValue
+	case bool:
+		temp, err := getInt(newValue)
+		if err != nil {
+			return err
+		}
+		par.Value = temp != 0
 	case *int:
 		temp, err := getInt(newValue)
 		if err != nil {
@@ -390,6 +412,131 @@ func (par *ParameterInfo) setParameterValue(newValue driver.Value) error {
 			return err
 		}
 		*value = temp
+	case time.Time:
+		if tempNewVal, ok := newValue.(time.Time); ok {
+			par.Value = tempNewVal
+		} else {
+			return errors.New("time.Time col/par need time.Time value")
+		}
+	case *time.Time:
+		if tempNewVal, ok := newValue.(time.Time); ok {
+			*value = tempNewVal
+		} else {
+			return errors.New("*time.Time col/par need time.Time value")
+		}
+	case TimeStamp:
+		if tempNewVal, ok := newValue.(TimeStamp); ok {
+			par.Value = tempNewVal
+		} else if tempNewVal, ok := newValue.(time.Time); ok {
+			par.Value = TimeStamp(tempNewVal)
+		} else {
+			return errors.New("TimeStamp col/par need TimeStamp or time.Time value")
+		}
+	case *TimeStamp:
+		if tempNewVal, ok := newValue.(TimeStamp); ok {
+			*value = tempNewVal
+		} else if tempNewVal, ok := newValue.(time.Time); ok {
+			*value = TimeStamp(tempNewVal)
+		} else {
+			return errors.New("*TimeStamp col/par need TimeStamp or time.Time value")
+		}
+	case BFile:
+		if tempNewVal, ok := newValue.(BFile); ok {
+			par.Value = tempNewVal
+		} else {
+			return errors.New("BFile col/par requires BFile value")
+		}
+	case *BFile:
+		var tempVal BFile
+		if tempNewVal, ok := newValue.(BFile); ok {
+			tempVal = tempNewVal
+		} else {
+			return errors.New("*BFile col/par requires BFile value")
+		}
+		if value == nil {
+			par.Value = &tempVal
+		} else {
+			*value = tempVal
+		}
+	case Clob:
+		if tempNewVal, ok := newValue.(Clob); ok {
+			par.Value = tempNewVal
+		} else {
+			return errors.New("Clob col/par requires Clob value")
+		}
+
+	case *Clob:
+		var tempVal Clob
+		if tempNewVal, ok := newValue.(Clob); ok {
+			tempVal = tempNewVal
+		} else {
+			return errors.New("*Clob col/par requires Clob value")
+		}
+		if value == nil {
+			par.Value = &tempVal
+		} else {
+			*value = tempVal
+		}
+	case NClob:
+		if tempNewVal, ok := newValue.(NClob); ok {
+			par.Value = tempNewVal
+		} else {
+			return errors.New("NClob col/par requires NClob value")
+		}
+	case *NClob:
+		var tempVal NClob
+		if tempNewVal, ok := newValue.(NClob); ok {
+			tempVal = tempNewVal
+		} else {
+			return errors.New("*NClob col/par requires NClob value")
+		}
+		if value == nil {
+			par.Value = &tempVal
+		} else {
+			*value = tempVal
+		}
+	case Blob:
+		if tempNewVal, ok := newValue.(Blob); ok {
+			par.Value = tempNewVal
+		} else {
+			return errors.New("Blob clo/par requires Blob value")
+		}
+	case *Blob:
+		var tempVal Blob
+		if tempNewVal, ok := newValue.(Blob); ok {
+			tempVal = tempNewVal
+		} else {
+			return errors.New("*Blob col/par requires Blob value")
+		}
+		if value == nil {
+			par.Value = &tempVal
+		} else {
+			*value = tempVal
+		}
+	case *[]byte:
+		var tempVal []byte
+		if tempNewVal, ok := newValue.([]byte); ok {
+			tempVal = tempNewVal
+		} else {
+			return errors.New("[]byte col/par requires []byte or nil value")
+		}
+		if value == nil {
+			par.Value = &tempVal
+		} else {
+			*value = tempVal
+		}
+	case *string:
+		*value = getString(newValue)
+	case *bool:
+		temp, err := getInt(newValue)
+		if err != nil {
+			return err
+		}
+		*value = temp != 0
+	case NVarChar:
+		par.Value = NVarChar(getString(newValue))
+	case *NVarChar:
+		*value = NVarChar(getString(newValue))
 	case sql.NullByte:
 		if newValue == nil {
 			value.Valid = false
@@ -564,18 +711,6 @@ func (par *ParameterInfo) setParameterValue(newValue driver.Value) error {
 		} else {
 			*value = tempValue
 		}
-	case time.Time:
-		if tempNewVal, ok := newValue.(time.Time); ok {
-			par.Value = tempNewVal
-		} else {
-			return errors.New("time.Time col/par need time.Time value")
-		}
-	case *time.Time:
-		if tempNewVal, ok := newValue.(time.Time); ok {
-			*value = tempNewVal
-		} else {
-			return errors.New("*time.Time col/par need time.Time value")
-		}
 	case sql.NullTime:
 		if newValue == nil {
 			value.Valid = false
@@ -605,21 +740,38 @@ func (par *ParameterInfo) setParameterValue(newValue driver.Value) error {
 		} else {
 			*value = tempVal
 		}
-	case TimeStamp:
-		if tempNewVal, ok := newValue.(TimeStamp); ok {
-			par.Value = tempNewVal
-		} else if tempNewVal, ok := newValue.(time.Time); ok {
-			par.Value = TimeStamp(tempNewVal)
+	case NullTimeStampTZ:
+		if newValue == nil {
+			value.Valid = false
 		} else {
-			return errors.New("TimeStamp col/par need TimeStamp or time.Time value")
+			value.Valid = true
+			if tempNewVal, ok := newValue.(TimeStampTZ); ok {
+				value.TimeStampTZ = tempNewVal
+			} else if tempNewVal, ok := newValue.(time.Time); ok {
+				value.TimeStampTZ = TimeStampTZ(tempNewVal)
+			} else {
+				return errors.New("NullTimeStampTZ col/par need TimeStamp, time.Time or Nil value")
+			}
 		}
-	case *TimeStamp:
-		if tempNewVal, ok := newValue.(TimeStamp); ok {
-			*value = tempNewVal
-		} else if tempNewVal, ok := newValue.(time.Time); ok {
-			*value = TimeStamp(tempNewVal)
+		par.Value = value
+	case *NullTimeStampTZ:
+		var tempVal NullTimeStampTZ
+		if newValue == nil {
+			tempVal.Valid = false
 		} else {
-			return errors.New("*TimeStamp col/par need TimeStamp or time.Time value")
+			tempVal.Valid = true
+			if tempNewVal, ok := newValue.(TimeStampTZ); ok {
+				tempVal.TimeStampTZ = tempNewVal
+			} else if tempNewVal, ok := newValue.(time.Time); ok {
+				tempVal.TimeStampTZ = TimeStampTZ(tempNewVal)
+			} else {
+				return errors.New("*NullTimeStampTZ col/par need TimeStampTZ, time.Time or Nil value")
+			}
+		}
+		if value == nil {
+			par.Value = &tempVal
+		} else {
+			*value = tempVal
 		}
 	case NullTimeStamp:
 		if newValue == nil {
@@ -631,7 +783,7 @@ func (par *ParameterInfo) setParameterValue(newValue driver.Value) error {
 			} else if tempNewVal, ok := newValue.(time.Time); ok {
 				value.TimeStamp = TimeStamp(tempNewVal)
 			} else {
-				return errors.New("NullTimeStamp col/par need TimeStamp, time.Time or Nil value")
+				return errors.New("NullTimeStamp col/par need TimeStampTZ, time.Time or Nil value")
 			}
 		}
 		par.Value = value
@@ -654,77 +806,6 @@ func (par *ParameterInfo) setParameterValue(newValue driver.Value) error {
 		} else {
 			*value = tempVal
 		}
-	case BFile:
-		if tempNewVal, ok := newValue.(BFile); ok {
-			par.Value = tempNewVal
-		} else {
-			return errors.New("BFile col/par requires BFile value")
-		}
-	case *BFile:
-		var tempVal BFile
-		if tempNewVal, ok := newValue.(BFile); ok {
-			tempVal = tempNewVal
-		} else {
-			return errors.New("*BFile col/par requires BFile value")
-		}
-		if value == nil {
-			par.Value = &tempVal
-		} else {
-			*value = tempVal
-		}
-	case Clob:
-		if tempNewVal, ok := newValue.(Clob); ok {
-			par.Value = tempNewVal
-		} else {
-			return errors.New("Clob col/par requires Clob value")
-		}
-
-	case *Clob:
-		var tempVal Clob
-		if tempNewVal, ok := newValue.(Clob); ok {
-			tempVal = tempNewVal
-		} else {
-			return errors.New("*Clob col/par requires Clob value")
-		}
-		if value == nil {
-			par.Value = &tempVal
-		} else {
-			*value = tempVal
-		}
-	case Blob:
-		if tempNewVal, ok := newValue.(Blob); ok {
-			par.Value = tempNewVal
-		} else {
-			return errors.New("Blob clo/par requires Blob value")
-		}
-	case *Blob:
-		var tempVal Blob
-		if tempNewVal, ok := newValue.(Blob); ok {
-			tempVal = tempNewVal
-		} else {
-			return errors.New("*Blob col/par requires Blob value")
-		}
-		if value == nil {
-			par.Value = &tempVal
-		} else {
-			*value = tempVal
-		}
-	case *[]byte:
-		var tempVal []byte
-		if tempNewVal, ok := newValue.([]byte); ok {
-			tempVal = tempNewVal
-		} else {
-			return errors.New("[]byte col/par requires []byte or nil value")
-		}
-		if value == nil {
-			par.Value = &tempVal
-		} else {
-			*value = tempVal
-		}
-	//case RefCursor:
-	//case *RefCursor:
-	case *string:
-		*value = getString(newValue)
 	case sql.NullString:
 		if newValue == nil {
 			value.Valid = false
@@ -746,10 +827,6 @@ func (par *ParameterInfo) setParameterValue(newValue driver.Value) error {
 		} else {
 			*value = tempVal
 		}
-	case NVarChar:
-		par.Value = NVarChar(getString(newValue))
-	case *NVarChar:
-		*value = NVarChar(getString(newValue))
 	case NullNVarChar:
 		if newValue == nil {
 			value.Valid = false
@@ -778,129 +855,459 @@ func (par *ParameterInfo) setParameterValue(newValue driver.Value) error {
 	return nil
 }
 
-func (par *ParameterInfo) decodeValue(connection *Connection) (driver.Value, error) {
-	session := connection.session
-	var tempVal driver.Value
+func (par *ParameterInfo) clone() ParameterInfo {
+	tempPar := ParameterInfo{}
+	tempPar.DataType = par.DataType
+	tempPar.cusType = par.cusType
+	tempPar.TypeName = par.TypeName
+	tempPar.MaxLen = par.MaxLen
+	tempPar.MaxCharLen = par.MaxCharLen
+	tempPar.CharsetID = par.CharsetID
+	tempPar.CharsetForm = par.CharsetForm
+	tempPar.Scale = par.Scale
+	tempPar.Precision = par.Precision
+	return tempPar
+}
+
+func (par *ParameterInfo) decodePrimValue(conn *Connection, udt bool) error {
+	session := conn.session
 	var err error
+	par.oPrimValue = nil
+	par.BValue = nil
+	if par.MaxNoOfArrayElements > 0 {
+		size, err := session.GetInt(4, true, true)
+		if err != nil {
+			return err
+		}
+		par.MaxNoOfArrayElements = size
+		if size > 0 {
+			pars := make([]ParameterInfo, 0, size)
+			for x := 0; x < size; x++ {
+				tempPar := par.clone()
+				err = tempPar.decodeParameterValue(conn)
+				if err != nil {
+					return err
+				}
+				//, err = tempPar.decodeValue(stmt.connection, false)
+				if x < size-1 {
+					_, err = session.GetInt(2, true, true)
+					if err != nil {
+						return err
+					}
+				}
+				pars = append(pars, tempPar)
+			}
+			par.oPrimValue = pars
+		}
+		return nil
+	}
+	if par.DataType == XMLType {
+		if par.TypeName == "XMLTYPE" {
+			return errors.New("unsupported data type: XMLTYPE")
+		}
+		if par.cusType == nil {
+			return fmt.Errorf("unregister custom type: %s. call RegisterType first", par.TypeName)
+		}
+		_, err = session.GetDlc() // contain toid and some 0s
+		if err != nil {
+			return err
+		}
+		_, err = session.GetBytes(3) // 3 0s
+		if err != nil {
+			return err
+		}
+		_, err = session.GetInt(4, true, true)
+		if err != nil {
+			return err
+		}
+		_, err = session.GetByte()
+		if err != nil {
+			return err
+		}
+		_, err = session.GetByte()
+		if err != nil {
+			return err
+		}
+	}
 	if par.DataType == ROWID {
 		rowid, err := newRowID(session)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		if rowid == nil {
-			tempVal = nil
-		} else {
-			tempVal = string(rowid.getBytes())
+		if rowid != nil {
+			par.oPrimValue = string(rowid.getBytes())
 		}
-		return tempVal, nil
+		return nil
+	}
+	if par.DataType == UROWID {
+		rowid, err := newURowID(session)
+		if err != nil {
+			return err
+		}
+		if rowid != nil {
+			par.oPrimValue = string(rowid.getBytes())
+		}
+		return nil
 	}
 	if (par.DataType == NCHAR || par.DataType == CHAR) && par.MaxCharLen == 0 {
-		par.BValue = nil
-		return nil, nil
+		return nil
 	}
 	if par.DataType == RAW && par.MaxLen == 0 {
-		par.BValue = nil
-		return nil, nil
+		return nil
 	}
 	par.BValue, err = session.GetClr()
 	if err != nil {
-		return nil, err
-	}
-	if par.BValue == nil {
-		switch par.DataType {
-		case OCIClobLocator:
-			tempVal = Clob{locator: nil, Valid: false}
-		case OCIBlobLocator:
-			tempVal = Blob{locator: nil, Valid: false}
-		case OCIFileLocator:
-			tempVal = BFile{lob: Lob{sourceLocator: nil, connection: connection}}
-		default:
-			tempVal = nil
-		}
-	} else {
-		switch par.DataType {
-		case ROWID:
-
-		case NCHAR, CHAR, LONG:
-			if connection.strConv.GetLangID() != par.CharsetID {
-				tempCharset := connection.strConv.SetLangID(par.CharsetID)
-				tempVal = connection.strConv.Decode(par.BValue)
-				connection.strConv.SetLangID(tempCharset)
-			} else {
-				tempVal = connection.strConv.Decode(par.BValue)
-			}
-		case NUMBER:
-			tempVal = converters.DecodeNumber(par.BValue)
-		case TimeStampDTY:
-			fallthrough
-		case TimeStampeLTZ:
-			fallthrough
-		case TimeStampLTZ_DTY:
-			fallthrough
-		case TimeStampTZ:
-			fallthrough
-		case TimeStampTZ_DTY:
-			fallthrough
-		case TIMESTAMP:
-			dateVal, err := converters.DecodeDate(par.BValue)
-			if err != nil {
-				return nil, err
-			}
-			tempVal = TimeStamp(dateVal)
-		case DATE:
-			dateVal, err := converters.DecodeDate(par.BValue)
-			if err != nil {
-				return nil, err
-			}
-			tempVal = dateVal
-		case OCIBlobLocator, OCIClobLocator:
-			locator, err := session.GetClr()
-			if err != nil {
-				return nil, err
-			}
-			if par.DataType == OCIClobLocator {
-				tempVal = Clob{locator: locator}
-			} else {
-				tempVal = Blob{locator: locator}
-			}
-		case OCIFileLocator:
-			locator, err := session.GetClr()
-			if err != nil {
-				return nil, err
-			}
-			tempVal = BFile{
-				isOpened: false,
-				lob: Lob{
-					sourceLocator: locator,
-					sourceLen:     len(locator),
-					connection:    connection,
-				},
-			}
-		case IBFloat:
-			tempVal = converters.ConvertBinaryFloat(par.BValue)
-		case IBDouble:
-			tempVal = converters.ConvertBinaryDouble(par.BValue)
-		case IntervalYM_DTY:
-			tempVal = converters.ConvertIntervalYM_DTY(par.BValue)
-		case IntervalDS_DTY:
-			tempVal = converters.ConvertIntervalDS_DTY(par.BValue)
-		default:
-			tempVal = par.BValue
-		}
-	}
-	return tempVal, nil
-}
-
-func (par *ParameterInfo) decodeParameterValue(connection *Connection) error {
-	tempVal, err := par.decodeValue(connection)
-	if err != nil {
 		return err
 	}
-	return par.setParameterValue(tempVal)
+	if par.BValue == nil {
+
+		return nil
+	}
+	switch par.DataType {
+	case NCHAR, CHAR, LONG:
+		strConv, err := conn.getStrConv(par.CharsetID)
+		if err != nil {
+			return err
+		}
+		par.oPrimValue = strConv.Decode(par.BValue)
+	case Boolean:
+		par.oPrimValue = converters.DecodeBool(par.BValue)
+	case RAW:
+		par.oPrimValue = par.BValue
+	case NUMBER:
+		if par.Scale == 0 && par.Precision == 0 {
+			var tempFloat string
+			tempFloat, err = converters.NumberToString(par.BValue)
+			if err != nil {
+				return err
+			}
+			if err != nil {
+				return err
+			}
+			if strings.Contains(tempFloat, ".") {
+				par.oPrimValue, err = strconv.ParseFloat(tempFloat, 64)
+			} else {
+				par.oPrimValue, err = strconv.ParseInt(tempFloat, 10, 64)
+			}
+		} else if par.Scale == 0 && par.Precision <= 18 {
+			par.oPrimValue, err = converters.NumberToInt64(par.BValue)
+			if err != nil {
+				return err
+			}
+		} else if par.Scale == 0 && (converters.CompareBytes(par.BValue, converters.Int64MaxByte) > 0 &&
+			converters.CompareBytes(par.BValue, converters.Uint64MaxByte) < 0) {
+			par.oPrimValue, err = converters.NumberToUInt64(par.BValue)
+			if err != nil {
+				return err
+			}
+		} else if par.Scale > 0 {
+			//par.oPrimValue, err = converters.NumberToString(par.BValue)
+			var tempFloat string
+			tempFloat, err = converters.NumberToString(par.BValue)
+			if err != nil {
+				return err
+			}
+			if err != nil {
+				return err
+			}
+			if strings.Contains(tempFloat, ".") {
+				par.oPrimValue, err = strconv.ParseFloat(tempFloat, 64)
+			} else {
+				par.oPrimValue, err = strconv.ParseInt(tempFloat, 10, 64)
+			}
+		} else {
+			par.oPrimValue = converters.DecodeNumber(par.BValue)
+		}
+	case TimeStampDTY, TimeStampeLTZ, TimeStampLTZ_DTY, TIMESTAMPTZ, TimeStampTZ_DTY:
+		fallthrough
+	case TIMESTAMP, DATE:
+		tempTime, err := converters.DecodeDate(par.BValue)
+		if err != nil {
+			return err
+		}
+		if par.DataType == DATE && conn.dbTimeLoc != time.UTC {
+			par.oPrimValue = time.Date(tempTime.Year(), tempTime.Month(), tempTime.Day(),
+				tempTime.Hour(), tempTime.Minute(), tempTime.Second(), tempTime.Nanosecond(), conn.dbTimeLoc)
+		} else {
+			par.oPrimValue = tempTime
+		}
+	case OCIClobLocator, OCIBlobLocator:
+		var locator []byte
+		if !udt {
+			locator, err = session.GetClr()
+		} else {
+			locator = par.BValue
+
+		}
+		if err != nil {
+			return err
+		}
+		par.oPrimValue = Lob{
+			sourceLocator: locator,
+			sourceLen:     len(locator),
+			connection:    conn,
+			charsetID:     par.CharsetID,
+		}
+	case OCIFileLocator:
+		locator, err := session.GetClr()
+		if err != nil {
+			return err
+		}
+		par.oPrimValue = BFile{
+			isOpened: false,
+			lob: Lob{
+				sourceLocator: locator,
+				sourceLen:     len(locator),
+				connection:    conn,
+				charsetID:     par.CharsetID,
+			},
+		}
+	case IBFloat:
+		par.oPrimValue = float64(converters.ConvertBinaryFloat(par.BValue))
+	case IBDouble:
+		par.oPrimValue = converters.ConvertBinaryDouble(par.BValue)
+	case IntervalYM_DTY:
+		par.oPrimValue = converters.ConvertIntervalYM_DTY(par.BValue)
+	case IntervalDS_DTY:
+		par.oPrimValue = converters.ConvertIntervalDS_DTY(par.BValue)
+	case XMLType:
+		err = decodeObject(conn, par)
+		if err != nil {
+			return err
+		}
+	default:
+		return fmt.Errorf("unable to decode oracle type %v to its primitive value", par.DataType)
+	}
+	return nil
 }
 
-func (par *ParameterInfo) decodeColumnValue(connection *Connection) error {
-	var err error
-	par.Value, err = par.decodeValue(connection)
-	return err
+//func (par *ParameterInfo) decodeValue(connection *Connection, udt bool) (driver.Value, error) {
+//	session := connection.session
+//	var tempVal driver.Value
+//	var err error
+//	if par.DataType == ROWID {
+//		rowid, err := newRowID(session)
+//		if err != nil {
+//			return nil, err
+//		}
+//		if rowid == nil {
+//			tempVal = nil
+//		} else {
+//			tempVal = string(rowid.getBytes())
+//		}
+//		return tempVal, nil
+//	}
+//	if par.DataType == UROWID {
+//		rowid, err := newURowID(session)
+//		if err != nil {
+//			return nil, err
+//		}
+//		if rowid == nil {
+//			tempVal = nil
+//		} else {
+//			tempVal = string(rowid.getBytes())
+//		}
+//		return tempVal, nil
+//	}
+//	if (par.DataType == NCHAR || par.DataType == CHAR) && par.MaxCharLen == 0 {
+//		par.BValue = nil
+//		return nil, nil
+//	}
+//	if par.DataType == RAW && par.MaxLen == 0 {
+//		par.BValue = nil
+//		return nil, nil
+//	}
+//	par.BValue, err = session.GetClr()
+//	if err != nil {
+//		return nil, err
+//	}
+//	if par.BValue == nil {
+//		switch par.DataType {
+//		case OCIClobLocator:
+//			if par.CharsetForm == 1 {
+//				tempVal = Clob{locator: nil, Valid: false}
+//			} else {
+//				tempVal = NClob{locator: nil, Valid: false}
+//			}
+//		case OCIBlobLocator:
+//			tempVal = Blob{locator: nil, Valid: false}
+//		case OCIFileLocator:
+//			tempVal = BFile{lob: Lob{sourceLocator: nil, connection: connection}}
+//		default:
+//			tempVal = nil
+//		}
+//	} else {
+//		switch par.DataType {
+//		case NCHAR, CHAR, LONG:
+//			strConv, err := connection.getStrConv(par.CharsetID)
+//			if err != nil {
+//				return nil, err
+//			}
+//			tempVal = strConv.Decode(par.BValue)
+//		case NUMBER:
+//			// Scale = 0 and Precision <18 --> int64
+//			if par.Scale == 0 && par.Precision <= 18 {
+//				tempVal, err = converters.NumberToInt64(par.BValue)
+//				if err != nil {
+//					return nil, err
+//				}
+//			} else if par.Scale == 0 && (converters.CompareBytes(par.BValue, converters.Int64MaxByte) > 0 &&
+//				converters.CompareBytes(par.BValue, converters.Uint64MaxByte) < 0) {
+//				tempVal, err = converters.NumberToUInt64(par.BValue)
+//				if err != nil {
+//					return tempVal, err
+//				}
+//			} else if par.Scale > 0 {
+//				tempVal, err = converters.NumberToString(par.BValue)
+//				if err != nil {
+//					return tempVal, err
+//				}
+//			} else {
+//				tempVal = converters.DecodeNumber(par.BValue)
+//			}
+//		case TimeStampDTY:
+//			fallthrough
+//		case TimeStampeLTZ:
+//			fallthrough
+//		case TimeStampLTZ_DTY:
+//			fallthrough
+//		case TIMESTAMPTZ:
+//			fallthrough
+//		case TimeStampTZ_DTY:
+//			fallthrough
+//		case TIMESTAMP:
+//			fallthrough
+//		case DATE:
+//			dateVal, err := converters.DecodeDate(par.BValue)
+//			if err != nil {
+//				return nil, err
+//			}
+//			tempVal = dateVal
+//		case OCIBlobLocator, OCIClobLocator:
+//			var locator []byte
+//			var err error
+//			if !udt {
+//				locator, err = session.GetClr()
+//			} else {
+//				locator = par.BValue
+//				par.BValue = nil
+//			}
+//			if err != nil {
+//				return nil, err
+//			}
+//			if par.DataType == OCIClobLocator {
+//				if par.CharsetForm == 1 {
+//					tempVal = Clob{locator: locator}
+//				} else {
+//					tempVal = NClob{locator: locator}
+//				}
+//			} else {
+//				tempVal = Blob{locator: locator}
+//			}
+//		case OCIFileLocator:
+//			locator, err := session.GetClr()
+//			if err != nil {
+//				return nil, err
+//			}
+//			tempVal = BFile{
+//				isOpened: false,
+//				lob: Lob{
+//					sourceLocator: locator,
+//					sourceLen:     len(locator),
+//					connection:    connection,
+//				},
+//			}
+//		case IBFloat:
+//			tempVal = converters.ConvertBinaryFloat(par.BValue)
+//		case IBDouble:
+//			tempVal = converters.ConvertBinaryDouble(par.BValue)
+//		case IntervalYM_DTY:
+//			tempVal = converters.ConvertIntervalYM_DTY(par.BValue)
+//		case IntervalDS_DTY:
+//			tempVal = converters.ConvertIntervalDS_DTY(par.BValue)
+//		default:
+//			tempVal = par.BValue
+//		}
+//	}
+//	return tempVal, nil
+//}
+
+func (par *ParameterInfo) decodeParameterValue(connection *Connection) error {
+	return par.decodePrimValue(connection, false)
+	//if err != nil {
+	//	return err
+	//}
+	//fieldValue := reflect.ValueOf(par.Value).Elem()
+	//return setFieldValue(fieldValue, par.oPrimValue)
+
+	//tempVal, err := par.decodeValue(connection, false)
+	//if err != nil {
+	//	return err
+	//}
+	//return par.setParameterValue(tempVal)
+}
+
+func (par *ParameterInfo) decodeColumnValue(connection *Connection, udt bool) error {
+	//var err error
+	if !udt && connection.connOption.Lob == 0 && (par.DataType == OCIBlobLocator || par.DataType == OCIClobLocator) {
+		session := connection.session
+		maxSize, err := session.GetInt(4, true, true)
+		if err != nil {
+			return err
+		}
+		if maxSize > 0 {
+			/*size*/ _, err = session.GetInt(8, true, true)
+			if err != nil {
+				return err
+			}
+			/*chunkSize*/ _, err := session.GetInt(4, true, true)
+			if err != nil {
+				return err
+			}
+			if par.DataType == OCIClobLocator {
+				flag, err := session.GetByte()
+				if err != nil {
+					return err
+				}
+				par.CharsetID = 0
+				if flag == 1 {
+					par.CharsetID, err = session.GetInt(2, true, true)
+					if err != nil {
+						return err
+					}
+				}
+				tempByte, err := session.GetByte()
+				if err != nil {
+					return err
+				}
+				par.CharsetForm = int(tempByte)
+				if par.CharsetID == 0 {
+					if par.CharsetForm == 1 {
+						par.CharsetID = connection.tcpNego.ServerCharset
+					} else {
+						par.CharsetID = connection.tcpNego.ServernCharset
+					}
+				}
+			}
+			par.BValue, err = session.GetClr()
+			if par.DataType == OCIClobLocator {
+				strConv, err := connection.getStrConv(par.CharsetID)
+				if err != nil {
+					return err
+				}
+				par.oPrimValue = strConv.Decode(par.BValue)
+			} else {
+				par.oPrimValue = par.BValue
+			}
+			_ /*locator*/, err = session.GetClr()
+			if err != nil {
+				return err
+			}
+		} else {
+			par.oPrimValue = nil
+		}
+		return nil
+	}
+	//par.Value, err = par.decodeValue(connection, udt)
+	return par.decodePrimValue(connection, udt)
 }

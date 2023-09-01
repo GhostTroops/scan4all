@@ -11,8 +11,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/shirou/gopsutil/v3/internal/common"
 	"github.com/tklauser/go-sysconf"
+
+	"github.com/shirou/gopsutil/v3/internal/common"
 )
 
 var ClocksPerSec = float64(100)
@@ -95,7 +96,7 @@ func Times(percpu bool) ([]TimesStat, error) {
 }
 
 func TimesWithContext(ctx context.Context, percpu bool) ([]TimesStat, error) {
-	filename := common.HostProc("stat")
+	filename := common.HostProcWithContext(ctx, "stat")
 	lines := []string{}
 	if percpu {
 		statlines, err := common.ReadLines(filename)
@@ -125,17 +126,17 @@ func TimesWithContext(ctx context.Context, percpu bool) ([]TimesStat, error) {
 	return ret, nil
 }
 
-func sysCPUPath(cpu int32, relPath string) string {
-	return common.HostSys(fmt.Sprintf("devices/system/cpu/cpu%d", cpu), relPath)
+func sysCPUPath(ctx context.Context, cpu int32, relPath string) string {
+	return common.HostSysWithContext(ctx, fmt.Sprintf("devices/system/cpu/cpu%d", cpu), relPath)
 }
 
-func finishCPUInfo(c *InfoStat) {
+func finishCPUInfo(ctx context.Context, c *InfoStat) {
 	var lines []string
 	var err error
 	var value float64
 
 	if len(c.CoreID) == 0 {
-		lines, err = common.ReadLines(sysCPUPath(c.CPU, "topology/core_id"))
+		lines, err = common.ReadLines(sysCPUPath(ctx, c.CPU, "topology/core_id"))
 		if err == nil {
 			c.CoreID = lines[0]
 		}
@@ -144,7 +145,7 @@ func finishCPUInfo(c *InfoStat) {
 	// override the value of c.Mhz with cpufreq/cpuinfo_max_freq regardless
 	// of the value from /proc/cpuinfo because we want to report the maximum
 	// clock-speed of the CPU for c.Mhz, matching the behaviour of Windows
-	lines, err = common.ReadLines(sysCPUPath(c.CPU, "cpufreq/cpuinfo_max_freq"))
+	lines, err = common.ReadLines(sysCPUPath(ctx, c.CPU, "cpufreq/cpuinfo_max_freq"))
 	// if we encounter errors below such as there are no cpuinfo_max_freq file,
 	// we just ignore. so let Mhz is 0.
 	if err != nil || len(lines) == 0 {
@@ -172,7 +173,7 @@ func Info() ([]InfoStat, error) {
 }
 
 func InfoWithContext(ctx context.Context) ([]InfoStat, error) {
-	filename := common.HostProc("cpuinfo")
+	filename := common.HostProcWithContext(ctx, "cpuinfo")
 	lines, _ := common.ReadLines(filename)
 
 	var ret []InfoStat
@@ -190,9 +191,9 @@ func InfoWithContext(ctx context.Context) ([]InfoStat, error) {
 		switch key {
 		case "Processor":
 			processorName = value
-		case "processor":
+		case "processor", "cpu number":
 			if c.CPU >= 0 {
-				finishCPUInfo(&c)
+				finishCPUInfo(ctx, &c)
 				ret = append(ret, c)
 			}
 			c = InfoStat{Cores: 1, ModelName: processorName}
@@ -203,6 +204,9 @@ func InfoWithContext(ctx context.Context) ([]InfoStat, error) {
 			c.CPU = int32(t)
 		case "vendorId", "vendor_id":
 			c.VendorID = value
+			if strings.Contains(value, "S390") {
+				processorName = "S390"
+			}
 		case "CPU implementer":
 			if v, err := strconv.ParseUint(value, 0, 8); err == nil {
 				switch v {
@@ -253,7 +257,7 @@ func InfoWithContext(ctx context.Context) ([]InfoStat, error) {
 					}
 				}
 			}
-		case "model name", "cpu":
+		case "Model Name", "model name", "cpu":
 			c.ModelName = value
 			if strings.Contains(value, "POWER8") ||
 				strings.Contains(value, "POWER7") {
@@ -273,7 +277,7 @@ func InfoWithContext(ctx context.Context) ([]InfoStat, error) {
 				return ret, err
 			}
 			c.Stepping = int32(t)
-		case "cpu MHz", "clock":
+		case "cpu MHz", "clock", "cpu MHz dynamic":
 			// treat this as the fallback value, thus we ignore error
 			if t, err := strconv.ParseFloat(strings.Replace(value, "MHz", "", 1), 64); err == nil {
 				c.Mhz = t
@@ -297,7 +301,7 @@ func InfoWithContext(ctx context.Context) ([]InfoStat, error) {
 		}
 	}
 	if c.CPU >= 0 {
-		finishCPUInfo(&c)
+		finishCPUInfo(ctx, &c)
 		ret = append(ret, c)
 	}
 	return ret, nil
@@ -386,7 +390,7 @@ func CountsWithContext(ctx context.Context, logical bool) (int, error) {
 	if logical {
 		ret := 0
 		// https://github.com/giampaolo/psutil/blob/d01a9eaa35a8aadf6c519839e987a49d8be2d891/psutil/_pslinux.py#L599
-		procCpuinfo := common.HostProc("cpuinfo")
+		procCpuinfo := common.HostProcWithContext(ctx, "cpuinfo")
 		lines, err := common.ReadLines(procCpuinfo)
 		if err == nil {
 			for _, line := range lines {
@@ -400,7 +404,7 @@ func CountsWithContext(ctx context.Context, logical bool) (int, error) {
 			}
 		}
 		if ret == 0 {
-			procStat := common.HostProc("stat")
+			procStat := common.HostProcWithContext(ctx, "stat")
 			lines, err = common.ReadLines(procStat)
 			if err != nil {
 				return 0, err
@@ -421,7 +425,7 @@ func CountsWithContext(ctx context.Context, logical bool) (int, error) {
 	// https://github.com/giampaolo/psutil/pull/1727#issuecomment-707624964
 	// https://lkml.org/lkml/2019/2/26/41
 	for _, glob := range []string{"devices/system/cpu/cpu[0-9]*/topology/core_cpus_list", "devices/system/cpu/cpu[0-9]*/topology/thread_siblings_list"} {
-		if files, err := filepath.Glob(common.HostSys(glob)); err == nil {
+		if files, err := filepath.Glob(common.HostSysWithContext(ctx, glob)); err == nil {
 			for _, file := range files {
 				lines, err := common.ReadLines(file)
 				if err != nil || len(lines) != 1 {
@@ -436,7 +440,7 @@ func CountsWithContext(ctx context.Context, logical bool) (int, error) {
 		}
 	}
 	// https://github.com/giampaolo/psutil/blob/122174a10b75c9beebe15f6c07dcf3afbe3b120d/psutil/_pslinux.py#L631-L652
-	filename := common.HostProc("cpuinfo")
+	filename := common.HostProcWithContext(ctx, "cpuinfo")
 	lines, err := common.ReadLines(filename)
 	if err != nil {
 		return 0, err

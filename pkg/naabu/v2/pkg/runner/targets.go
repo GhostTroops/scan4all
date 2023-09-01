@@ -5,11 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"github.com/asaskevich/govalidator"
-	Const "github.com/hktalent/go-utils"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg"
+	"github.com/hktalent/scan4all/pkg/hydra"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
 	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
+	"github.com/hktalent/scan4all/projectdiscovery/dnsxx"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/iputil"
 	"github.com/remeh/sizedwaitgroup"
@@ -111,7 +112,7 @@ func (r *Runner) MergeToFile() (string, error) {
 
 func (r *Runner) DoSsl(target string) []string {
 	// 处理ssl 数字证书中包含的域名信息，深度挖掘漏洞
-	if util.GetValAsBool("ParseSSl") {
+	if "true" == util.GetVal("ParseSSl") {
 		aH, err := pkg.DoDns(target)
 		if nil == err {
 			return aH
@@ -211,7 +212,7 @@ func (r *Runner) DoTargets() (bool, error) {
 					}
 					util.TmpFile[string(util.Naabu)] = []*os.File{tempInput1}
 					log.Println("start parse nmap xml result")
-					util.DoNmapRst(&Naabubuffer)
+					hydra.DoNmapRst(&Naabubuffer)
 					defer r.Close()
 					if "" != r.targetsFile {
 						ioutil.WriteFile(r.targetsFile, []byte(""), os.ModePerm)
@@ -257,13 +258,11 @@ func (r *Runner) PreProcessTargets() error {
 	s := bufio.NewScanner(f)
 	for s.Scan() {
 		wg.Add()
-		func(target string) {
-			util.DefaultPool.Submit(func() {
-				defer wg.Done()
-				if err := r.AddTarget(target); err != nil {
-					gologger.Warning().Msgf("%s\n", err)
-				}
-			})
+		go func(target string) {
+			defer wg.Done()
+			if err := r.AddTarget(target); err != nil {
+				gologger.Warning().Msgf("%s\n", err)
+			}
 		}(s.Text())
 	}
 	wg.Wait()
@@ -292,10 +291,7 @@ func Add2Naabubuffer_1(target string) {
 	util.PutAny[string](k1, target)
 	// 缓存一下域名和ip的关系
 	if oU, err := url.Parse(target); nil == err && oU.Hostname() != "" {
-		util.SendEvent(&Const.EventData{
-			EventType: Const.ScanType_DNSx,
-			EventData: []interface{}{oU.Hostname()},
-		}, Const.ScanType_DNSx)
+		dnsxx.DoGetDnsInfos(oU.Hostname())
 	}
 	Naabubuffer.Write([]byte(target))
 }
@@ -343,7 +339,8 @@ func (r *Runner) AddTarget(target string) error {
 				//Add2Naabubuffer(u.Hostname())
 				// target 长度 大于 s1才处理
 				////UrlPrecise     bool // 精准url扫描，不去除url清单上下文 2022-06-08
-				if util.GetValAsBool(util.UrlPrecise) && len(target) > len(s1) {
+				UrlPrecise := util.GetVal(util.UrlPrecise)
+				if "true" == UrlPrecise && len(target) > len(s1) {
 					s2 := r1.ReplaceAllString(target[len(s1):], "")
 					// 包含1个以上/表示有上下文
 					if 1 < len(s2) {

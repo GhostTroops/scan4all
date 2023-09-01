@@ -83,7 +83,7 @@ func NewSummary(session *Session) (*SummaryObject, error) {
 	if err != nil {
 		return nil, err
 	}
-	if session.TTCVersion >= 7 {
+	if session.TTCVersion >= 6 {
 		result.Flags, err = session.GetInt(2, true, true)
 		if err != nil {
 			return nil, err
@@ -255,6 +255,10 @@ func NewSummary(session *Session) (*SummaryObject, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+	if len(result.bindErrors) > 0 && result.RetCode == 24381 {
+		result.RetCode = result.bindErrors[0].errorCode
+		result.ErrorMessage = result.bindErrors[0].errorMsg
 	}
 	return result, nil
 }

@@ -30,7 +30,7 @@ func newMarkerPacket(markerData uint8, sessionCtx *SessionContext) *MarkerPacket
 			dataOffset: 0,
 			length:     0xB,
 			packetType: MARKER,
-			flag:       0,
+			flag:       0x20,
 		},
 		sessionCtx: sessionCtx,
 		markerType: 1,

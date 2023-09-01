@@ -2,7 +2,7 @@
 
 ```sh
 sudo apt install -y libpcap-dev golang git
-git clone https://github.com/hktalent/ProScan4all.git
+git clone https://github.com/hktalent/scan4all.git
 cd scan4all
 go build
 ```
@@ -13,24 +13,19 @@ go build
 
 ```sh
 # ubuntu、linux
-$ sudo apt-get install wireless-tools net-tools libpcap-dev bluetooth
 apt update
 apt install -yy libpcap0.8-dev
 sudo apt install -y libpcap-dev
-# alpine linux
-apk update
-apk add --upgrade libcap
-
 # cent os
-yum update -yy
 yum install -yy glibc-devel.x86_64
 yum install -yy libpcap
 # mac os
 brew install libpcap
+
 ```
 
 2.前往
-[https://github.com/hktalent/ProScan4all/releases/](https://github.com/hktalent/ProScan4all/releases/)
+[https://github.com/hktalent/scan4all/releases/](https://github.com/hktalent/scan4all/releases/)
 下载scan4all最新版运行:
 
 ## 运行时动态库版本问题

@@ -1,6 +1,7 @@
 package go_utils
 
 import (
+	"bufio"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -357,5 +358,22 @@ func CloseAll() {
 	CloseCache()
 	if runtime.GOOS == "windows" || GetValAsBool("autoRmCache") {
 		os.RemoveAll(GetVal(CacheName))
+	}
+}
+
+const (
+	MacLineSize = 10 * 1024 * 1024 // 10M
+)
+
+// 读取命令行管道输入
+func ReadStdIn(out chan *string) {
+	if nil != os.Stdin {
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Buffer(make([]byte, MacLineSize), MacLineSize)
+		for scanner.Scan() {
+			value := strings.TrimSpace(scanner.Text())
+			out <- &value
+		}
+		close(out)
 	}
 }

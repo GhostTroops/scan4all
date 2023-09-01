@@ -1,23 +1,20 @@
 package main
 
-import (
-	"github.com/hktalent/scan4all/lib/util"
-	"log"
-)
+import "log"
 
-// //"github.com/hktalent/scan4all/pkg/hydra"
-// import (
 //
+////"github.com/hktalent/scan4all/pkg/hydra"
+//import (
 //	"github.com/hktalent/scan4all/pkg/hydra"
+//)
 //
-// )
 func main() {
 	var nucleiDone1, nucleiDone2 = make(chan bool), make(chan bool)
-	util.DefaultPool.Submit(func() {
+	go func() {
 		//nucleiDone1 <- true
 		//close(nucleiDone1)
 		close(nucleiDone2)
-	})
+	}()
 
 	//log.Printf("%v %v", <-nucleiDone1, <-nucleiDone2)
 	for {
@@ -25,6 +22,7 @@ func main() {
 		case b, ok := <-nucleiDone1:
 			log.Printf("%v %v", b, ok)
 			break
+		default:
 
 		}
 	}

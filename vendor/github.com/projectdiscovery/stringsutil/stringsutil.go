@@ -55,7 +55,7 @@ func HasPrefixAny(s string, prefixes ...string) bool {
 	return false
 }
 
-// // HasSuffixAny checks if the string ends with any specified suffix
+// HasSuffixAny checks if the string ends with any specified suffix
 func HasSuffixAny(s string, suffixes ...string) bool {
 	for _, suffix := range suffixes {
 		if strings.HasSuffix(s, suffix) {
@@ -73,7 +73,7 @@ func TrimPrefixAny(s string, prefixes ...string) string {
 	return s
 }
 
-// TrimPrefixAny trims all suffixes from string in order
+// TrimSuffixAny trims all suffixes from string in order
 func TrimSuffixAny(s string, suffixes ...string) string {
 	for _, suffix := range suffixes {
 		s = strings.TrimSuffix(s, suffix)
@@ -140,7 +140,7 @@ func ContainsAny(s string, ss ...string) bool {
 	return false
 }
 
-// EqualFoldsAny returns true is s is equal to any specified substring
+// EqualFoldAny returns true if s is equal to any specified substring
 func EqualFoldAny(s string, ss ...string) bool {
 	for _, sss := range ss {
 		if strings.EqualFold(s, sss) {
@@ -195,7 +195,7 @@ func SlideWithLength(s string, l int) chan string {
 
 // ReplaceAll returns a copy of the string s with all
 // instances of old incrementally replaced by new.
-func ReplaceAny(s, new string, olds ...string) string {
+func ReplaceAll(s, new string, olds ...string) string {
 	for _, old := range olds {
 		s = strings.ReplaceAll(s, old, new)
 	}

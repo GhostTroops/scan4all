@@ -384,6 +384,9 @@ func (ka *signedKeyAgreement) signParameters(config *Config, cert *Certificate, 
 			return nil, errors.New("failed to sign ECDHE parameters: " + err.Error())
 		}
 		sig, err = asn1.Marshal(ecdsaSignature{r, s})
+		if err != nil {
+			return nil, errors.New("failed to marshal ECDSA signature: " + err.Error())
+		}
 	case signatureRSA:
 		privKey, ok := cert.PrivateKey.(*rsa.PrivateKey)
 		if !ok {

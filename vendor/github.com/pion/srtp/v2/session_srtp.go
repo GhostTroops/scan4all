@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package srtp
 
 import (
@@ -47,15 +50,16 @@ func NewSessionSRTP(conn net.Conn, config *Config) (*SessionSRTP, error) { //nol
 
 	s := &SessionSRTP{
 		session: session{
-			nextConn:      conn,
-			localOptions:  localOpts,
-			remoteOptions: remoteOpts,
-			readStreams:   map[uint32]readStream{},
-			newStream:     make(chan readStream),
-			started:       make(chan interface{}),
-			closed:        make(chan interface{}),
-			bufferFactory: config.BufferFactory,
-			log:           loggerFactory.NewLogger("srtp"),
+			nextConn:            conn,
+			localOptions:        localOpts,
+			remoteOptions:       remoteOpts,
+			readStreams:         map[uint32]readStream{},
+			newStream:           make(chan readStream),
+			acceptStreamTimeout: config.AcceptStreamTimeout,
+			started:             make(chan interface{}),
+			closed:              make(chan interface{}),
+			bufferFactory:       config.BufferFactory,
+			log:                 loggerFactory.NewLogger("srtp"),
 		},
 	}
 	s.writeStream = &WriteStreamSRTP{s}
@@ -171,6 +175,9 @@ func (s *SessionSRTP) decrypt(buf []byte) error {
 	if r == nil {
 		return nil // Session has been closed
 	} else if isNew {
+		if !s.session.acceptStreamTimeout.IsZero() {
+			_ = s.session.nextConn.SetReadDeadline(time.Time{})
+		}
 		s.session.newStream <- r // Notify AcceptStream
 	}
 

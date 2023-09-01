@@ -1,6 +1,7 @@
 package network
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net"
@@ -26,6 +27,11 @@ type ClientInfo struct {
 	DomainName  string
 	DriverName  string
 	PID         int
+	UseKerberos bool
+	Language    string
+	Territory   string
+	CharsetID   int
+	Cid         string
 }
 type DatabaseInfo struct {
 	UserID          string
@@ -39,6 +45,11 @@ type DatabaseInfo struct {
 	AuthType        int
 	connStr         string
 }
+
+type DialerContext interface {
+	DialContext(ctx context.Context, network, address string) (net.Conn, error)
+}
+
 type SessionInfo struct {
 	SSLVersion            string
 	Timeout               time.Duration
@@ -48,9 +59,12 @@ type SessionInfo struct {
 	Protocol              string
 	SSL                   bool
 	SSLVerify             bool
+	Dialer                DialerContext
 }
 type AdvNegoSeviceInfo struct {
-	AuthService []string
+	AuthService     []string
+	EncServiceLevel int
+	IntServiceLevel int
 }
 type ConnectionOption struct {
 	ClientInfo
@@ -59,10 +73,13 @@ type ConnectionOption struct {
 	AdvNegoSeviceInfo
 	Tracer       trace.Tracer
 	PrefetchRows int
+	Failover     int
+	RetryTime    int
+	Lob          int
 }
 
 func extractServers(connStr string) ([]ServerAddr, error) {
-	r, err := regexp.Compile(`(?i)\(\s*ADDRESS\s*=\s*(\(\s*(HOST)\s*=\s*([\w,\.,\-]+)\s*\)|\(\s*(PORT)\s*=\s*([0-9]+)\s*\)|\(\s*(COMMUNITY)\s*=\s*([\w,\.,\-]+)\s*\)|\(\s*(PORT)\s*=\s*([0-9]+)\s*\)|\(\s*(PROTOCOL)\s*=\s*(\w+)\s*\))+\)`)
+	r, err := regexp.Compile(`(?i)\(\s*ADDRESS\s*=\s*(\(\s*(HOST)\s*=\s*([\w,\.,\-]+)\s*\)|\(\s*(PORT)\s*=\s*([0-9]+)\s*\)|\(\s*(COMMUNITY)\s*=\s*([\w,\.,\-]+)\s*\)|\(\s*(PORT)\s*=\s*([0-9]+)\s*\)|\(\s*(PROTOCOL)\s*=\s*(\w+)\s*\)\s*)+\)`)
 	if err != nil {
 		return nil, err
 	}
@@ -119,6 +136,8 @@ func (op *ConnectionOption) updateSSL(server *ServerAddr) error {
 }
 
 func (op *ConnectionOption) UpdateDatabaseInfo(connStr string) error {
+	connStr = strings.ReplaceAll(connStr, "\r", "")
+	connStr = strings.ReplaceAll(connStr, "\n", "")
 	op.connStr = connStr
 	var err error
 	op.Servers, err = extractServers(connStr)
@@ -169,6 +188,9 @@ func (serv *ServerAddr) IsEqual(input *ServerAddr) bool {
 func (serv *ServerAddr) networkAddr() string {
 	return net.JoinHostPort(serv.Addr, strconv.Itoa(serv.Port))
 }
+func (op *ConnectionOption) ResetServerIndex() {
+	op.serverIndex = 0
+}
 func (op *ConnectionOption) GetActiveServer(jump bool) *ServerAddr {
 	if jump {
 		op.serverIndex++
@@ -189,6 +211,9 @@ func (op *ConnectionOption) ConnectionData() string {
 		protocol = host.Protocol
 	}
 	FulCid := "(CID=(PROGRAM=" + op.ProgramPath + ")(HOST=" + op.HostName + ")(USER=" + op.UserName + "))"
+	if len(op.Cid) > 0 {
+		FulCid = op.Cid
+	}
 	var address string
 	if len(op.UnixAddress) > 0 {
 		address = "(ADDRESS=(PROTOCOL=IPC)(KEY=EXTPROC1))"

@@ -89,6 +89,10 @@ MISCELLANEOUS:
    -si, -shuffle-ip           Shuffle Input IPs in random order
    -sp, -shuffle-port string  Shuffle Input IP:Port in random order
 
+UPDATE:
+   -up, -update                 update mapcidr to latest version
+   -duc, -disable-update-check  disable automatic mapcidr update check
+   
 OUTPUT:
    -verbose            Verbose mode
    -o, -output string  File to write output to
@@ -303,6 +307,19 @@ In order to count number of hosts for a given CIDR or list of CIDR, use the foll
 $ echo 173.0.84.0/16 | mapcidr -count -silent
 
 65536
+```
+
+### ASN Input
+
+In order to get the IP address of ASN number, use the following command
+```
+echo AS15133 | mapcidr -silent
+
+5.104.64.0
+5.104.64.1
+5.104.64.2
+5.104.64.3
+5.104.64.4
 ```
 
 # Use mapCIDR as a library

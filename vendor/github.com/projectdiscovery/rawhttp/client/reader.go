@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strconv"
 )
 
 type reader struct {
@@ -65,39 +66,25 @@ func readVersionErr(pos int, expected, got byte) (Version, error) {
 	return invalidVersion, fmt.Errorf("ReadVersion: expected %q, got %q at position %v", expected, got, pos)
 }
 
+const maxStatusCodeLength = 25
+
 // ReadStatusCode reads the HTTP status code from the wire.
+// - numbers of arbitrary size are accepted
+// - non rfc status codes are supported
 func (r *reader) ReadStatusCode() (int, error) {
-	var code int
-	for pos := 0; pos < len("200 "); pos++ {
+	var pattern string
+	// read until: space, \r
+	for p := 0; p < maxStatusCodeLength; p++ {
 		c, err := r.ReadByte()
 		if err != nil {
 			return 0, err
 		}
-		switch pos {
-		case 0, 1, 2:
-			switch c {
-			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-				switch pos {
-				case 0:
-					code = int(int(c)-0x30) * 100
-				case 1:
-					code += int(int(c)-0x30) * 10
-				case 2:
-					code += int(int(c) - 0x30)
-				}
-			}
-		case 3:
-			switch c {
-			case '\r':
-				// special case "HTTP/1.1 301\r\n" has a blank reason.
-			case ' ':
-				// nothing
-			default:
-				return 0, fmt.Errorf("ReadStatusCode: expected %q, got %q at position %v", ' ', c, pos)
-			}
+		if c == ' ' || c == '\r' {
+			break
 		}
+		pattern += string(c)
 	}
-	return code, nil
+	return strconv.Atoi(pattern)
 }
 
 // ReadStatusLine reads the status line.

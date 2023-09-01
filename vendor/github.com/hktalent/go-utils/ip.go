@@ -10,9 +10,14 @@ import (
 	"strings"
 )
 
+var szCurIp string
+
 // get your public ip
 // auto skip proxy
 func GetPublicIp() string {
+	if "" != szCurIp {
+		return szCurIp
+	}
 	c, err := stun.Dial("udp", "stun.l.google.com:19302")
 	if err != nil {
 		log.Println(err)
@@ -33,6 +38,7 @@ func GetPublicIp() string {
 			log.Println(err)
 		}
 		szR = xorAddr.IP.String()
+		szCurIp = szR
 		fmt.Println("your IP is", szR)
 	}); err != nil {
 		log.Println(err)

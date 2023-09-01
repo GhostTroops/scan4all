@@ -1,7 +1,11 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package server
 
 import (
 	"crypto/md5" //nolint:gosec,gci
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
@@ -14,9 +18,8 @@ import (
 )
 
 const (
-	maximumAllocationLifetime = time.Hour // https://tools.ietf.org/html/rfc5766#section-6.2 defines 3600 seconds recommendation
-	nonceLifetime             = time.Hour // https://tools.ietf.org/html/rfc5766#section-4
-
+	maximumAllocationLifetime = time.Hour // See: https://tools.ietf.org/html/rfc5766#section-6.2 defines 3600 seconds recommendation
+	nonceLifetime             = time.Hour // See: https://tools.ietf.org/html/rfc5766#section-4
 )
 
 func randSeq(n int) string {
@@ -32,10 +35,10 @@ func buildNonce() (string, error) {
 	/* #nosec */
 	h := md5.New()
 	if _, err := io.WriteString(h, strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
-		return "", fmt.Errorf("%w: %v", errFailedToGenerateNonce, err)
+		return "", fmt.Errorf("%w: %v", errFailedToGenerateNonce, err) //nolint:errorlint
 	}
 	if _, err := io.WriteString(h, strconv.FormatInt(rand.Int63(), 10)); err != nil { //nolint:gosec
-		return "", fmt.Errorf("%w: %v", errFailedToGenerateNonce, err)
+		return "", fmt.Errorf("%w: %v", errFailedToGenerateNonce, err) //nolint:errorlint
 	}
 	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }
@@ -46,13 +49,17 @@ func buildAndSend(conn net.PacketConn, dst net.Addr, attrs ...stun.Setter) error
 		return err
 	}
 	_, err = conn.WriteTo(msg.Raw, dst)
+	if errors.Is(err, net.ErrClosed) {
+		return nil
+	}
+
 	return err
 }
 
 // Send a STUN packet and return the original error to the caller
 func buildAndSendErr(conn net.PacketConn, dst net.Addr, err error, attrs ...stun.Setter) error {
 	if sendErr := buildAndSend(conn, dst, attrs...); sendErr != nil {
-		err = fmt.Errorf("%w %v %v", errFailedToSendError, sendErr, err)
+		err = fmt.Errorf("%w %v %v", errFailedToSendError, sendErr, err) //nolint:errorlint
 	}
 	return err
 }

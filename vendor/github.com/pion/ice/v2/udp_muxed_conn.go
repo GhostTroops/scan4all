@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package ice
 
 import (
@@ -8,7 +11,7 @@ import (
 	"time"
 
 	"github.com/pion/logging"
-	"github.com/pion/transport/packetio"
+	"github.com/pion/transport/v2/packetio"
 )
 
 type udpMuxedConnParams struct {
@@ -22,10 +25,10 @@ type udpMuxedConnParams struct {
 // udpMuxedConn represents a logical packet conn for a single remote as identified by ufrag
 type udpMuxedConn struct {
 	params *udpMuxedConnParams
-	// remote addresses that we have sent to on this conn
+	// Remote addresses that we have sent to on this conn
 	addresses []string
 
-	// channel holding incoming packets
+	// Channel holding incoming packets
 	buf        *packetio.Buffer
 	closedChan chan struct{}
 	closeOnce  sync.Once
@@ -46,7 +49,7 @@ func (c *udpMuxedConn) ReadFrom(b []byte) (n int, rAddr net.Addr, err error) {
 	buf := c.params.AddrPool.Get().(*bufferHolder) //nolint:forcetypeassert
 	defer c.params.AddrPool.Put(buf)
 
-	// read address
+	// Read address
 	total, err := c.buf.Read(buf.buf)
 	if err != nil {
 		return 0, nil, err
@@ -57,12 +60,12 @@ func (c *udpMuxedConn) ReadFrom(b []byte) (n int, rAddr net.Addr, err error) {
 		return 0, nil, io.ErrShortBuffer
 	}
 
-	// read data and then address
+	// Read data and then address
 	offset := 2
 	copy(b, buf.buf[offset:offset+dataLen])
 	offset += dataLen
 
-	// read address len & decode address
+	// Read address len & decode address
 	addrLen := int(binary.LittleEndian.Uint16(buf.buf[offset : offset+2]))
 	offset += 2
 
@@ -77,7 +80,7 @@ func (c *udpMuxedConn) WriteTo(buf []byte, rAddr net.Addr) (n int, err error) {
 	if c.isClosed() {
 		return 0, io.ErrClosedPipe
 	}
-	// each time we write to a new address, we'll register it with the mux
+	// Each time we write to a new address, we'll register it with the mux
 	addr := rAddr.String()
 	if !c.containsAddress(addr) {
 		c.addAddress(addr)
@@ -90,15 +93,15 @@ func (c *udpMuxedConn) LocalAddr() net.Addr {
 	return c.params.LocalAddr
 }
 
-func (c *udpMuxedConn) SetDeadline(tm time.Time) error {
+func (c *udpMuxedConn) SetDeadline(time.Time) error {
 	return nil
 }
 
-func (c *udpMuxedConn) SetReadDeadline(tm time.Time) error {
+func (c *udpMuxedConn) SetReadDeadline(time.Time) error {
 	return nil
 }
 
-func (c *udpMuxedConn) SetWriteDeadline(tm time.Time) error {
+func (c *udpMuxedConn) SetWriteDeadline(time.Time) error {
 	return nil
 }
 
@@ -137,7 +140,7 @@ func (c *udpMuxedConn) addAddress(addr string) {
 	c.addresses = append(c.addresses, addr)
 	c.mu.Unlock()
 
-	// map it on mux
+	// Map it on mux
 	c.params.Mux.registerConnForAddress(c, addr)
 }
 
@@ -167,30 +170,30 @@ func (c *udpMuxedConn) containsAddress(addr string) bool {
 }
 
 func (c *udpMuxedConn) writePacket(data []byte, addr *net.UDPAddr) error {
-	// write two packets, address and data
+	// Write two packets, address and data
 	buf := c.params.AddrPool.Get().(*bufferHolder) //nolint:forcetypeassert
 	defer c.params.AddrPool.Put(buf)
 
-	// format of buffer | data len | data bytes | addr len | addr bytes |
+	// Format of buffer | data len | data bytes | addr len | addr bytes |
 	if len(buf.buf) < len(data)+maxAddrSize {
 		return io.ErrShortBuffer
 	}
-	// data len
+	// Data length
 	binary.LittleEndian.PutUint16(buf.buf, uint16(len(data)))
 	offset := 2
 
-	// data
+	// Data
 	copy(buf.buf[offset:], data)
 	offset += len(data)
 
-	// write address first, leaving room for its length
+	// Write address first, leaving room for its length
 	n, err := encodeUDPAddr(addr, buf.buf[offset+2:])
 	if err != nil {
 		return err
 	}
 	total := offset + n + 2
 
-	// address len
+	// Address len
 	binary.LittleEndian.PutUint16(buf.buf[offset:], uint16(n))
 
 	if _, err := c.buf.Write(buf.buf[:total]); err != nil {
@@ -225,7 +228,7 @@ func decodeUDPAddr(buf []byte) (*net.UDPAddr, error) {
 	offset := 0
 	ipLen := int(binary.LittleEndian.Uint16(buf[:2]))
 	offset += 2
-	// basic bounds checking
+	// Basic bounds checking
 	if ipLen+offset > len(buf) {
 		return nil, io.ErrShortBuffer
 	}

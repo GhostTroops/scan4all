@@ -1,9 +1,7 @@
 package go_ora
 
 import (
-	"errors"
-	"fmt"
-	"github.com/sijms/go-ora/v2/network"
+	"database/sql/driver"
 )
 
 type simpleObject struct {
@@ -36,56 +34,49 @@ func (obj *simpleObject) read() error {
 		if err != nil {
 			return err
 		}
-		switch msg {
-		case 4:
-			session.Summary, err = network.NewSummary(session)
-			if err != nil {
-				return err
-			}
+		err = obj.connection.readResponse(msg)
+		if err != nil {
+			return err
+		}
+		if msg == 4 || msg == 9 {
 			loop = false
-		case 9:
-			if session.HasEOSCapability {
-				if session.Summary == nil {
-					session.Summary = new(network.SummaryObject)
-				}
-				session.Summary.EndOfCallStatus, err = session.GetInt(4, true, true)
-				if err != nil {
-					return err
-				}
-			}
-			if session.HasFSAPCapability {
-				if session.Summary == nil {
-					session.Summary = new(network.SummaryObject)
-				}
-				session.Summary.EndToEndECIDSequence, err = session.GetInt(2, true, true)
-				if err != nil {
-					return err
-				}
-			}
-			loop = false
-		case 15:
-			warning, err := network.NewWarningObject(session)
-			if err != nil {
-				return err
-			}
-			if warning != nil {
-				fmt.Println(warning)
-			}
-		case 23:
-			opCode, err := session.GetByte()
-			if err != nil {
-				return err
-			}
-			err = obj.connection.getServerNetworkInformation(opCode)
-			if err != nil {
-				return err
-			}
-		default:
-			return errors.New(fmt.Sprintf("TTC error: received code %d during simple object read", msg))
 		}
 	}
 	if session.HasError() {
 		return session.GetError()
 	}
 	return nil
+}
+
+func (obj *simpleObject) exec() error {
+	tracer := obj.connection.connOption.Tracer
+	failOver := obj.connection.connOption.Failover
+	if failOver == 0 {
+		failOver = 1
+	}
+	var err = obj.write().read()
+	if err != nil {
+		if isBadConn(err) {
+			tracer.Print("Error: ", err)
+			return driver.ErrBadConn
+		}
+		return err
+	}
+	return nil
+	//var reconnect bool
+	//for writeTrials := 0; writeTrials < failOver; writeTrials++ {
+	//	reconnect, err = obj.connection.reConnect(err, writeTrials)
+	//	if err != nil {
+	//		tracer.Print("Error: ", err)
+	//		if !reconnect {
+	//			return err
+	//		}
+	//		continue
+	//	}
+	//	break
+	//}
+	//if reconnect {
+	//	return &network.OracleError{ErrCode: 3135}
+	//}
+	//return err
 }

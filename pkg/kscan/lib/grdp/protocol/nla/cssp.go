@@ -68,7 +68,7 @@ func EncodeDERTRequest(msgs []Message, authInfo []byte, pubKeyAuth []byte) []byt
 
 	result, err := asn1.Marshal(req)
 	if err != nil {
-		//glog.Error(err)
+		glog.Error(err)
 	}
 	return result
 }

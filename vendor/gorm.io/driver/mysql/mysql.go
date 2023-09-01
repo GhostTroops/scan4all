@@ -21,6 +21,10 @@ import (
 	"gorm.io/gorm/utils"
 )
 
+const (
+	AutoRandomTag = "auto_random()" // Treated as an auto_random field for tidb
+)
+
 type Config struct {
 	DriverName                    string
 	ServerVersion                 string
@@ -36,6 +40,7 @@ type Config struct {
 	DontSupportRenameColumn       bool
 	DontSupportForShareClause     bool
 	DontSupportNullAsDefaultValue bool
+	DontSupportRenameColumnUnique bool
 }
 
 type Dialector struct {
@@ -61,6 +66,12 @@ func Open(dsn string) gorm.Dialector {
 }
 
 func New(config Config) gorm.Dialector {
+	switch {
+	case config.DSN == "" && config.DSNConfig != nil:
+		config.DSN = config.DSNConfig.FormatDSN()
+	case config.DSN != "" && config.DSNConfig == nil:
+		config.DSNConfig, _ = mysql.ParseDSN(config.DSN)
+	}
 	return &Dialector{Config: &config}
 }
 
@@ -133,6 +144,10 @@ func (dialector Dialector) Initialize(db *gorm.DB) (err error) {
 			dialector.Config.DontSupportRenameIndex = true
 			dialector.Config.DontSupportRenameColumn = true
 			dialector.Config.DontSupportForShareClause = true
+		}
+
+		if strings.Contains(dialector.ServerVersion, "TiDB") {
+			dialector.Config.DontSupportRenameColumnUnique = true
 		}
 	}
 
@@ -417,13 +432,39 @@ func (dialector Dialector) getSchemaBytesType(field *schema.Field) string {
 	return "longblob"
 }
 
-func (dialector Dialector) getSchemaIntAndUnitType(field *schema.Field) string {
-	constraint := func(sqlType string) string {
+// autoRandomType
+// field.DataType MUST be `schema.Int` or `schema.Uint`
+// Judgement logic:
+// 1. Is PrimaryKey;
+// 2. Has default value;
+// 3. Default value is "auto_random()";
+// 4. IGNORE the field.Size, it MUST be bigint;
+// 5. CLEAR the default tag, and return true;
+// 6. Otherwise, return false.
+func autoRandomType(field *schema.Field) (bool, string) {
+	if field.PrimaryKey && field.HasDefaultValue &&
+		strings.ToLower(strings.TrimSpace(field.DefaultValue)) == AutoRandomTag {
+		field.DefaultValue = ""
+
+		sqlType := "bigint"
 		if field.DataType == schema.Uint {
 			sqlType += " unsigned"
 		}
-		if field.NotNull {
-			sqlType += " NOT NULL"
+		sqlType += " auto_random"
+		return true, sqlType
+	}
+
+	return false, ""
+}
+
+func (dialector Dialector) getSchemaIntAndUnitType(field *schema.Field) string {
+	if autoRandom, typeString := autoRandomType(field); autoRandom {
+		return typeString
+	}
+
+	constraint := func(sqlType string) string {
+		if field.DataType == schema.Uint {
+			sqlType += " unsigned"
 		}
 		if field.AutoIncrement {
 			sqlType += " AUTO_INCREMENT"

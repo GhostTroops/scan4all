@@ -170,6 +170,7 @@ type GoSNMP struct {
 }
 
 // Default connection settings
+//
 //nolint:gochecknoglobals
 var Default = &GoSNMP{
 	Port:               161,
@@ -285,8 +286,9 @@ func (x *GoSNMP) ConnectIPv6() error {
 // connect to address addr on the given network
 //
 // https://golang.org/pkg/net/#Dial gives acceptable network values as:
-//   "tcp", "tcp4" (IPv4-only), "tcp6" (IPv6-only), "udp", "udp4" (IPv4-only),"udp6" (IPv6-only), "ip",
-//   "ip4" (IPv4-only), "ip6" (IPv6-only), "unix", "unixgram" and "unixpacket"
+//
+//	"tcp", "tcp4" (IPv4-only), "tcp6" (IPv6-only), "udp", "udp4" (IPv4-only),"udp6" (IPv6-only), "ip",
+//	"ip4" (IPv4-only), "ip6" (IPv6-only), "unix", "unixgram" and "unixpacket"
 func (x *GoSNMP) connect(networkSuffix string) error {
 	err := x.validateParameters()
 	if err != nil {
@@ -623,8 +625,8 @@ func (x *GoSNMP) WalkAll(rootOid string) (results []SnmpPDU, err error) {
 // the following values:
 //
 // 0  1  2  3  4  5  6  7
-//       T        T     T
 //
+//	T        T     T
 func Partition(currentPosition, partitionSize, sliceLength int) bool {
 	if currentPosition < 0 || currentPosition >= sliceLength {
 		return false

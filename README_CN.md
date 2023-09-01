@@ -1,4 +1,4 @@
-[![Tweet](https://img.shields.io/twitter/url/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
+[![Tweet](https://img.shields.io/twitter/szUrl/http/Hktalent3135773.svg?style=social)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![Follow on Twitter](https://img.shields.io/twitter/follow/Hktalent3135773.svg?style=social&label=Follow)](https://twitter.com/intent/follow?screen_name=Hktalent3135773) [![GitHub Followers](https://img.shields.io/github/followers/hktalent.svg?style=social&label=Follow)](https://github.com/hktalent/)
 <p align="center">
    <a href="/README.md">README_EN</a> •
    <a href="/static/Installation.md">编译/安装/运行</a> •
@@ -64,25 +64,6 @@ noScan=true  ./scan4all -l list.txt  -v
 
 <img src="/static/nmap.gif" width="400">
 
-### --top-ports
-values for reaching various effectiveness levels
-https://nmap.org/book/performance-port-selection.html
-|Effectiveness|TCP portsrequired|UDP ports required|
-| --- | --- | --- |
-|10%|1|5|
-|20%|2|12|
-|30%|4|27|
-|40%|6|135|
-|50%|10|1,075|
-|60%|18|2,618|
-|70%|44|5,157|
-|80%|122|7,981|
-|85%|236|9,623|
-|90%|576|11,307|
-|95%|1,558|13,035|
-|99%|3,328|15,094|
-|100%|65,536|65,536|
-
 - 快速 15000+ POC 检测功能，PoCs包含：
   * nuclei POC
   ## Nuclei Templates Top 10 statistics
@@ -147,9 +128,9 @@ mkdir ~/MyWork/;cd ~/MyWork/;git clone  https://github.com/hktalent/log4j-scan
 
 # 如何安装
 download from
-<a href=https://github.com/hktalent/ProScan4all/releases>Releases</a>
+<a href=https://github.com/hktalent/scan4all/releases>Releases</a>
 ```bash
-go install github.com/hktalent/scan4all@latest
+go install github.com/hktalent/scan4all@2.6.9
 scan4all -h
 ```
 # 如何使用
@@ -190,7 +171,7 @@ http://127.0.0.1:9200/nmap_index/_doc/_search?q=_id:192.168.0.111
 
 ```
 - 使用前请自行安装nmap
-<a href=https://github.com/hktalent/ProScan4all/discussions>使用帮助</a>
+<a href=https://github.com/hktalent/scan4all/discussions>使用帮助</a>
 ```bash
 export GOPRIVATE=github.com/hktalent
 go env |grep GOPRIVATE
@@ -223,7 +204,7 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 # Q & A
 - how use Cookie?
 - libpcap related question
-more see: <a href=https://github.com/hktalent/ProScan4all/discussions>discussions</a>
+more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</a>
 
 # 变更日志
 - 2022-10-03 Pro版本：
@@ -258,7 +239,7 @@ more see: <a href=https://github.com/hktalent/ProScan4all/discussions>discussion
 # 交流群(微信、QQ、Tg)
 | Wechat | Or | QQchat | Or | Tg |
 | --- |--- |--- |--- |--- |
-|<img src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/wc.png>|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/zfb.png>|[paypal](https://www.paypal.me/pwned2019) **miracletalent@gmail.com**|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/BTC.png>|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/BCH.jpg>|
+|<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/wcq.JPG>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/qqc.jpg>||<img width=166 src=https://github.com/hktalent/scan4all/blob/main/static/tg.jpg>|
 
 
 ## 💖Star
@@ -267,7 +248,7 @@ more see: <a href=https://github.com/hktalent/ProScan4all/discussions>discussion
 # Donation
 | Wechat Pay | AliPay | Paypal | BTC Pay |BCH Pay |
 | --- | --- | --- | --- | --- |
-|<img src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/wc.png>|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/zfb.png>|[paypal](https://www.paypal.me/pwned2019) **miracletalent@gmail.com**|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/BTC.png>|<img width=166 src=https://raw.githubusercontent.com/hktalent/myhktools/main/md/BCH.jpg>|
+|<img src=https://github.com/hktalent/myhktools/blob/master/md/wc.png>|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/zfb.png>|[paypal](https://www.paypal.me/pwned2019) **miracletalent@gmail.com**|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/BTC.png>|<img width=166 src=https://github.com/hktalent/myhktools/blob/master/md/BCH.jpg>|
 
 
 <!--
@@ -276,16 +257,7 @@ go env |grep GOPRIVATE
 
 https://github.com/heartshare/go-wafw00f
 
-git submodule add --force  https://github.com/projectdiscovery/fuzzing-templates.git config/fuzzing-templates
-git submodule add --force  https://github.com/projectdiscovery/nuclei-templates.git config/nuclei-templates
-git submodule add --force  https://github.com/defparam/smuggler.git config/smuggler
+git submodule add --force  https://github.com/hktalent/nuclei-templates.git config/nuclei-templates
 git submodule update --init --recursive
 /usr/bin/git -c protocol.version=2 submodule update --init --force --recursive
-/usr/bin/git -c protocol.version=2 submodule update --remote --force --recursive
-
-git submodule  update --init --recursive --remote
-
-
-cat us_gov_ksubdomain.txt|sed 's/=.*$//g'|sort -u|./tools/macOS/httpx -silent -http2 -nc -p 80,443 -t 60 -json -o us_gov_httpx.json
-
 -->

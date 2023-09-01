@@ -43,7 +43,7 @@ func FindFile(path, keyworld string) {
 	Configs.FindReslt = nil
 }
 
-// 搜索所有的json格式文件
+//搜索所有的json格式文件
 func FindFileAllJson(pathname string, FindResltAllJson []string) ([]string, error) { //s用于存储临时环境
 
 	fromSlash := filepath.FromSlash(pathname)

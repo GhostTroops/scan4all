@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package webrtc
 
 // ICERole describes the role ice.Agent is playing in selecting the
@@ -42,4 +45,15 @@ func (t ICERole) String() string {
 	default:
 		return ErrUnknownType.Error()
 	}
+}
+
+// MarshalText implements encoding.TextMarshaler
+func (t ICERole) MarshalText() ([]byte, error) {
+	return []byte(t.String()), nil
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler
+func (t *ICERole) UnmarshalText(b []byte) error {
+	*t = newICERole(string(b))
+	return nil
 }

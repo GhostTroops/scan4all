@@ -1,9 +1,17 @@
 package goflags
 
-var optionMap map[*StringSlice]Options
+import (
+	sliceutil "github.com/projectdiscovery/utils/slice"
+)
+
+var (
+	optionMap           map[*StringSlice]Options
+	optionDefaultValues map[*StringSlice][]string
+)
 
 func init() {
 	optionMap = make(map[*StringSlice]Options)
+	optionDefaultValues = make(map[*StringSlice][]string)
 }
 
 // StringSlice is a slice of strings
@@ -19,6 +27,13 @@ func (stringSlice *StringSlice) Set(value string) error {
 	if err != nil {
 		return err
 	}
+	// if new values are provided, we remove default ones
+	if defaultValue, ok := optionDefaultValues[stringSlice]; ok {
+		if sliceutil.Equal(*stringSlice, defaultValue) {
+			*stringSlice = []string{}
+		}
+	}
+
 	*stringSlice = append(*stringSlice, values...)
 	return nil
 }

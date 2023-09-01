@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package sctp
 
 import (
@@ -13,15 +16,15 @@ transmitted in the SCTP packet.  Each chunk is formatted with a Chunk
 Type field, a chunk-specific Flag field, a Chunk Length field, and a
 Value field.
 
- 0                   1                   2                   3
- 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|   Chunk Type  | Chunk  Flags  |        Chunk Length           |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-|                                                               |
-|                          Chunk Value                          |
-|                                                               |
-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	 0                   1                   2                   3
+	 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|   Chunk Type  | Chunk  Flags  |        Chunk Length           |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|                                                               |
+	|                          Chunk Value                          |
+	|                                                               |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 */
 type chunkHeader struct {
 	typ   chunkType
@@ -33,15 +36,16 @@ const (
 	chunkHeaderSize = 4
 )
 
+// SCTP chunk header errors
 var (
-	errChunkHeaderTooSmall       = errors.New("raw is too small for a SCTP chunk")
-	errChunkHeaderNotEnoughSpace = errors.New("not enough data left in SCTP packet to satisfy requested length")
-	errChunkHeaderPaddingNonZero = errors.New("chunk padding is non-zero at offset")
+	ErrChunkHeaderTooSmall       = errors.New("raw is too small for a SCTP chunk")
+	ErrChunkHeaderNotEnoughSpace = errors.New("not enough data left in SCTP packet to satisfy requested length")
+	ErrChunkHeaderPaddingNonZero = errors.New("chunk padding is non-zero at offset")
 )
 
 func (c *chunkHeader) unmarshal(raw []byte) error {
 	if len(raw) < chunkHeaderSize {
-		return fmt.Errorf("%w: raw only %d bytes, %d is the minimum length", errChunkHeaderTooSmall, len(raw), chunkHeaderSize)
+		return fmt.Errorf("%w: raw only %d bytes, %d is the minimum length", ErrChunkHeaderTooSmall, len(raw), chunkHeaderSize)
 	}
 
 	c.typ = chunkType(raw[0])
@@ -53,7 +57,7 @@ func (c *chunkHeader) unmarshal(raw []byte) error {
 	lengthAfterValue := len(raw) - (chunkHeaderSize + valueLength)
 
 	if lengthAfterValue < 0 {
-		return fmt.Errorf("%w: remain %d req %d ", errChunkHeaderNotEnoughSpace, valueLength, len(raw)-chunkHeaderSize)
+		return fmt.Errorf("%w: remain %d req %d ", ErrChunkHeaderNotEnoughSpace, valueLength, len(raw)-chunkHeaderSize)
 	} else if lengthAfterValue < 4 {
 		// https://tools.ietf.org/html/rfc4960#section-3.2
 		// The Chunk Length field does not count any chunk padding.
@@ -67,7 +71,7 @@ func (c *chunkHeader) unmarshal(raw []byte) error {
 		for i := lengthAfterValue; i > 0; i-- {
 			paddingOffset := chunkHeaderSize + valueLength + (i - 1)
 			if raw[paddingOffset] != 0 {
-				return fmt.Errorf("%w: %d ", errChunkHeaderPaddingNonZero, paddingOffset)
+				return fmt.Errorf("%w: %d ", ErrChunkHeaderPaddingNonZero, paddingOffset)
 			}
 		}
 	}

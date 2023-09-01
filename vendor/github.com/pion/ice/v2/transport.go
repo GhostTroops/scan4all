@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package ice
 
 import (
@@ -49,7 +52,7 @@ func (a *Agent) connect(ctx context.Context, isControlling bool, remoteUfrag, re
 		return nil, err
 	}
 
-	// block until pair selected
+	// Block until pair selected
 	select {
 	case <-a.done:
 		return nil, a.getErr()
@@ -83,7 +86,7 @@ func (c *Conn) Write(p []byte) (int, error) {
 	}
 
 	if stun.IsMessage(p) {
-		return 0, errICEWriteSTUNMessage
+		return 0, errWriteSTUNMessageToIceConn
 	}
 
 	pair := c.agent.getSelectedPair()
@@ -130,16 +133,16 @@ func (c *Conn) RemoteAddr() net.Addr {
 }
 
 // SetDeadline is a stub
-func (c *Conn) SetDeadline(t time.Time) error {
+func (c *Conn) SetDeadline(time.Time) error {
 	return nil
 }
 
 // SetReadDeadline is a stub
-func (c *Conn) SetReadDeadline(t time.Time) error {
+func (c *Conn) SetReadDeadline(time.Time) error {
 	return nil
 }
 
 // SetWriteDeadline is a stub
-func (c *Conn) SetWriteDeadline(t time.Time) error {
+func (c *Conn) SetWriteDeadline(time.Time) error {
 	return nil
 }

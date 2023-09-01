@@ -10,7 +10,6 @@ import (
 	"github.com/boy-hack/ksubdomain/runner/outputter"
 	"github.com/boy-hack/ksubdomain/runner/outputter/output"
 	"github.com/boy-hack/ksubdomain/runner/processbar"
-	"github.com/hktalent/scan4all/lib/util"
 	"github.com/urfave/cli/v2"
 	"os"
 )
@@ -123,7 +122,7 @@ var verifyCommand = &cli.Command{
 			}
 			total += t
 		}
-		util.DefaultPool.Submit(func() {
+		go func() {
 			for _, line := range domains {
 				render <- line
 			}
@@ -140,7 +139,7 @@ var verifyCommand = &cli.Command{
 				}
 			}
 			close(render)
-		})
+		}()
 
 		onlyDomain := c.Bool("only-domain")
 		if c.String("output") != "" {

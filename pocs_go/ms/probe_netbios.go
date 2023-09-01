@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
-
 	//"log"
 	"math/rand"
 	"net"
@@ -349,7 +347,7 @@ func (this *ProbeNetbios) Initialize() {
 	// Open socket
 	this.socket, _ = net.ListenPacket("udp", "")
 
-	util.DefaultPool.Submit(func() {
+	go func() {
 		go this.ProcessReplies()
 
 		for dip := range this.input {
@@ -380,7 +378,7 @@ func (this *ProbeNetbios) Initialize() {
 
 		// Complete
 		this.waiter.Done()
-	})
+	}()
 
 	return
 }

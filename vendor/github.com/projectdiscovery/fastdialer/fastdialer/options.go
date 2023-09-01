@@ -51,6 +51,7 @@ type Options struct {
 	WithZTLS            bool
 	SNIName             string
 	OnDialCallback      func(hostname, IP string)
+	DisableZtlsFallback bool
 }
 
 // DefaultOptions of the cache

@@ -1,13 +1,15 @@
-// Package ice ...
-//
-//nolint:dupl
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package ice
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/pion/logging"
-	"github.com/pion/transport/vnet"
+	"github.com/pion/transport/v2"
+	"github.com/pion/transport/v2/stdnet"
 )
 
 // MultiUDPMuxDefault implements both UDPMux and AllConnsGetter,
@@ -80,15 +82,22 @@ func NewMultiUDPMuxFromPort(port int, opts ...UDPMuxFromPortOption) (*MultiUDPMu
 	for _, opt := range opts {
 		opt.apply(&params)
 	}
-	muxNet := vnet.NewNet(nil)
-	ips, err := localInterfaces(muxNet, params.ifFilter, params.ipFilter, params.networks, params.includeLoopback)
+
+	if params.net == nil {
+		var err error
+		if params.net, err = stdnet.NewNet(); err != nil {
+			return nil, fmt.Errorf("failed to get create network: %w", err)
+		}
+	}
+
+	ips, err := localInterfaces(params.net, params.ifFilter, params.ipFilter, params.networks, params.includeLoopback)
 	if err != nil {
 		return nil, err
 	}
 
 	conns := make([]net.PacketConn, 0, len(ips))
 	for _, ip := range ips {
-		conn, listenErr := net.ListenUDP("udp", &net.UDPAddr{IP: ip, Port: port})
+		conn, listenErr := params.net.ListenUDP("udp", &net.UDPAddr{IP: ip, Port: port})
 		if listenErr != nil {
 			err = listenErr
 			break
@@ -111,7 +120,11 @@ func NewMultiUDPMuxFromPort(port int, opts ...UDPMuxFromPortOption) (*MultiUDPMu
 
 	muxes := make([]UDPMux, 0, len(conns))
 	for _, conn := range conns {
-		mux := NewUDPMuxDefault(UDPMuxParams{Logger: params.logger, UDPConn: conn})
+		mux := NewUDPMuxDefault(UDPMuxParams{
+			Logger:  params.logger,
+			UDPConn: conn,
+			Net:     params.net,
+		})
 		muxes = append(muxes, mux)
 	}
 
@@ -131,6 +144,7 @@ type multiUDPMuxFromPortParam struct {
 	writeBufferSize int
 	logger          logging.LeveledLogger
 	includeLoopback bool
+	net             transport.Net
 }
 
 type udpMuxFromPortOption struct {
@@ -200,6 +214,15 @@ func UDPMuxFromPortWithLoopback() UDPMuxFromPortOption {
 	return &udpMuxFromPortOption{
 		f: func(p *multiUDPMuxFromPortParam) {
 			p.includeLoopback = true
+		},
+	}
+}
+
+// UDPMuxFromPortWithNet sets the network transport to use.
+func UDPMuxFromPortWithNet(n transport.Net) UDPMuxFromPortOption {
+	return &udpMuxFromPortOption{
+		f: func(p *multiUDPMuxFromPortParam) {
+			p.net = n
 		},
 	}
 }

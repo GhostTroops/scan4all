@@ -2,6 +2,7 @@ package winrm
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io"
 	"strings"
@@ -28,7 +29,6 @@ type Command struct {
 	shell    *Shell
 	id       string
 	exitCode int
-	finished bool
 	err      error
 
 	Stdin  *commandWriter
@@ -39,7 +39,7 @@ type Command struct {
 	cancel chan struct{}
 }
 
-func newCommand(shell *Shell, ids string) *Command {
+func newCommand(ctx context.Context, shell *Shell, ids string) *Command {
 	command := &Command{
 		shell:    shell,
 		client:   shell.client,
@@ -57,7 +57,7 @@ func newCommand(shell *Shell, ids string) *Command {
 	}
 	command.Stderr = newCommandReader("stderr", command)
 
-	go fetchOutput(command)
+	go fetchOutput(ctx, command)
 
 	return command
 }
@@ -72,12 +72,21 @@ func newCommandReader(stream string, command *Command) *commandReader {
 	}
 }
 
-func fetchOutput(command *Command) {
+func fetchOutput(ctx context.Context, command *Command) {
+	ctxDone := ctx.Done()
 	for {
 		select {
 		case <-command.cancel:
+			_, _ = command.slurpAllOutput()
+			err := errors.New("canceled")
+			command.Stderr.write.CloseWithError(err)
+			command.Stdout.write.CloseWithError(err)
 			close(command.done)
 			return
+		case <-ctxDone:
+			command.err = ctx.Err()
+			ctxDone = nil
+			command.Close()
 		default:
 			finished, err := command.slurpAllOutput()
 			if finished {
@@ -155,15 +164,15 @@ func (c *Command) slurpAllOutput() (bool, error) {
 		return true, err
 	}
 	if stdout.Len() > 0 {
-		c.Stdout.write.Write(stdout.Bytes())
+		_, _ = c.Stdout.write.Write(stdout.Bytes())
 	}
 	if stderr.Len() > 0 {
-		c.Stderr.write.Write(stderr.Bytes())
+		_, _ = c.Stderr.write.Write(stderr.Bytes())
 	}
 	if finished {
 		c.exitCode = exitCode
-		c.Stderr.write.Close()
-		c.Stdout.write.Close()
+		_ = c.Stderr.write.Close()
+		_ = c.Stdout.write.Close()
 	}
 
 	return finished, nil
@@ -254,7 +263,7 @@ func (w *commandWriter) Close() error {
 // Read data from this Pipe
 func (r *commandReader) Read(buf []byte) (int, error) {
 	n, err := r.read.Read(buf)
-	if err != nil && err != io.EOF {
+	if err != nil && errors.Is(err, io.EOF) {
 		return 0, err
 	}
 	return n, err

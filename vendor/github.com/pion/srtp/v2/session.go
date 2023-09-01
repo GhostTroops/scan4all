@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package srtp
 
 import (
@@ -5,9 +8,10 @@ import (
 	"io"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/pion/logging"
-	"github.com/pion/transport/packetio"
+	"github.com/pion/transport/v2/packetio"
 )
 
 type streamSession interface {
@@ -21,7 +25,8 @@ type session struct {
 	localContext, remoteContext *Context
 	localOptions, remoteOptions []ContextOption
 
-	newStream chan readStream
+	newStream           chan readStream
+	acceptStreamTimeout time.Time
 
 	started chan interface{}
 	closed  chan interface{}
@@ -41,10 +46,11 @@ type session struct {
 // or directly pass the keys themselves.
 // After a Config is passed to a session it must not be modified.
 type Config struct {
-	Keys          SessionKeys
-	Profile       ProtectionProfile
-	BufferFactory func(packetType packetio.BufferPacketType, ssrc uint32) io.ReadWriteCloser
-	LoggerFactory logging.LoggerFactory
+	Keys                SessionKeys
+	Profile             ProtectionProfile
+	BufferFactory       func(packetType packetio.BufferPacketType, ssrc uint32) io.ReadWriteCloser
+	LoggerFactory       logging.LoggerFactory
+	AcceptStreamTimeout time.Time
 
 	// List of local/remote context options.
 	// ReplayProtection is enabled on remote context by default.
@@ -115,6 +121,10 @@ func (s *session) start(localMasterKey, localMasterSalt, remoteMasterKey, remote
 
 	s.remoteContext, err = CreateContext(remoteMasterKey, remoteMasterSalt, profile, s.remoteOptions...)
 	if err != nil {
+		return err
+	}
+
+	if err = s.nextConn.SetReadDeadline(s.acceptStreamTimeout); err != nil {
 		return err
 	}
 

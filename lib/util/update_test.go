@@ -8,6 +8,6 @@ import (
 func TestUpdateScan4allVersionToLatest(t *testing.T) {
 	err := UpdateScan4allVersionToLatest(true)
 	if err != nil {
-		//t.Error("fail TestupdateNucleiVersionToLatest")
+		t.Error("fail TestupdateNucleiVersionToLatest")
 	}
 }

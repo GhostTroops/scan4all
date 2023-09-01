@@ -1,4 +1,13 @@
 # networkpolicy
+
+[![License](https://img.shields.io/github/license/projectdiscovery/networkpolicy)](LICENSE.md)
+![Go version](https://img.shields.io/github/go-mod/go-version/projectdiscovery/networkpolicy?filename=go.mod)
+[![Release](https://img.shields.io/github/release/projectdiscovery/networkpolicy)](https://github.com/projectdiscovery/networkpolicy/releases/)
+[![Checks](https://github.com/projectdiscovery/networkpolicy/actions/workflows/build-test.yml/badge.svg)](https://github.com/projectdiscovery/networkpolicy/actions/workflows/build-test.yml)
+[![GoDoc](https://pkg.go.dev/badge/projectdiscovery/networkpolicy)](https://pkg.go.dev/github.com/projectdiscovery/networkpolicy)
+
+
+
 The package acts as an embeddable configurable container handling allow/deny verdicts over a series of conditions including
 - IPs
 - CIDRs

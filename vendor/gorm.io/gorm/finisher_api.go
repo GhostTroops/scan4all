@@ -33,9 +33,10 @@ func (db *DB) CreateInBatches(value interface{}, batchSize int) (tx *DB) {
 		var rowsAffected int64
 		tx = db.getInstance()
 
+		// the reflection length judgment of the optimized value
+		reflectLen := reflectValue.Len()
+
 		callFc := func(tx *DB) error {
-			// the reflection length judgment of the optimized value
-			reflectLen := reflectValue.Len()
 			for i := 0; i < reflectLen; i += batchSize {
 				ends := i + batchSize
 				if ends > reflectLen {
@@ -53,7 +54,7 @@ func (db *DB) CreateInBatches(value interface{}, batchSize int) (tx *DB) {
 			return nil
 		}
 
-		if tx.SkipDefaultTransaction {
+		if tx.SkipDefaultTransaction || reflectLen <= batchSize {
 			tx.AddError(callFc(tx.Session(&Session{})))
 		} else {
 			tx.AddError(tx.Transaction(callFc))
@@ -101,14 +102,13 @@ func (db *DB) Save(value interface{}) (tx *DB) {
 			tx.Statement.Selects = append(tx.Statement.Selects, "*")
 		}
 
-		tx = tx.callbacks.Update().Execute(tx)
+		updateTx := tx.callbacks.Update().Execute(tx.Session(&Session{Initialized: true}))
 
-		if tx.Error == nil && tx.RowsAffected == 0 && !tx.DryRun && !selectedUpdate {
-			result := reflect.New(tx.Statement.Schema.ModelType).Interface()
-			if result := tx.Session(&Session{}).Limit(1).Find(result); result.RowsAffected == 0 {
-				return tx.Create(value)
-			}
+		if updateTx.Error == nil && updateTx.RowsAffected == 0 && !updateTx.DryRun && !selectedUpdate {
+			return tx.Session(&Session{SkipHooks: true}).Clauses(clause.OnConflict{UpdateAll: true}).Create(value)
 		}
+
+		return updateTx
 	}
 
 	return
@@ -490,7 +490,7 @@ func (db *DB) Count(count *int64) (tx *DB) {
 	tx.Statement.Dest = count
 	tx = tx.callbacks.Query().Execute(tx)
 
-	if tx.RowsAffected != 1 {
+	if _, ok := db.Statement.Clauses["GROUP BY"]; ok || tx.RowsAffected != 1 {
 		*count = tx.RowsAffected
 	}
 
@@ -531,6 +531,7 @@ func (db *DB) Scan(dest interface{}) (tx *DB) {
 			tx.ScanRows(rows, dest)
 		} else {
 			tx.RowsAffected = 0
+			tx.AddError(rows.Err())
 		}
 		tx.AddError(rows.Close())
 	}
@@ -622,7 +623,6 @@ func (db *DB) Transaction(fc func(tx *DB) error, opts ...*sql.TxOptions) (err er
 			if err != nil {
 				return
 			}
-
 			defer func() {
 				// Make sure to rollback when panic, Block error or Commit error
 				if panicked || err != nil {
@@ -707,7 +707,21 @@ func (db *DB) Rollback() *DB {
 
 func (db *DB) SavePoint(name string) *DB {
 	if savePointer, ok := db.Dialector.(SavePointerDialectorInterface); ok {
+		// close prepared statement, because SavePoint not support prepared statement.
+		// e.g. mysql8.0 doc: https://dev.mysql.com/doc/refman/8.0/en/sql-prepared-statements.html
+		var (
+			preparedStmtTx   *PreparedStmtTX
+			isPreparedStmtTx bool
+		)
+		// close prepared statement, because SavePoint not support prepared statement.
+		if preparedStmtTx, isPreparedStmtTx = db.Statement.ConnPool.(*PreparedStmtTX); isPreparedStmtTx {
+			db.Statement.ConnPool = preparedStmtTx.Tx
+		}
 		db.AddError(savePointer.SavePoint(db, name))
+		// restore prepared statement
+		if isPreparedStmtTx {
+			db.Statement.ConnPool = preparedStmtTx
+		}
 	} else {
 		db.AddError(ErrUnsupportedDriver)
 	}
@@ -716,7 +730,21 @@ func (db *DB) SavePoint(name string) *DB {
 
 func (db *DB) RollbackTo(name string) *DB {
 	if savePointer, ok := db.Dialector.(SavePointerDialectorInterface); ok {
+		// close prepared statement, because RollbackTo not support prepared statement.
+		// e.g. mysql8.0 doc: https://dev.mysql.com/doc/refman/8.0/en/sql-prepared-statements.html
+		var (
+			preparedStmtTx   *PreparedStmtTX
+			isPreparedStmtTx bool
+		)
+		// close prepared statement, because SavePoint not support prepared statement.
+		if preparedStmtTx, isPreparedStmtTx = db.Statement.ConnPool.(*PreparedStmtTX); isPreparedStmtTx {
+			db.Statement.ConnPool = preparedStmtTx.Tx
+		}
 		db.AddError(savePointer.RollbackTo(db, name))
+		// restore prepared statement
+		if isPreparedStmtTx {
+			db.Statement.ConnPool = preparedStmtTx
+		}
 	} else {
 		db.AddError(ErrUnsupportedDriver)
 	}

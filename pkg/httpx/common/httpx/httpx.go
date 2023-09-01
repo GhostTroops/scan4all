@@ -140,7 +140,7 @@ func New(options *Options) (*HTTPX, error) {
 	httpx.htmlPolicy = bluemonday.NewPolicy()
 	httpx.CustomHeaders = httpx.Options.CustomHeaders
 	if options.CdnCheck || options.ExcludeCdn {
-		httpx.cdn, err = cdncheck.NewWithCache()
+		httpx.cdn, err = cdncheck.NewWithOpts(3, options.Resolvers)
 		if err != nil {
 			return nil, fmt.Errorf("could not create cdn check: %s", err)
 		}

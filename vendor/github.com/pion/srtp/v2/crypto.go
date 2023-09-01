@@ -1,9 +1,12 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package srtp
 
 import (
 	"crypto/cipher"
 
-	"github.com/pion/transport/utils/xor"
+	"github.com/pion/transport/v2/utils/xor"
 )
 
 // incrementCTR increments a big-endian integer of arbitrary size.

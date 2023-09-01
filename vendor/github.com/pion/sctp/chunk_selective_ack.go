@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package sctp
 
 import (
@@ -46,10 +49,11 @@ type gapAckBlock struct {
 	end   uint16
 }
 
+// Selective ack chunk errors
 var (
-	errChunkTypeNotSack           = errors.New("ChunkType is not of type SACK")
-	errSackSizeNotLargeEnoughInfo = errors.New("SACK Chunk size is not large enough to contain header")
-	errSackSizeNotMatchPredicted  = errors.New("SACK Chunk size does not match predicted amount from header values")
+	ErrChunkTypeNotSack           = errors.New("ChunkType is not of type SACK")
+	ErrSackSizeNotLargeEnoughInfo = errors.New("SACK Chunk size is not large enough to contain header")
+	ErrSackSizeNotMatchPredicted  = errors.New("SACK Chunk size does not match predicted amount from header values")
 )
 
 // String makes gapAckBlock printable
@@ -75,11 +79,11 @@ func (s *chunkSelectiveAck) unmarshal(raw []byte) error {
 	}
 
 	if s.typ != ctSack {
-		return fmt.Errorf("%w: actually is %s", errChunkTypeNotSack, s.typ.String())
+		return fmt.Errorf("%w: actually is %s", ErrChunkTypeNotSack, s.typ.String())
 	}
 
 	if len(s.raw) < selectiveAckHeaderSize {
-		return fmt.Errorf("%w: %v remaining, needs %v bytes", errSackSizeNotLargeEnoughInfo,
+		return fmt.Errorf("%w: %v remaining, needs %v bytes", ErrSackSizeNotLargeEnoughInfo,
 			len(s.raw), selectiveAckHeaderSize)
 	}
 
@@ -89,7 +93,7 @@ func (s *chunkSelectiveAck) unmarshal(raw []byte) error {
 	s.duplicateTSN = make([]uint32, binary.BigEndian.Uint16(s.raw[10:]))
 
 	if len(s.raw) != selectiveAckHeaderSize+(4*len(s.gapAckBlocks)+(4*len(s.duplicateTSN))) {
-		return errSackSizeNotMatchPredicted
+		return ErrSackSizeNotMatchPredicted
 	}
 
 	offset := selectiveAckHeaderSize

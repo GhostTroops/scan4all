@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	_ "github.com/codegangsta/inject"
-	Const "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
 	"io"
 	"log"
@@ -27,7 +27,7 @@ type Masscan struct {
 	Ranges     RangesStr     `inject` // 范围
 	Rate       RateStr       `inject` // 速率
 	Exclude    ExcludeStr    `inject` // 排除，执行过的，加入排除列表
-	Evt        *Const.EventData
+	Evt        *models.EventData
 }
 
 func New() *Masscan {
@@ -48,7 +48,7 @@ func (m *Masscan) SetRate(rate string) {
 }
 
 // masscan -p- --rate=2000 192.168.10.31
-func (m *Masscan) Run(fnCbk func(interface{})) error {
+func (m *Masscan) Run(fnCbk func(*models.Host)) error {
 	//var outb, errs bytes.Buffer
 	if m.Rate != "" {
 		m.Args = append(m.Args, "--rate")
@@ -100,9 +100,9 @@ func (m *Masscan) Run(fnCbk func(interface{})) error {
 }
 
 // parse line
-func (m *Masscan) ParseLine(s string) ([]Const.Host, error) {
+func (m *Masscan) ParseLine(s string) ([]models.Host, error) {
 	decoder := xml.NewDecoder(bytes.NewReader([]byte(s)))
-	var hosts []Const.Host
+	var hosts []models.Host
 	for {
 		t1, err := decoder.Token()
 		if err == io.EOF || t1 == nil {
@@ -114,7 +114,7 @@ func (m *Masscan) ParseLine(s string) ([]Const.Host, error) {
 		switch a := t1.(type) {
 		case xml.StartElement:
 			if a.Name.Local == "host" {
-				var host Const.Host
+				var host models.Host
 				err := decoder.DecodeElement(&host, &a)
 				if err == io.EOF || err != nil {
 					break
@@ -122,7 +122,7 @@ func (m *Masscan) ParseLine(s string) ([]Const.Host, error) {
 				//host.Ip = host.Address.Addr
 				hosts = append(hosts, host)
 			}
-			//default:
+		default:
 		}
 	}
 	return hosts, nil

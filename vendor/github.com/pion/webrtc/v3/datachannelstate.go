@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package webrtc
 
 // DataChannelState indicates the state of a data channel.
@@ -58,4 +61,15 @@ func (t DataChannelState) String() string {
 	default:
 		return ErrUnknownType.Error()
 	}
+}
+
+// MarshalText implements encoding.TextMarshaler
+func (t DataChannelState) MarshalText() ([]byte, error) {
+	return []byte(t.String()), nil
+}
+
+// UnmarshalText implements encoding.TextUnmarshaler
+func (t *DataChannelState) UnmarshalText(b []byte) error {
+	*t = newDataChannelState(string(b))
+	return nil
 }

@@ -559,7 +559,24 @@ func (c *ServerConn) openDataConn() (net.Conn, error) {
 	}
 
 	if c.options.tlsConfig != nil {
-		return tls.DialWithDialer(&c.options.dialer, "tcp", addr, c.options.tlsConfig)
+		// We don't use tls.DialWithDialer here (which does Dial, create
+		// the Client and then do the Handshake) because it seems to
+		// hang with some FTP servers, namely proftpd and pureftpd.
+		//
+		// Instead we do Dial, create the Client and wait for the first
+		// Read or Write to trigger the Handshake.
+		//
+		// This means that if we are uploading a zero sized file, we
+		// need to make sure we do the Handshake explicitly as Write
+		// won't have been called. This is done in StorFrom().
+		//
+		// See: https://github.com/jlaffaye/ftp/issues/282
+		conn, err := c.options.dialer.Dial("tcp", addr)
+		if err != nil {
+			return nil, err
+		}
+		tlsConn := tls.Client(conn, c.options.tlsConfig)
+		return tlsConn, nil
 	}
 
 	return c.options.dialer.Dial("tcp", addr)
@@ -749,6 +766,10 @@ func (c *ServerConn) GetEntry(path string) (entry *Entry, err error) {
 		if len(l) > 0 && l[0] == ' ' {
 			l = l[1:]
 		}
+		// Some severs seem to send a blank line at the end which we ignore
+		if l == "" {
+			continue
+		}
 		if e, err = parseNextRFC3659ListLine(l, c.options.location, e); err != nil {
 			return nil, err
 		}
@@ -912,8 +933,21 @@ func (c *ServerConn) StorFrom(path string, r io.Reader, offset uint64) error {
 	// response otherwise if the failure is not due to a connection problem,
 	// for example the server denied the upload for quota limits, we miss
 	// the response and we cannot use the connection to send other commands.
-	if _, err := io.Copy(conn, r); err != nil {
+	if n, err := io.Copy(conn, r); err != nil {
 		errs = multierror.Append(errs, err)
+	} else if n == 0 {
+		// If we wrote no bytes and got no error, make sure we call
+		// tls.Handshake on the connection as it won't get called
+		// unless Write() is called. (See comment in openDataConn()).
+		//
+		// ProFTP doesn't like this and returns "Unable to build data
+		// connection: Operation not permitted" when trying to upload
+		// an empty file without this.
+		if do, ok := conn.(interface{ Handshake() error }); ok {
+			if err := do.Handshake(); err != nil {
+				errs = multierror.Append(errs, err)
+			}
+		}
 	}
 
 	if err := conn.Close(); err != nil {

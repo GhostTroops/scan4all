@@ -6,12 +6,16 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/des"
+	"crypto/hmac"
+	"crypto/sha1"
 	_ "crypto/sha1"
 	"encoding/asn1"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -53,16 +57,25 @@ func (w *wallet) read() error {
 		return err
 	}
 	index := 0
-	if !bytes.Equal(fileData[index:index+4], []byte{161, 248, 78, 54}) {
-		return errors.New("invalid wallet")
+	if !bytes.Equal(fileData[index:index+3], []byte{161, 248, 78}) {
+		return errors.New("TCPS: Invalid SSL Wallet (Magic)")
 	}
-	index += 4
-	if fileData[3] != 54 && fileData[4] != 55 {
+	index += 3
+	autoLoginLocal := false
+	switch fileData[index] {
+	case 54:
+		fallthrough
+	case 55:
+		index += 1
+	case 56:
+		autoLoginLocal = true
+		index += 1
+	default:
 		return errors.New("invalid magic version")
 	}
 	num1 := binary.BigEndian.Uint32(fileData[index : index+4])
 	index += 4
-	//num2 := binary.BigEndian.Uint32(fileData[index: index + 4])
+	size := binary.BigEndian.Uint32(fileData[index : index+4])
 	index += 4
 	if num1 != 6 {
 		return errors.New("invalid wallet header version")
@@ -79,13 +92,76 @@ func (w *wallet) read() error {
 			return err
 		}
 		dec := cipher.NewCBCDecrypter(blk, []byte{192, 52, 216, 49, 28, 2, 206, 248, 81, 240, 20, 75, 129, 237, 75, 242})
-		w.password = make([]byte, 16)
-		dec.CryptBlocks(w.password, fileData[index:index+16])
+		passwordLen := int(size) - 1 - 16
+		w.password = make([]byte, passwordLen)
+		dec.CryptBlocks(w.password, fileData[index:index+passwordLen])
+		index += passwordLen
+		if autoLoginLocal {
+			hostname, _ := os.Hostname()
+			currentUser := getCurrentUser()
+			if idx := strings.Index(hostname, "."); idx != -1 {
+				hostname = hostname[:idx]
+			}
+			key := []byte(hostname + currentUser.Name)
+			mac := hmac.New(sha1.New, key)
+			mac.Write(w.password)
+			tempPassword := mac.Sum(nil)
+			for x := 0; x < len(tempPassword); x++ {
+				tempPassword[x] = (tempPassword[x]+128)%128%127 + 1
+			}
+			w.password = tempPassword[:16]
+		}
+	} else if num3 == 0x35 {
+		index++
+		rgbKey, err := hex.DecodeString(string(fileData[index : index+16]))
+		if err != nil {
+			return err
+		}
 		index += 16
+
+		blk, err := des.NewCipher(rgbKey)
+		if err != nil {
+			return err
+		}
+		dec := cipher.NewCBCDecrypter(blk, []byte{0, 0, 0, 0, 0, 0, 0, 0})
+		temp, err := hex.DecodeString(string(fileData[index : index+0x30]))
+		if err != nil {
+			return err
+		}
+		index += 0x30
+		output := make([]byte, len(temp))
+		dec.CryptBlocks(output, temp)
+		num := int(output[len(output)-1])
+		cutLen := 0
+		if num <= dec.BlockSize() {
+			apply := true
+			for x := len(output) - num; x < len(output); x++ {
+				if output[x] != uint8(num) {
+					apply = false
+					break
+				}
+			}
+			if apply {
+				cutLen = int(output[len(output)-1])
+			}
+			w.password = output[:len(output)-cutLen]
+		} else {
+			w.password = output
+		}
 	} else {
 		return errors.New("invalid wallet header")
 	}
-	encryptedData, err := w.decodeASN1(fileData[index:])
+	err = w.readPKCS12(fileData[index:])
+	if err != nil {
+		if autoLoginLocal {
+			return fmt.Errorf("can't read wallet with auto login local properties: %v", err)
+		}
+	}
+	return err
+}
+
+func (w *wallet) readPKCS12(data []byte) error {
+	encryptedData, err := w.decodeASN1(data)
 	if err != nil {
 		return err
 	}
@@ -170,7 +246,7 @@ func (w *wallet) decrypt(encryptedData []byte) error {
 		output := make([]byte, len(encryptedData))
 		decr.CryptBlocks(output, encryptedData)
 		// remove padding
-		if output[len(output)-1] < 8 {
+		if int(output[len(output)-1]) <= blk.BlockSize() {
 			num := int(output[len(output)-1])
 			padding := bytes.Repeat([]byte{uint8(num)}, num)
 			if bytes.Equal(output[len(output)-num:], padding) {

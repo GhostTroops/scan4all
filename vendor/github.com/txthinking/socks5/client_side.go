@@ -22,26 +22,14 @@ func NewNegotiationRequest(methods []byte) *NegotiationRequest {
 
 // WriteTo write negotiation request packet into server
 func (r *NegotiationRequest) WriteTo(w io.Writer) (int64, error) {
-	var n int
-	i, err := w.Write([]byte{r.Ver})
-	n = n + i
+	i, err := w.Write(append([]byte{r.Ver, r.NMethods}, r.Methods...))
 	if err != nil {
-		return int64(n), err
-	}
-	i, err = w.Write([]byte{r.NMethods})
-	n = n + i
-	if err != nil {
-		return int64(n), err
-	}
-	i, err = w.Write(r.Methods)
-	n = n + i
-	if err != nil {
-		return int64(n), err
+		return 0, err
 	}
 	if Debug {
 		log.Printf("Sent NegotiationRequest: %#v %#v %#v\n", r.Ver, r.NMethods, r.Methods)
 	}
-	return int64(n), nil
+	return int64(i), nil
 }
 
 // NewNegotiationReplyFrom read negotiation reply packet from server
@@ -75,31 +63,14 @@ func NewUserPassNegotiationRequest(username []byte, password []byte) *UserPassNe
 
 // WriteTo write user password negotiation request packet into server
 func (r *UserPassNegotiationRequest) WriteTo(w io.Writer) (int64, error) {
-	var n int
-	i, err := w.Write([]byte{r.Ver, r.Ulen})
-	n = n + i
+	i, err := w.Write(append(append(append([]byte{r.Ver, r.Ulen}, r.Uname...), r.Plen), r.Passwd...))
 	if err != nil {
-		return int64(n), err
-	}
-	i, err = w.Write(r.Uname)
-	n = n + i
-	if err != nil {
-		return int64(n), err
-	}
-	i, err = w.Write([]byte{r.Plen})
-	n = n + i
-	if err != nil {
-		return int64(n), err
-	}
-	i, err = w.Write(r.Passwd)
-	n = n + i
-	if err != nil {
-		return int64(n), err
+		return 0, err
 	}
 	if Debug {
 		log.Printf("Sent UserNameNegotiationRequest: %#v %#v %#v %#v %#v\n", r.Ver, r.Ulen, r.Uname, r.Plen, r.Passwd)
 	}
-	return int64(n), nil
+	return int64(i), nil
 }
 
 // NewUserPassNegotiationReplyFrom read user password negotiation reply packet from server
@@ -137,26 +108,14 @@ func NewRequest(cmd byte, atyp byte, dstaddr []byte, dstport []byte) *Request {
 
 // WriteTo write request packet into server
 func (r *Request) WriteTo(w io.Writer) (int64, error) {
-	var n int
-	i, err := w.Write([]byte{r.Ver, r.Cmd, r.Rsv, r.Atyp})
-	n = n + i
+	i, err := w.Write(append(append([]byte{r.Ver, r.Cmd, r.Rsv, r.Atyp}, r.DstAddr...), r.DstPort...))
 	if err != nil {
-		return int64(n), err
-	}
-	i, err = w.Write(r.DstAddr)
-	n = n + i
-	if err != nil {
-		return int64(n), err
-	}
-	i, err = w.Write(r.DstPort)
-	n = n + i
-	if err != nil {
-		return int64(n), err
+		return 0, err
 	}
 	if Debug {
 		log.Printf("Sent Request: %#v %#v %#v %#v %#v %#v\n", r.Ver, r.Cmd, r.Rsv, r.Atyp, r.DstAddr, r.DstPort)
 	}
-	return int64(n), nil
+	return int64(i), nil
 }
 
 // NewReplyFrom read reply packet from server

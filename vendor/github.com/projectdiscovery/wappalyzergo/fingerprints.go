@@ -15,14 +15,16 @@ type Fingerprints struct {
 
 // Fingerprint is a single piece of information about a tech validated and normalized
 type Fingerprint struct {
-	Cookies map[string]string   `json:"cookies"`
-	JS      []string            `json:"js"`
-	Headers map[string]string   `json:"headers"`
-	HTML    []string            `json:"html"`
-	CSS     []string            `json:"css"`
-	Script  []string            `json:"scripts"`
-	Meta    map[string][]string `json:"meta"`
-	Implies []string            `json:"implies"`
+	Cookies     map[string]string   `json:"cookies"`
+	JS          []string            `json:"js"`
+	Headers     map[string]string   `json:"headers"`
+	HTML        []string            `json:"html"`
+	CSS         []string            `json:"css"`
+	Script      []string            `json:"scripts"`
+	Meta        map[string][]string `json:"meta"`
+	Implies     []string            `json:"implies"`
+	Description string              `json:"description"`
+	Website     string              `json:"website"`
 }
 
 // CompiledFingerprints contains a map of fingerprints for tech detection
@@ -35,6 +37,10 @@ type CompiledFingerprints struct {
 type CompiledFingerprint struct {
 	// implies contains technologies that are implicit with this tech
 	implies []string
+	// description contains fingerprint description
+	description string
+	// website contains a URL associated with the fingerprint
+	website string
 	// cookies contains fingerprints for target cookies
 	cookies map[string]*versionRegex
 	// js contains fingerprints for the js file
@@ -47,6 +53,12 @@ type CompiledFingerprint struct {
 	script []*versionRegex
 	// meta contains fingerprints for meta tags
 	meta map[string][]*versionRegex
+}
+
+// AppInfo contains basic information about an App.
+type AppInfo struct {
+	Description string
+	Website     string
 }
 
 type versionRegex struct {
@@ -118,13 +130,15 @@ const (
 // loadPatterns loads the fingerprint patterns and compiles regexes
 func compileFingerprint(fingerprint *Fingerprint) *CompiledFingerprint {
 	compiled := &CompiledFingerprint{
-		implies: fingerprint.Implies,
-		cookies: make(map[string]*versionRegex),
-		js:      make([]*versionRegex, 0, len(fingerprint.JS)),
-		headers: make(map[string]*versionRegex),
-		html:    make([]*versionRegex, 0, len(fingerprint.HTML)),
-		script:  make([]*versionRegex, 0, len(fingerprint.Script)),
-		meta:    make(map[string][]*versionRegex),
+		implies:     fingerprint.Implies,
+		description: fingerprint.Description,
+		website:     fingerprint.Website,
+		cookies:     make(map[string]*versionRegex),
+		js:          make([]*versionRegex, 0, len(fingerprint.JS)),
+		headers:     make(map[string]*versionRegex),
+		html:        make([]*versionRegex, 0, len(fingerprint.HTML)),
+		script:      make([]*versionRegex, 0, len(fingerprint.Script)),
+		meta:        make(map[string][]*versionRegex),
 	}
 
 	for header, pattern := range fingerprint.Cookies {

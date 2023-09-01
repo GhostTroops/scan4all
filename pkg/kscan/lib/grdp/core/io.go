@@ -2,7 +2,6 @@ package core
 
 import (
 	"encoding/binary"
-	"github.com/hktalent/scan4all/lib/util"
 	"io"
 )
 
@@ -10,11 +9,11 @@ type ReadBytesComplete func(result []byte, err error)
 
 func StartReadBytes(len int, r io.Reader, cb ReadBytesComplete) {
 	b := make([]byte, len)
-	util.DefaultPool.Submit(func() {
+	go func() {
 		_, err := io.ReadFull(r, b)
 		//glog.Debug("StartReadBytes Get", n, "Bytes:", hex.EncodeToString(b))
 		cb(b, err)
-	})
+	}()
 }
 
 func ReadBytes(len int, r io.Reader) ([]byte, error) {

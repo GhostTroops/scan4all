@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package proto
 
 import (
@@ -13,7 +16,7 @@ import (
 // The CHANNEL-NUMBER attribute contains the number of the channel.
 //
 // RFC 5766 Section 14.1
-type ChannelNumber uint16 // encoded as uint16
+type ChannelNumber uint16 // Encoded as uint16
 
 func (n ChannelNumber) String() string { return strconv.Itoa(int(n)) }
 
@@ -38,7 +41,7 @@ func (n *ChannelNumber) GetFrom(m *stun.Message) error {
 	if err = stun.CheckSize(stun.AttrChannelNumber, len(v), channelNumberSize); err != nil {
 		return err
 	}
-	_ = v[channelNumberSize-1] // asserting length
+	_ = v[channelNumberSize-1] // Asserting length
 	*n = ChannelNumber(binary.BigEndian.Uint16(v[:2]))
 	// v[2:4] is RFFU and equals to 0.
 	return nil

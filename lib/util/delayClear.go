@@ -1,7 +1,6 @@
 package util
 
 import (
-	"github.com/remeh/sizedwaitgroup"
 	"sync"
 	"time"
 )
@@ -65,16 +64,16 @@ func DoSleep() {
 }
 
 // 延时清理
-func DoDelayClear(Wg1 ...*sizedwaitgroup.SizedWaitGroup) {
-	var wg2 *sizedwaitgroup.SizedWaitGroup
+func DoDelayClear(Wg1 ...*sync.WaitGroup) {
+	var wg2 *sync.WaitGroup
 	if 0 < len(Wg1) && nil != Wg1[0] {
 		wg2 = Wg1[0]
 	} else {
 		wg2 = Wg
 	}
 	IsDo <- struct{}{}
-	wg2.Add()
-	DefaultPool.Submit(func() {
+	wg2.Add(1)
+	go func() {
 		defer func() {
 			<-IsDo
 			wg2.Done()
@@ -95,6 +94,6 @@ func DoDelayClear(Wg1 ...*sizedwaitgroup.SizedWaitGroup) {
 			}
 			return true
 		})
-	})
+	}()
 	return
 }

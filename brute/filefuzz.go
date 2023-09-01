@@ -5,7 +5,8 @@ import (
 	_ "embed"
 	"fmt"
 	"github.com/antlabs/strsim"
-	Const "github.com/hktalent/go-utils"
+	"github.com/hktalent/scan4all/lib/goSqlite_gorm/lib/scan/Const"
+	"github.com/hktalent/scan4all/lib/goSqlite_gorm/pkg/models"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"io/ioutil"
@@ -156,15 +157,11 @@ func init() {
 		}
 		//regs = append(regs, ret...)
 		// 基于工厂方法构建
-		if nil != util.EngineFuncFactory {
-			util.EngineFuncFactory(Const.ScanType_WebDirScan, func(evt *Const.EventData, args ...interface{}) {
-				for _, x := range evt.EventData {
-					szT := fmt.Sprintf("%v", x)
-					filePaths, fileFuzzTechnologies := FileFuzz(szT, 200, 100, "")
-					util.SendEngineLog(evt, Const.ScanType_WebDirScan, filePaths, fileFuzzTechnologies)
-				}
-			})
-		}
+		util.EngineFuncFactory(Const.ScanType_WebDirScan, func(evt *models.EventData, args ...interface{}) {
+			filePaths, fileFuzzTechnologies := FileFuzz(evt.Task.ScanWeb, 200, 100, "")
+			util.SendEngineLog(evt, Const.ScanType_WebDirScan, filePaths, fileFuzzTechnologies)
+		})
+
 		// 注册一个
 	})
 }
@@ -188,9 +185,8 @@ var r001 = regexp.MustCompile(`\.(aac)|(abw)|(arc)|(avif)|(avi)|(azw)|(bin)|(bmp
 
 // 重写了fuzz：优化流程、优化算法、修复线程安全bug、增加智能功能
 //
-//		两次  ioutil.ReadAll(resp.Body)，第二次就会 Read返回EOF error
-//		去除指纹请求的路径，避免重复
-//	  当前域名ip <- x -> 域名，互相转换后，确认避免重复执行
+//	两次  ioutil.ReadAll(resp.Body)，第二次就会 Read返回EOF error
+//	去除指纹请求的路径，避免重复
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
 	DoInitMap()
 	u01, err := url.Parse(strings.TrimSpace(u))
@@ -259,7 +255,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 	var lst200 *util.Response
 	t001 := time.NewTicker(3 * time.Second)
 	var nCnt int32 = 0
-	util.DefaultPool.Submit(func() {
+	go func() {
 		for {
 			select {
 			case <-ctx2.Done():
@@ -289,10 +285,11 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 				} else {
 					return
 				}
+			default:
 				// <-time.After(time.Duration(100) * time.Millisecond)
 			}
 		}
-	})
+	}()
 	log.Printf("wait for file fuzz(dicts:%d) %s \r", len(filedic), u)
 
 BreakAll:
@@ -315,126 +312,124 @@ BreakAll:
 				endP := u[len(u)-1:] == "/"
 				ch <- struct{}{}
 				wg.Add(1)
-				func(payload string) {
-					util.DefaultPool.Submit(func() {
-						payload = strings.TrimSpace(payload)
-						defer func() {
-							wg.Done() // 控制所有线程结束
-							<-ch      // 并发控制
-						}()
-						atomic.AddInt32(&nCnt, 1)
-						for {
-							select {
-							case <-ctx.Done(): // 00-捕获所有线程关闭信号，并退出，close for all
-								atomic.AddInt32(&errorTimes, MaxErrorTimes)
-								return
-							default:
-								//if _, ok := noRpt.Load(szKey001Over); ok {
-								//	stop()
-								//	return
-								//}
-								// 01-异常>20关闭所有fuzz
-								if atomic.LoadInt32(&errorTimes) >= MaxErrorTimes {
-									stop() //发停止指令
-									return
-								}
-								// 修复url，默认 认为 payload 不包含/
-								szUrl := u + payload
-								if strings.HasPrefix(payload, "/") && endP {
-									szUrl = u + payload[1:]
-								}
-								//log.Printf("start fuzz: [%s]", szUrl)
-								if fuzzPage, req, err := reqPage(szUrl); err == nil && nil != req && 0 < len(req.Body) {
-									if 200 == req.StatusCode {
-										if nil == lst200 {
-											lst200 = req
-										} else if lst200.Body == req.Body { // 无意义的 200
-											continue
-										}
-										if oU1, err := url.Parse(szUrl); nil == err {
-											a50 := r001.FindStringSubmatch(oU1.Path)
-											if 0 < len(a50) {
-												s2 := mime.TypeByExtension(filepath.Ext(a50[0]))
-												ct := (*req).Header.Get("Content-Type")
-												if "" != ct && "" != s2 && strings.Contains(ct, s2) {
-													continue
-												}
-											}
-										}
-										//log.Printf("%d : %s \n", req.StatusCode, szUrl)
-										if IsLoginPage(szUrl, req.Body, req.StatusCode) {
-											technologies = append(technologies, "loginpage")
-										}
-									}
-									go util.CheckHeader(req.Header, u)
-									// 02-状态码和req1相同，且与req1相似度>9.5，关闭所有fuzz
-									fXsd := strsim.Compare(url404req.Body, req.Body)
-									bBig95 := 9.5 < fXsd
-									//if "/bea_wls_internal/classes/mejb@/org/omg/stub/javax/management/j2ee/_ManagementHome_Stub.class" == payload {
-									//	log.Println("start debug")
-									//}
-									if url404.StatusCode == fuzzPage.StatusCode && bBig95 {
-										stop() //发停止指令
-										atomic.AddInt32(&errorTimes, MaxErrorTimes)
-										return
-									}
-									var path1, technologies1 = []string{}, []string{}
-									// 03-异常页面（>400），或相似度与404匹配
-									if fuzzPage.StatusCode >= 400 || bBig95 || fuzzPage.StatusCode != 200 {
-										// 03.01-异常页面指纹匹配
-										technologies = Addfingerprints404(technologies, req, fuzzPage) //基于404页面文件扫描指纹添加
-										// 03.02-与绝对404相似度低于0.8，添加body 404 body list
-										// 03.03-添加404titlelist
-										if 0.8 > fXsd && fuzzPage.StatusCode != 200 && fuzzPage.StatusCode != url404.StatusCode {
-											StudyErrPageAI(req, fuzzPage, "") // 异常页面学习
-										}
-										// 04-403： 403 by pass
-										if fuzzPage.Is403 && !url404.Is403 {
-											a11 := ByPass403(&u, &payload, &wg)
-											// 表示 ByPass403 成功了, 结果、控制台输出点什么？
-											if 0 < len(a11) {
-												async_data <- &FuzzData{Path: &a11, Req: fuzzPage}
-											}
-										}
-										return
-									}
-									// 当前和绝对404不等于404，后续的比较也没有意义了，都等于[200,301,302]都没有意义了，都说明没有fuzz成功
-									if url404.StatusCode != 404 && url404.StatusCode == fuzzPage.StatusCode {
-										return
-									}
-
-									// 05-跳转检测,即便是跳转，如果和绝对404不一样，说明检测成功
-									//if CheckDirckt(fuzzPage, req) && url404.StatusCode != fuzzPage.StatusCode {
-									//	return
-									//}
-									// 1、状态码和绝对404一样 2、智能识别算出来
-									is404Page := url404.StatusCode == fuzzPage.StatusCode || CheckIsErrPageAI(req, fuzzPage)
-									// 06-成功页面, 非异常页面
-									if !is404Page || 200 == fuzzPage.StatusCode && url404.StatusCode != fuzzPage.StatusCode {
-										// 1、指纹匹配
-										technologies1 = Addfingerprintsnormal(payload, technologies1, req, fuzzPage) // 基于200页面文件扫描指纹添加
-										// 2、成功fuzz路径结果添加
-										path1 = append(path1, *fuzzPage.Url)
-									}
-									if 0 < len(path1) {
-										async_data <- &FuzzData{Path: &path1, Req: fuzzPage}
-									}
-									if 0 < len(technologies1) {
-										async_technologies <- technologies1
-									}
-								} else { // 这里应该元子操作
-									if nil != err {
-										//if nil != client && strings.Contains(err.Error(), " connect: connection reset by peer") {
-										//	client.Client = client.GetClient(nil)
-										//}
-										//log.Printf("file fuzz %s is err %v\n", szUrl, err)
-									}
-									atomic.AddInt32(&errorTimes, 1)
-								}
+				go func(payload string) {
+					payload = strings.TrimSpace(payload)
+					defer func() {
+						wg.Done() // 控制所有线程结束
+						<-ch      // 并发控制
+					}()
+					atomic.AddInt32(&nCnt, 1)
+					for {
+						select {
+						case <-ctx.Done(): // 00-捕获所有线程关闭信号，并退出，close for all
+							atomic.AddInt32(&errorTimes, MaxErrorTimes)
+							return
+						default:
+							//if _, ok := noRpt.Load(szKey001Over); ok {
+							//	stop()
+							//	return
+							//}
+							// 01-异常>20关闭所有fuzz
+							if atomic.LoadInt32(&errorTimes) >= MaxErrorTimes {
+								stop() //发停止指令
 								return
 							}
+							// 修复url，默认 认为 payload 不包含/
+							szUrl := u + payload
+							if strings.HasPrefix(payload, "/") && endP {
+								szUrl = u + payload[1:]
+							}
+							//log.Printf("start fuzz: [%s]", szUrl)
+							if fuzzPage, req, err := reqPage(szUrl); err == nil && nil != req && 0 < len(req.Body) {
+								if 200 == req.StatusCode {
+									if nil == lst200 {
+										lst200 = req
+									} else if lst200.Body == req.Body { // 无意义的 200
+										continue
+									}
+									if oU1, err := url.Parse(szUrl); nil == err {
+										a50 := r001.FindStringSubmatch(oU1.Path)
+										if 0 < len(a50) {
+											s2 := mime.TypeByExtension(filepath.Ext(a50[0]))
+											ct := (*req).Header.Get("Content-Type")
+											if "" != ct && "" != s2 && strings.Contains(ct, s2) {
+												continue
+											}
+										}
+									}
+									//log.Printf("%d : %s \n", req.StatusCode, szUrl)
+									if IsLoginPage(szUrl, req.Body, req.StatusCode) {
+										technologies = append(technologies, "loginpage")
+									}
+								}
+								go util.CheckHeader(req.Header, u)
+								// 02-状态码和req1相同，且与req1相似度>9.5，关闭所有fuzz
+								fXsd := strsim.Compare(url404req.Body, req.Body)
+								bBig95 := 9.5 < fXsd
+								//if "/bea_wls_internal/classes/mejb@/org/omg/stub/javax/management/j2ee/_ManagementHome_Stub.class" == payload {
+								//	log.Println("start debug")
+								//}
+								if url404.StatusCode == fuzzPage.StatusCode && bBig95 {
+									stop() //发停止指令
+									atomic.AddInt32(&errorTimes, MaxErrorTimes)
+									return
+								}
+								var path1, technologies1 = []string{}, []string{}
+								// 03-异常页面（>400），或相似度与404匹配
+								if fuzzPage.StatusCode >= 400 || bBig95 || fuzzPage.StatusCode != 200 {
+									// 03.01-异常页面指纹匹配
+									technologies = Addfingerprints404(technologies, req, fuzzPage) //基于404页面文件扫描指纹添加
+									// 03.02-与绝对404相似度低于0.8，添加body 404 body list
+									// 03.03-添加404titlelist
+									if 0.8 > fXsd && fuzzPage.StatusCode != 200 && fuzzPage.StatusCode != url404.StatusCode {
+										StudyErrPageAI(req, fuzzPage, "") // 异常页面学习
+									}
+									// 04-403： 403 by pass
+									if fuzzPage.Is403 && !url404.Is403 {
+										a11 := ByPass403(&u, &payload, &wg)
+										// 表示 ByPass403 成功了, 结果、控制台输出点什么？
+										if 0 < len(a11) {
+											async_data <- &FuzzData{Path: &a11, Req: fuzzPage}
+										}
+									}
+									return
+								}
+								// 当前和绝对404不等于404，后续的比较也没有意义了，都等于[200,301,302]都没有意义了，都说明没有fuzz成功
+								if url404.StatusCode != 404 && url404.StatusCode == fuzzPage.StatusCode {
+									return
+								}
+
+								// 05-跳转检测,即便是跳转，如果和绝对404不一样，说明检测成功
+								//if CheckDirckt(fuzzPage, req) && url404.StatusCode != fuzzPage.StatusCode {
+								//	return
+								//}
+								// 1、状态码和绝对404一样 2、智能识别算出来
+								is404Page := url404.StatusCode == fuzzPage.StatusCode || CheckIsErrPageAI(req, fuzzPage)
+								// 06-成功页面, 非异常页面
+								if !is404Page || 200 == fuzzPage.StatusCode && url404.StatusCode != fuzzPage.StatusCode {
+									// 1、指纹匹配
+									technologies1 = Addfingerprintsnormal(payload, technologies1, req, fuzzPage) // 基于200页面文件扫描指纹添加
+									// 2、成功fuzz路径结果添加
+									path1 = append(path1, *fuzzPage.Url)
+								}
+								if 0 < len(path1) {
+									async_data <- &FuzzData{Path: &path1, Req: fuzzPage}
+								}
+								if 0 < len(technologies1) {
+									async_technologies <- technologies1
+								}
+							} else { // 这里应该元子操作
+								if nil != err {
+									//if nil != client && strings.Contains(err.Error(), " connect: connection reset by peer") {
+									//	client.Client = client.GetClient(nil)
+									//}
+									//log.Printf("file fuzz %s is err %v\n", szUrl, err)
+								}
+								atomic.AddInt32(&errorTimes, 1)
+							}
+							return
 						}
-					})
+					}
 				}(payload)
 			}
 		}

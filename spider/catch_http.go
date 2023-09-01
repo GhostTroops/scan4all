@@ -3,11 +3,11 @@ package spider
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"github.com/antchfx/htmlquery"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
-	jsoniter "github.com/json-iterator/go"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/text/encoding/simplifiedchinese"
 	"io/ioutil"
@@ -20,8 +20,6 @@ import (
 	"time"
 	"unicode/utf8"
 )
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 type PocWebAppData struct {
 	Title          string `json:"title"`           //网站标题

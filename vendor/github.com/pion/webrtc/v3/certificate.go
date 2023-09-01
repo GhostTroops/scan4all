@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 //go:build !js
 // +build !js
 
@@ -105,10 +108,12 @@ func (c Certificate) GetFingerprints() ([]DTLSFingerprint, error) {
 	for _, algo := range fingerprintAlgorithms {
 		name, err := fingerprint.StringFromHash(algo)
 		if err != nil {
+			// nolint
 			return nil, fmt.Errorf("%w: %v", ErrFailedToGenerateCertificateFingerprint, err)
 		}
 		value, err := fingerprint.Fingerprint(c.x509Cert, algo)
 		if err != nil {
+			// nolint
 			return nil, fmt.Errorf("%w: %v", ErrFailedToGenerateCertificateFingerprint, err)
 		}
 		res[i] = DTLSFingerprint{

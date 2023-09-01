@@ -3,13 +3,14 @@ package doh
 import (
 	"fmt"
 	"net/http"
-
-	retryablehttp "github.com/projectdiscovery/retryablehttp-go"
+	"time"
 )
+
+var DefaultTimeout = 5 * time.Second
 
 type Options struct {
 	DefaultResolver Resolver
-	HttpClient      *retryablehttp.Client
+	HttpClient      *http.Client
 }
 
 type Resolver struct {
@@ -38,6 +39,7 @@ const (
 	NS    QuestionType = "NS"
 	SOA   QuestionType = "SOA"
 	PTR   QuestionType = "PTR"
+	ANY   QuestionType = "ANY"
 	CNAME QuestionType = "CNAME"
 )
 

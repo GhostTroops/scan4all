@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package ice
 
 import (
@@ -5,7 +8,8 @@ import (
 	"time"
 
 	"github.com/pion/logging"
-	"github.com/pion/transport/vnet"
+	"github.com/pion/stun"
+	"github.com/pion/transport/v2"
 	"golang.org/x/net/proxy"
 )
 
@@ -22,25 +26,29 @@ const (
 	// defaultFailedTimeout is the default time till an Agent transitions to failed after disconnected
 	defaultFailedTimeout = 25 * time.Second
 
-	// wait time before nominating a host candidate
+	// defaultHostAcceptanceMinWait is the wait time before nominating a host candidate
 	defaultHostAcceptanceMinWait = 0
 
-	// wait time before nominating a srflx candidate
+	// defaultSrflxAcceptanceMinWait is the wait time before nominating a srflx candidate
 	defaultSrflxAcceptanceMinWait = 500 * time.Millisecond
 
-	// wait time before nominating a prflx candidate
+	// defaultPrflxAcceptanceMinWait is the wait time before nominating a prflx candidate
 	defaultPrflxAcceptanceMinWait = 1000 * time.Millisecond
 
-	// wait time before nominating a relay candidate
+	// defaultRelayAcceptanceMinWait is the wait time before nominating a relay candidate
 	defaultRelayAcceptanceMinWait = 2000 * time.Millisecond
 
-	// max binding request before considering a pair failed
+	// defaultMaxBindingRequests is the maximum number of binding requests before considering a pair failed
 	defaultMaxBindingRequests = 7
 
-	// the number of bytes that can be buffered before we start to error
+	// TCPPriorityOffset is a number which is subtracted from the default (UDP) candidate type preference
+	// for host, srflx and prfx candidate types.
+	defaultTCPPriorityOffset = 27
+
+	// maxBufferSize is the number of bytes that can be buffered before we start to error
 	maxBufferSize = 1000 * 1000 // 1MB
 
-	// wait time before binding requests can be deleted
+	// maxBindingRequestTimeout is the wait time before binding requests can be deleted
 	maxBindingRequestTimeout = 4000 * time.Millisecond
 )
 
@@ -51,7 +59,7 @@ func defaultCandidateTypes() []CandidateType {
 // AgentConfig collects the arguments to ice.Agent construction into
 // a single structure, for future-proofness of the interface
 type AgentConfig struct {
-	Urls []*URL
+	Urls []*stun.URI
 
 	// PortMin and PortMax are optional. Leave them 0 for the default UDP port allocation strategy.
 	PortMin uint16
@@ -130,8 +138,8 @@ type AgentConfig struct {
 	RelayAcceptanceMinWait *time.Duration
 
 	// Net is the our abstracted network interface for internal development purpose only
-	// (see github.com/pion/transport/vnet)
-	Net *vnet.Net
+	// (see https://github.com/pion/transport)
+	Net transport.Net
 
 	// InterfaceFilter is a function that you can use in order to whitelist or blacklist
 	// the interfaces which are used to gather ICE candidates.
@@ -170,6 +178,16 @@ type AgentConfig struct {
 
 	// Include loopback addresses in the candidate list.
 	IncludeLoopback bool
+
+	// TCPPriorityOffset is a number which is subtracted from the default (UDP) candidate type preference
+	// for host, srflx and prfx candidate types. It helps to configure relative preference of UDP candidates
+	// against TCP ones. Relay candidates for TCP and UDP are always 0 and not affected by this setting.
+	// When this is nil, defaultTCPPriorityOffset is used.
+	TCPPriorityOffset *uint16
+
+	// DisableActiveTCP can be used to disable Active TCP candidates. Otherwise when TCP is enabled
+	// Active TCP candidates will be created when a new passive TCP remote candidate is added.
+	DisableActiveTCP bool
 }
 
 // initWithDefaults populates an agent and falls back to defaults if fields are unset
@@ -202,6 +220,12 @@ func (config *AgentConfig) initWithDefaults(a *Agent) {
 		a.relayAcceptanceMinWait = defaultRelayAcceptanceMinWait
 	} else {
 		a.relayAcceptanceMinWait = *config.RelayAcceptanceMinWait
+	}
+
+	if config.TCPPriorityOffset == nil {
+		a.tcpPriorityOffset = defaultTCPPriorityOffset
+	} else {
+		a.tcpPriorityOffset = *config.TCPPriorityOffset
 	}
 
 	if config.DisconnectedTimeout == nil {
@@ -242,7 +266,7 @@ func (config *AgentConfig) initExtIPMapping(a *Agent) error {
 		return err
 	}
 	if a.extIPMapper == nil {
-		return nil // this may happen when config.NAT1To1IPs is an empty array
+		return nil // This may happen when config.NAT1To1IPs is an empty array
 	}
 	if a.extIPMapper.candidateType == CandidateTypeHost {
 		if a.mDNSMode == MulticastDNSModeQueryAndGather {

@@ -5,8 +5,9 @@ import (
 	"regexp"
 )
 
-// version 通达 OA V11.6 任意用户登陆
+//version 通达 OA V11.6 任意用户登陆
 func Get_user_session(url string) bool {
+
 	if req, err := util.HttpRequset(url+"/inc/auth.inc.php", "GET", "", false, nil); err == nil {
 		re, _ := regexp.Match("\"code_uid\":\"{.*?}\"", []byte(req.Body))
 		if re {

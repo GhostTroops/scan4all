@@ -29,7 +29,7 @@ func AutoMergeRelPaths(path1 string, path2 string) (string, error) {
 	if err2 != nil {
 		return "", err2
 	}
-	u1.Params.Merge(u2.Params)
+	u1.Params.Merge(u2.Params.Encode())
 	err := u1.MergePath(u2.Path, false)
 	return u1.GetRelativePath(), err
 }

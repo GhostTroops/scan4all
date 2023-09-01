@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 //go:build !js
 // +build !js
 
@@ -40,8 +43,12 @@ func trackDetailsForSSRC(trackDetails []trackDetails, ssrc SSRC) *trackDetails {
 	return nil
 }
 
-func trackDetailsForRID(trackDetails []trackDetails, rid string) *trackDetails {
+func trackDetailsForRID(trackDetails []trackDetails, mid, rid string) *trackDetails {
 	for i := range trackDetails {
+		if trackDetails[i].mid != mid {
+			continue
+		}
+
 		for j := range trackDetails[i].rids {
 			if trackDetails[i].rids[j] == rid {
 				return &trackDetails[i]

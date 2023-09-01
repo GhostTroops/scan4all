@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package sctp
 
 import (
@@ -39,11 +42,14 @@ const (
 	adaptLayerInd      paramType = 49158 // Adaptation Layer Indication (0xC006)	[RFC5061]
 )
 
-var errParamPacketTooShort = errors.New("packet to short")
+// Parameter packet errors
+var (
+	ErrParamPacketTooShort = errors.New("packet to short")
+)
 
 func parseParamType(raw []byte) (paramType, error) {
 	if len(raw) < 2 {
-		return paramType(0), errParamPacketTooShort
+		return paramType(0), ErrParamPacketTooShort
 	}
 	return paramType(binary.BigEndian.Uint16(raw)), nil
 }

@@ -1,7 +1,7 @@
 package runner
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -37,7 +37,7 @@ func NewResumeCfg() *ResumeCfg {
 
 // SaveResumeConfig to file
 func (resumeCfg *ResumeCfg) SaveResumeConfig() error {
-	data, _ := util.Json.MarshalIndent(resumeCfg, "", "\t")
+	data, _ := json.MarshalIndent(resumeCfg, "", "\t")
 	return os.WriteFile(DefaultResumeFilePath(), data, os.ModePerm)
 }
 
@@ -48,7 +48,7 @@ func (resumeCfg *ResumeCfg) ConfigureResume() error {
 	if err != nil {
 		return err
 	}
-	err = util.Json.Unmarshal([]byte(file), &resumeCfg)
+	err = json.Unmarshal([]byte(file), &resumeCfg)
 	if err != nil {
 		return err
 	}

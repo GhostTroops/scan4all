@@ -5,11 +5,11 @@ package htmlquery
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/antchfx/xpath"
 	"golang.org/x/net/html"
@@ -138,23 +138,23 @@ func Parse(r io.Reader) (*html.Node, error) {
 
 // InnerText returns the text between the start and end tags of the object.
 func InnerText(n *html.Node) string {
-	var output func(*bytes.Buffer, *html.Node)
-	output = func(buf *bytes.Buffer, n *html.Node) {
+	var output func(*strings.Builder, *html.Node)
+	output = func(b *strings.Builder, n *html.Node) {
 		switch n.Type {
 		case html.TextNode:
-			buf.WriteString(n.Data)
+			b.WriteString(n.Data)
 			return
 		case html.CommentNode:
 			return
 		}
 		for child := n.FirstChild; child != nil; child = child.NextSibling {
-			output(buf, child)
+			output(b, child)
 		}
 	}
 
-	var buf bytes.Buffer
-	output(&buf, n)
-	return buf.String()
+	var b strings.Builder
+	output(&b, n)
+	return b.String()
 }
 
 // SelectAttr returns the attribute value with the specified name.
@@ -189,15 +189,15 @@ func ExistsAttr(n *html.Node, name string) bool {
 
 // OutputHTML returns the text including tags name.
 func OutputHTML(n *html.Node, self bool) string {
-	var buf bytes.Buffer
+	var b strings.Builder
 	if self {
-		html.Render(&buf, n)
+		html.Render(&b, n)
 	} else {
 		for n := n.FirstChild; n != nil; n = n.NextSibling {
-			html.Render(&buf, n)
+			html.Render(&b, n)
 		}
 	}
-	return buf.String()
+	return b.String()
 }
 
 type NodeNavigator struct {

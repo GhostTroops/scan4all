@@ -8,31 +8,29 @@ import (
 	githubUpdateStore "github.com/hktalent/go-update/stores/github"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
+	"os/exec"
+	"path/filepath"
 	"runtime"
 )
 
-var Version = `2.8.6`
-
-var MyName = "scan4all"
-
 // 更新到最新版本
-func UpdateScan4allVersionToLatest(verbose bool) error {
+func UpdateScan4allVersionToLatest(verbose bool, u, t, dir string) error {
 	if verbose {
 		log.SetLevel(log.DebugLevel)
 	}
 	var command string
 	switch runtime.GOOS {
 	case "windows":
-		command = MyName + ".exe"
+		command = t + ".exe"
 	default:
-		command = MyName
+		command = t
 	}
 	m := &update.Manager{
 		Command: command,
 		Store: &githubUpdateStore.Store{
-			Owner:   "hktalent",
-			Repo:    "scan4all",
-			Version: Version,
+			Owner:   u,
+			Repo:    t,
+			Version: `99.99.99`,
 		},
 	}
 	releases, err := m.LatestReleases()
@@ -61,7 +59,15 @@ func UpdateScan4allVersionToLatest(verbose bool) error {
 	if err != nil {
 		return errors.Wrap(err, "could not download latest release")
 	}
-	if err := m.Install(tarball); err != nil {
+	if "" == dir {
+		bin, err := exec.LookPath(m.Command)
+		if err != nil {
+			return errors.Wrapf(err, "looking up path of %q", m.Command)
+		}
+		dir = filepath.Dir(bin)
+	}
+
+	if err := m.InstallTo(tarball, dir); err != nil {
 		return errors.Wrap(err, "could not install latest release")
 	}
 	gologger.Info().Msgf("Successfully updated to %s\n", szLstVer)

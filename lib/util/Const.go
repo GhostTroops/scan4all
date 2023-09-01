@@ -3,25 +3,17 @@ package util
 import (
 	"context"
 	"fmt"
-	util "github.com/hktalent/go-utils"
-	jsoniter "github.com/json-iterator/go"
-	"github.com/remeh/sizedwaitgroup"
 	"net/http"
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 )
 
-var Json = jsoniter.ConfigCompatibleWithStandardLibrary
-
 // 全局线程控制
-var Wg *sizedwaitgroup.SizedWaitGroup
+var Wg *sync.WaitGroup = &sync.WaitGroup{}
 
-func init() {
-	RegInitFunc4Hd(func() {
-		Wg = GetWg(util.GetValAsInt("WgThread", 64))
-	})
-}
+var Version string
 
 // 全局控制
 var RootContext = context.Background()
@@ -34,11 +26,6 @@ var DeleteMe = regexp.MustCompile("rememberMe=deleteMe")
 
 // 自定义http 头
 var CustomHeaders []string
-
-func GetWg(n int) *sizedwaitgroup.SizedWaitGroup {
-	x1 := sizedwaitgroup.New(n)
-	return &x1
-}
 
 /*
 X-Forwarded-Host: 127.0.0.1
@@ -80,8 +67,8 @@ func SetHeader4Map(m *map[string]string) {
 // 异步执行方法，只适合无返回值、或使用管道返回值的方法
 // 程序main整体等待
 func DoSyncFunc(cbk func()) {
-	Wg.Add()
-	DefaultPool.Submit(func() {
+	Wg.Add(1)
+	go func() {
 		defer Wg.Done()
 		for {
 			select {
@@ -93,7 +80,7 @@ func DoSyncFunc(cbk func()) {
 				return
 			}
 		}
-	})
+	}()
 }
 
 // 检查 cookie

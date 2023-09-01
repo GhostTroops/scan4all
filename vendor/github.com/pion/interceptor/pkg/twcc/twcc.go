@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 // Package twcc provides interceptors to implement transport wide congestion control.
 package twcc
 
@@ -70,13 +73,12 @@ func insertSorted(list []pktInfo, element pktInfo) []pktInfo {
 
 // BuildFeedbackPacket creates a new RTCP packet containing a TWCC feedback report.
 func (r *Recorder) BuildFeedbackPacket() []rtcp.Packet {
-	feedback := newFeedback(r.senderSSRC, r.mediaSSRC, r.fbPktCnt)
-	r.fbPktCnt++
 	if len(r.receivedPackets) < 2 {
-		r.receivedPackets = []pktInfo{}
-		return []rtcp.Packet{feedback.getRTCP()}
+		return nil
 	}
 
+	feedback := newFeedback(r.senderSSRC, r.mediaSSRC, r.fbPktCnt)
+	r.fbPktCnt++
 	feedback.setBase(uint16(r.receivedPackets[0].sequenceNumber&0xffff), r.receivedPackets[0].arrivalTime)
 
 	var pkts []rtcp.Packet

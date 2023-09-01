@@ -2,11 +2,11 @@ elasticsearch:
   # IP for elasticsearch instance
   ip: 127.0.0.1
   # Port is the port of elasticsearch instance
-  port: 8081
+  port: 9200
   # IndexName is the name of the elasticsearch index
   index-name: nuclei_index
   # SSL enables ssl for elasticsearch connection
-  ssl: true
+  ssl: false
   # SSLVerification disables SSL verification for elasticsearch
   ssl-verification: false
   # Username for the elasticsearch instance

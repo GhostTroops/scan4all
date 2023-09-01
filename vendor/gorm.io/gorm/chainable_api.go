@@ -55,18 +55,22 @@ func (db *DB) Clauses(conds ...clause.Expression) (tx *DB) {
 	return
 }
 
-var tableRegexp = regexp.MustCompile(`(?i).+? AS (\w+)\s*(?:$|,)`)
+var tableRegexp = regexp.MustCompile(`(?i)(?:.+? AS (\w+)\s*(?:$|,)|^\w+\s+(\w+)$)`)
 
 // Table specify the table you would like to run db operations
 //
 //	// Get a user
-//	db.Table("users").take(&result)
+//	db.Table("users").Take(&result)
 func (db *DB) Table(name string, args ...interface{}) (tx *DB) {
 	tx = db.getInstance()
 	if strings.Contains(name, " ") || strings.Contains(name, "`") || len(args) > 0 {
 		tx.Statement.TableExpr = &clause.Expr{SQL: name, Vars: args}
-		if results := tableRegexp.FindStringSubmatch(name); len(results) == 2 {
-			tx.Statement.Table = results[1]
+		if results := tableRegexp.FindStringSubmatch(name); len(results) == 3 {
+			if results[1] != "" {
+				tx.Statement.Table = results[1]
+			} else {
+				tx.Statement.Table = results[2]
+			}
 		}
 	} else if tables := strings.Split(name, "."); len(tables) == 2 {
 		tx.Statement.TableExpr = &clause.Expr{SQL: tx.Statement.Quote(name)}
@@ -249,7 +253,10 @@ func joins(db *DB, joinType clause.JoinType, query string, args ...interface{}) 
 
 	if len(args) == 1 {
 		if db, ok := args[0].(*DB); ok {
-			j := join{Name: query, Conds: args, Selects: db.Statement.Selects, Omits: db.Statement.Omits}
+			j := join{
+				Name: query, Conds: args, Selects: db.Statement.Selects,
+				Omits: db.Statement.Omits, JoinType: joinType,
+			}
 			if where, ok := db.Statement.Clauses["WHERE"].Expression.(clause.Where); ok {
 				j.On = &where
 			}
@@ -356,6 +363,36 @@ func (db *DB) Offset(offset int) (tx *DB) {
 func (db *DB) Scopes(funcs ...func(*DB) *DB) (tx *DB) {
 	tx = db.getInstance()
 	tx.Statement.scopes = append(tx.Statement.scopes, funcs...)
+	return tx
+}
+
+func (db *DB) executeScopes() (tx *DB) {
+	tx = db.getInstance()
+	scopes := db.Statement.scopes
+	if len(scopes) == 0 {
+		return tx
+	}
+	tx.Statement.scopes = nil
+
+	conditions := make([]clause.Interface, 0, 4)
+	if cs, ok := tx.Statement.Clauses["WHERE"]; ok && cs.Expression != nil {
+		conditions = append(conditions, cs.Expression.(clause.Interface))
+		cs.Expression = nil
+		tx.Statement.Clauses["WHERE"] = cs
+	}
+
+	for _, scope := range scopes {
+		tx = scope(tx)
+		if cs, ok := tx.Statement.Clauses["WHERE"]; ok && cs.Expression != nil {
+			conditions = append(conditions, cs.Expression.(clause.Interface))
+			cs.Expression = nil
+			tx.Statement.Clauses["WHERE"] = cs
+		}
+	}
+
+	for _, condition := range conditions {
+		tx.Statement.AddClause(condition)
+	}
 	return tx
 }
 

@@ -5,19 +5,39 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 	"time"
 
-	"github.com/projectdiscovery/cryptoutil"
+	"github.com/projectdiscovery/fastdialer/fastdialer/ja3/impersonate"
 	"github.com/projectdiscovery/hmap/store/hybrid"
-	"github.com/projectdiscovery/iputil"
 	"github.com/projectdiscovery/networkpolicy"
 	retryabledns "github.com/projectdiscovery/retryabledns"
+	cryptoutil "github.com/projectdiscovery/utils/crypto"
+	errorutil "github.com/projectdiscovery/utils/errors"
+	iputil "github.com/projectdiscovery/utils/ip"
+	ptrutil "github.com/projectdiscovery/utils/ptr"
+	utls "github.com/refraction-networking/utls"
+	"github.com/zmap/zcrypto/encoding/asn1"
 	ztls "github.com/zmap/zcrypto/tls"
 	"golang.org/x/net/proxy"
 )
+
+// option to disable ztls fallback in case of handshake error
+// reads from env variable DISABLE_ZTLS_FALLBACK
+var disableZTLSFallback = false
+
+func init() {
+	// enable permissive parsing for ztls, so that it can allow permissive parsing for X509 certificates
+	asn1.AllowPermissiveParsing = true
+	value := os.Getenv("DISABLE_ZTLS_FALLBACK")
+	if strings.EqualFold(value, "true") {
+		disableZTLSFallback = true
+	}
+}
 
 // Dialer structure containing data information
 type Dialer struct {
@@ -103,7 +123,7 @@ func NewDialer(options Options) (*Dialer, error) {
 
 // Dial function compatible with net/http
 func (d *Dialer) Dial(ctx context.Context, network, address string) (conn net.Conn, err error) {
-	conn, err = d.dial(ctx, network, address, false, false, nil, nil)
+	conn, err = d.dial(ctx, network, address, false, false, nil, nil, impersonate.None, nil)
 	return
 }
 
@@ -112,8 +132,7 @@ func (d *Dialer) DialTLS(ctx context.Context, network, address string) (conn net
 	if d.options.WithZTLS {
 		return d.DialZTLSWithConfig(ctx, network, address, &ztls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS10})
 	}
-
-	return d.DialTLSWithConfig(ctx, network, address, &tls.Config{InsecureSkipVerify: true, MinVersion: tls.VersionTLS10})
+	return d.DialTLSWithConfig(ctx, network, address, &tls.Config{Renegotiation: tls.RenegotiateOnceAsClient, InsecureSkipVerify: true, MinVersion: tls.VersionTLS10})
 }
 
 // DialZTLS with encrypted connection using ztls
@@ -124,10 +143,17 @@ func (d *Dialer) DialZTLS(ctx context.Context, network, address string) (conn ne
 
 // DialTLS with encrypted connection
 func (d *Dialer) DialTLSWithConfig(ctx context.Context, network, address string, config *tls.Config) (conn net.Conn, err error) {
-	conn, err = d.dial(ctx, network, address, true, false, config, nil)
+	conn, err = d.dial(ctx, network, address, true, false, config, nil, impersonate.None, nil)
 	return
 }
 
+// DialTLSWithConfigImpersonate dials tls with impersonation
+func (d *Dialer) DialTLSWithConfigImpersonate(ctx context.Context, network, address string, config *tls.Config, impersonate impersonate.Strategy, identity *impersonate.Identity) (conn net.Conn, err error) {
+	conn, err = d.dial(ctx, network, address, true, false, config, nil, impersonate, identity)
+	return
+}
+
+// DialZTLSWithConfig dials ztls with config
 func (d *Dialer) DialZTLSWithConfig(ctx context.Context, network, address string, config *ztls.Config) (conn net.Conn, err error) {
 	// ztls doesn't support tls13
 	if IsTLS13(config) {
@@ -135,12 +161,12 @@ func (d *Dialer) DialZTLSWithConfig(ctx context.Context, network, address string
 		if err != nil {
 			return nil, err
 		}
-		return d.dial(ctx, network, address, true, false, stdTLSConfig, nil)
+		return d.dial(ctx, network, address, true, false, stdTLSConfig, nil, impersonate.None, nil)
 	}
-	return d.dial(ctx, network, address, false, true, nil, config)
+	return d.dial(ctx, network, address, false, true, nil, config, impersonate.None, nil)
 }
 
-func (d *Dialer) dial(ctx context.Context, network, address string, shouldUseTLS, shouldUseZTLS bool, tlsconfig *tls.Config, ztlsconfig *ztls.Config) (conn net.Conn, err error) {
+func (d *Dialer) dial(ctx context.Context, network, address string, shouldUseTLS, shouldUseZTLS bool, tlsconfig *tls.Config, ztlsconfig *ztls.Config, impersonateStrategy impersonate.Strategy, impersonateIdentity *impersonate.Identity) (conn net.Conn, err error) {
 	var hostname, port, fixedIP string
 
 	if strings.HasPrefix(address, "[") {
@@ -166,7 +192,7 @@ func (d *Dialer) dial(ctx context.Context, network, address string, shouldUseTLS
 				fixedIP = addressParts[2]
 			}
 			// check if the ip is within the context
-			if ctxIP := ctx.Value("ip"); ctxIP != nil {
+			if ctxIP := ctx.Value(IP); ctxIP != nil {
 				fixedIP = fmt.Sprint(ctxIP)
 			}
 		} else {
@@ -196,8 +222,9 @@ func (d *Dialer) dial(ctx context.Context, network, address string, shouldUseTLS
 	// use fixed ip as first
 	if fixedIP != "" {
 		IPS = append(IPS, fixedIP)
+	} else {
+		IPS = append(IPS, append(data.A, data.AAAA...)...)
 	}
-	IPS = append(IPS, append(data.A, data.AAAA...)...)
 
 	// Dial to the IPs finally.
 	for _, ip := range IPS {
@@ -218,7 +245,36 @@ func (d *Dialer) dial(ctx context.Context, network, address string, shouldUseTLS
 			case !iputil.IsIP(hostname):
 				tlsconfigCopy.ServerName = hostname
 			}
-			conn, err = tls.DialWithDialer(d.dialer, network, hostPort, tlsconfigCopy)
+			if impersonateStrategy == impersonate.None {
+				conn, err = tls.DialWithDialer(d.dialer, network, hostPort, tlsconfigCopy)
+			} else {
+				nativeConn, err := d.dialer.DialContext(ctx, network, hostPort)
+				if err != nil {
+					return nativeConn, err
+				}
+				// clone existing tls config
+				uTLSConfig := &utls.Config{
+					InsecureSkipVerify: tlsconfigCopy.InsecureSkipVerify,
+					ServerName:         tlsconfigCopy.ServerName,
+					MinVersion:         tlsconfigCopy.MinVersion,
+					MaxVersion:         tlsconfigCopy.MaxVersion,
+					CipherSuites:       tlsconfigCopy.CipherSuites,
+				}
+				var uTLSConn *utls.UConn
+				if impersonateStrategy == impersonate.Random {
+					uTLSConn = utls.UClient(nativeConn, uTLSConfig, utls.HelloRandomized)
+				} else if impersonateStrategy == impersonate.Custom {
+					uTLSConn = utls.UClient(nativeConn, uTLSConfig, utls.HelloCustom)
+					clientHelloSpec := utls.ClientHelloSpec(ptrutil.Safe(impersonateIdentity))
+					if err := uTLSConn.ApplyPreset(&clientHelloSpec); err != nil {
+						return nil, err
+					}
+				}
+				if err := uTLSConn.Handshake(); err != nil {
+					return nil, err
+				}
+				conn = uTLSConn
+			}
 		} else if shouldUseZTLS {
 			ztlsconfigCopy := ztlsconfig.Clone()
 			switch {
@@ -258,6 +314,29 @@ func (d *Dialer) dial(ctx context.Context, network, address string, shouldUseTLS
 			} else {
 				conn, err = d.dialer.DialContext(ctx, network, hostPort)
 			}
+		}
+		// fallback to ztls  in case of handshake error with chrome ciphers
+		// ztls fallback can either be disabled by setting env variable DISABLE_ZTLS_FALLBACK=true or by setting DisableZtlsFallback=true in options
+		if err != nil && !errors.Is(err, os.ErrDeadlineExceeded) && !(d.options.DisableZtlsFallback && disableZTLSFallback) {
+			var ztlsconfigCopy *ztls.Config
+			if shouldUseZTLS {
+				ztlsconfigCopy = ztlsconfig.Clone()
+			} else {
+				if tlsconfig == nil {
+					tlsconfig = &tls.Config{
+						Renegotiation:      tls.RenegotiateOnceAsClient,
+						MinVersion:         tls.VersionTLS10,
+						InsecureSkipVerify: true,
+					}
+				}
+				ztlsconfigCopy, err = AsZTLSConfig(tlsconfig)
+				if err != nil {
+					return nil, errorutil.NewWithErr(err).Msgf("could not convert tls config to ztls config")
+				}
+			}
+			ztlsconfigCopy.CipherSuites = ztls.ChromeCiphers
+			conn, err = ztls.DialWithDialer(d.dialer, network, hostPort, ztlsconfigCopy)
+			err = errorutil.WrapfWithNil(err, "ztls fallback failed")
 		}
 		if err == nil {
 			if d.options.WithDialerHistory && d.dialerHistory != nil {

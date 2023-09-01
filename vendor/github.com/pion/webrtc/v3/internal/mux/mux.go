@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 // Package mux multiplexes packets on a single socket (RFC7983)
 package mux
 
@@ -9,7 +12,7 @@ import (
 
 	"github.com/pion/ice/v2"
 	"github.com/pion/logging"
-	"github.com/pion/transport/packetio"
+	"github.com/pion/transport/v2/packetio"
 )
 
 // The maximum amount of data that can be buffered before returning errors.

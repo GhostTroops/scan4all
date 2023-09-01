@@ -29,11 +29,11 @@ func String(from interface{}) string {
 	case int32:
 		return strconv.FormatInt(int64(T), 10)
 	case int64:
-		return strconv.FormatInt(int64(T), 10)
+		return strconv.FormatInt(T, 10)
 	case uint32:
 		return strconv.FormatUint(uint64(T), 10)
 	case uint64:
-		return strconv.FormatUint(uint64(T), 10)
+		return strconv.FormatUint(T, 10)
 	case float32:
 		return strconv.FormatFloat(float64(T), 'E', -1, 32)
 	case float64:

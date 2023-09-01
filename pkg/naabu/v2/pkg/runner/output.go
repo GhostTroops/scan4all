@@ -3,8 +3,8 @@ package runner
 import (
 	"bufio"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
 	"io"
 	"reflect"
 	"strconv"
@@ -23,7 +23,7 @@ type Result struct {
 }
 
 func (r *Result) JSON() ([]byte, error) {
-	return util.Json.Marshal(r)
+	return json.Marshal(r)
 }
 
 var NumberOfCsvFieldsErr = errors.New("exported fields don't match csv tags")
@@ -75,7 +75,7 @@ func WriteHostOutput(host string, ports map[int]struct{}, writer io.Writer) erro
 
 // WriteJSONOutput writes the output list of subdomain in JSON to an io.Writer
 func WriteJSONOutput(host, ip string, ports map[int]struct{}, writer io.Writer) error {
-	encoder := util.Json.NewEncoder(writer)
+	encoder := json.NewEncoder(writer)
 
 	data := Result{TimeStamp: time.Now().UTC()}
 	if host != ip {

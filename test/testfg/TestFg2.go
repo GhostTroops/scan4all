@@ -96,19 +96,17 @@ https://47.104.237.208`, "\n")
 			//		}(x + y)
 			//	}
 			wg.Add(1)
-			func(url1 string) {
-				util.DefaultPool.Submit(func() {
-					defer wg.Done()
-					headers, body, title, url2, status_code, err := doUrl(url1)
-					if err != nil {
-						//log.Println(url1, " error: ", err)
-						return
-					}
-					xx1, _ := fingerprint.FingerScan(headers, body, title, url2, status_code)
-					if 0 < len(xx1) {
-						log.Printf("%s 指纹 %+v  %s", url1, xx1, status_code)
-					}
-				})
+			go func(url1 string) {
+				defer wg.Done()
+				headers, body, title, url2, status_code, err := doUrl(url1)
+				if err != nil {
+					//log.Println(url1, " error: ", err)
+					return
+				}
+				xx1, _ := fingerprint.FingerScan(headers, body, title, url2, status_code)
+				if 0 < len(xx1) {
+					log.Printf("%s 指纹 %+v  %s", url1, xx1, status_code)
+				}
 			}(x + y)
 
 			//headers, body, title, url, status_code, err := doUrl(x + y)

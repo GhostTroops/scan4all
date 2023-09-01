@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package sctp
 
 import (
@@ -5,19 +8,19 @@ import (
 )
 
 /*
-   This error cause MAY be included in ABORT chunks that are sent
-   because of an upper-layer request.  The upper layer can specify an
-   Upper Layer Abort Reason that is transported by SCTP transparently
-   and MAY be delivered to the upper-layer protocol at the peer.
+This error cause MAY be included in ABORT chunks that are sent
+because of an upper-layer request.  The upper layer can specify an
+Upper Layer Abort Reason that is transported by SCTP transparently
+and MAY be delivered to the upper-layer protocol at the peer.
 
-        0                   1                   2                   3
-        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
-       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-       |         Cause Code=12         |      Cause Length=Variable    |
-       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-       /                    Upper Layer Abort Reason                   /
-       \                                                               \
-       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	 0                   1                   2                   3
+	 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	|         Cause Code=12         |      Cause Length=Variable    |
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+	/                    Upper Layer Abort Reason                   /
+	\                                                               \
+	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 */
 type errorCauseUserInitiatedAbort struct {
 	errorCauseHeader

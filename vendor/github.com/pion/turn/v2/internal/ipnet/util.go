@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 // Package ipnet contains helper functions around net and IP
 package ipnet
 
@@ -37,4 +40,16 @@ func AddrEqual(a, b net.Addr) bool {
 	}
 
 	return aUDP.IP.Equal(bUDP.IP) && aUDP.Port == bUDP.Port
+}
+
+// FingerprintAddr generates a fingerprint from net.UDPAddr or net.TCPAddr's
+// which can be used for indexing maps.
+func FingerprintAddr(addr net.Addr) string {
+	switch a := addr.(type) {
+	case *net.UDPAddr:
+		return a.IP.String()
+	case *net.TCPAddr: // Do we really need this case?
+		return a.IP.String()
+	}
+	return "" // Should never happen
 }

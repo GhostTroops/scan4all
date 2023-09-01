@@ -1,10 +1,13 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package codecs
 
 // OpusPayloader payloads Opus packets
 type OpusPayloader struct{}
 
 // Payload fragments an Opus packet across one or more byte arrays
-func (p *OpusPayloader) Payload(mtu uint16, payload []byte) [][]byte {
+func (p *OpusPayloader) Payload(_ uint16, payload []byte) [][]byte {
 	if payload == nil {
 		return [][]byte{}
 	}
@@ -33,5 +36,14 @@ func (p *OpusPacket) Unmarshal(packet []byte) ([]byte, error) {
 	return packet, nil
 }
 
-// OpusPartitionHeadChecker is obsolete
+// OpusPartitionHeadChecker checks Opus partition head.
+//
+// Deprecated: replaced by OpusPacket.IsPartitionHead()
 type OpusPartitionHeadChecker struct{}
+
+// IsPartitionHead checks whether if this is a head of the Opus partition.
+//
+// Deprecated: replaced by OpusPacket.IsPartitionHead()
+func (*OpusPartitionHeadChecker) IsPartitionHead(packet []byte) bool {
+	return (&OpusPacket{}).IsPartitionHead(packet)
+}

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package ice
 
 import (
@@ -17,35 +20,12 @@ var ErrGetTransportAddress = errors.New("failed to get local transport address")
 
 // TCPMux is allows grouping multiple TCP net.Conns and using them like UDP
 // net.PacketConns. The main implementation of this is TCPMuxDefault, and this
-// interface exists to:
-//  1. prevent SEGV panics when TCPMuxDefault is not initialized by using the
-//     invalidTCPMux implementation, and
-//  2. allow mocking in tests.
+// interface exists to allow mocking in tests.
 type TCPMux interface {
 	io.Closer
 	GetConnByUfrag(ufrag string, isIPv6 bool, local net.IP) (net.PacketConn, error)
 	RemoveConnByUfrag(ufrag string)
 }
-
-// invalidTCPMux is an implementation of TCPMux that always returns ErrTCPMuxNotInitialized.
-type invalidTCPMux struct{}
-
-func newInvalidTCPMux() *invalidTCPMux {
-	return &invalidTCPMux{}
-}
-
-// Close implements TCPMux interface.
-func (m *invalidTCPMux) Close() error {
-	return ErrTCPMuxNotInitialized
-}
-
-// GetConnByUfrag implements TCPMux interface.
-func (m *invalidTCPMux) GetConnByUfrag(ufrag string, isIPv6 bool, local net.IP) (net.PacketConn, error) {
-	return nil, ErrTCPMuxNotInitialized
-}
-
-// RemoveConnByUfrag implements TCPMux interface.
-func (m *invalidTCPMux) RemoveConnByUfrag(ufrag string) {}
 
 type ipAddr string
 
@@ -68,7 +48,7 @@ type TCPMuxParams struct {
 	Logger         logging.LeveledLogger
 	ReadBufferSize int
 
-	// max buffer size for write op. 0 means no write buffer, the write op will block until the whole packet is written
+	// Maximum buffer size for write op. 0 means no write buffer, the write op will block until the whole packet is written
 	// if the write buffer is full, the subsequent write packet will be dropped until it has enough space.
 	// a default 4MB is recommended.
 	WriteBufferSize int
@@ -204,14 +184,14 @@ func (m *TCPMuxDefault) handleConn(conn net.Conn) {
 		return
 	}
 
-	if m == nil || msg.Type.Method != stun.MethodBinding { // not a stun
+	if m == nil || msg.Type.Method != stun.MethodBinding { // Not a STUN
 		m.closeAndLogError(conn)
 		m.params.Logger.Warnf("Not a STUN message from %s to %s", conn.RemoteAddr(), conn.LocalAddr())
 		return
 	}
 
 	for _, attr := range msg.Attributes {
-		m.params.Logger.Debugf("msg attr: %s", attr.String())
+		m.params.Logger.Debugf("Message attribute: %s", attr.String())
 	}
 
 	attr, err := msg.Get(stun.AttrUsername)

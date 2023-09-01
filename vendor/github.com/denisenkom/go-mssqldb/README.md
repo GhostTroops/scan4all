@@ -4,6 +4,8 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/jrln8cs62wj9i0a2?svg=true)](https://ci.appveyor.com/project/denisenkom/go-mssqldb)
 [![codecov](https://codecov.io/gh/denisenkom/go-mssqldb/branch/master/graph/badge.svg)](https://codecov.io/gh/denisenkom/go-mssqldb)
 
+For more recent updates, see the [Microsoft fork](https://github.com/microsoft/go-mssqldb).
+
 ## Install
 
 Requires Go 1.8 or above.
@@ -50,7 +52,7 @@ Other supported formats are listed below.
   * 16 log statement parameters
   * 32 log transaction begin/end
 * `TrustServerCertificate`
-  * false - Server certificate is checked. Default is false if encypt is specified.
+  * false - Server certificate is checked. Default is false if encrypt is specified.
   * true - Server certificate is not checked. Default is true if encrypt is not specified. If trust server certificate is true, driver accepts any certificate presented by the server and any host name in that certificate. In this mode, TLS is susceptible to man-in-the-middle attacks. This should be used only for testing.
 * `certificate` - The file that contains the public key certificate of the CA that signed the SQL Server certificate. The specified certificate overrides the go platform specific CA certificates.
 * `hostNameInCertificate` - Specifies the Common Name (CN) in the server certificate. Default value is the server host.

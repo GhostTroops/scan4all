@@ -44,6 +44,11 @@ The following types are supported by the goflags library. The `<name>P` suffix m
 | VarP                     | Custom value with long short name implementing flag.Value interface |
 | EnumVar                  | Enum value with long name                                           |
 | EnumVarP                 | Enum value with long short name                                     |
+| CallbackVar			   | Callback function as value with long name							 |
+| CallbackVarP			   | Callback function as value with long short name					 |
+| SizeVar                  | String value with long name                                         |
+| SizeVarP                 | String value with long short name                                   |
+
 
 ### String Slice Options
 
@@ -94,6 +99,14 @@ func main() {
 	flagSet.EnumVarP(&options.Type, "enum-type", "et", Nil, "Variable Type (type1/type2)", enumAllowedTypes)
 	flagSet.BoolVar(&opt.silent, "silent", true, "show silent output")
 	flagSet.StringSliceVarP(&opt.inputs, "inputs", "i", nil, "list of inputs (file,comma-separated)", goflags.FileCommaSeparatedStringSliceOptions)
+
+	update := func(tool string ) func() { 
+		return func()  {
+			fmt.Printf("%v updated successfully!", tool)
+		}
+	}
+	flagSet.CallbackVarP(update("tool_1"), "update", "up", "update tool_1")
+
 
 	// Group example
 	flagSet.CreateGroup("config", "Configuration",

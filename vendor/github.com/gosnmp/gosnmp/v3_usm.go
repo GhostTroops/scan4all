@@ -206,11 +206,25 @@ func (sp *UsmSecurityParameters) Description() string {
 	return sb.String()
 }
 
+// SafeString returns a logging safe (no secrets) string of the UsmSecurityParameters
+func (sp *UsmSecurityParameters) SafeString() string {
+	return fmt.Sprintf("AuthoritativeEngineID:%s, AuthoritativeEngineBoots:%d, AuthoritativeEngineTimes:%d, UserName:%s, AuthenticationParameters:%s, PrivacyParameters:%v, AuthenticationProtocol:%s, PrivacyProtocol:%s",
+		sp.AuthoritativeEngineID,
+		sp.AuthoritativeEngineBoots,
+		sp.AuthoritativeEngineTime,
+		sp.UserName,
+		sp.AuthenticationParameters,
+		sp.PrivacyParameters,
+		sp.AuthenticationProtocol,
+		sp.PrivacyProtocol,
+	)
+}
+
 // Log logs security paramater information to the provided GoSNMP Logger
 func (sp *UsmSecurityParameters) Log() {
 	sp.mu.Lock()
 	defer sp.mu.Unlock()
-	sp.Logger.Printf("SECURITY PARAMETERS:%+v", sp)
+	sp.Logger.Printf("SECURITY PARAMETERS:%s", sp.SafeString())
 }
 
 // Copy method for UsmSecurityParameters used to copy a SnmpV3SecurityParameters without knowing it's implementation
@@ -479,12 +493,12 @@ func extendKeyReeder(authProtocol SnmpV3AuthProtocol, password string, engineID 
 // https://tools.ietf.org/html/draft-blumenthal-aes-usm-04#page-7
 // Not many vendors use this algorithm.
 // Previously implemented in the net-snmp and pysnmp libraries.
-// Not tested
+// TODO: Not tested
 func extendKeyBlumenthal(authProtocol SnmpV3AuthProtocol, password string, engineID string) ([]byte, error) {
 	var key []byte
 	var err error
 
-	key, err = hMAC(authProtocol.HashType(), cacheKey(authProtocol, ""), password, engineID)
+	key, err = hMAC(authProtocol.HashType(), cacheKey(authProtocol, password), password, engineID)
 
 	if err != nil {
 		return nil, err

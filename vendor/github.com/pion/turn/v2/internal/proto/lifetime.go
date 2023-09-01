@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package proto
 
 import (
@@ -25,7 +28,7 @@ type Lifetime struct {
 	time.Duration
 }
 
-// uint32 seconds
+// Seconds in uint32
 const lifetimeSize = 4 // 4 bytes, 32 bits
 
 // AddTo adds LIFETIME to message.
@@ -45,7 +48,7 @@ func (l *Lifetime) GetFrom(m *stun.Message) error {
 	if err = stun.CheckSize(stun.AttrLifetime, len(v), lifetimeSize); err != nil {
 		return err
 	}
-	_ = v[lifetimeSize-1] // asserting length
+	_ = v[lifetimeSize-1] // Asserting length
 	seconds := binary.BigEndian.Uint32(v)
 	l.Duration = time.Second * time.Duration(seconds)
 	return nil
