@@ -5,6 +5,7 @@ import (
 	"github.com/projectdiscovery/iputil"
 	"gorm.io/gorm"
 	"net"
+	"os"
 	"runtime"
 	"strings"
 )
@@ -43,6 +44,7 @@ func DoGetDnsInfos(t string) *[]Dns2IpMap {
 	}
 	szCmd := "dnsx"
 	szP := util.SzPwd + "/config/"
+	os.MkdirAll(szP+"tools/"+runtime.GOOS+"/", os.ModePerm)
 	a1 := []string{
 		szP + "tools/" + runtime.GOOS + "/" + szCmd,
 		"-json", "-d", t, "-w", szW, "-resp", "-a", "-aaaa", "-cname", "-mx", "-ns", "-soa", "-txt",

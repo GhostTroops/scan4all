@@ -561,15 +561,15 @@ func DoInit(config *embed.FS) {
 	fnInit = nil
 	fnInitHd = nil
 	var wg sync.WaitGroup
-	if "" == util1.SzPwd {
+	if "" == SzPwd {
 		if s, err := os.Getwd(); nil == err {
-			util1.SzPwd = s
+			SzPwd = s
 		}
 	}
-	if "" == util1.SzPwd {
-		util1.SzPwd = "."
+	if "" == SzPwd {
+		SzPwd = "."
 	}
-	szPath := util1.SzPwd + "/config/" + runtime.GOOS
+	szPath := SzPwd + "/config/" + runtime.GOOS
 	if err := os.MkdirAll(szPath, os.ModePerm); nil != err {
 		log.Println(err, szPath)
 	}

@@ -49,6 +49,7 @@ type Runner struct {
 	dnsclient     *dnsx.DNSX
 	stats         *clistats.Statistics
 	streamChannel chan *net.IPNet
+	mB            map[string]bool
 }
 
 var Naabubuffer = bytes.Buffer{}
@@ -155,6 +156,7 @@ func (r *Runner) Httpxrun(buf *bytes.Buffer, options *runner3.Options) error {
 func NewRunner(options *Options) (*Runner, error) {
 	runner := &Runner{
 		options: options,
+		mB:      make(map[string]bool),
 	}
 	runner.streamChannel = make(chan *net.IPNet)
 

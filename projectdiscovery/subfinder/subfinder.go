@@ -10,10 +10,15 @@ import (
 func DoSubfinder(a []string, out chan string, done chan bool) {
 	defer func() {
 		done <- true
+		close(out)
 		close(done)
 	}()
+	if nil == a || 0 == len(a) {
+		return
+	}
 	szCmd := "subfinder"
 	szP := util.SzPwd + "/config/"
+	os.MkdirAll(szP+"tools/"+runtime.GOOS, os.ModePerm)
 	a1 := []string{
 		szP + "tools/" + runtime.GOOS + "/" + szCmd,
 		"-all", "-silent", "-nc",
@@ -31,7 +36,7 @@ func DoSubfinder(a []string, out chan string, done chan bool) {
 		fT.Write([]byte(strings.Join(a, "\n")))
 		fT.Close()
 		defer os.Remove(fT.Name())
-		a = append(a, "-dL", fT.Name())
+		a1 = append(a1, "-dL", fT.Name())
 		if s, err := util.DoCmd(a1...); "" != s && nil == err {
 			util.Writeoutput(s)
 			a2 := strings.Split(strings.ToLower(s), "\n")
@@ -41,6 +46,7 @@ func DoSubfinder(a []string, out chan string, done chan bool) {
 					out <- x
 				}
 			}
+			return
 		}
 	}
 }
