@@ -171,6 +171,9 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 
 more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</a>
 
+# Thanks 
+- Thank <a href=https://github.com/freeload101 target=_blank>@freeload101</a> and other friends for their donations and support
+
 # Changelog
 - 2022-07-28 Added substr and aes_cbc dsl helper by me <a href="https://github.com/projectdiscovery/nuclei/releases/tag/v2.7.7">nuclei v2.7.7</a>
 - 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/issues/2301>#2301</a> 并发多实例的bug
