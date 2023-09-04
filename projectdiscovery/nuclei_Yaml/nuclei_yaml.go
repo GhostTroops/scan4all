@@ -29,6 +29,7 @@ func RunNuclei(buf *bytes.Buffer) {
 	}
 	szCmd := "nuclei"
 	szP := util.SzPwd + "/config/"
+	os.MkdirAll(szP+"tools/"+runtime.GOOS, os.ModePerm)
 	a := []string{
 		szP + "tools/" + runtime.GOOS + "/" + szCmd,
 		"-t", szP + "nuclei-templates",

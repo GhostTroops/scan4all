@@ -52,30 +52,35 @@ func doSub(s string) (aRst []string, err1 error) {
 	bSend := false
 	if "*." == s[:2] {
 		var out = make(chan string, 1000)
-		var close chan bool
+		var close = make(chan bool, 1)
 		go subfinder.DoSubfinder([]string{s[2:]}, out, close)
-	Close:
+
 		for {
 			select {
 			case <-util.Ctx_global.Done():
 				return
 			case <-close:
-				break Close
-			case ok := <-out:
-				if "" != ok {
-					aRst = append(aRst, ok)
-					//fmt.Println("out ===> ", ok)
+				goto Close
+			case ok, ok1 := <-out:
+				if ok1 {
+					if "" != ok {
+						aRst = append(aRst, ok)
+						//fmt.Println("out ===> ", ok)
+					}
+				} else {
+					goto Close
 				}
 			default:
 				util.DoSleep()
 			}
 		}
+	Close:
 		bSend = true
 	} else {
 		aRst = append(aRst, s[2:])
 	}
 
-	if bSend {
+	if bSend && nil != aRst && 0 < len(aRst) {
 		util.SendAData[string](s[:2], aRst, "subfinder")
 	}
 	return aRst, nil

@@ -67,7 +67,7 @@
   "HydraPass": "",
   "UrlPrecise": true,
   "ParseSSl": true,
-  "EnableSubfinder": true,
+  "EnableSubfinder": false,
   "EnableHoneyportDetection": true,
   "EnableKsubdomain": true,
   "KsubdomainRegxp": "([0-9a-zA-Z\\-]+\\.[0-9a-zA-Z\\-]+)$",
