@@ -6,6 +6,7 @@
 *.dll
 *.so
 tmp/
+config/tools/
 db/51pwnCc/
 db/sqlite3.db
 *.dylib
