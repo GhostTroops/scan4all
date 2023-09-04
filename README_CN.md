@@ -236,6 +236,9 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 - 2022-06-07 增加http url列表精准扫描参数，根据环境变量UrlPrecise=true开启
 -->
 
+# 感谢
+- 感谢 <a href=https://github.com/freeload101 target=_blank>@freeload101</a> 等朋友等捐赠与支持
+
 # 交流群(微信、QQ、Tg)
 | Wechat | Or | QQchat | Or | Tg |
 | --- |--- |--- |--- |--- |
