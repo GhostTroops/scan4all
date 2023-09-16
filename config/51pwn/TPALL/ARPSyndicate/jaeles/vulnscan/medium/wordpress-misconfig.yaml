@@ -1,0 +1,24 @@
+id: wordpress-misconfig
+info:
+  name: Wordpress Sensitive path
+  risk: Medium
+
+params:
+  - root: '{{.BaseURL}}'
+
+variables:
+  - infos: |
+      /_wpeprivate/config.json
+      /wp-content/debug.log
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+     {{.root}}{{.infos}}
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && !StringSearch("response", "Not Found") && StringSearch("response", "wpengine_apikey")
+      - >-
+        StatusCode() == 200 && (RegexSearch("resHeaders", ".*Content-Type:.*octet-stream") || RegexSearch("resHeaders", "text/plain")) && (Math.abs(ContentLength() - OriginContentLength()) > 2000)

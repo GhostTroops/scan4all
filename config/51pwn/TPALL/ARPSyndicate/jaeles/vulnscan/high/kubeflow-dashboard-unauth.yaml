@@ -1,0 +1,20 @@
+id: kubeflow-dashboard-unauth
+info:
+  name: Kubeflow Dashboard unauth
+  risk: High
+
+params:
+  - root: '{{.BaseURL}}'
+
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+     {{.root}}/pipeline/apis/v1beta1/runs?page_size=5&sort_by=created_at%20desc
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", "application/json") && StringSearch("body", '{"runs":[{"id":') && StringSearch("body", "resource_references")
+
+reference:
+  - link: https://github.com/kubeflow/kubeflow

@@ -1,0 +1,21 @@
+id: Configuration displayed
+info:
+  name: Finds config for 
+  author: Clark
+  severity: medium
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/CaseManager/welcome/displayCmisConfig.jsp"
+
+    matchers-condition: and
+    matchers:
+
+      - type: word
+        words:
+          - appSettings
+
+      - type: status
+        status:
+          - 200

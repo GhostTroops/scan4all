@@ -1,0 +1,33 @@
+id: apache-filename-enum
+info:
+  name: Apache Filename Enumeration
+  author:
+  - l0ne1y
+  description: |-
+    Apache可用文件名类型查询
+    apache服务器会根据你给的资源名称a，查找所有的a.*资源，加入有两种资源： a.txt 和a.php， 在类型表中查出：
+    .txt 对应文档类型为: text/plain
+    .php 对应文档类型为： application/x-httpd-php
+
+    如果请求时使用的 accept为： text/plain ，则返回a.txt
+    如果请求时使用的 accept为： application/x-httpd-php ，则返回a.php
+    如果请求时使用的accept为： text/none ，找不到这种类型，则协商失败，apache返回406，并返回所有可用的类型列表
+  severity: low
+  remediation: 在配置文件httpd.conf中找到"ErrorDocument 406 /error/http|ErrCode=406.htm",在行前加上#号注释，屏蔽响应页面
+requests:
+- matchers:
+  - type: status
+    status:
+    - 406
+  - type: word
+    condition: and
+    words:
+    - Not Acceptable
+    - 'Available variants:'
+    - <address>Apache Server at
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/index'
+  method: GET
+  headers:
+    Accept: fake/value

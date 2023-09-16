@@ -1,0 +1,24 @@
+id: docker-registry
+info:
+  name: Docker Registry Listing
+  author:
+  - l0ne1y
+  description: |-
+    Docker Registry API未授权访问
+    Docker Registry API未授权访问，错误配置的Docker Registry，攻击者可以借机窃取机密数据、攻陷目标、打断正常业务。
+  severity: medium
+requests:
+- matchers:
+  - type: word
+    words:
+    - '"repositories":'
+  - type: word
+    part: header
+    words:
+    - application/json
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/v2/_catalog'
+  method: GET
+  max-redirects: 1
+  redirects: true

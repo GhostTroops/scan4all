@@ -1,0 +1,83 @@
+id: oss
+info:
+  name: OSS bucket object read write checke
+  author: 51pwn
+  severity: critical
+  reference:
+    - https://github.com/hktalent/nuclei-templates
+    - https://51pwn.com
+  tags: oss
+
+requests:
+  - raw:
+      - |+
+        GET / HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+        Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+        Pragma:no-cache
+        Content-type: application/xml
+        
+      - |+
+        PUT /{{randstr}}.txt HTTP/1.1
+        User-Agent: aliyun-sdk-python/2.16.0(Darwin/22.1.0/x86_64;3.9.6)
+        Content-Type: application/json
+        Accept: */*
+        Content-Length: 17
+        Host: {{Hostname}}
+        
+        {"51pwn":"51pwn"}
+      # 验证 put 文件 真实存在
+      - |+
+        GET /{{randstr}}.txt HTTP/1.1
+        Host: {{Hostname}}
+
+      # - |+
+      #   @Host: {{myHost}}
+      #   GET / HTTP/1.1
+      #   Host: {{Hostname}}
+      #   User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+      #   Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+      #   Pragma:no-cache
+      #   Content-type: application/xml
+        
+      # - |+
+      #   @Host: {{myHost}}
+      #   PUT /{{randstr}}.txt HTTP/1.1
+      #   User-Agent: aliyun-sdk-python/2.16.0(Darwin/22.1.0/x86_64;3.9.6)
+      #   Accept: */*
+      #   Content-Length: 17
+      #   Host: {{Hostname}}
+        
+      #   {"51pwn":"51pwn"}
+      # # 验证 put 文件 真实存在
+      # - |+
+      #   @Host: {{myHost}}
+      #   GET /{{randstr}}.json HTTP/1.1
+      #   Host: {{Hostname}}
+      # # end payload
+    unsafe: true
+    cookie-reuse: true
+    req-condition: true
+  
+    matchers-condition: or
+    matchers:
+      - type: dsl
+        dsl:
+          # Server: AliyunOSS tencent-cos 
+          # 判断是否是OSS（目前有阿里云OSS、腾讯云COS、亚马逊S3、华为云、京东云）
+          - "contains(body_1, 'HostId') || contains(all_headers_1,'AliyunOSS') || contains(all_headers_1,'tencent-cos') || contains(all_headers_1,'AmazonS3') || contains(all_headers_1,'JDCloudOSS') || contains(all_headers_1,'OBS') "
+          - 'contains(body_3, "51pwn") && status_code_3 == 200 && (status_code_2 == 200||status_code_2 == 201)'
+        condition: and
+      # - type: dsl
+      #   dsl:
+      #     # Server: AliyunOSS tencent-cos 
+      #     - "contains(body_4, 'HostId') || contains(all_headers_4,'AliyunOSS') || contains(all_headers_4,'tencent-cos') || contains(all_headers_4,'AmazonS3') || contains(all_headers_4,'JDCloudOSS') || contains(all_headers_4,'OBS') "
+      #     - 'contains(body_4, "ListBucketResult") && contains(body_6, "51pwn") && status_code_6 == 200 && (status_code_5 == 200||status_code_5 == 201)'
+      #   condition: and
+    extractors:
+      - type: regex
+        name: myHost
+        group: 1
+        regex:
+          - '<HostId>([^<]+)<'

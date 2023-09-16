@@ -1,0 +1,36 @@
+id: jenkins-version
+
+info:
+  name: Jenkins Version Detection
+  author: c-sh0
+  reference:
+     - https://www.jenkins.io/doc/book/using/remote-access-api/#RemoteaccessAPI-DetectingJenkinsversion
+     - https://github.com/jenkinsci/jenkins/pull/470
+     - https://www.jenkins.io/doc/book/security/access-control/permissions/#access-granted-without-overallread
+  severity: info
+  description: Obtain Jenkins Version
+  tags: tech,jenkins,api
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/whoAmI/"
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        part: header
+        words:
+          - 'X-Jenkins:'
+
+    extractors:
+      - type: regex
+        part: header
+        group: 1
+        regex:
+          - "X-Jenkins:.*([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3})"
+

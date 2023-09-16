@@ -1,0 +1,48 @@
+id: netgear-router-exposure
+info:
+  name: NETGEAR Router S/N Disclosure
+  author:
+  - l0ne1y
+  tags:
+  - netgear
+  - exposure
+  - iot
+  - router
+  description: |-
+    Netgear 路由器序列号泄漏漏洞
+
+    NETGEAR 路由器型号序列号泄漏，如果启用密码恢复，可用于获取管理员密码。
+  reference:
+  - https://www.exploit-db.com/exploits/47117
+  - https://www.exploit-db.com/exploits/45741
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1.目前厂商已发布升级补丁以修复漏洞，补丁获取链接：
+    https://kb.netgear.com/
+requests:
+- matchers:
+  - type: status
+    condition: or
+    status:
+    - 200
+    - 501
+  - type: word
+    condition: and
+    words:
+    - <serialNumber>
+    - <deviceType>
+    - <modelNumber>
+  - type: word
+    part: header
+    words:
+    - text/xml
+  extractors:
+  - type: regex
+    regex:
+    - <serialNumber>([A-Z0-9]+)<\/serialNumber>
+    group: 1
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/rootDesc.xml'
+  method: GET

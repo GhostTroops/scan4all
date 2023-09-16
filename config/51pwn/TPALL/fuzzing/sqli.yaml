@@ -1,0 +1,47 @@
+id: SQL
+
+info:
+  name: SQL Injecion
+  author: pikpikcu
+  severity: critical
+
+requests:
+  - method: GET
+    path:
+
+      - "{{BaseURL}}%27"
+      - "{{BaseURL}}%22"
+      - "{{BaseURL}}%5C"
+      - "{{BaseURL}}%2C"
+      - "{{BaseURL}}%2A"
+      - "{{BaseURL}}%60"
+
+    matchers:
+      - type: regex
+        regex:
+           - "SQL syntax"
+           - "MySQL"
+           - "Unexpected end of command in statement" 
+           - "Unexpected token.*?in statement" 
+           - ".hsqldb"
+           - ".jdbc"
+           - "CLI Driver"
+           - "DB2 SQL error"
+           - "bdb2_"
+           - "SQLSTATE"
+           - "SQLCODE" 
+           - "Warning"
+           - "SybSQLException"
+           - "sqlite"
+           - "SQLite3"
+           - "Sqlite"
+           - "SQLSTATE"
+           - "Error 500"
+           - "statementSQL" 
+        part: body
+      - type: status
+        status:
+          - 500
+          - 302
+          - 400
+        part: header

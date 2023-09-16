@@ -1,0 +1,27 @@
+id: unauthen-kibana
+
+info:
+  name: Kibana No Authentication
+  risk: High
+
+params:
+  - root: "{{.BaseURL}}"
+
+requests:
+  - method: GET
+    url: >-
+      {{.root}}/api/console/proxy?uri=_mapping
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", 'cluster_uuid') && StringSearch("response", "Content-Type: application/json")
+
+  - method: GET
+    url: >-
+      {{.root}}/app/kibana
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", 'kibanaWelcomeView')

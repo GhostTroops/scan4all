@@ -1,0 +1,32 @@
+id: OpenText LiveSites TeamSite database info exposed
+
+info:
+  name: OpenText LiveSite TeamSite database info exposed.
+  author: Clark
+  severity: medium
+  description: Can find database connection info.
+
+requests:
+  - method: GET
+    path:
+      - '{{BaseURL}}//iw-cc//WEB-INF/conf/livesite/resources/resource-config.xml'
+      - '{{BaseURL}}//iw-cc//WEB-INF/web.xml'
+      - '{{BaseURL}}//iw-cc//WEB-INF/conf/livesite_customer/database.properties'
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        words:
+          - 'Interwoven Process Model Web View'
+          - 'database.properties.template'
+          - 'resource-config.xml'
+
+      - type: word
+        words:
+          - 'application/xml'
+          - 'text/plain'
+        part: header

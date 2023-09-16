@@ -1,0 +1,20 @@
+id: Dashboard Exposed bypassing authentication
+info:
+  name: Find Exposed dashboard
+  author: Clark
+  severity: medium
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/dashboard"
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - dashboard
+        condition: and
+
+      - type: status
+        status:
+          - 200

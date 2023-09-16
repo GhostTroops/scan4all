@@ -1,0 +1,36 @@
+id: btoptionscom-financial_times-xss
+info:
+  name: btoptionscom_financial_times_php_issue_xss
+  author:
+  - jim2g
+  description: |
+    btoptionscom_financial_times_php_issue_存在跨站脚本漏洞
+    XSS攻击通常指的是通过利用网页开发时留下的漏洞，通过巧妙的方法注入恶意指令代码到网页，使用户加载并执行攻击者恶意制造的网页程序。这些恶意网页程序通常是JavaScript，但实际上也可以包括Java、 VBScript、ActiveX、 Flash 或者甚至是普通的HTML。攻击成功后，攻击者可能得到包括但不限于更高的权限（如执行一些操作）、私密网页内容、会话和cookie等各种内容。\n反射型XSS，是最普遍的类型。用户访问服务器-跨站链接-返回跨站代码，它的特点是非持久化，必须用户点击带有特定参数的链接才能引起。
+  severity: medium
+  remediation: |
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+
+    临时修复方案：
+    1、对输入(和URL参数)进行过滤，对输出进行编码，白名单和黑名单结合。也就是对提交的所有内容进行过滤，对url中的参数进行过滤，过滤掉会导致脚本执行的相关内容；然后对动态输出到页面的内容进行html编码，使脚本无法在浏览器中执行。虽然对输入过滤可以被绕过，但是也还是会拦截很大一部分的XSS攻击；最后对字符进行白名单或者黑名单限制。'
+    ```
+
+    3. 漏洞危害
+    ```
+    1、钓鱼欺骗：最典型的就是利用目标网站的反射型跨站脚本漏洞将目标网站重定向到钓鱼网站，或者注入钓鱼JavaScript以监控目标网站的表单输入，甚至发起基于DHTML更高级的钓鱼攻击方式。
+    2、网站挂马：跨站后利用IFrame嵌入隐藏的恶意网站或者将被攻击者定向到恶意网站上，或者弹出恶意网站窗口等方式都可以进行挂马攻击。
+    3、身份盗用：Cookie是用户对于特定网站的身份验证标志，XSS可以盗取用户的Cookie，就可以获取到用户对网站的操作权限，从而查看用户隐私信息。
+    4、用户劫持：一些高级的XSS，比如xss蠕虫等。
+    5、控制受害者机器向其他系统发起攻击。
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,"<script>alert(\'xss\')</script>")
+  raw:
+  - |
+    GET /financial_times.php?issue=%3Cscript%3Ealert(%27xss%27)%3C/script%3E HTTP/1.1
+    Host: {{Hostname}}
+  req-condition: true

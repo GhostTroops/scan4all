@@ -1,0 +1,19 @@
+id: cors-00
+type: fuzz
+info:
+  name: CORS Misconfiguration
+  risk: Medium
+
+payloads:
+    - 'http://example.com'
+    - 'example.com'
+
+requests:
+  - generators:
+      - Header("{{.payload}}", "Referer")
+      - Header("{{.payload}}", "Origin")
+    detections:
+      - >-
+        StringSearch("response","Access-Control-Allow-Origin: {{.payload}}") && StringSearch("response","Access-Control-Allow-Credentials: true")
+      - >-
+        StringSearch("response","Access-Control-Allow-Origin: *") && StringSearch("response","Access-Control-Allow-Credentials: true")

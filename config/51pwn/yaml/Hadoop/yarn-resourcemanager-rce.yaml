@@ -1,0 +1,33 @@
+id: yarn-resourcemanager-rce
+info:
+  name: Apache Yarn ResourceManager RCE
+  author:
+  - l0ne1y
+  description: |-
+    Hadoop YARN 未授权 RCE
+    Hadoop 是由 Apache 基金会开发的分布式系统基础架构。YARN 是 hadoop 系统上的统一资源管理平台。它的主要作用是实现集群资源的统一管理和调度。MapReduce 计算框架可以作为应用程序运行。在 YARN 系统之上，通过 YARN 管理资源。简单地说，用户可以将特定的应用程序提交给YARN执行，它允许执行相关的include系统命令。
+    YARN提供REST API（默认为前者），在8088和8090默认开放，用户可以通过API直接进行相关的应用创建、任务提交等操作。如果配置不当，REST API 将在公共网络中打开并导致未经授权的访问
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://hadoop.apache.org/
+
+    临时修复方案：
+    1、通过iptables或安全组配置访问策略，限制对8088等端口的访问
+    2、如非必要，不要在公网打开接口，改为本地或内网调用。
+    3、升级Hadoop到2.x版本，开启Kerberos认证，防止匿名访问
+requests:
+- matchers:
+  - type: word
+    condition: and
+    words:
+    - application-id
+    - maximum-resource-capability
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/ws/v1/cluster/apps/new-application'
+  method: POST

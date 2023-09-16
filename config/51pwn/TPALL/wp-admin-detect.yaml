@@ -1,0 +1,20 @@
+id: wp-admin-find
+
+info:
+   name: Wordpress Login or Admin panel finder
+   author: System777
+   severity: info
+   description: Detect wordpress admin panel link
+
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/wp-admin/install.php"
+
+    matchers:
+      - type: status
+        status:
+          - 200
+#headers:
+#  User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0

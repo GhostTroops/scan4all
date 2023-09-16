@@ -1,0 +1,33 @@
+id: dedecms-openredirect
+info:
+  name: DedeCMS Open Redirect
+  author:
+  - l0ne1y
+  description: |-
+    DedeCMS URL重定向漏洞
+    DedeCMS（织梦内容管理系统）是中国卓卓网络（Desdev）科技有限公司的一套开源的集内容发布、编辑、管理检索等于一体的PHP网站内容管理系统（CMS）。
+    织梦内容管理系统在plus/download.php文件中存在URL重定向漏洞。
+    URL重定向（URL redirection，或称网址重定向或网域名称转址），是指当使用者浏览某个网址时，将他导向到另一个网址的技术。由于越来越多的应用需要和其他的第三方应用交互，以及在自身应用内部根据不同的逻辑将用户引向到不同的页面，譬如一个典型的登录接口就经常需要在认证成功之后将用户引导到登录之前的页面，整个过程中如果实现不严格就可能导致一些安全问题，特定条件下可能引起严重的安全漏洞。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    http://www.dedecms.com/
+
+    临时修复方案：
+    1、代码固定跳转地址，不让用户控制变量。
+    2、跳转目标地址采用白名单映射机制、只对合法的 URL 做跳转。
+    3、合理充分的校验校验跳转的目标地址，非己方地址时告知用户跳转风险。
+requests:
+- matchers:
+  - type: word
+    part: header
+    words:
+    - 'Location: https://bing.com'
+  - type: status
+    status:
+    - 302
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/plus/download.php?open=1&link=aHR0cHM6Ly9ldmlsLmNvbQo='
+  method: GET

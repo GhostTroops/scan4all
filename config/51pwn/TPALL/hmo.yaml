@@ -1,0 +1,42 @@
+id: HTTP-Override-Attack
+
+info:
+  name: Meta-overide
+  author: MR.iambatman
+  severity: high
+  description: HMO
+
+requests:
+
+  - raw:
+      - |
+        GET /?exits=1234 HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0
+        §hmo§: §header§
+        Connection: close
+
+      - |
+        GET /?exits=1234 HTTP/1.1
+        Host: {{Hostname}}
+
+
+    payloads:
+      header: helpers/payloads/request.txt
+      hmo: helpers/payloads/header_hmo.txt
+
+    attack: clusterbomb
+    redirects: true
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 404
+      - type: word
+        words: 
+          - "POST"
+          - "GET"
+          - "DELETE"
+          - "not found"
+          - "Resource has been successfully removed with the DELETE method"
+

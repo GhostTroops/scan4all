@@ -1,0 +1,33 @@
+id: jupyter-ipython-unauth
+info:
+  name: Jupyter ipython - Authorization Bypass
+  author:
+  - l0ne1y
+  description: |-
+    Jupyter ipython 未授权访问漏洞
+    IPython是IPython团队开发的一个Python的原生交互式shell的增强版。Notebook是其中的一个开发环境。Jupyter Notebook是其中的一套用于创建、共享代码和说明性文本文档的Web应用程序。
+
+    在Web程序中由于权限控制不当，导致用户可以访问或操作到本身没有权限访问的数据即使越权访问。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://jupyter.org/
+
+    临时修复方案：
+    1、前后端同时对用户输入信息进行校验，双重验证机制。
+    2、调用功能前验证用户是否有权限调用相关功能
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    part: body
+    words:
+    - ipython/static/components
+    - ipython/kernelspecs
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/ipython/tree'
+  method: GET

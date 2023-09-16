@@ -1,0 +1,35 @@
+id: couchdb-unauth
+info:
+  name: couchdb exposure
+  author:
+  - organiccrap
+  description: |-
+    CouchDB 未授权访问漏洞
+    CouchDB 是一个开源的面向文档的数据库管理系统，可以通过 RESTful JavaScript Object Notation (JSON) API 访问。CouchDB会默认会在5984端口开放Restful的API接口，用于数据库的管理功能。
+
+    CouchDB 默认会在 5984 端口开放 Restful 的 API 接口，如果使用 SSL 的话就会监听在 6984 端口，用于数据库的管理功能。其 HTTP Server 默认开启时没有进行验证，而且绑定在 0.0.0.0，所有用户均可通过 API 访问导致未授权访问。
+  severity: medium
+  remediation: |
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://couchdb.apache.org/
+
+    临时修复方案：
+    1、指定CouchDB绑定的IP （需要重启CouchDB才能生效） 在 /etc/couchdb/local.ini 文件中找到 “bind_address = 0.0.0.0” ，把 0.0.0.0 修改为 127.0.0.1 ，然后保存。注：修改后只有本机才能访问CouchDB。
+    2、设置访问密码 （需要重启CouchDB才能生效） 在 /etc/couchdb/local.ini 中找到“[admins]”字段配置密码。
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: body
+    words:
+    - httpd_design_handlers
+    - external_manager
+    - replicator_manager
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/_config'
+  method: GET

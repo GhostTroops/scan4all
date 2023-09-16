@@ -1,0 +1,27 @@
+# info to search signature
+id: unauthen-elastic
+
+info:
+  name: Elasctic Search Misconfiguration
+  risk: Medium
+
+params:
+  - root: "{{.BaseURL}}"
+
+requests:
+  - method: GET
+    url: >-
+      {{.root}}
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", '"cluster_name"') && StringSearch("response", "Content-Type: application/json")
+  - method: GET
+    url: >-
+      {{.root}}/_search?q=*
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", 'took') && StringSearch("response", "Content-Type: application/json")

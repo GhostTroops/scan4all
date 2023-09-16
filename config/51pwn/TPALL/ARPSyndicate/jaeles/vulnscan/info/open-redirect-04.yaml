@@ -1,0 +1,32 @@
+# info to search signature
+id: open-redirect-04
+type: fuzz
+info:
+  name: Open Redirect
+  risk: Low
+
+# jaeles scan -p 'dest=example.com' or -p 'dest=http://example.com' or ...
+params:
+  - dest: '{{.oob}}'
+
+variables:
+  - prefix: |
+      /
+      //
+      ///
+      ///;@
+
+payloads:
+  - "{{.dest}}"
+
+requests:
+  - method: GET
+  - generators:
+      - Path("[[.origin]]{{.prefix}}{{.payload}}", "*")
+      - Path("{{.prefix}}{{.payload}}", "*")
+      - Path("{{.payload}}", "*")
+      - Query("{{.prefix}}{{.payload}}")
+      - Query("{{.payload}}")
+    detections:
+      - >-
+        RegexSearch("resHeaders", "(?m)^(L|l)ocation: ((http|https)://)?{{.dest}}")

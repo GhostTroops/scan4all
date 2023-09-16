@@ -1,0 +1,18 @@
+id: apache-druid-detect 
+
+info:
+  name: Apache Druid Detection
+  author: notnotnotveg
+  severity: informative
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/status/properties"
+      - "{{BaseURL}}:8091/status/properties"
+      - "{{BaseURL}}:8083/status/properties"
+    matchers:
+      - type: word
+        words:
+          - "druid.host"
+        part: body

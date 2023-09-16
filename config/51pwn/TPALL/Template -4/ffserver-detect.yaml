@@ -1,0 +1,17 @@
+id: ffserver detect
+
+info:
+  name: FFServer Detect
+  author: notnotnotveg
+  severity: informative
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}:8090/status.html"
+      - "{{BaseURL}}/status.html"
+    matchers:
+      - type: word
+        words:
+          - "<title>ffserver Status"
+        part: body

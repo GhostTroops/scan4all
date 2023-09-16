@@ -1,0 +1,15 @@
+id: aws-ec2-sto
+type: dns
+info:
+  name: AWS EC2 Subdomain Takeover
+  risk: Potential
+
+dns:
+  - domain: '{{.Domain}}'
+    record: 'A'
+    detections:
+      - >-
+        DnsRegex('A', '(?m).*ec2.*compute\\.amazonaws\\.com.*A$')
+
+references:
+  - link: https://enfinlay.github.io/ec2/deadend/2019/10/19/ec2-takeover-attempt.html

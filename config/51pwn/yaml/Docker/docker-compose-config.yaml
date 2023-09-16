@@ -1,0 +1,36 @@
+id: docker-compose-config
+info:
+  name: docker-compose.yml exposure
+  author:
+  - l0ne1y
+  description: |-
+    Docker Compose 敏感信息泄露
+    docker-compose.yml是 docker-compose 的配置文件。它允许同时部署、组合和配置多个 docker 容器。Docker 的“规则”是将每个进程外包给自己的 Docker 容器。
+    攻击者可利用此漏洞获取docker真实的环境配置。
+  severity: medium
+  remediation: |-
+    官方修复建议：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+    https://www.docker.com/get-started/
+
+    配置服务器以防止未经授权的访问、目录列表等。考虑定期运行扫描和进行审核，以帮助检测未来的错误配置或丢失的补丁。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - 'regex("^version: ", body) && contains(body, "services:") && status_code==200
+      && status_code!=403'
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/docker-compose.yml'
+  - '{{BaseURL}}/docker-compose.prod.yml'
+  - '{{BaseURL}}/docker-compose.production.yml'
+  - '{{BaseURL}}/docker-compose.staging.yml'
+  - '{{BaseURL}}/docker-compose.dev.yml'
+  - '{{BaseURL}}/docker-compose-dev.yml'
+  - '{{BaseURL}}/docker-compose.override.yml'
+  method: GET
+  max-redirects: 3
+  redirects: true
+  req-condition: true
+  stop-at-first-match: true

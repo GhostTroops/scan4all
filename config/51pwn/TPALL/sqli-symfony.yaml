@@ -1,0 +1,23 @@
+id: sqli-symfony
+
+info:
+  name: symfony SQLI
+  author: ELSFA7110
+  severity: high
+  tags: sqli
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/app_dev.php/1'%20%22"
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "SQL"
+        part: body
+
+      - type: status
+        status:
+          - 200

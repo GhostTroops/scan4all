@@ -1,0 +1,35 @@
+id: apache-storm-unauth
+info:
+  name: Apache Storm Unauth
+  author:
+  - l0ne1y
+  description: |-
+    Apache Storm存在未授权访问漏洞
+    Apache Storm是一个分布式实时大数据处理系统。
+    Apache Storm存在未授权访问漏洞，攻击者可利用该漏洞未授权访问，从而获取敏感信息及进行未授权操作等。
+  severity: medium
+  remediation: |-
+    **官方修复方案**
+    厂商尚未提供修复方案，请关注厂商主页及时更新：
+    https://spark.apache.org/downloads.html
+
+    **临时修复方案**
+    1、后台管理系统禁止直接暴漏在互联网，需通过VPN等较为安全的接入方式访问内部系统。
+    2、后台管理系统所有页面开启身份认证，根据情况选择对应方式（认证用户，用户名密码）。
+    3、限制IP访问，绑定固定的IP访问后台管理系统。
+    4、采用成熟的权限管理框架，如spring security。
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: body
+    words:
+    - '"totalMem":'
+    - '"stormVersion":'
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/api/v1/cluster/summary'
+  method: GET

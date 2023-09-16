@@ -1,0 +1,36 @@
+id: cobubrazor_v8-view_fixt2-info
+info:
+  name: cobubrazor_v8_tests_fixtures_view_fixt2.php_物理路径泄露
+  author:
+  - jim2g
+  description: |
+    cobubrazor_v8_tests_fixtures_view_fixt2.php_物理路径泄露
+    由于网站运维人员疏忽，存放敏感信息的文件被泄露或由于网站运行出错导致敏感信息泄露或返回敏感信息的无授权接口泄露。通过这些信息，给攻击者渗透提供了非常多的有用信息。严重可造成大量数据泄露。
+  severity: medium
+  remediation: |
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+
+    临时修复方案：
+    1、去除页面、cookie或缓存中涉及的敏感信息或删除泄露信息页面
+    2、将敏感信息进行加密存储，非必要不可发送前端
+    3、发送敏感信息时需加密传输，如有必要需脱敏处理
+    4、禁止用自己开发的加密算法，必须使用公开、安全的标准加密算法。
+    5、禁止在日志中记录明文的敏感数据：禁止在日志中记录明文的敏感数据（如口
+    令、会话标识jsessionid等）， 防止敏感信息泄漏。
+    6、禁止带有敏感数据的Web页面缓存：带有敏感数据的Web页面都应该禁止缓
+    存，以防止敏感信息泄漏或通过代理服务器上网的用户数据互窜问题。
+    7、对必须发送的敏感数据或页面请求接口做好严格的权限认证
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,'Fatal error')
+    - '!contains(body,''/razor/tests'')'
+  raw:
+  - |
+    GET /razor/tests/fixtures/view_fixt2.php HTTP/1.1
+    Host: {{Hostname}}
+  req-condition: true

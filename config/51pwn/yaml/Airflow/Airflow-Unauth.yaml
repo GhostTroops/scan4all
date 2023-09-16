@@ -1,0 +1,31 @@
+id: Airflow-Unauth
+info:
+  name: Airflow未授权访问
+  author:
+  - l0ne1y
+  description: |-
+    Airflow admin后台Web UI未授权访问漏洞
+    Airflow Web UI是未授权访问只能查看DAG的调度状态等，无法进行更多操作。
+    但Airflow Web UI中提供了触发DAG运行的功能，以便测试DAG，同时Airflow为了让使用者可以快速熟悉其DAG开发流程和功能，为了更好的示例这些DAG覆盖了大多的执行器。而其中两个DAG组合起来可触发命令注入导致漏洞产生
+  severity: medium
+  remediation: |-
+    **官方修复方案：**
+    升级系统至最新版本，或于官网下载安全补丁。
+
+    **临时修复建议：**
+    1、后台管理系统禁止直接暴漏在互联网，需通过VPN等较为安全的接入方式访问内部系统。
+    2、后台管理系统所有页面开启身份认证，根据情况选择对应方式（认证用户，用户名密码）。
+    3、限制IP访问，绑定固定的IP访问后台管理系统。
+    4、采用成熟的权限管理框架，如spring security。
+requests:
+- matchers:
+  - type: word
+    words:
+    - <title>Airflow - DAGs</title>
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/admin/'
+  method: GET

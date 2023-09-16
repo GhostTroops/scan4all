@@ -1,0 +1,20 @@
+# info to search signature
+id: joomla-host-injection
+info:
+  name: Joomla Host header Injection
+  risk: Medium
+
+requests:
+  - method: GET
+    redirect: true
+    url: >-
+     {{.BaseURL}}
+    headers:
+      - Host: whateveruniqqe.com
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StringSearch("response", "whateveruniqqe.com")
+
+reference:
+  - link: https://0day.life/exploit/0day-1247.html

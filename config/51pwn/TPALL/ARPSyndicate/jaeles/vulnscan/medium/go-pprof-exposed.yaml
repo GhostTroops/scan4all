@@ -1,0 +1,25 @@
+id: go-pprof-exposed
+info:
+  name: go pprof exposed
+  risk: Medium
+
+params:
+  - root: "{{.BaseURL}}"
+
+variables:
+  - end: |
+      /
+      /debug/pprof/heap?debug=1
+      /_debug/pprof/heap?debug=1
+requests:
+  - method: GET
+    url: >-
+      {{.root}}{{.end}}
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", "cmdline")   && StringSearch("response", "goroutine")
+
+references:
+  - repo: https://github.com/google/pprof

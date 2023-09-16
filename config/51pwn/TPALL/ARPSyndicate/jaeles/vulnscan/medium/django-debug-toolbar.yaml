@@ -1,0 +1,32 @@
+id: django-debug-toolbar
+info:
+  name: Django Debug Tool Bar
+  risk: Medium
+
+
+params:
+  - root: '{{.BaseURL}}'
+
+requests:
+  - method: GET
+    redirect: true
+    url: >-
+     {{.root}}
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", "djDebugPanelList") && StringSearch("response", "__debug__/render_panel")
+
+  - method: GET
+    redirect: true
+    url: >-
+     {{.root}}/api/
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", "djDebugPanelList") && StringSearch("response", "__debug__/render_panel")
+
+reference:
+  - link: https://github.com/jazzband/django-debug-toolbar

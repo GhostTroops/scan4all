@@ -1,0 +1,28 @@
+id: wpeprivate_leak
+
+info:
+  name: wpeprivate_leak
+  author: 51pwn
+  severity: critical
+  description: |
+    wpeprivate_leak
+  metadata:
+  tags: leak,config
+
+requests:
+  - method: GET
+    path: 
+      - "{{BaseURL}}/_wpeprivate/config.json"
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+        - 200
+      - type: word
+        part: body
+        words:
+          - '"VPENGINE_PHPSESSIONS":'
+
+
+# Enhanced by mp on 2022/09/29

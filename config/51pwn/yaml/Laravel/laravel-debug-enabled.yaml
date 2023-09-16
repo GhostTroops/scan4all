@@ -1,0 +1,25 @@
+id: laravel-debug-enabled
+info:
+  name: Laravel Debug Enabled
+  author:
+  - l0ne1y
+  description: |-
+    Laravel 框架调试模式开启
+    Laravel 是一套简洁、优雅的PHP Web开发框架(PHP Web Framework)。若开启了其debug模式，则攻击者通过访问特定页面导致报错，从而获取敏感信息。
+  severity: medium
+  remediation: |-
+    修复方案：
+    1、关闭Laravel框架调试模式，将“.env”文件中的“APP_DEBUG”设置为false。
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - can_execute_commands
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/_ignition/health-check'
+  method: GET

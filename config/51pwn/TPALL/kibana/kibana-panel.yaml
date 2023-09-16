@@ -1,0 +1,43 @@
+id: kibana-panel
+
+info:
+  name: Kibana Panel Login (extract version if found) 
+  author: petruknisme,daffainfo,c-sh0
+  reference:
+    - https://github.com/elastic/kibana/blob/main/src/core/server/rendering/views/template.tsx#L39
+  severity: info
+  metadata:
+    shodan-query: http.title:"Kibana", http.title:"Kibana Login", http.title:"Elastic"
+  tags: panel,kibana
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+      - "{{BaseURL}}/login"
+      - "{{BaseURL}}/app/kibana"
+
+    redirects: true
+    max-redirects: 2
+    stop-at-first-match: true
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        part: body
+        words:
+          - '<title>Kibana</title>'
+          - '<title>Kibana Login</title>'
+          - '<title>Elastic</title>'
+        condition: or
+
+    extractors:
+      - type: regex
+        part: body
+        group: 1
+        regex:
+          - "kbn-version.*([0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3})"
+          - "version&quot;:&quot;([0-9.]+)&quot;"

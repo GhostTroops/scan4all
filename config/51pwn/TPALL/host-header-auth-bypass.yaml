@@ -1,0 +1,25 @@
+id: host-header-auth-bypass
+info:
+  name: Auth bypass via localhost host header
+  author: esetal
+  severity: info
+
+requests:
+  - raw:
+      - |
+        GET / HTTP/1.1
+        Host: {{Hostname}}
+
+      - |
+        GET / HTTP/1.1
+        Host: localhost
+
+      - |
+        GET / HTTP/1.1
+        Host: nonsense
+
+    req-condition: true
+    matchers:
+      - type: dsl
+        dsl:
+          - "status_code_1 != 200 && status_code_2 == 200 && status_code_3 != 200"

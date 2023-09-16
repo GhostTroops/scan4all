@@ -1,0 +1,31 @@
+id: prometheus-log
+info:
+  name: Exposed Prometheus
+  author:
+  - l0ne1y
+  description: |-
+    prometheus网关请求统计和日志配置信息泄露
+    允许通过访问特定路径获取到prometheus网关请求统计和日志配置的敏感信息
+  severity: low
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://github.com/prometheus/prometheus/
+    临时修复方案：
+    1、禁止带有敏感数据的Web页面展示，以防止敏感信息泄漏。
+    2、对必须发送的敏感数据或页面请求接口做好严格的权限认证
+requests:
+- matchers:
+  - type: word
+    condition: or
+    words:
+    - gateway_request_total
+    - logback_events_total
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/prometheus'
+  - '{{BaseURL}}/actuator/prometheus'
+  method: GET

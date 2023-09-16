@@ -1,0 +1,22 @@
+id: kentico-open-redirect
+info:
+  name: Kentico Open Redirect
+  risk: Low
+
+params:
+  - root: "{{.BaseURL}}"
+  - dest: "bing.com"
+
+replicate:
+  prefixes: 'kentico'
+
+requests:
+  - method: GET
+    url: >-
+      {{.root}}CMSPages/GetDocLink.ashx?link=https://{{.dest}}
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        (StatusCode() >= 300 && StatusCode() < 400) && (StringSearch("resHeaders", "Location: http://{{.dest}}") || StringSearch("resHeaders", "Location: https://{{.dest}}")
+

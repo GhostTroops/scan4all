@@ -1,0 +1,48 @@
+id: laravel-env
+info:
+  name: Laravel - Sensitive Information Disclosure
+  author:
+  - l0ne1y
+  description: |-
+    Laravel 配置不当导致.env文件信息泄露
+    Laravel 是一套简洁、优雅的PHP Web开发框架(PHP Web Framework)。若开启了其debug模式，则攻击者通过访问/.env、/.env.dev等页面，从而获取数据库配置等信息。
+  severity: medium
+  remediation: |-
+    临时修复方案：
+    1、修改文件权限为440或400
+    2、配置.htaccess来禁止访问.env等文件
+requests:
+- matchers:
+  - type: regex
+    condition: or
+    part: body
+    regex:
+    - (?mi)^APP_(NAME|ENV|KEY|DEBUG|URL|PASSWORD)=
+    - (?mi)^DB_(HOST|PASSWORD|DATABASE)=
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/.env'
+  - '{{BaseURL}}/.env.dev'
+  - '{{BaseURL}}/.env.dev.local'
+  - '{{BaseURL}}/.env.development.local'
+  - '{{BaseURL}}/.env.prod'
+  - '{{BaseURL}}/.env.prod.local'
+  - '{{BaseURL}}/.env.production'
+  - '{{BaseURL}}/.env.production.local'
+  - '{{BaseURL}}/.env.local'
+  - '{{BaseURL}}/.env.example'
+  - '{{BaseURL}}/.env.stage'
+  - '{{BaseURL}}/.env.live'
+  - '{{BaseURL}}/.env.backup'
+  - '{{BaseURL}}/.env.save'
+  - '{{BaseURL}}/.env.old'
+  - '{{BaseURL}}/.env.www'
+  - '{{BaseURL}}/.env_1'
+  - '{{BaseURL}}/.env_sample'
+  - '{{BaseURL}}/.env.{{DN}}'
+  - '{{BaseURL}}/.env.{{SD}}'
+  - '{{BaseURL}}/api/.env'
+  method: GET

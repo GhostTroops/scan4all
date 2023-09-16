@@ -1,0 +1,78 @@
+angellist:
+  - "(?:https?:)?\\/\\/angel\\.co\\/company\\/(?P<company>[A-z0-9._-]+)(?:\\/(?P<company_subpage>[A-z0-9-]+))?"
+  - "(?:https?:)?\\/\\/angel\\.co\\/company\\/(?P<company>[A-z0-9._-]+)\\/jobs\\/(?P<job_permalink>(?P<job_id>[0-9]+)-(?P<job_slug>[A-z0-9-]+))"
+  - "(?:https?:)?\\/\\/angel\\.co\\/(?P<type>u|p)\\/(?P<user>[A-z0-9._-]+)"
+
+email:
+  - "(?P<email>[A-z0-9_.+-]+@[A-z0-9_.-]+\\.[A-z]+)"
+
+facebook:
+  - "(?:https?:)?\\/\\/(?:www\\.)?(?:facebook|fb)\\.com\\/(?P<profile>(?![A-z]+\\.php)(?!marketplace|gaming|watch|me|messages|help|search|groups)[A-z0-9_\\-\\.]+)\\/?"
+  - "(?:https?:)?\\/\\/(?:www\\.)facebook.com/(?:profile.php\\?id=)?(?P<id>[0-9]+)"
+
+github:
+  - "(?:https?:)?\\/\\/(?:www\\.)?github\\.com\\/(?P<login>[A-z0-9._-]+)\\/(?P<repo>[A-z0-9._-]+)\\/?"
+  - "(?:https?:)?\\/\\/(?:www\\.)?github\\.com\\/(?P<login>[A-z0-9._-]+)\\/?"
+
+googleplus:
+  - "(?:https?:)?\\/\\/plus\\.google\\.com\\/(?P<id>[0-9]{21})"
+  - "(?:https?:)?\\/\\/plus\\.google\\.com\\/\\+(?P<username>[A-z0-9+]+)"
+
+ycombinator:
+  - "(?:https?:)?\\/\\/news\\.ycombinator\\.com\\/item\\?id=(?P<item>[0-9]+)"
+  - "(?:https?:)?\\/\\/news\\.ycombinator\\.com\\/user\\?id=(?P<user>[A-z0-9._-]+)"
+
+instagram:
+  - "(?:https?:)?\\/\\/(?:www\\.)?(?:instagram\\.com|instagr\\.am)\\/(?P<username>[A-Za-z0-9_](?:(?:[A-Za-z0-9_]|(?:\\.(?!\\.))){0,28}(?:[A-Za-z0-9_]))?)"
+
+linkedin:
+  - "(?:https?:)?\\/\\/(?:[\\w]+\\.)?linkedin\\.com\\/company\\/(?P<company_permalink>[A-z0-9-\\.]+)\\/?"
+  - "(?:https?:)?\\/\\/(?:[\\w]+\\.)?linkedin\\.com\\/feed\\/update\\/urn:li:activity:(?P<activity_id>[0-9]+)\\/?"
+  - "(?:https?:)?\\/\\/(?:[\\w]+\\.)?linkedin\\.com\\/in\\/(?P<permalink>[\\w\\-\\_\u00c0-\u00ff%]+)\\/?"
+  - "(?:https?:)?\\/\\/(?:[\\w]+\\.)?linkedin\\.com\\/pub\\/(?P<permalink_pub>[A-z0-9._-]+)(?:\\/[A-z0-9]+){3}\\/?"
+
+medium:
+  - "(?:https?:)?\\/\\/medium\\.com\\/(?:(?:@(?P<username>[A-z0-9]+))|(?P<publication>[a-z-]+))\\/(?P<slug>[a-z0-9\\-]+)-(?P<post_id>[A-z0-9]+)(?:\\?.*)?"
+  - "(?:https?:)?\\/\\/(?P<publication>(?!www)[a-z-]+)\\.medium\\.com\\/(?P<slug>[a-z0-9\\-]+)-(?P<post_id>[A-z0-9]+)(?:\\?.*)?"
+  - "(?:https?:)?\\/\\/medium\\.com\\/@(?P<username>[A-z0-9]+)(?:\\?.*)?"
+  - "(?:https?:)?\\/\\/medium\\.com\\/u\\/(?P<user_id>[A-z0-9]+)(?:\\?.*)"
+
+phone:
+  - "(?:tel|phone|mobile):(?P<number>\\+?[0-9. -]+)"
+
+reddit:
+  - "(?:https?:)?\\/\\/(?:[a-z]+\\.)?reddit\\.com\\/(?:u(?:ser)?)\\/(?P<username>[A-z0-9\\-\\_]*)\\/?"
+
+skype:
+  - "(?:(?:callto|skype):)(?P<username>[a-z][a-z0-9\\.,\\-_]{5,31})(?:\\?(?:add|call|chat|sendfile|userinfo))?"
+
+slideshare:
+  - "(?:https?:)?\\/\\/(?:www\\.)?slideshare\\.net\\/(?P<login>[A-z0-9._-]+)\\/(?P<slide>[A-z0-9._-]+)\/?"
+  - "(?:https?:)?\\/\\/(?:www\\.)?slideshare\\.net\\/(?P<login>[A-z0-9._-]+)\\/?"
+
+snapchat:
+  - "(?:https?:)?\\/\\/(?:www\\.)?snapchat\\.com\\/add\\/(?P<username>[A-z0-9\\.\\_\\-]+)\\/?"
+
+stackexchange:
+  - "(?:https?:)?\\/\\/(?:www\\.)?stackexchange\\.com\\/users\\/(?P<id>[0-9]+)\\/(?P<username>[A-z0-9-_.]+)\\/?"
+  - "(?:https?:)?\\/\\/(?:(?P<community>[a-z]+(?!www))\\.)?stackexchange\\.com\\/users\\/(?P<id>[0-9]+)\\/(?P<username>[A-z0-9-_.]+)\\/?"
+
+stackoveflow:
+  - "(?:https?:)?\\/\\/(?:www\\.)?stackoverflow\\.com\\/questions\\/(?P<id>[0-9]+)\\/(?P<title>[A-z0-9-_.]+)\\/?"
+  - "(?:https?:)?\\/\\/(?:www\\.)?stackoverflow\\.com\\/users\\/(?P<id>[0-9]+)\\/(?P<username>[A-z0-9-_.]+)\\/?"
+
+telegram:
+  - "(?:https?:)?\\/\\/(?:t(?:elegram)?\\.me|telegram\\.org)\\/(?P<username>[a-z0-9\\_]{5,32})\\/?"
+
+twitter:
+  - "(?:https?:)?\\/\\/(?:[A-z]+\\.)?twitter\\.com\\/@?(?P<username>[A-z0-9_]+)\\/status\\/(?P<tweet_id>[0-9]+)\\/?"
+  - "(?:https?:)?\\/\\/(?:[A-z]+\\.)?twitter\\.com\\/@?(?P<username>[A-z0-9_]+)\\/?"
+
+vimeo:
+  - "(?:https?:)?\\/\\/vimeo\\.com\\/user(?P<id>[0-9]+)"
+  - "(?:https?:)?\\/\\/(?:(?:www)?vimeo\\.com|player.vimeo.com\\/video)\\/(?P<id>[0-9]+)"
+
+youtube:
+  - "(?:https?:)?\\/\\/(?:[A-z]+\\.)?youtube.com\\/channel\\/(?P<id>[A-z0-9-\\_]+)\\/?"
+  - "(?:https?:)?\\/\\/(?:[A-z]+\\.)?youtube.com\\/user\\/(?P<username>[A-z0-9]+)\\/?"
+  - "(?:https?:)?\\/\\/(?:(?:www\\.)?youtube\\.com\\/(?:watch\\?v=|embed\\/)|youtu\\.be\\/)(?P<id>[A-z0-9\\-\\_]+)"

