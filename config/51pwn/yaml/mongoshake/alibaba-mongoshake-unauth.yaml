@@ -1,0 +1,33 @@
+id: alibaba-mongoshake-unauth
+info:
+  name: Alibaba Mongoshake Unauth
+  author:
+  - l0ne1y
+  description: |-
+    Alibaba Mongoshake 未授权访问漏洞
+    MongoShake是阿里云以Golang语言编写的通用平台型服务工具，MongoShake存在未授权访问漏洞，攻击者可利用该漏洞获取敏感信息。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://github.com/alibaba/MongoShake
+
+    临时修复方案：
+    1、对漏洞接口开启身份认证，根据情况选择对应方式（认证用户，用户名密码）。
+    2、限制IP访问，绑定固定的IP访问后台管理系统。
+requests:
+- matchers:
+  - type: word
+    words:
+    - '{"Uri":"/worker","Method":"GET"}'
+  - type: word
+    part: header
+    words:
+    - text/plain
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/'
+  method: GET

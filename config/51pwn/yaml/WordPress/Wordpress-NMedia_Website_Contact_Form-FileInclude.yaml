@@ -1,0 +1,31 @@
+id: Wordpress-NMedia_Website_Contact_Form-FileInclude
+info:
+  name: Wordpress_N-Media_Website_Contact_Form_with_File_Upload_1.5_本地文件包含
+  author:
+  - l0ne1y
+  description: |+
+    WordPress Plugin N-Media_Website_Contact_Form-FileInclude 1.5 文件包含漏洞
+    WordPress是WordPress软件基金会的一套使用PHP语言开发的博客平台，该平台支持在PHP和MySQL的服务器上架设个人博客网站。N-Media file uploader是其中的一个文件上传插件。
+
+    WordPress N-Media file uploader插件1.5版本中存在文件包含漏洞。远程攻击者可通过demo参数执行文件包含攻击。
+
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.org/plugins/
+
+    临时修复方案：
+    1、PHP 中使用 open_basedir 配置限制访问在指定的区域，路径长短截断
+    2、过滤.（点）/（反斜杠）\\（反斜杠），编码绕过
+    3、禁止服务器远程文件包含
+    4、对于限制了包含文件后缀的情况，PHP版本小于5.3，php.ini magic_quotes_gpc = off，对可控参数未使用addslashes函数，满足这三个条件就可以使用%00截断。
+    5、问号、井号、空格绕过（远程）
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - status_code==200 && contains(body,"<h1>Wide Image filters</h1>")
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-content/plugins/website-contact-form-with-file-upload/lib/wide-image/image-processor.php?demo=./../test'
+  method: GET

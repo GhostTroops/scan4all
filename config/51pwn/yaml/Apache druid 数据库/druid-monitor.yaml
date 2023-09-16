@@ -1,0 +1,27 @@
+id: druid-monitor
+info:
+  name: Druid Monitor Unauthorized Access
+  author:
+  - l0ne1y
+  description: |-
+    Druid Monitor 未授权访问漏洞
+    Druid是阿里巴巴开源的一个数据源,主要用于java数据库连接池。在默认情况下，Druid页面无需授权即可直接访问，攻击者可以通过未授权访问漏洞获取到相关敏感信息。
+  severity: high
+  remediation: |
+    官方修复建议：
+    建议升级到官方最新版本：https://github.com/alibaba/druid
+
+    临时修复建议：
+    为Druid增加权限验证措施，建议参考 https://github.com/alibaba/druid/wiki/%E9%85%8D%E7%BD%AE_StatViewServlet%E9%85%8D%E7%BD%AE
+requests:
+- matchers:
+  - type: word
+    words:
+    - Druid Stat Index</title>
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/druid/index.html'
+  method: GET

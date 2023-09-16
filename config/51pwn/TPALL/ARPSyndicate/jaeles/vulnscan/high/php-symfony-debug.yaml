@@ -1,0 +1,23 @@
+id: php-symfony-debug
+info:
+  name: Symfony Debug bar
+  risk: High
+
+params:
+  - root: '{{.BaseURL}}'
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/_profiler/empty/search/results?limit=10
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", 'symfony/profiler') && StringSearch("response", "Symfony Profiler")
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/_profiler/phpinfo
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", 'Configure Command') && StringSearch("body", "phpinfo()</title>")

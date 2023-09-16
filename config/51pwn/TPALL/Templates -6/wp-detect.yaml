@@ -1,0 +1,19 @@
+id: wp-detect
+info:
+  name: WordPress Detection
+  author: foulenzer
+  severity: info
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+
+    redirects: true
+    max-redirects: 2
+    matchers-condition: or
+    matchers:
+      - type: regex
+        name: wordpress
+        regex:
+          - <link rel=["']stylesheet["'] [^>]+/wp-(?:content|includes)/
+          - <link[^>]+s\d+\.wp\.com

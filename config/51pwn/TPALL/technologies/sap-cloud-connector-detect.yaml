@@ -1,0 +1,22 @@
+id: sap-cloud-connector-detection
+info:
+  name: SAP Cloud Connector
+  author: randomstr1ng
+  description: Detection of SAP Cloud Connector Server
+  severity: info
+  tags: sap,webserver,sapcloud,tech
+
+requests:
+  - method: GET
+    path:
+      - '{{BaseURL}}:8443'
+    matchers-condition: or
+    matchers:
+      - type: word
+        part: header
+        words:
+          - 'Server: Cloud Connector'
+      - type: word
+        part: body
+        words:
+         - 'Cloud Connector Login'

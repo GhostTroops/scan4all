@@ -1,0 +1,20 @@
+id: wp-config backup Exposed
+info:
+  name: Find wp-config backup
+  author: Clark
+  severity: medium
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/wp-config.php.bak"
+   
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - dev
+        condition: and
+
+      - type: status
+        status:
+          - 200

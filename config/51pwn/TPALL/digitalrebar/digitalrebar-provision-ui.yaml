@@ -1,0 +1,30 @@
+id: digitalrebar-provision-ui
+
+info:
+  name: RackN Digital Rebar provision UI detection
+  author: c-sh0
+  description: RackN Digital Rebar provision UI detection
+  reference:
+    - https://docs.rackn.io/
+    - https://docs.rackn.io/en/latest/doc/server.html#ports
+  severity: info
+  tags: rackn,digitalrebar,webserver,panel
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/ui"
+
+    redirects: true
+    max-redirects: 2
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        part: body
+        words:
+          - '<title>Digital Rebar</title>'
+

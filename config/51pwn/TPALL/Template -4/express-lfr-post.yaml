@@ -1,0 +1,35 @@
+id: Express-LFR-GET
+
+info:
+  name: LFR  in Express via GET
+  author: mors_3_c
+  severity: medium
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/?layout=./../routes/illallo.js"
+    matchers-condition: or
+    matchers:
+      - type: status
+        status:
+          - 500
+      - type: word
+        words: 
+          - "X-Powered-By: Express"
+        part: header  
+      - type: word
+        words:
+          - "ENOENT: no such file or directory"
+
+    # matchers-condition: or
+    # matchers:
+    #   - type: word
+    #     words:
+    #       - "X-Powered-By: Express"
+    #       - "ENOENT: no such file or directory"
+    #     condition: or  
+    #     part: all
+    #   - type: status
+    #     status:
+    #       - 500

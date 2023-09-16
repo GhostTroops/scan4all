@@ -1,0 +1,27 @@
+id: wooyun-2015-0161677
+info:
+  name: aspcms AspCms_OEM.asp逻辑漏洞暴露登陆地址
+  author:
+  - jim2g
+  description: |-
+    aspcms AspCms_OEM.asp逻辑漏洞暴露登陆地址
+    后台管理目录对于不少的web系统来说非常重要，一旦后台地址泄露，很可能造成致命的打击。
+  severity: high
+  remediation: |
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+
+    临时修复方案：
+    根据漏洞具体详细进行漏洞修复方案描写
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,'login.asp')
+  raw:
+  - |
+    GET /plug/oem/AspCms_OEM.asp HTTP/1.1
+    Host: {{Hostname}}
+  req-condition: true

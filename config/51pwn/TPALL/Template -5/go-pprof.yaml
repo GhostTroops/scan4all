@@ -1,0 +1,16 @@
+id: go-pprof
+
+info:
+  name: Go Debug PPROF
+  author: notnotnotveg
+  severity: informative
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/debug/pprof/"
+    matchers:
+      - type: word
+        words:
+          - "Types of profiles available"
+        part: body

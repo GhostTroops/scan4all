@@ -1,0 +1,32 @@
+id: Wordpress-Social_Warfare_Plugins-RCE
+info:
+  name: WordPress Social Warfare Plugin 远程代码执行漏洞
+  author:
+  - l0ne1y
+  description: |-
+    WordPress Plugin Social Warfare 远程文件包含漏洞
+    WordPress Social Warfare Plugin 远程代码执行漏洞影响Social Warfare Plugin 3.5.3以前的版本。
+
+
+
+    该漏洞位于social-warfare\lib\utilities\SWP_Database_Migration.php文件中的eval()函数，该函数能够运行攻击者在“swp_url”GET参数中定义的PHP代码。此漏洞允许攻击者接管整个WordPress站点并管理您的主机帐户上的所有文件和数据库，从而实现完全远程接管整个服务器的目的。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.org/plugins/social-warfare/advanced/
+
+    临时修复方案：
+    1、PHP 中使用 open_basedir 配置限制访问在指定的区域，路径长短截断
+    2、过滤.（点）/（反斜杠）\\（反斜杠），编码绕过
+    3、禁止服务器远程文件包含
+    4、对于限制了包含文件后缀的情况，PHP版本小于5.3，php.ini magic_quotes_gpc = off，对可控参数未使用addslashes函数，满足这三个条件就可以使用%00截断。
+    5、问号、井号、空格绕过（远程）
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - 'status_code==200 && contains(body,"username") '
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-admin/admin-post.php?swp_debug=load_options&swp_url={{BaseURL}}/wp-admin/index.php'
+  method: GET

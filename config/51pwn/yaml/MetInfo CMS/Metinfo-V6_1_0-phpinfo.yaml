@@ -1,0 +1,24 @@
+id: Metinfo-V6_1_0-phpinfo
+info:
+  name: Metinfo v6.1.0 phpinfo.php 敏感信息泄露
+  author:
+  - l0ne1y
+  description: |-
+    Metinfo  v6.1.0 phpinfo.php 敏感信息泄露
+    MetInfo是一款采用PHP Mysql架构的企业网站管理系统。
+    MetInfo系统phpinfo新泄露。攻击者可利用此漏洞获取敏感信息。
+  severity: low
+  remediation: |-
+    官方修复方案：
+    MetInfo 建议用户升级至最新版下载使用：
+    http://www.metinfo.cn/
+    临时修复方案：<br/>1、去除页面、cookie或缓存中涉及的敏感信息或删除泄露信息页面<br/>2、将敏感信息进行加密存储，非必要不可发送前端<br/>3、发送敏感信息时需加密传输，如有必要需脱敏处理<br/>4、禁止用自己开发的加密算法，必须使用公开、安全的标准加密算法。<br/>5、禁止在日志中记录明文的敏感数据：禁止在日志中记录明文的敏感数据（如口<br/>令、会话标识jsessionid等）， 防止敏感信息泄漏。<br/>6、禁止带有敏感数据的Web页面缓存：带有敏感数据的Web页面都应该禁止缓<br/>存，以防止敏感信息泄漏或通过代理服务器上网的用户数据互窜问题。<br/>7、对必须发送的敏感数据或页面请求接口做好严格的权限认证
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - status_code==200 && contains(body,"bin/sh")
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/install/phpinfo.php'
+  method: GET

@@ -1,0 +1,26 @@
+id: base-64-strings
+
+info:
+  name: Pull back base64 encoded strings in the url body (handy for javascript and html files)
+  author: panch0r3d
+  severity: info
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/"
+    redirects: true
+    max-redirects: 5
+    headers:
+      User-Agent: Mozilla/5.0 (X11; CrOS x86_64 12239.92.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.136 Safari/537.36
+    matchers-condition: and
+    matchers:
+      - type: regex
+        regex:
+          - "(eyJ|YTo|Tzo|PD[89]|aHR0cHM6L|aHR0cDo|rO0)[a-zA-Z0-9+/]+={0,2}"
+        part: body
+    extractors:
+      - type: regex
+        part: body
+        regex:
+          - "(eyJ|YTo|Tzo|PD[89]|aHR0cHM6L|aHR0cDo|rO0)[a-zA-Z0-9+/]+={0,2}"

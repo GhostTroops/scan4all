@@ -1,0 +1,21 @@
+id: admin-file-search
+
+info:
+  name: Admin Path Disclosure
+  author: Zin Min Phyo fb.com/zinminphy0 @zin_min_phyo
+  severity: medium
+  tags:  disclosure,sensitive,data
+
+  
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/crx/de/filesearch.jsp;%0A.css?name=admin"
+      - "{{BaseURL}}/crx/de/filesearch.jsp?name=admin"
+       
+    matchers:
+      - type: word
+        words:
+          - "jcr:path"
+        part: body
+

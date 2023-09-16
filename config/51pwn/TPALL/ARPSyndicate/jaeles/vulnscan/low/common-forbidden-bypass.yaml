@@ -1,0 +1,47 @@
+id: common-forbidden-bypass
+filter: true
+donce: true
+info:
+  name: Common Forbidden Bypass
+  risk: Potential
+  confidence: Tentative
+
+params:
+  - root: "{{.BaseURL}}"
+
+origin:
+  method: GET
+  redirect: false
+  headers:
+    - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+  url: >-
+    {{.root}}
+
+variables:
+  - local: |
+      localhost
+      127.0.0.1
+
+requests:
+  - method: GET
+    redirect: false
+    headers:
+      - User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3984.0 Safari/537.36
+      - X-Forwarded-For: '{{.local}}'
+      - X-Real-IP: '{{.local}}'
+    url: >-
+      {{.root}}
+    detections:
+      - >-
+        Diff() && StatusCode() == 200 && (OriginStatusCode() == 403 || OriginStatusCode() == 401) && !RegexSearch("response", "(?i)(Oops!|Whoops!|AutodiscoverService|not\sfound|Request\sRejected|Access\sDenied|a\sbad\sURL|has\sbeen\slocked)") && (Math.abs(ContentLength() - OriginContentLength()) > 200) && ContentLength('body') > 200
+
+  - method: GET
+    redirect: false
+    headers:
+      - User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3984.0 Safari/537.36
+      - X-Custom-IP-Authorization: '{{.local}}'
+    url: >-
+      {{.root}}
+    detections:
+      - >-
+        Diff() && StatusCode() == 200 && OriginStatusCode() >= 401 && !RegexSearch("response", "(?i)(Oops!|Whoops!|AutodiscoverService|not\sfound|Request\sRejected|Access\sDenied|a\sbad\sURL|has\sbeen\slocked)") && (Math.abs(ContentLength() - OriginContentLength()) > 200) && ContentLength('body') > 200

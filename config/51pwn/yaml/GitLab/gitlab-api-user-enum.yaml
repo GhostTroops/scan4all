@@ -1,0 +1,47 @@
+id: gitlab-api-user-enum
+info:
+  name: GitLab - User Information Disclosure Via Open API
+  author:
+  - l0ne1y
+  tags:
+  - gitlab
+  - enum
+  - misconfig
+  - disclosure
+  description: |-
+    GITLAB 未经身份验证的用户帐户及其数据枚举漏洞
+    GitLab是美国GitLab公司的一款使用Ruby on Rails开发的、自托管的、Git（版本控制系统）项目仓库应用程序。该程序可用于查阅项目的文件内容、提交历史、Bug列表等。其API接口允许用户未经授权查看其他用户信息，诸如使用https://URL/api/v4/users/*就能遍历出用户账户，进而可尝试爆破其他用户密码。
+  reference:
+  - https://gitlab.com/gitlab-org/gitlab-foss/-/issues/40158
+  severity: medium
+  metadata:
+    shodan-query: http.title:"GitLab"
+  remediation: |-
+    **官方修复方案**
+    修改配置文件，将"Restricted visibility levels" 设置为不允许公共访问 not allow "Public"
+requests:
+- matchers:
+  - type: regex
+    condition: and
+    part: body
+    regex:
+    - username.*
+    - id.*
+    - name.*
+  - type: word
+    part: header
+    words:
+    - application/json
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  raw:
+  - |
+    GET /api/v4/users/{{uid}} HTTP/1.1
+    Host: {{Hostname}}
+    Accept: application/json, text/plain, */*
+    Referer: {{BaseURL}}
+  payloads:
+    uid: helpers/wordlists/numbers.txt
+  stop-at-first-match: true

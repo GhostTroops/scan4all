@@ -1,0 +1,36 @@
+id: hiddenjs
+
+info:
+  name: Labda hidden JS finder
+  severity: info
+  author: Labda
+  description: Determines hidden JS parameters
+  tags: find, web, JS, parameter, hidden
+  reference: https://thelabda.com
+
+requests:
+  - raw:
+      - |+
+        GET /{{path}}.js HTTP/1.1
+        Host: {{Hostname}}
+    attack: batteringram
+    payloads:
+      path: js_files.txt
+
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+        - 200
+      - type: word
+        name: jsname
+        words:
+          - "var"
+        part: body
+
+    extractors:
+      - type: regex
+        name: variable
+        part: body
+        regex:
+          - "var*(.+)"

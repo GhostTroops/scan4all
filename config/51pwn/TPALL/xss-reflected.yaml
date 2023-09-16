@@ -1,0 +1,31 @@
+template:
+   name: xss-reflected
+   severity: medium
+   author: zoidsec
+   description: Reflected Cross-Site-Scripting 
+
+request:
+   payloads: 
+      - '<svg%20onx=()%20onload=(confirm)(123)>'
+      - '<script>alert(1)</script>'
+
+   paths: false
+   parameters: true
+   exclude: 
+      - .png
+      - .svg
+      - .tiff
+      - .woff
+      - .woff2
+      - .js
+      - .jpg
+      - .gif
+      - .css
+response:
+   statusCode: 200
+   patterns: 
+      - '<svg onx=() onload=(confirm)(123)>'
+      - '<script>alert(1)</script>'
+   header:
+      - text/json
+      - application/json

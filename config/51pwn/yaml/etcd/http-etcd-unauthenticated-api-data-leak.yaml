@@ -1,0 +1,38 @@
+id: http-etcd-unauthenticated-api-data-leak
+info:
+  name: etcd Unauthenticated HTTP API Leak
+  author:
+  - l0ne1y
+  description: |-
+    etcd 未经身份验证的 HTTP API 泄​​漏
+    etcd HTTP API 无需身份验证即可访问。这可能会导致密钥被泄露，其中可能包含敏感信息。它还允许用户在没有身份验证的情况下更改和删除密钥。因此，远程攻击者不仅可以识别用户名和密码等敏感信息，还可以更改或删除这些数据。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    升级到官方最新版本：
+    https://etcd.io/
+
+    临时修复方案：
+    1.不要将 Etcd 服务对外开放；
+    2.配置合适的安全认证方案。
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: body
+    words:
+    - '"roles"'
+    - '"permissions"'
+    - '"role"'
+    - '"kv"'
+  - type: status
+    status:
+    - 200
+  - type: word
+    part: header
+    words:
+    - text/plain
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/v2/auth/roles'
+  method: GET

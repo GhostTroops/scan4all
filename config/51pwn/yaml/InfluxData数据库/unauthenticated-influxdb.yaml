@@ -1,0 +1,32 @@
+id: unauthenticated-influxdb
+info:
+  name: Unauthentication InfluxDB Detection
+  author:
+  - l0ne1y
+  description: |-
+    InfluxData数据库未授权访问
+    InfluxDB 是一个时间序列数据库(TSDB), 被设计用来处理高写入、高查询负载,是 TICK 的一部分。
+    当配置不当时，可未授权访问数据库。
+  severity: high
+  remediation: |-
+    1、配置所有的安全机制
+    2、最小原则，关掉或限制不使用的服务
+    3、更改默认账户信息
+    4、使用日志和警报
+    5、回显信息不显示任何与实际错误相关的信息
+    6、检查和修复安全配置项
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: body
+    words:
+    - '"results":'
+    - '"name":"databases"'
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/query?db=db&q=SHOW%20DATABASES'
+  method: GET

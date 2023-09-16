@@ -1,0 +1,36 @@
+id: sap-nw-abap-icm-detection
+info:
+  name: SAP NetWeaver ICM 
+  author: randomstr1ng
+  description: Detection of SAP NetWeaver ABAP Webserver (ICM/ICF)
+  severity: info
+  tags: sap,webserver
+
+requests:
+  - method: GET
+    redirects: true
+    max-redirects: 5
+    path:
+      - "{{BaseURL}}"
+    matchers-condition: or
+    matchers:
+      - type: regex
+        part: header
+        regex:
+          - "sap-server:"
+
+      - type: regex
+        part: header
+        regex:
+          - "SAP NetWeaver Application Server"
+
+      - type: regex
+        part: header
+        regex:
+          - "Sap-Server:"
+
+    extractors:
+      - type: regex
+        part: header
+        regex:
+          - "SAP NetWeaver Application Server"

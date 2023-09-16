@@ -1,0 +1,89 @@
+id: host-header-poisoning
+
+info:
+  name: Basic Host Header Poisoning
+  author: tedm.infosec
+  severity: medium
+  description: Basic host header poisoning vulnerability check. Checks for reflections of X-Forwarded-Host and X-Host in the response body.
+
+requests:
+  - raw:
+      - |
+        GET /?x-forwarded-host HTTP/1.1
+        Host: {{Hostname}}
+        X-Forwarded-Host: xrcr0x4a.com
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+        Accept: */*
+        Connection: close
+      - |
+        GET /?x-host HTTP/1.1
+        Host: {{Hostname}}
+        X-Host: xrcr0x4a.com
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+        Accept: */*
+        Connection: close
+      - |
+        GET /?x-forwarded-server HTTP/1.1
+        Host: {{Hostname}}
+        X-Forwarded-Server: xrcr0x4a.com
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+        Accept: */*
+        Connection: close
+      - |
+        GET /?x-http-host-override HTTP/1.1
+        Host: {{Hostname}}
+        X-HTTP-Host-Override: xrcr0x4a.com
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+        Accept: */*
+        Connection: close
+      - |
+        GET /?forwarded HTTP/1.1
+        Host: {{Hostname}}
+        Forwarded: xrcr0x4a.com
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+        Accept: */*
+        Connection: close
+      - |
+        GET /?non-numeric-port-bypass HTTP/1.1
+        Host: {{Hostname}}:xrcr0x4a
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+        Accept: */*
+        Connection: close
+      - |
+        GET /?subdomain-bypass HTTP/1.1
+        Host: xrcr0x4a.{{Hostname}}
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+        Accept: */*
+        Connection: close
+      - |
+        GET /?duplicate-host-headers HTTP/1.1
+        Host: {{Hostname}}
+        Host: xrcr0x4a.com
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+        Accept: */*
+        Connection: close
+      - |
+        GET /?duplicate-host-headers-line-wrap HTTP/1.1
+         Host: xrcr0x4a.com
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+        Accept: */*
+        Connection: close
+      - |
+        GET https://{{Hostname}}/?absolute-url HTTP/1.1
+        Host: xrcr0x4a.com
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0
+        Accept: */*
+        Connection: close
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "xrcr0x4a"
+        part: body
+        condition: and
+      - type: status
+        status:
+          - 200
+

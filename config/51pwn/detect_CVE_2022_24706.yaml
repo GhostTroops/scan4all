@@ -1,0 +1,22 @@
+id: couchdb_CVE_2022_24706-detect
+
+info:
+  name: Detect couchdb_CVE_2022_24706-detect
+  author: 51pwn
+  severity: info
+  description: Check couchdb protocol status.
+  tags: network,couchdb
+
+network:
+  - inputs:
+      - data: "{{hex_decode('00016e')}}"
+
+    host:
+      - "{{Hostname}}"
+    read-size: 4
+
+    matchers-condition: and
+    matchers:
+      - type: binary
+        binary:
+          - "00001111"

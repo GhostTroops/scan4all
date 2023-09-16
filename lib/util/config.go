@@ -533,33 +533,7 @@ func RegInitFunc4Hd(cbk func()) {
 	fnInitHd = append(fnInitHd, cbk)
 }
 
-// 所有初始化的总入口
-func DoInit(config *embed.FS) {
-	Init1(config)
-	rand.Seed(time.Now().UnixNano())
-
-	//	log.Println("start init for fnInitHd ", len(fnInitHd))
-	//	for _, x := range fnInitHd {
-	//		x()
-	//	}
-	//	fnInitHd = nil
-	//	for {
-	//		switch {
-	//		case nil == EngineFuncFactory:
-	//			time.Sleep(1 * time.Second)
-	//			log.Println("wait EngineFuncFactory")
-	//		default:
-	//			goto GoGo01
-	//		}
-	//	}
-	//GoGo01:
-	//	log.Println("start init for fnInit ", len(fnInit))
-	fnInit = append(fnInitHd, fnInit...)
-	for _, x := range fnInit {
-		x()
-	}
-	fnInit = nil
-	fnInitHd = nil
+func upAllTools() {
 	var wg sync.WaitGroup
 	if "" == SzPwd {
 		if s, err := os.Getwd(); nil == err {
@@ -573,14 +547,51 @@ func DoInit(config *embed.FS) {
 	if err := os.MkdirAll(szPath, os.ModePerm); nil != err {
 		log.Println(err, szPath)
 	}
+	/* $HOME/go/bin/
+
+	ls config/darwin/ |xargs -I % rm -rf $HOME/go/bin/%
+	ls config/darwin/ |xargs -I % ln -s $PWD/config/darwin/% $HOME/go/bin/%
+	*/
 	for _, x := range []string{"nuclei", "naabu", "httpx", "dnsx", "subfinder", "katana", "uncover", "tlsx"} {
 		wg.Add(1)
 		go func(s string) {
 			defer wg.Done()
 			util1.UpdateScan4allVersionToLatest(true, "projectdiscovery", s, szPath)
+			szF := fmt.Sprintf("%s%c%s", szPath, os.PathSeparator, s)
+			szH, _ := os.UserHomeDir()
+			szF1 := fmt.Sprintf("%s%c%s%s", szH, os.PathSeparator, "/go/bin/", s)
+			if !FileExists(szF) && FileExists(szF1) {
+				if runtime.GOOS == "windows" {
+					DoCmd("mklink", "-/H", szF, szF1)
+					//if srcFile, err := os.OpenFile(szF1, os.O_RDONLY, os.ModePerm); nil == err {
+					//	defer srcFile.Close()
+					//	if destFile, err := os.OpenFile(szF, os.O_CREATE, os.ModePerm); nil == err {
+					//		defer destFile.Close()
+					//		io.Copy(destFile, srcFile)
+					//	}
+					//}
+				} else {
+					DoCmd("ln", "-s", szF1, szF)
+				}
+			}
 		}(x)
 	}
 	wg.Wait()
+}
+
+// 所有初始化的总入口
+func DoInit(config *embed.FS) {
+	Init1(config)
+	rand.Seed(time.Now().UnixNano())
+
+	fnInit = append(fnInitHd, fnInit...)
+	for _, x := range fnInit {
+		x()
+	}
+	fnInit = nil
+	fnInitHd = nil
+
+	//upAllTools()
 }
 
 func RemoveDuplication_map(arr []string) []string {

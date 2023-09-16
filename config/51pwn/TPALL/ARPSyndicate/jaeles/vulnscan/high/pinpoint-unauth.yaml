@@ -1,0 +1,21 @@
+id: pinpoint-unauth
+info:
+  name: PinPoint Unauth
+  risk: High
+
+params:
+  - root: '{{.BaseURL}}'
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/applications.pinpoint
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && && StringSearch("resHeaders", "application/json") && StringSearch("response", "applicationName") && StringSearch("response", "serviceType")
+
+references:
+  - repo: https://github.com/naver/pinpoint

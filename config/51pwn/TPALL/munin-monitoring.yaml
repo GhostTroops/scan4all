@@ -1,0 +1,16 @@
+id: munin-monitoring
+
+info:
+  name: Munin Monitoring
+  author: notnotnotveg
+  severity: informative
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/munin/localhost/"
+    matchers:
+      - type: word
+        words:
+          - "<title>Munin"
+        part: body

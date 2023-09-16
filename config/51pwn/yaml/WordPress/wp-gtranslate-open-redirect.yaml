@@ -1,0 +1,31 @@
+id: wp-gtranslate-open-redirect
+info:
+  name: GTranslate < 2.8.11 - Unauthenticated Open Redirect
+  author:
+  - l0ne1y
+  description: |-
+    WordPress Plugin GTranslate 存在URL重定向漏洞
+    WordPress是Wordpress基金会的一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。WordPress plugin是WordPress开源的一个应用插件。
+
+    WordPress GTranslate 2.8.11版本及之前版本的gtranslate.php存在输入验证错误漏洞，导致用户重定向到它之前不验证的url地址。
+  severity: medium
+  remediation: |-
+    官方修复方案：：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://wordpress.com/zh-cn/install-plugins/
+    临时修复方案：
+    1、代码固定跳转地址，不让用户控制变量。
+    2、跳转目标地址采用白名单映射机制、只对合法的 URL 做跳转。
+    3、合理充分的校验校验跳转的目标地址，非己方地址时告知用户跳转风险。
+requests:
+- matchers:
+  - type: word
+    part: header
+    words:
+    - 'Location: www.pluginvulnerabilities.com'
+  - type: status
+    status:
+    - 301
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-content/plugins/gtranslate/url_addon/gtranslate.php?glang=en&gurl=/www.pluginvulnerabilities.com'
+  method: GET

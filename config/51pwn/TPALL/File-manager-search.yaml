@@ -1,0 +1,25 @@
+id: FIle Manager exposed
+info:
+  name: Search for FIle Manager
+  author: Clark
+  severity: medium
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/editor/editor/filemanager/browser/default/js/fckxml.js"
+      - "{{BaseURL}}/editor/editor/dialog/fck_spellerpages/spellerpages/server-scripts/spellchecker.php"
+      - "{{BaseURL}}/editor/editor/filemanager/connectors/php/upload.php"
+      - "{{BaseURL}}/editor/editor/filemanager/browser/default/browser.html"
+    
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "FCKeditor"
+          - "executing"
+        condition: and
+
+      - type: status
+        status:
+          - 200
+

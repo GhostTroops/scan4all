@@ -1,0 +1,31 @@
+id: shellvariables
+
+info:
+  name: Published shell variables usually in javascript files
+  author: panch0r3d
+  severity: info
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: regex
+        regex:
+          #- ".*?SHELL.*?bin"
+          - ".*?XDG_SESSION_TYPE.*?tty"
+          - ".*?LOGNAME.*?root"
+          - ".*?DBUS_SESSION_BUS_ADDRESS.*?unix"
+        part: body
+    extractors:
+      - type: regex
+        part: body
+        regex:
+          - "SHELL.*?bin"
+          - "XDG_SESSION_TYPE.*?tty"
+          - "LOGNAME.*?root"
+          - "DBUS_SESSION_BUS_ADDRESS.*?unix"

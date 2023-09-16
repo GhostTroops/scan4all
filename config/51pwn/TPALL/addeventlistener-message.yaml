@@ -1,0 +1,21 @@
+id: addeventlistener-message
+
+info:
+  name: AddEventlistener('message') in body
+  author: yavolo
+  severity: info
+  tags: xss
+  reference: https://github.com/yavolo/nuclei-templates/
+
+requests:
+  - method: GET
+    path:
+      - '{{BaseURL}}/'
+    matchers:
+      - type: regex
+        regex:
+          - addEventListener\("message
+          - addEventListener\('message
+          - addeventlistener\("message
+          - addeventlistener\('message
+        part: body

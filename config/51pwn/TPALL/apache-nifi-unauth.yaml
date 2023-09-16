@@ -1,0 +1,23 @@
+id: Apache Nifi-Unauthenticated
+
+info:
+  name: Apache Nifi-Unauthenticated
+  author: notnotnotveg
+  severity: informative
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/nifi-api/flow/current-user"
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - "identity"
+        part: body
+    condition: and
+    extractors:
+      - type: regex
+        part: body
+        regex:
+          - "\"identity\":\"(.*?)\""

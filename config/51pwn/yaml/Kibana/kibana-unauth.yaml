@@ -1,0 +1,35 @@
+id: kibana-unauth
+info:
+  name: Exposed Kibana
+  author:
+  - l0ne1y
+  description: |-
+    Elasticsearch Kibana 未授权访问漏洞
+    Elasticsearch Kibana是荷兰Elasticsearch公司的一套开源的、基于浏览器的分析和搜索Elasticsearch仪表板工具。
+
+    Kibana 如果允许外网访问且没有安全登录认证，则会被外部随意访问查看所有的数据，造成数据泄露。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.elastic.co/cn/community/security
+
+    临时修复方案：
+    1、请勿将 Kibana 服务对外网开放。
+    2、配置合适的登录认证方案。
+requests:
+- matchers:
+  - type: word
+    words:
+    - kibanaWelcomeView
+    - cluster_uuid
+    - kibanaWelcomeLogo
+    - kibanaWelcomeTitle
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}'
+  - '{{BaseURL}}/app/kibana/'
+  method: GET

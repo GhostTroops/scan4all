@@ -1,0 +1,17 @@
+id: axis2-detect
+
+info:
+  name: Apache Axis2
+  author: notnotnotveg
+  severity: informative
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/axis2/services/listServices"
+      - "{{BaseURL}}/dswsbobje/services/listServices"
+    matchers:
+      - type: word
+        words:
+          - "Service Description"
+        part: body

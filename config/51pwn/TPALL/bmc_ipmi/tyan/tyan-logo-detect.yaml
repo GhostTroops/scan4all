@@ -1,0 +1,32 @@
+id: tyan-logo-detect
+
+info:
+  name: TYAN Computer Corporation Logo Detection
+  description: Tyan logo detection (TYAN BMCs etc..)
+  author: c-sh0
+  severity: info
+  reference:
+    - https://www.tyan.com/
+  tags: tech,tyan
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/images/favicon.ico"
+      - "{{BaseURL}}/images/logo-dark.png"
+      - "{{BaseURL}}/images/banner.jpg"
+      - "{{BaseURL}}/res/banner_left.jpg"
+      - "{{BaseURL}}/res/banner_right.jpg"
+
+    stop-at-first-match: true
+    redirects: true
+    max-redirects: 2
+    matchers:
+      - type: dsl
+        dsl:
+          - "status_code==200 && (\"895272778\" == mmh3(base64_py(body)))"
+          - "status_code==200 && (\"-116915591\" == mmh3(base64_py(body)))"
+          - "status_code==200 && (\"-53952212\" == mmh3(base64_py(body)))"
+          - "status_code==200 && (\"-1846691854\" == mmh3(base64_py(body)))"
+          - "status_code==200 && (\"-924151575\" == mmh3(base64_py(body)))"
+        condition: or

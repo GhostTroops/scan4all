@@ -1,0 +1,21 @@
+id: Find killswitch dashboard
+info:
+  name: Find killswitch dashboard exposed
+  author: Clark
+  severity: medium
+  #Server-side Request Forgery (SSRF) Try adminer.php?server=[payload]&username=123&password=123&db=123
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/killswitch.aspx"
+    
+    matchers-condition: and
+    matchers:
+      - type: word
+        words:
+          - killswitch
+        condition: and
+
+      - type: status
+        status:
+          - 200

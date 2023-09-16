@@ -1,0 +1,26 @@
+id: xmlrpc-
+
+info:
+  name: XMLRPC
+  author: geeknikwww
+  reference: https://hackerone.com/reports/406387
+  severity: high
+  tags: ssrf,generic
+
+requests:
+  - raw:
+      - |
+        POST /xmlrpc.php HTTP/1.1
+        Host: {{Hostname}}
+        Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+
+        <?xml version="1.0" encoding="utf-8"?> 
+        <methodCall> 
+        <methodName>system.listMethods</methodName> 
+        <params></params> 
+        </methodCall> 
+
+    matchers:
+      - type: word
+        words:
+          - "</string></value>"

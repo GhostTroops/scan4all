@@ -1,0 +1,30 @@
+id: sap-nw-abap-webgui
+info:
+  name: SAP NetWeaver WebGUI
+  author: randomstr1ng
+  description: Detection of SAP NetWeaver ABAP Webserver WebGUI
+  severity: info
+  tags: sap,webserver
+
+requests:
+  - method: GET
+    redirects: true
+    max-redirects: 5
+    path:
+      - "{{BaseURL}}/sap/bc/gui/sap/its/webgui"
+    matchers-condition: or
+    matchers:
+      - type: regex
+        part: body
+        regex:
+          - "sap-system-login"
+
+    matchers:
+      - type: regex
+        part: body
+        regex:
+          - "Your browser is not configured for using SPNego"
+
+
+
+          

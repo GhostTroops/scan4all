@@ -1,0 +1,40 @@
+id: aem-fuzz
+info:
+  author: MRiambatman
+  name: AEM FUZZ
+  severity: medium
+  reference: https://speakerdeck.com/0ang3el/hunting-for-security-bugs-in-aem-webapps?slide=43
+  tags: aem
+
+requests:
+  - raw:
+      - |
+        GET /§header§ HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0 
+
+    payloads:
+      header: helpers/payloads/aem2.txt
+
+    attack: clusterbomb
+    redirects: true
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+          - 500
+          - 301
+          - 400
+          - 302
+       
+      - type: word
+        words:
+          - 'jcr:createdBy'
+          - 'Web console'
+          - 'authenticated=true'
+          - 'userid='
+          - 'jcr:'
+          - 'AccessKeyId:'
+          - 'java heap space'
+        condition: and

@@ -1,0 +1,31 @@
+id: BT742-PMA-UnauthorizedAccess
+info:
+  name: 宝塔7.4.2-pma未授权访问漏洞
+  author:
+  - l0ne1y
+  description: |-
+    宝塔7.4.2-pma未授权访问漏洞
+    官方在Linux面板7.4.2/Windows面板6.8.0 版本中加入了phpmyadmin安全访问模块，原理是通过面板进行访问phpmyadmin，而不是nginx/apache，但因在目录存放时存在一个致命逻辑漏洞，导致nginx/apache也可以访问到专门给面板使用的phpmyadmin目录
+  severity: medium
+  remediation: |-
+    **官方修复方案**
+    升级至官方紧急发布的7.4.3版本关于Linux面板7.4.2及Windows面板6.8紧急安全更新(官方)https://www.bt.cn/bbs/thread-54666-1-1.html
+
+    **临时修复方案**
+    1、关闭888端口对外访问和phpmyAdmin服务
+    2、将pma移到其他目录/或删除
+requests:
+- matchers:
+  - type: word
+    condition: and
+    words:
+    - information_schema
+    - phpMyAdmin
+    - server_sql.php
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/pma/'
+  method: GET

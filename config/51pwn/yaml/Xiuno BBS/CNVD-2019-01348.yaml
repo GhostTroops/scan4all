@@ -1,0 +1,47 @@
+id: CNVD-2019-01348
+info:
+  name: Xiuno BBS CNVD-2019-01348
+  author:
+  - l0ne1y
+  tags:
+  - xiuno
+  - cnvd
+  - cnvd2019
+  description: |-
+    Xiuno BBS系统存在系统重装漏洞
+    Xiuno BBS是一套开源的轻量级论坛系统。
+
+    Xiuno BBS系统存在系统重装漏洞。该漏洞源于系统安装完毕后未对安装目录进行任何防护或过滤，攻击者可直接通过安装页面重装系统。
+  reference:
+  - https://www.cnvd.org.cn/flaw/show/cnvd-2019-01348
+  severity: high
+  classification:
+    cwe-id:
+    - cwe-284
+    cvss-metrics: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H
+    cvss-score: 7.5
+  remediation: |
+    https://bbs.xiuno.com/
+    1、配置所有的安全机制
+    2、最小原则，关掉或限制不使用的服务
+    3、更改默认账户信息
+    4、使用日志和警报
+    5、回显信息不显示任何与实际错误相关的信息
+    6、检查和修复安全配置项
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    condition: and
+    part: body
+    words:
+    - /view/js/xiuno.js
+    - Choose Language (选择语言)
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/install/'
+  method: GET
+  headers:
+    Accept-Encoding: deflate

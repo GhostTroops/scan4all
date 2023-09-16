@@ -1,0 +1,17 @@
+id: tongda_sqli2022
+
+info:
+  name: 通达oa sql注入
+  author: Str1am
+  severity: high
+  tags: tongda,sqli
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/general/management_center/portal/oa_engine/engine_manage_bulletin_number/query.php"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200

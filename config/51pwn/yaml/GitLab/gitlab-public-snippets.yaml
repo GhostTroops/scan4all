@@ -1,0 +1,41 @@
+id: gitlab-public-snippets
+info:
+  name: GitLab public snippets
+  author:
+  - l0ne1y
+  tags:
+  - gitlab
+  - exposure
+  - misconfig
+  description: |-
+    Gitlab 代码片段(snippets)可任意访问
+    GitLab是美国GitLab公司的一个开源的端到端软件开发平台，具有内置的版本控制、问题跟踪、代码审查、CI/CD（持续集成和持续交付）等功能。
+    当其访问权限配置为public时，任何公众都可访问其分享的代码片段，可能造成源代码泄漏。
+  reference:
+  - https://gist.github.com/vysecurity/20311c29d879e0aba9dcffbe72a88b10
+  - https://twitter.com/intigriti/status/1375078783338876929
+  severity: info
+  metadata:
+    shodan-query: http.title:"GitLab"
+  remediation: |-
+    **官方修复方案**
+    修改配置文件，将"Restricted visibility levels" 设置为不允许公共访问 not allow "Public"
+requests:
+- matchers:
+  - type: word
+    words:
+    - <title>Snippets · Explore · GitLab</title>
+  - type: status
+    status:
+    - 200
+  - type: word
+    condition: or
+    negative: true
+    words:
+    - No snippets found
+    - Nothing here.
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/explore/snippets'
+  - '{{BaseURL}}/-/snippets'
+  method: GET

@@ -1,0 +1,22 @@
+id: Squirrelmail Login
+
+info:
+  name: CVE-2017-7692 Squirrelmail Remote Code Execution
+  author: Zin Min Phyo fb.com/zinminphy0 @zin_min_phyo
+  severity: Info
+  tags:  injection
+
+  
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/squirrelmail/src/login.php"
+      - "{{BaseURL}}//webmail/src/login.php"
+
+    matchers:
+      - type: word
+        words:
+          - "SquirrelMail version 1.4."
+        part: body
+
+

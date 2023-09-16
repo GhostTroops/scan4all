@@ -1,0 +1,31 @@
+id: joomla-file-listing
+info:
+  name: Joomla! Database File List
+  author:
+  - l0ne1y
+  description: |-
+    Joomla 数据库目录泄露
+    Joomla 数据库目录/libraries/joomla/ Database /泄露，并已启用目录索引，未经允许的访问会导致敏感信息泄露。
+  severity: medium
+  remediation: |-
+    官方修复方案：
+    1、建议用户到官方获取最新补丁或者最新版本程序：
+    http://www.joomla.org/
+    临时修复方案：
+    1、禁止带有敏感数据的Web页面展示，以防止敏感信息泄漏。
+    2、对必须发送的敏感数据或页面请求接口做好严格的权限认证
+    3、关闭/libraries/joomla/database/目录上的目录索引，或者从web根目录中删除内容。如果可以下载数据库，则旋转数据库中包含的任何凭据
+requests:
+- matchers:
+  - type: word
+    condition: and
+    words:
+    - Index of /libraries/joomla/database
+    - Parent Directory
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/libraries/joomla/database/'
+  method: GET

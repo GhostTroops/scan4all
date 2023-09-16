@@ -1,0 +1,35 @@
+id: kubernetes-pods-api
+info:
+  name: Kubernetes Pods - API Discovery & Remote Code Execution
+  author:
+  - l0ne1y
+  description: |-
+    Kubernetes Pods - API接口泄露&命令执行漏洞
+    Google Kubernetes是美国Google公司的一套开源的Docker容器集群管理系统。该系统为容器化的应用提供资源调度、部署运行、服务发现和扩容缩容等功能。Kubernetes Dashboard是一款基于Web的用于管理Kubernetes集群的通用界面。
+    Kubernetes pod接口可能泄露关键数据和密码等信息，进一步利用可执行命令
+  severity: critical
+  remediation: |-
+    官方修复方案：
+    1、目前厂商已发布升级补丁以修复漏洞，补丁获取链接：
+    https://github.com/kubernetes/dashboard/releases/
+
+    临时修复方案：
+    1、调用pod功能前验证用户是否有权限调用相关功能。
+    2、校验用户提交的参数内容。
+requests:
+- matchers:
+  - type: word
+    words:
+    - apiVersion
+  - type: word
+    part: header
+    words:
+    - application/json
+  - type: status
+    status:
+    - 200
+  matchers-condition: and
+  path:
+  - '{{BaseURL}}/pods'
+  - '{{BaseURL}}/api/v1/pods'
+  method: GET

