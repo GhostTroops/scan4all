@@ -171,6 +171,14 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 
 more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</a>
 
+# References 
+- https://www.77169.net/html/312916.html
+- https://zhuanlan.zhihu.com/p/636131542
+- https://github.com/hktalent/scan4all/blob/main/static/Installation.md
+- https://github.com/hktalent/scan4all/blob/main/static/NicePwn.md
+- https://github.com/hktalent/scan4all/blob/main/static/running.md
+- https://www.google.com/search?client=safari&rls=en&q=%22hktalent%22+%22scan4all%22&ie=UTF-8&oe=UTF-8#ip=1
+
 # Thanks 
 - Thank <a href=https://github.com/freeload101 target=_blank>@freeload101</a> and other friends for their donations and support
 
