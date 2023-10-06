@@ -22,12 +22,20 @@ requests:
 
         {"UserName":"{{username}}","Password":"{{password}}"}
 
-    attack: pitchfork
+    attack: clusterbomb
     payloads:
       username:
+        - ADMIN
+        - admin
+        - root
         - Administrator
+        - sysadmin
+        - USERID
       password:
+        - ADMIN
+        - admin
         - superuser
+        - PASSW0RD
 
     stop-at-first-match: true
     redirects: false

@@ -1,0 +1,41 @@
+id: jfrog-version-header
+
+info:
+  name: JFrog Version header detection
+  description: Query health check endpoints for X-JFrog-Version header.
+  author: c-sh0
+  severity: info
+  reference:
+    - https://www.jfrog.com/confluence/display/JFROG/JFrog+Platform+REST+API
+  tags: jfrog,artifactory,tech,api
+
+requests:
+  - method: GET
+    path:
+      - '{{BaseURL}}/api/system/ping'
+      - '{{BaseURL}}/api/v1/system/readiness'
+      - '{{BaseURL}}/api/v1/system/liveness'
+      - '{{BaseURL}}/doesNotExist404'
+
+    stop-at-first-match: true
+    redirects: true
+    max-redirects: 2
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+          - 404
+        condition: or
+
+      - type: word
+        part: header
+        words:
+          - "X-Jfrog-Version:"
+
+    extractors:
+      - type: regex
+        part: header
+        group: 1
+        regex:
+          - 'X-Jfrog-Version:\s+([^\s]+)'

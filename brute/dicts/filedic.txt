@@ -1,6 +1,8 @@
 /Login.jsp
 /login.jsp
 .*org/login
+/confluence/server-info.action
+/server-info.action
 ../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log%00
 ../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log
 ../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log

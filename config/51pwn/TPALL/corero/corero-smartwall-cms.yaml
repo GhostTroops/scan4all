@@ -1,0 +1,34 @@
+id: corero-smartwall-central-management-server
+
+info:
+  name: Corero Network Security, SmartWall Central Management Server Detection
+  author: c-sh0
+  description: Corero Network Security, SmartWall Central Management Server Detection
+  severity: info
+  metadata:
+    shodan-query: http.html:Corero http.title:Login
+  reference:
+    - https://www.corero.com
+  tags: corero,portal,webui
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/login"
+
+    stop-at-first-match: true
+    redirects: true
+    max-redirects: 2
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 200
+
+      - type: word
+        part: body
+        words:
+          - '<title>Login</title>'
+          - 'Corero-Logo'
+          - 'Corero Network Security'
+        condition: and
