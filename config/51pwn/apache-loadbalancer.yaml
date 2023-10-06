@@ -2,7 +2,7 @@ id: apache-loadbalancer
 
 info:
   name: Apache Load Balancer Manager
-  author: nithissh
+  author: notnotnotveg
   severity: informative
 
 requests:

@@ -1,0 +1,44 @@
+id: corero-cms-default-login
+
+info:
+  name: Corero Network Security, SmartWall Central Management UI Default Login
+  description: Corero Network Security, SmartWall Central Management UI Default Login
+  author: c-sh0
+  severity: high
+  reference:
+    - https://www.juniper.net/documentation/en_US/corero-smartwall9.7.5/information-products/topic-collections/Corero_SmartWall_CMS_UG/Content/TDD/tdd_manage_users.htm
+  classification:
+    cvss-metrics: CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:C/C:L/I:L/A:L
+    cvss-score: 8.3
+    cwe-id: CWE-1392
+  tags: default-login,panel,webui,corero
+
+requests:
+  - raw:
+      - |
+        POST /login HTTP/1.1
+        Host: {{Hostname}}
+        User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/95.0.4638.69 Safari/537.36
+        Content-Type: application/x-www-form-urlencoded
+
+        username={{username}}&password={{password}}
+
+    attack: clusterbomb
+    payloads:
+      username:
+        - admin
+        - monitor
+      password:
+        - smartwall
+
+    redirects: false
+    matchers-condition: and
+    matchers:
+      - type: status
+        status:
+          - 303
+
+      - type: regex
+        part: header
+        regex:
+          - 'Set-Cookie:\s+auth_pubtkt="uid%3D(.*)validuntil%3D[0-9]+%3Btokens%3Dcorero_token%3Bsig%3D'

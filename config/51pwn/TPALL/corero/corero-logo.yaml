@@ -1,0 +1,43 @@
+id: corero-logo-detect
+
+info:
+  name: Corero Network Security Inc. logo detection
+  author: c-sh0
+  severity: info
+  metadata:
+    shodan-query:
+      - http.favicon.hash:1134048212
+      - http.favicon.hash:-1294635231
+  reference:
+    - https://www.corero.com
+  tags: tech,corero,ddos,favicon
+
+requests:
+  - method: GET
+    path:
+      - "{{BaseURL}}/favicons/favicon.ico"
+      - "{{BaseURL}}/favicons/favicon-144.png"
+      - "{{BaseURL}}/login/imgs/favicon.ico"
+      - "{{BaseURL}}/login/imgs/Corero-Logo-Full-Color.png"
+      - "{{BaseURL}}/en-US/static/app/securewatch_analytics_tdd/img/favicon.png"
+      - "{{BaseURL}}/en-US/static/app/securewatch_analytics_tdd/img/CoreroSecureWatchLogo.jpg"
+      - "{{BaseURL}}/api/theme/faviconImage/D_32X32"
+      - "{{BaseURL}}/api/theme/logoImage"
+      - "{{BaseURL}}/api/logo/image"
+      - "{{BaseURL}}/static/media/Corero-Logo-Full-Color.849b14ba.png"
+
+    stop-at-first-match: true
+    redirects: true
+    max-redirects: 2
+    matchers:
+      - type: dsl
+        name: corero
+        dsl:
+          - "status_code==200 && (\"-1294635231\" == mmh3(base64_py(body)))"
+          - "status_code==200 && (\"-2112191080\" == mmh3(base64_py(body)))"
+          - "status_code==200 && (\"1134048212\" == mmh3(base64_py(body)))"
+          - "status_code==200 && (\"714312296\" == mmh3(base64_py(body)))"
+          - "status_code==200 && (\"1745177497\" == mmh3(base64_py(body)))"
+          - "status_code==200 && (\"1596032150\" == mmh3(base64_py(body)))"
+          - "status_code==200 && (\"-905639582\" == mmh3(base64_py(body)))"
+        condition: or

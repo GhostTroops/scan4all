@@ -24,12 +24,19 @@ requests:
 
         username={{username}}&password={{password}}
 
-    attack: pitchfork
+    attack: clusterbomb
     payloads:
       username:
+        - ADMIN
+        - admin
+        - sysadmin
         - root
+        - USERID
       password:
+        - ADMIN
+        - admin
         - superuser
+        - PASSW0RD
 
     cookie-reuse: true
     stop-at-first-match: true

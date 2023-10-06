@@ -24,12 +24,19 @@ requests:
 
         WEBVAR_USERNAME={{username}}&WEBVAR_PASSWORD={{password}}
 
-    attack: pitchfork
+    attack: clusterbomb
     payloads:
       username:
+        - admin
+        - sysadmin
+        - ADMIN
         - root
+        - USERID
       password:
+        - admin
+        - ADMIN
         - superuser
+        - PASSW0RD
 
     cookie-reuse: true
     stop-at-first-match: true

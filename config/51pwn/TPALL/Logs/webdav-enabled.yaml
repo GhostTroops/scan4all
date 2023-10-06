@@ -1,0 +1,29 @@
+id: webdav-enabled
+
+info:
+  name: WebDAV enabled
+  author: 0x_Akoko
+  severity: info
+  description: WebDAV is an extension to the HTTP protocol. It allows authorized users to remotely add and change content on your web server.
+  reference: https://www.acunetix.com/vulnerabilities/web/webdav-enabled/
+  tags: webdav
+
+requests:
+  - method: OPTIONS
+    path:
+      - "{{BaseURL}}/"
+
+
+    matchers-condition: and
+    matchers:
+      - type: word
+        part: header
+        words:
+          - "MS-Author-Via: DAV"
+      - type: word
+        part: header
+        words:
+          - "DAV'"
+      - type: status
+        status:
+          - 200

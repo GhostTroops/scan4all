@@ -1,0 +1,33 @@
+id: client-side-prototype-pollution-bracket-constructor
+
+info:
+  name: Prototype Pollution Check Using Dot Notation
+  author: rs0n
+  severity: medium
+  description: |
+    Client-Side Prototype Pollution was detected -- PAYLOAD: {{BaseURL}}&constructor[prototype][rs0n]=rs0n
+  reference:
+    - https://book.hacktricks.xyz/pentesting-web/deserialization/nodejs-proto-prototype-pollution/client-side-prototype-pollution
+    - https://portswigger.net/web-security/prototype-pollution
+    - https://www.youtube.com/watch?v=guPuPblLPI8
+    - https://github.com/R-s0n/Green-Energy
+  tags: headless, prototype-pollution
+
+headless:
+  - steps:   
+    - action: navigate
+      args:
+        url: "{{BaseURL}}&constructor[prototype][rs0n]=rs0n"
+    - action: waitload
+    
+    - action: script
+      name: pollution-check
+      args:
+        code: |
+          () => { document.body.innerHTML = rs0n }
+
+    matchers:
+      - type: word
+        part: resp
+        words:
+          - "rs0n"
