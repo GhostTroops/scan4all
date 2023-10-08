@@ -183,23 +183,23 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 - Thank <a href=https://github.com/freeload101 target=_blank>@freeload101</a> and other friends for their donations and support
 
 # Changelog
-- 2022-07-28 Added substr and aes_cbc dsl helper by me <a href="https://github.com/projectdiscovery/nuclei/releases/tag/v2.7.7">nuclei v2.7.7</a>
-- 2022-07-20 fix and PR nuclei <a href=https://github.com/projectdiscovery/nuclei/issues/2301>#2301</a> 并发多实例的bug
+- 2023-10-01 Optimize support for nuclei@latest
+- 2022-07-28 Added substr and aes_cbc dsl helper by me nuclei v2.7.7
+- 2022-07-20 fix and PR nuclei #2301 Concurrent multi-instance bug
 - 2022-07-20 add web cache vulnerability scanner
-- 2022-07-19 PR nuclei <a href=https://github.com/projectdiscovery/nuclei/pull/2308>#2308</a> add dsl function: substr aes_cbc
-- 2022-07-19 添加dcom Protocol enumeration network interfaces
-- 2022-06-30 嵌入式集成私人版本nuclei-templates 共3744个YAML POC； 1、集成Elasticsearch存储中间结果 2、嵌入整个config目录到程序中
-- 2022-06-27 优化模糊匹配，提高正确率、鲁棒性;集成ksubdomain进度
-- 2022-06-24 优化指纹算法；增加工作流程图
-- 2022-06-23 添加参数ParseSSl，控制默认不深度分析SSL中的DNS信息，默认不对SSL中dns进行扫描；优化：nmap未自动加.exe的bug；优化windows下缓存文件未优化体积的bug
-- 2022-06-22 集成11种协议弱口令检测、密码爆破：ftp、mongodb、mssql、mysql、oracle、postgresql、rdp、redis、smb、ssh、telnet，同时优化支持外挂密码字典
-- 2022-06-20 集成Subfinder，域名爆破，启动参数导出EnableSubfinder=true，注意启动后很慢； ssl证书中域名信息的自动深度钻取
-  允许通过 config/config.json 配置定义自己的字典，或设置相关开关
-- 2022-06-17 优化一个域名多个IP的情况，所有IP都会被端口扫描，然后按照后续的扫描流程
-- 2022-06-15 此版本增加了过去实战中获得的几个weblogic密码字典和webshell字典
-- 2022-06-10 完成核的整合，当然包括核模板的整合
-- 2022-06-07 添加相似度算法来检测 404
-- 2022-06-07 增加http url列表精准扫描参数，根据环境变量UrlPrecise=true开启
+- 2022-07-19 PR nuclei #2308 add dsl function: substr aes_cbc
+- 2022-07-19 Add dcom Protocol enumeration network interfaces
+- 2022-06-30 Embedded integrated private version nuclei-templates A total of 3744 YAML POC; 1. Integrate Elasticsearch to store intermediate results 2. Embed the entire config directory into the program
+- 2022-06-27 Optimize fuzzy matching to improve accuracy and robustness; integrate ksubdomain progress
+- 2022-06-24 Optimize fingerprint algorithm; add workflow chart
+- 2022-06-23 Added parameter ParseSSl to control the default of not deeply analyzing DNS information in SSL and not scanning DNS in SSL by default; Optimization: nmap does not automatically add .exe bug; Optimize the bug of cache files under Windows not optimizing the size
+- 2022-06-22 Integrated weak password detection and password blasting for 11 protocols: ftp, mongodb, mssql, mysql, oracle, postgresql, rdp, redis, smb, ssh, telnet, and optimized support for plug-in password dictionary
+- 2022-06-20 Integrate Subfinder, domain name blasting, startup parameter export EnableSubfinder=true, note that it is very slow after startup; automatic deep drilling of domain name information in the ssl certificate allows you to define your own dictionary through config/config.json configuration, or set related switch
+- 2022-06-17 Optimize the situation where one domain name has multiple IPs. All IPs will be port scanned, and then follow the subsequent scanning process.
+- 2022-06-15 This version adds several weblogic password dictionaries and webshell dictionaries obtained in past actual combat
+- 2022-06-10 Complete the integration of the core, including of course the integration of the core template
+- 2022-06-07 Add similarity algorithm to detect 404
+- 2022-06-07 Added http url list precision scanning parameters, turned on according to the environment variable UrlPrecise=true
 
 # Communication group (WeChat, QQ，Tg)
 | Wechat | Or | QQchat | Or | Tg |
