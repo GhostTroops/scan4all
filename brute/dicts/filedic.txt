@@ -3,6 +3,7 @@
 .*org/login
 /confluence/server-info.action
 /server-info.action
+/setup/setupadministrator.action
 ../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log%00
 ../../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log
 ../../../../../../../../../../../../../../../../../usr/local/cpanel/logs/login_log
