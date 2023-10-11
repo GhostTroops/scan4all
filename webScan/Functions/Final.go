@@ -141,8 +141,7 @@ func final_ALLurl_ALLJson(urllist *[]string) {
 		for i := 0; i < size; i++ {
 			jobs_url <- (*urllist)[i]
 		}
-		for i := 0; i < size; i++ {
-			res := <-allresult
+		for res := range allresult {
 			for key, res_tmp := range res.res {
 				if res_tmp == true {
 					util.SendLog(res.url, "webScan", res.exp_name[key], "")
