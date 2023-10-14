@@ -182,6 +182,9 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 # Thanks 
 - Thank <a href=https://github.com/freeload101 target=_blank>@freeload101</a> and other friends for their donations and support
 
+# Contributors
+https://github.com/hktalent/scan4all/graphs/contributors
+
 # Changelog
 - 2023-10-01 Optimize support for nuclei@latest
 - 2022-07-28 Added substr and aes_cbc dsl helper by me nuclei v2.7.7
