@@ -123,6 +123,7 @@
 /components/com_users/views/login/tmpl/default_logout.php
 /components/com_users/views/login/tmpl/index.html
 /components/com_users/views/login/view.html.php
+/partnercdkeys/assignkeys/
 /confluence/login.vm
 /console/login/LoginForm.jsp
 /doc/page/login.asp
