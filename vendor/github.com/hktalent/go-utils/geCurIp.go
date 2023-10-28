@@ -128,6 +128,7 @@ func GetFromIpapi() *map[string]interface{} {
 	m1 := map[string]interface{}{}
 	szUrl := "https://ipapi.co/json/"
 	c := GetClient(szUrl)
+	c.UseHttp2 = true
 	c.DoGetWithClient4SetHd(c.GetClient4Http2(), szUrl, "GET", nil, func(resp *http.Response, err error, szU string) {
 		if nil == err && nil != resp {
 			if data, err := io.ReadAll(resp.Body); nil == err {
