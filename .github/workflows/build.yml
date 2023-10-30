@@ -1,4 +1,4 @@
-name: Release Binary
+name: 🎉 Release Binary
 on:
   create:
     tags:
@@ -24,7 +24,6 @@ jobs:
         run: |
           brew install libpcap upx
           chmod +x .github/workflows/upx.sh
-#          git submodule update --init --recursive --remote
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
@@ -32,7 +31,6 @@ jobs:
           args: release -f .github/build/mac.yml --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # https://github.com/marketplace/actions/run-on-architecture#supported-platforms
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -48,13 +46,8 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt-get update
-#          sudo apt-get -y install gcc-mingw-w64-x86-64
-#          sudo apt-get -y install gcc-arm-linux-gnueabihf libc6-dev-armhf-cross
-#          sudo apt-get -y install gcc-aarch64-linux-gnu libc6-dev-arm64-cross
           sudo apt install -yy libpcap-dev upx
-#          sudo apt install upx gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
           chmod +x .github/workflows/upx.sh
-#          git submodule update --init --recursive --remote
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
