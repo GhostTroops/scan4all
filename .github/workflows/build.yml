@@ -29,7 +29,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
-          args: release -f .github/build/mac.yml --rm-dist
+          args: release -f .github/build/mac.yml --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   # https://github.com/marketplace/actions/run-on-architecture#supported-platforms
@@ -49,7 +49,7 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.21.3
-      - name: Install Dependences
+      - name: Install Dependencies
         run: |
           sudo apt-get update
 #          sudo apt-get -y install gcc-mingw-w64-x86-64
@@ -63,7 +63,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
-          args: release -f .github/build/linux.yml --rm-dist
+          args: release -f .github/build/linux.yml --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -85,6 +85,6 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
-          args: release -f .github/build/windows.yml --rm-dist
+          args: release -f .github/build/windows.yml --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
