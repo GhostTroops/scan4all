@@ -1,9 +1,6 @@
 env:
   - GO111MODULE=on
-before:
-  hooks:
-#    - go mod tidy
-#    - .github/workflows/upx.sh
+
 project_name: scan4all
 builds:
   - id: scan4all-darwin
