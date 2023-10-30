@@ -24,9 +24,9 @@ builds:
 #      - s390x
 #      - arm
 #      - arm64
-    extra_files:
-      - from: ../config
-        to: config
+#    extra_files:
+#      - from: ../config
+#        to: config
 archives:
   - format: zip
     files:
