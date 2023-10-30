@@ -1,0 +1,79 @@
+name: 🎉 Release Binary
+on:
+  create:
+    tags:
+      - v*
+  workflow_dispatch:
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.21.3
+      - name: Install Dependences
+        run: |
+          brew install libpcap upx
+          chmod +x .github/workflows/upx.sh
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release -f .github/build/mac.yml --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.21.3
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt install -yy libpcap-dev upx
+          chmod +x .github/workflows/upx.sh
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release -f .github/build/linux.yml --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          fetch-depth: 0
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.21.3
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: latest
+          args: release -f .github/build/windows.yml --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
