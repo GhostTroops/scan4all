@@ -24,8 +24,15 @@ builds:
 #      - s390x
 #      - arm
 #      - arm64
+    extra_files:
+      - from: ../config
+        to: config
 archives:
-- format: zip
+  - format: zip
+    files:
+      - LICENSE*
+      - README*
+      - config/**/*
 
 checksum:
   name_template: "{{ .ProjectName }}-linux-checksums.txt"

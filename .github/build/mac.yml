@@ -15,11 +15,15 @@ builds:
     goarch:
       - amd64
       - arm64
+    extra_files:
+      - from: ../config
+        to: config
 
 archives:
-- format: zip
-  replacements:
-      darwin: macOS
-
+  - format: zip
+    files:
+      - LICENSE*
+      - README*
+      - config/**/*
 checksum:
   name_template: "{{ .ProjectName }}-mac-checksums.txt"
