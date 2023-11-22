@@ -80,7 +80,7 @@
   "enableByWaf": true,
   "enableDevDebug": false,
   "enableEmbedYaml": true,
-  "enableFileFuzz": true,
+  "enableFileFuzz": false,
   "httpx": {
     "Pipeline": false,
     "HTTP2Probe": false,

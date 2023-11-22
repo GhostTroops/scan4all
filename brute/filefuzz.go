@@ -52,7 +52,7 @@ func InitGeneral() int {
 			ret = append(ret, "/"+prefix[i]+suffix[j])
 		}
 	}
-	eableFileFuzz = !util.GetValAsBool("enableFileFuzz")
+	disabledFileFuzz = !util.GetValAsBool("enableFileFuzz")
 	return len(ret)
 }
 
@@ -121,10 +121,10 @@ func CheckBakPage(req *util.Response) bool {
 var regs []string
 
 var (
-	regsMap       = make(map[string]*regexp.Regexp) // fuzz 正则库
-	eableFileFuzz = false                           // 是否开启fuzz
-	NoDoPath      = sync.Map{}
-	NoDoPathInit  = false
+	regsMap          = make(map[string]*regexp.Regexp) // fuzz 正则库
+	disabledFileFuzz = false                           // 是否开启fuzz
+	NoDoPath         = sync.Map{}
+	NoDoPathInit     = false
 )
 
 func DoInitMap() {
@@ -188,13 +188,16 @@ var r001 = regexp.MustCompile(`\.(aac)|(abw)|(arc)|(avif)|(avi)|(azw)|(bin)|(bmp
 //	两次  ioutil.ReadAll(resp.Body)，第二次就会 Read返回EOF error
 //	去除指纹请求的路径，避免重复
 func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody string) ([]string, []string) {
+	if disabledFileFuzz {
+		return []string{}, []string{}
+	}
 	DoInitMap()
 	u01, err := url.Parse(strings.TrimSpace(u))
 	if nil == err {
 		u = u01.Scheme + "://" + u01.Host + "/"
 	}
 	// 用host，确保https、http只走一种协议即可
-	if eableFileFuzz || util.TestRepeat(u01.Host, "FileFuzz") {
+	if disabledFileFuzz || util.TestRepeat(u01.Host, "FileFuzz") {
 		return []string{}, []string{}
 	}
 	//log.Println("start file fuzz", u)

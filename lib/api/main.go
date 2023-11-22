@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	util1 "github.com/hktalent/go-utils"
 	_ "github.com/hktalent/scan4all/engine"
 	"github.com/hktalent/scan4all/lib/util"
 	"github.com/hktalent/scan4all/pkg/hydra"
@@ -23,7 +22,7 @@ func StartScan(oOpts *map[string]interface{}) {
 
 		options := naaburunner.ParseOptions()
 		if options.Update {
-			util1.UpdateScan4allVersionToLatest(true, "hktalent", "scan4all", "")
+			//util1.UpdateScan4allVersionToLatest(true, "hktalent", "scan4all", "")
 			return
 		}
 		//if options.Ports != "" {
