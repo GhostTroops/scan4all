@@ -257,6 +257,7 @@ func (s *Scanner) ICMPReadWorker() {
 		case ipv4.ICMPTypeEchoReply, ipv4.ICMPTypeTimestamp:
 			s.icmpChan <- &PkgResult{ip: addr.String()}
 		}
+		time.Sleep(33 * time.Second)
 	}
 }
 

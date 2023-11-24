@@ -39,6 +39,7 @@ func main() {
 					return
 				}
 			}
+			time.Sleep(33 * time.Second)
 		}
 	}()
 	CloseAll <- "ok"

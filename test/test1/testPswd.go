@@ -1,13 +1,16 @@
 package main
 
-import "log"
+import (
+	"log"
+	"time"
+)
 
+// //"github.com/hktalent/scan4all/pkg/hydra"
+// import (
 //
-////"github.com/hktalent/scan4all/pkg/hydra"
-//import (
 //	"github.com/hktalent/scan4all/pkg/hydra"
-//)
 //
+// )
 func main() {
 	var nucleiDone1, nucleiDone2 = make(chan bool), make(chan bool)
 	go func() {
@@ -23,7 +26,7 @@ func main() {
 			log.Printf("%v %v", b, ok)
 			break
 		default:
-
+			time.Sleep(33 * time.Second)
 		}
 	}
 

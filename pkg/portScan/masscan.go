@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"os/exec"
+	"time"
 )
 
 type PortsStr string
@@ -123,6 +124,7 @@ func (m *Masscan) ParseLine(s string) ([]models.Host, error) {
 				hosts = append(hosts, host)
 			}
 		default:
+			time.Sleep(33 * time.Second)
 		}
 	}
 	return hosts, nil

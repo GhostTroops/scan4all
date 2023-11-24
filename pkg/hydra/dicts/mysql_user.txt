@@ -1,1 +1,4 @@
 root
+admin
+test
+dbuser

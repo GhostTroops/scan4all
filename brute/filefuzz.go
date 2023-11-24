@@ -289,6 +289,7 @@ func FileFuzz(u string, indexStatusCode int, indexContentLength int, indexbody s
 					return
 				}
 			default:
+				time.Sleep(33 * time.Second)
 				// <-time.After(time.Duration(100) * time.Millisecond)
 			}
 		}

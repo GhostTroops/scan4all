@@ -246,7 +246,7 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 		case "loginpage", "登陆页面", "AdminLoginPage":
 			username, password, loginurl := brute.Admin_brute(finalURL)
 			if loginurl != "" {
-				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s", username, password))
+				technologies = append(technologies, fmt.Sprintf("brute-admin|%s:%s %s", username, password, loginurl))
 			}
 		case "sunlogin":
 			if sunlogin.SunloginRCE(URL) {

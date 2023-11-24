@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/signal"
 	"sync"
+	"time"
 )
 
 // 引擎对象，全局单实例
@@ -144,6 +145,7 @@ func (x1 *Engine) Running() {
 				}
 			default:
 				util.DoDelayClear(x1.Wg) // panic: sync: WaitGroup misuse: Add called concurrently with Wait
+				time.Sleep(33 * time.Second)
 				//util.DoSleep()
 			}
 		}
