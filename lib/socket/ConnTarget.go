@@ -8,6 +8,7 @@ import (
 	"github.com/hktalent/scan4all/lib/util"
 	"net"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -49,15 +50,10 @@ func NewCheckTarget(szUrl, SzType string, readWriteTimeout int) *CheckTarget {
 		r11.Port = 80
 		// https://eli.thegreenplace.net/2021/go-socket-servers-with-tls/
 		r11.IsTLS = strings.HasPrefix(strings.ToLower(u.Scheme), "https")
-		if "" == u.Port() {
-			if r11.IsTLS {
-				r11.Port = 443
-			}
-		} else {
-			n, err := strconv.Atoi(u.Port())
-			if nil == err {
-				r11.Port = n
-			}
+		if "" == u.Port() && r11.IsTLS {
+			r11.Port = 443
+		} else if n, err := strconv.Atoi(u.Port()); nil == err {
+			r11.Port = n
 		}
 		if "" != u.Path {
 			r11.UrlPath = u.Path
@@ -180,6 +176,8 @@ func (r *CheckTarget) Log(s string) {
 	//log.Println(s)
 }
 
+var ipReg = regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)
+
 // 连接目标
 // sysctl -w net.ipv4.tcp_keepalive_time=300
 // sysctl -w net.ipv4.tcp_keepalive_intvl=30
@@ -191,38 +189,23 @@ func (r *CheckTarget) ConnTarget() (*CheckTarget, error) {
 		conf := &tls.Config{
 			InsecureSkipVerify: true,
 		}
-		r.Conn, err = tls.Dial(r.ConnType, fmt.Sprintf("%s:%d", r.Target, r.Port), conf)
-		if err == nil {
-			//r.Conn.SetKeepAlive(true)
-			// 设置读取超时
-			err = r.Conn.SetReadDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
-			if err != nil {
-				defer r.Close()
-				r.Log(szErr)
-				return r, err
-			}
-			r.ConnState = true
+		ServerName := strings.Split(r.Target, ":")[0]
+		if !ipReg.Match([]byte(ServerName)) {
+			conf.ServerName = ServerName
 		}
+		r.Conn, err = tls.Dial(r.ConnType, fmt.Sprintf("%s:%d", r.Target, r.Port), conf)
 	} else {
 		r.Conn, err = net.DialTimeout(r.ConnType, fmt.Sprintf("%s:%d", r.Target, r.Port), time.Duration(r.ReadTimeout)*time.Second)
-		if err != nil {
-			r.Log(szErr)
-			return r, err
-		}
+	}
+	if err == nil {
+		//defer r.Close()
 		//r.Conn.SetKeepAlive(true)
 		// 设置读取超时
 		err = r.Conn.SetReadDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
 		if err != nil {
-			defer r.Close()
 			r.Log(szErr)
 			return r, err
 		}
-		// 设置写超时
-		//conn1.SetWriteDeadline(time.Now().Add(time.Duration(r.ReadTimeout) * time.Second))
-		//if err != nil {
-		//	return r, err
-		//}
-		//log.Printf("connect ok: %s", r.UrlRaw)
 		r.ConnState = true
 	}
 	return r, nil
