@@ -16,8 +16,7 @@
 <img width="928" alt="image" src="https://user-images.githubusercontent.com/18223385/175768227-098c779b-6c5f-48ee-91b1-c56e3daa9c87.png">
 </h1>
 
-- <a href=https://github.com/hktalent/51Pwn-Platform/blob/main/README.md>Free one id Multi-target web netcat for reverse shell
-</a>
+- <a href=https://github.com/hktalent/51Pwn-Platform/blob/main/README.md>Free one id Multi-target web netcat for reverse shell</a>
 - What is scan4all: integrated vscan, nuclei, ksubdomain, subfinder, etc., fully automated and intelligent。red team tools
   Code-level optimization, parameter optimization, and individual modules, such as vscan filefuzz, have been rewritten for these integrated projects.
   In principle, do not repeat the wheel, unless there are bugs, problems
@@ -181,10 +180,10 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 - https://github.com/hktalent/scan4all/blob/main/static/running.md
 - https://www.google.com/search?client=safari&rls=en&q=%22hktalent%22+%22scan4all%22&ie=UTF-8&oe=UTF-8#ip=1
 
-# Thanks 
-- Thank <a href=https://github.com/freeload101 target=_blank>@freeload101</a> and other friends for their donations and support
-- Thank <a href=https://github.com/b1win0y target=_blank>@b1win0y</a>  donations and support
-- Thank <a href=https://github.com/BL4CKR4Y target=_blank>@BL4CKR4Y</a> donations and support
+# Thanks Donors
+- <a href=https://github.com/freeload101 target=_blank>@freeload101</a>
+- <a href=https://github.com/b1win0y target=_blank>@b1win0y</a>
+- <a href=https://github.com/BL4CKR4Y target=_blank>@BL4CKR4Y</a>
 
 # Contributors
 https://github.com/hktalent/scan4all/graphs/contributors
