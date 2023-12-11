@@ -183,6 +183,8 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 
 # Thanks 
 - Thank <a href=https://github.com/freeload101 target=_blank>@freeload101</a> and other friends for their donations and support
+- Thank <a href=https://github.com/b1win0y target=_blank>@b1win0y</a>  donations and support
+- Thank <a href=https://github.com/BL4CKR4Y target=_blank>@BL4CKR4Y</a> donations and support
 
 # Contributors
 https://github.com/hktalent/scan4all/graphs/contributors
