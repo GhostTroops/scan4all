@@ -1,7 +1,7 @@
 package apache
 
 import (
-	"github.com/hktalent/scan4all/lib/socket"
+	"github.com/GhostTroops/scan4all/lib/socket"
 	"strings"
 )
 

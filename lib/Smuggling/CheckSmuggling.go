@@ -2,8 +2,8 @@ package Smuggling
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/lib/socket"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/socket"
+	"github.com/GhostTroops/scan4all/lib/util"
 	"log"
 	"net/url"
 	"strings"

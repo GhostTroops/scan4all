@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg/fingerprint"
-	httpxrunner "github.com/hktalent/scan4all/pkg/httpx/runner"
+	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/pkg/fingerprint"
+	httpxrunner "github.com/GhostTroops/scan4all/pkg/httpx/runner"
 	"log"
 )
 

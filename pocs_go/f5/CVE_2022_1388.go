@@ -1,7 +1,7 @@
 package f5
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
 func CVE_2022_1388(u string) bool {

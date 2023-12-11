@@ -2,10 +2,10 @@ package portScan
 
 import (
 	"context"
+	"github.com/GhostTroops/scan4all/lib/goSqlite_gorm/lib/scan/Const"
+	"github.com/GhostTroops/scan4all/lib/goSqlite_gorm/pkg/models"
+	"github.com/GhostTroops/scan4all/lib/util"
 	"github.com/Ullaakut/nmap"
-	"github.com/hktalent/scan4all/lib/goSqlite_gorm/lib/scan/Const"
-	"github.com/hktalent/scan4all/lib/goSqlite_gorm/pkg/models"
-	"github.com/hktalent/scan4all/lib/util"
 	"io"
 	"log"
 	"time"

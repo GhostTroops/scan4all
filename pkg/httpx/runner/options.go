@@ -1,13 +1,13 @@
 package runner
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg/httpx/common/customheader"
-	"github.com/hktalent/scan4all/pkg/httpx/common/customlist"
-	customport "github.com/hktalent/scan4all/pkg/httpx/common/customports"
-	fileutilz "github.com/hktalent/scan4all/pkg/httpx/common/fileutil"
-	"github.com/hktalent/scan4all/pkg/httpx/common/slice"
-	"github.com/hktalent/scan4all/pkg/httpx/common/stringz"
+	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/pkg/httpx/common/customheader"
+	"github.com/GhostTroops/scan4all/pkg/httpx/common/customlist"
+	customport "github.com/GhostTroops/scan4all/pkg/httpx/common/customports"
+	fileutilz "github.com/GhostTroops/scan4all/pkg/httpx/common/fileutil"
+	"github.com/GhostTroops/scan4all/pkg/httpx/common/slice"
+	"github.com/GhostTroops/scan4all/pkg/httpx/common/stringz"
 	"github.com/projectdiscovery/fileutil"
 	"github.com/projectdiscovery/goconfig"
 	"github.com/projectdiscovery/goflags"

@@ -1,7 +1,7 @@
 package seeyon
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
 func SeeyonFastjson(u string) bool {

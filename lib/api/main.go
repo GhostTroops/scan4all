@@ -2,11 +2,11 @@ package api
 
 import (
 	"encoding/json"
+	_ "github.com/GhostTroops/scan4all/engine"
+	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/pkg/hydra"
+	naaburunner "github.com/GhostTroops/scan4all/pkg/naabu/v2/pkg/runner"
 	util1 "github.com/hktalent/go-utils"
-	_ "github.com/hktalent/scan4all/engine"
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg/hydra"
-	naaburunner "github.com/hktalent/scan4all/pkg/naabu/v2/pkg/runner"
 	"github.com/projectdiscovery/gologger"
 	"io"
 	"io/ioutil"

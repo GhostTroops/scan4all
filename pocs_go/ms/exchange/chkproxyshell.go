@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 	"io/ioutil"
 	"net/http"
 	"strings"

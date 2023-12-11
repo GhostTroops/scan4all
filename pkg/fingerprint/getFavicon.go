@@ -4,8 +4,8 @@ import (
 	"crypto/md5"
 	"crypto/tls"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg/httpx/common/stringz"
+	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/pkg/httpx/common/stringz"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -60,7 +60,8 @@ func GetHahsMd5(body []byte) (hash string, md5R string) {
 }
 
 // 求url host hash和md5
-//  key: cache key
+//
+//	key: cache key
 func Favicohash4key(host, key string) (hash string, md5R string) {
 	k1 := host + key
 	body, err := util.Cache1.Get(k1)

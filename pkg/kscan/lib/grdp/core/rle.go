@@ -1,7 +1,7 @@
 package core
 
 import (
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/glog"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/glog"
 	"unsafe"
 )
 

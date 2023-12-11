@@ -3,7 +3,7 @@ package hydra
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 	"github.com/logrusorgru/aurora"
 	"log"
 	"strconv"

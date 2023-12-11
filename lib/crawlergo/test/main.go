@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	pkg "github.com/GhostTroops/scan4all/lib/crawlergo"
 	"github.com/chromedp/chromedp"
-	pkg "github.com/hktalent/scan4all/lib/crawlergo"
 	"log"
 	"time"
 )

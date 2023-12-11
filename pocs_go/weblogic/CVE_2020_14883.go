@@ -1,7 +1,7 @@
 package weblogic
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
 func CVE_2020_14883(url string) bool {

@@ -3,8 +3,8 @@ package Funcs
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
-	Configs "github.com/hktalent/scan4all/webScan/config"
+	"github.com/GhostTroops/scan4all/lib/util"
+	Configs "github.com/GhostTroops/scan4all/webScan/config"
 	"log"
 )
 

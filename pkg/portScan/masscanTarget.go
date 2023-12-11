@@ -1,9 +1,9 @@
 package portScan
 
 import (
-	"github.com/hktalent/scan4all/lib/goSqlite_gorm/lib/scan/Const"
-	"github.com/hktalent/scan4all/lib/goSqlite_gorm/pkg/models"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/goSqlite_gorm/lib/scan/Const"
+	"github.com/GhostTroops/scan4all/lib/goSqlite_gorm/pkg/models"
+	"github.com/GhostTroops/scan4all/lib/util"
 	"log"
 	"strings"
 )
@@ -27,7 +27,6 @@ output-filename = scan.xml
 Ports = 0-65535
 range = 0.0.0.0-255.255.255.255
 excludefile = exclude.txt
-
 */
 func init() {
 	util.RegInitFunc(func() {

@@ -2,9 +2,9 @@ package log4j
 
 import (
 	"fmt"
+	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/pkg/jndi"
 	"github.com/hktalent/PipelineHttp"
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg/jndi"
 	"log"
 	"net/http"
 	"net/url"

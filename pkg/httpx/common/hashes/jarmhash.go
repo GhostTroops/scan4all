@@ -2,7 +2,7 @@ package hashes
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/pkg/httpx/common/regexhelper"
+	"github.com/GhostTroops/scan4all/pkg/httpx/common/regexhelper"
 	"github.com/hktalent/jarm-go"
 	"golang.org/x/net/proxy"
 	"net"

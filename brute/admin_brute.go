@@ -3,7 +3,7 @@ package brute
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 	"net/url"
 	"regexp"
 	"strings"

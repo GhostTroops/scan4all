@@ -1,4 +1,4 @@
-module github.com/hktalent/scan4all
+module github.com/GhostTroops/scan4all
 
 go 1.21
 

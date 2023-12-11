@@ -1,7 +1,7 @@
 package confluence
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
 //author:penson 硬编码添加用户

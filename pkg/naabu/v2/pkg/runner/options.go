@@ -2,9 +2,9 @@ package runner
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
-	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/scan"
+	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/pkg/naabu/v2/pkg/privileges"
+	"github.com/GhostTroops/scan4all/pkg/naabu/v2/pkg/scan"
 	"net"
 	"os"
 	"runtime"

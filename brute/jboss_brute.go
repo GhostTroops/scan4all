@@ -2,7 +2,7 @@ package brute
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
 func Jboss_brute(url string) (username string, password string) {

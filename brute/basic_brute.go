@@ -1,12 +1,13 @@
 package brute
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
 // 优化应该考虑
-//  1、一天内相同目标的结果缓存，只执行一次
-//  2、应该考虑多线程并发执行
+//
+//	1、一天内相同目标的结果缓存，只执行一次
+//	2、应该考虑多线程并发执行
 func Basic_brute(url string) (username string, password string) {
 	if req, err := util.HttpRequsetBasic("asdasdascsacacs", "adcadcadcadcadcadc", url, "HEAD", "", false, nil); err == nil {
 		// 超文本传输​​协议(HTTP) 401 Unauthorized 客户端错误状态响应代码表示客户端请求尚未完成，因为它缺少所请求资源的有效身份验证凭据

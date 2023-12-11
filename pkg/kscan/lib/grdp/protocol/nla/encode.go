@@ -6,7 +6,7 @@ import (
 	"crypto/rc4"
 	"strings"
 
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/core"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/core"
 	"golang.org/x/crypto/md4"
 )
 

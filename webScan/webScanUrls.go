@@ -2,9 +2,9 @@ package webScan
 
 import (
 	"bytes"
-	"github.com/hktalent/scan4all/lib/util"
-	ws01 "github.com/hktalent/scan4all/webScan/Functions"
-	Configs "github.com/hktalent/scan4all/webScan/config"
+	"github.com/GhostTroops/scan4all/lib/util"
+	ws01 "github.com/GhostTroops/scan4all/webScan/Functions"
+	Configs "github.com/GhostTroops/scan4all/webScan/config"
 	"strings"
 )
 

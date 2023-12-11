@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/projectdiscovery/subfinder"
+	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/projectdiscovery/subfinder"
 	"reflect"
 	"strings"
 )

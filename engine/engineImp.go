@@ -2,10 +2,10 @@ package engine
 
 import (
 	"context"
-	"github.com/hktalent/scan4all/lib/goSqlite_gorm/lib"
-	"github.com/hktalent/scan4all/lib/goSqlite_gorm/pkg/models"
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pocs_go"
+	"github.com/GhostTroops/scan4all/lib/goSqlite_gorm/lib"
+	"github.com/GhostTroops/scan4all/lib/goSqlite_gorm/pkg/models"
+	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/pocs_go"
 	"github.com/panjf2000/ants/v2"
 	"log"
 	"os"

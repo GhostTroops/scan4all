@@ -1,9 +1,9 @@
 package ksubdomain
 
 import (
+	"github.com/GhostTroops/scan4all/lib/util"
 	"github.com/boy-hack/ksubdomain/core/conf"
 	"github.com/boy-hack/ksubdomain/core/gologger"
-	"github.com/hktalent/scan4all/lib/util"
 	cli "github.com/urfave/cli/v2"
 	"os"
 	"regexp"

@@ -3,8 +3,8 @@ package main
 import (
 	"embed"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/api"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/api"
+	"github.com/GhostTroops/scan4all/lib/util"
 	"log"
 	"net/http"
 	_ "net/http/pprof"

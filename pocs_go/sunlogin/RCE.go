@@ -3,7 +3,7 @@ package sunlogin
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
 type res struct {

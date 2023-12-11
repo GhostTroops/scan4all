@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/lib/Smuggling"
-	"github.com/hktalent/scan4all/lib/socket"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/Smuggling"
+	"github.com/GhostTroops/scan4all/lib/socket"
+	"github.com/GhostTroops/scan4all/lib/util"
 	"net/url"
 	"strings"
 	"sync"

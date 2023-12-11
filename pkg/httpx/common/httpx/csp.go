@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"strings"
 
+	"github.com/GhostTroops/scan4all/pkg/httpx/common/slice"
 	"github.com/PuerkitoBio/goquery"
-	"github.com/hktalent/scan4all/pkg/httpx/common/slice"
 	"github.com/projectdiscovery/stringsutil"
 )
 

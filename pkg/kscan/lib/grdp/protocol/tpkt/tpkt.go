@@ -5,10 +5,10 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/core"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/emission"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/glog"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/protocol/nla"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/core"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/emission"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/glog"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/protocol/nla"
 )
 
 // take idea from https://github.com/Madnikulin50/gordp

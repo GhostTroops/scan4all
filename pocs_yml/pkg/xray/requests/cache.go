@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"sort"
 
+	"github.com/GhostTroops/scan4all/pocs_yml/pkg/xray/structs"
+	"github.com/GhostTroops/scan4all/pocs_yml/utils"
 	"github.com/bluele/gcache"
-	"github.com/hktalent/scan4all/pocs_yml/pkg/xray/structs"
-	"github.com/hktalent/scan4all/pocs_yml/utils"
 )
 
 var (

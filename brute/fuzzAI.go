@@ -3,10 +3,10 @@ package brute
 import (
 	_ "embed"
 	"encoding/json"
+	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/pkg"
+	"github.com/GhostTroops/scan4all/pkg/fingerprint"
 	"github.com/antlabs/strsim"
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg"
-	"github.com/hktalent/scan4all/pkg/fingerprint"
 	"gorm.io/gorm"
 	"net/url"
 	"regexp"

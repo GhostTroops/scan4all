@@ -1,10 +1,10 @@
 package hydra
 
 import (
-	"github.com/hktalent/scan4all/pkg/hydra/oracle"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/gotelnet"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/misc"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/pool"
+	"github.com/GhostTroops/scan4all/pkg/hydra/oracle"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/gotelnet"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/misc"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/pool"
 	"strings"
 	"time"
 )

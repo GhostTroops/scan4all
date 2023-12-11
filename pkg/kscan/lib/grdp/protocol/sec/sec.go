@@ -14,14 +14,14 @@ import (
 
 	"github.com/lunixbochs/struc"
 
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/protocol/nla"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/protocol/nla"
 
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/core"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/emission"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/glog"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/protocol/lic"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/protocol/t125"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/protocol/t125/gcc"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/core"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/emission"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/glog"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/protocol/lic"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/protocol/t125"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/protocol/t125/gcc"
 )
 
 /**

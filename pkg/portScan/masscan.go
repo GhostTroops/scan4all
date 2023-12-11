@@ -3,9 +3,9 @@ package portScan
 import (
 	"bytes"
 	"encoding/xml"
+	"github.com/GhostTroops/scan4all/lib/goSqlite_gorm/pkg/models"
+	"github.com/GhostTroops/scan4all/lib/util"
 	_ "github.com/codegangsta/inject"
-	"github.com/hktalent/scan4all/lib/goSqlite_gorm/pkg/models"
-	"github.com/hktalent/scan4all/lib/util"
 	"io"
 	"log"
 	"os/exec"

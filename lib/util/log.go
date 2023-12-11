@@ -3,7 +3,7 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/hktalent/scan4all/lib/goSqlite_gorm/pkg/models"
+	"github.com/GhostTroops/scan4all/lib/goSqlite_gorm/pkg/models"
 	"log"
 	"os"
 	"runtime"

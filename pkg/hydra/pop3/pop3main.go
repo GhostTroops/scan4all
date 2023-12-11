@@ -1,7 +1,7 @@
 package pop3
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 	"log"
 	"strings"
 )
@@ -35,9 +35,10 @@ func getConn(address string) *Conn {
 }
 
 // pop3密码破解
-//  优化 pop3、pop3s 密码破解算法
-//  每个目标相同端口，多个密码破解复用一次网络链接，提高破解效率
-//  超过20秒，有任何密码破解动作，自动关闭链接
+//
+//	优化 pop3、pop3s 密码破解算法
+//	每个目标相同端口，多个密码破解复用一次网络链接，提高破解效率
+//	超过20秒，有任何密码破解动作，自动关闭链接
 func DoPop3(address, user, pass string) bool {
 	c := getConn(address)
 	// Authenticate.

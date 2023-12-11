@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	_ "embed"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
 // 测试正则表达式是否正确

@@ -3,7 +3,7 @@ package lic
 import (
 	"io"
 
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/core"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/core"
 )
 
 const (
@@ -39,10 +39,10 @@ const (
 )
 
 /*
-   """
-   @summary: Binary blob data type
-   @see: http://msdn.microsoft.com/en-us/library/cc240481.aspx
-   """
+"""
+@summary: Binary blob data type
+@see: http://msdn.microsoft.com/en-us/library/cc240481.aspx
+"""
 */
 type BinaryBlobType uint16
 
@@ -96,10 +96,10 @@ func ReadLicensePacket(r io.Reader) *LicensePacket {
 }
 
 /*
-   """
-   @summary: Blob use by license manager to exchange security data
-   @see: http://msdn.microsoft.com/en-us/library/cc240481.aspx
-   """
+"""
+@summary: Blob use by license manager to exchange security data
+@see: http://msdn.microsoft.com/en-us/library/cc240481.aspx
+"""
 */
 type LicenseBinaryBlob struct {
 	WBlobType uint16 `struc:"little"`
@@ -112,10 +112,10 @@ func NewLicenseBinaryBlob(WBlobType uint16) *LicenseBinaryBlob {
 }
 
 /*
-   """
-   @summary: License server product information
-   @see: http://msdn.microsoft.com/en-us/library/cc241915.aspx
-   """
+"""
+@summary: License server product information
+@see: http://msdn.microsoft.com/en-us/library/cc241915.aspx
+"""
 */
 type ProductInformation struct {
 	DwVersion     uint32 `struc:"little"`
@@ -129,7 +129,9 @@ type ProductInformation struct {
 
 /*
 @summary:  Send by server to signal license request
-            server -> client
+
+	server -> client
+
 @see: http://msdn.microsoft.com/en-us/library/cc241914.aspx
 */
 type ServerLicenseRequest struct {
@@ -169,10 +171,10 @@ type ServerPlatformChallenge struct {
 }
 
 /*
-   """
-   @summary: client challenge response
-   @see: http://msdn.microsoft.com/en-us/library/cc241922.aspx
-   """
+"""
+@summary: client challenge response
+@see: http://msdn.microsoft.com/en-us/library/cc241922.aspx
+"""
 */
 type ClientPLatformChallengeResponse struct {
 	EncryptedPlatformChallengeResponse LicenseBinaryBlob

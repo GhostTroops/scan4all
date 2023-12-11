@@ -3,7 +3,7 @@ package Funcs
 import (
 	"encoding/json"
 	"fmt"
-	Configs "github.com/hktalent/scan4all/webScan/config"
+	Configs "github.com/GhostTroops/scan4all/webScan/config"
 	"io/ioutil"
 	"log"
 	"os"

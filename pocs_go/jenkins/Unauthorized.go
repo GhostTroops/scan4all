@@ -1,7 +1,7 @@
 package jenkins
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
 func Unauthorized(u string) bool {

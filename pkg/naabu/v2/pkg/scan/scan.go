@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/GhostTroops/scan4all/pkg/naabu/v2/pkg/privileges"
+	"github.com/GhostTroops/scan4all/pkg/naabu/v2/pkg/result"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/privileges"
-	"github.com/hktalent/scan4all/pkg/naabu/v2/pkg/result"
 	"github.com/phayes/freeport"
 	"github.com/projectdiscovery/cdncheck"
 	"github.com/projectdiscovery/gologger"

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/hktalent/scan4all/pkg/hydra/vnc"
+	"github.com/GhostTroops/scan4all/pkg/hydra/vnc"
 	"log"
 	"net"
 )

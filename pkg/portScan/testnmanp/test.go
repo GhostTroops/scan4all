@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/hktalent/scan4all/pkg/portScan"
+	"github.com/GhostTroops/scan4all/pkg/portScan"
 	"log"
 	"strings"
 )

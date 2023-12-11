@@ -3,9 +3,9 @@ package hydra
 import (
 	"bytes"
 	"fmt"
+	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/pkg"
 	"github.com/antchfx/xmlquery"
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg"
 	"io/ioutil"
 	"log"
 	"os"

@@ -2,11 +2,11 @@ package pocs_yml
 
 import (
 	"embed"
-	"github.com/hktalent/scan4all/lib/util"
-	xray_check "github.com/hktalent/scan4all/pocs_yml/check"
-	common_structs "github.com/hktalent/scan4all/pocs_yml/pkg/common/structs"
-	xray_requests "github.com/hktalent/scan4all/pocs_yml/pkg/xray/requests"
-	"github.com/hktalent/scan4all/pocs_yml/utils"
+	"github.com/GhostTroops/scan4all/lib/util"
+	xray_check "github.com/GhostTroops/scan4all/pocs_yml/check"
+	common_structs "github.com/GhostTroops/scan4all/pocs_yml/pkg/common/structs"
+	xray_requests "github.com/GhostTroops/scan4all/pocs_yml/pkg/xray/requests"
+	"github.com/GhostTroops/scan4all/pocs_yml/utils"
 	"net/url"
 	"time"
 )

@@ -2,7 +2,7 @@ package check
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
 	"io"
@@ -15,10 +15,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/GhostTroops/scan4all/pocs_yml/pkg/xray/cel"
+	"github.com/GhostTroops/scan4all/pocs_yml/pkg/xray/requests"
+	xray_structs "github.com/GhostTroops/scan4all/pocs_yml/pkg/xray/structs"
 	"github.com/google/cel-go/checker/decls"
-	"github.com/hktalent/scan4all/pocs_yml/pkg/xray/cel"
-	"github.com/hktalent/scan4all/pocs_yml/pkg/xray/requests"
-	xray_structs "github.com/hktalent/scan4all/pocs_yml/pkg/xray/structs"
 	"gopkg.in/yaml.v2"
 )
 

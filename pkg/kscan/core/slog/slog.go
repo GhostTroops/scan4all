@@ -2,8 +2,8 @@ package slog
 
 import (
 	"fmt"
-	"github.com/hktalent/scan4all/lib/util"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/color"
+	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/color"
 	"github.com/lcvvvv/gonmap/lib/chinese"
 	"io"
 	"io/ioutil"

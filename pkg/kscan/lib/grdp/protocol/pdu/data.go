@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/core"
-	"github.com/hktalent/scan4all/pkg/kscan/lib/grdp/glog"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/core"
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/glog"
 	"github.com/lunixbochs/struc"
 )
 

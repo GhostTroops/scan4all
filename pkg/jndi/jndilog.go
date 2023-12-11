@@ -2,7 +2,7 @@ package jndi
 
 import (
 	"encoding/hex"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
 // jndi日志检查

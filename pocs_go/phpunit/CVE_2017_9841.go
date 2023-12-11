@@ -1,7 +1,7 @@
 package phpunit
 
 import (
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
 func CVE_2017_9841(url string) bool {

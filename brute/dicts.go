@@ -2,7 +2,7 @@ package brute
 
 import (
 	_ "embed"
-	"github.com/hktalent/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/lib/util"
 	"strings"
 )
 
@@ -21,14 +21,17 @@ var (
 )
 
 // by waf
+//
 //go:embed dicts/selfHd.txt
 var selfHds string
 
 // http 爆破user
+//
 //go:embed dicts/httpuser.txt
 var httpuser string
 
 // http 爆破密码字典
+//
 //go:embed dicts/httpass.txt
 var httpass string
 

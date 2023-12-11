@@ -2,7 +2,7 @@ package Funcs
 
 import (
 	"fmt"
-	Configs "github.com/hktalent/scan4all/webScan/config"
+	Configs "github.com/GhostTroops/scan4all/webScan/config"
 	"net/http"
 	"regexp"
 	"strings"
