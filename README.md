@@ -128,9 +128,9 @@ mkdir ~/MyWork/;cd ~/MyWork/;git clone https://github.com/hktalent/log4j-scan
 
 # how to install
 download from
-<a href=https://github.com/hktalent/scan4all/releases>Releases</a>
+<a href=https://github.com/GhostTroops/scan4all/releases>Releases</a>
 ```bash
-go install github.com/hktalent/scan4all@2.6.9
+go install github.com/GhostTroops/scan4all@2.8.9
 scan4all -h
 ````
 # how to use
@@ -147,7 +147,7 @@ where 92.168.0.111 is the target to query
 
 ````
 - Please install nmap by yourself before use
-  <a href=https://github.com/hktalent/scan4all/discussions>Using Help</a>
+  <a href=https://github.com/GhostTroops/scan4all/discussions>Using Help</a>
 ```bash
 go build
 # Precise scan szUrl list UrlPrecise=true
@@ -170,14 +170,14 @@ priorityNmap=false ./scan4all -tp http -list allOut.txt -v
 - how use Cookie?
 - libpcap related question
 
-more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</a>
+more see: <a href=https://github.com/GhostTroops/scan4all/discussions>discussions</a>
 
 # References 
 - https://www.77169.net/html/312916.html
 - https://zhuanlan.zhihu.com/p/636131542
-- https://github.com/hktalent/scan4all/blob/main/static/Installation.md
-- https://github.com/hktalent/scan4all/blob/main/static/NicePwn.md
-- https://github.com/hktalent/scan4all/blob/main/static/running.md
+- https://github.com/GhostTroops/scan4all/blob/main/static/Installation.md
+- https://github.com/GhostTroops/scan4all/blob/main/static/NicePwn.md
+- https://github.com/GhostTroops/scan4all/blob/main/static/running.md
 - https://www.google.com/search?client=safari&rls=en&q=%22hktalent%22+%22scan4all%22&ie=UTF-8&oe=UTF-8#ip=1
 
 # Thanks Donors
@@ -186,7 +186,7 @@ more see: <a href=https://github.com/hktalent/scan4all/discussions>discussions</
 - <a href=https://github.com/BL4CKR4Y target=_blank>@BL4CKR4Y</a>
 
 # Contributors
-https://github.com/hktalent/scan4all/graphs/contributors
+https://github.com/GhostTroops/scan4all/graphs/contributors
 
 # Changelog
 - 2023-10-01 Optimize support for nuclei@latest
