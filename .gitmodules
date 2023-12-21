@@ -2,10 +2,6 @@
 	path = config/jaeles-signatures
 	url = https://github.com/jaeles-project/jaeles-signatures
 	branch=master
-[submodule "config/nuclei-templates"]
-	path = config/nuclei-templates
-	url = https://github.com/projectdiscovery/nuclei-templates.git
-	branch=main
 [submodule "config/fuzzing-templates"]
 	path = config/fuzzing-templates
 	url = https://github.com/projectdiscovery/fuzzing-templates.git
