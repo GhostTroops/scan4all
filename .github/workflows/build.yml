@@ -10,14 +10,14 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Code checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: 1.21.3
       - name: Install Dependences
@@ -25,7 +25,7 @@ jobs:
           brew install libpcap upx
 #          git submodule update --init --recursive --remote
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
           args: release -f .github/build/mac.yml --clean
@@ -36,14 +36,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Code checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: 1.21.3
       - name: Install Dependences
@@ -51,7 +51,7 @@ jobs:
           sudo apt install -yy --fix-missing libpcap-dev upx
 #          git submodule update --init --recursive --remote
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
           args: release -f .github/build/linux.yml --clean
@@ -62,7 +62,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Code checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
@@ -76,11 +76,11 @@ jobs:
 #          Expand-Archive upx.zip -DestinationPath upx
 #          setx PATH "$env:PATH;$(Get-Location)/upx/x86_64-w64-mingw32"
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v4
         with:
           go-version: 1.21.3
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+        uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
           args: release -f .github/build/windows.yml --clean
