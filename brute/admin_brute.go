@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"time"
 )
 
 var SkipAdminBrute bool
@@ -122,6 +123,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 			adminfalseContentlen = adminfalseurl.ContentLength
 		default:
 			falseis500 = true
+			time.Sleep(3 * time.Millisecond)
 		}
 	} else {
 		falseis500 = true
@@ -146,6 +148,7 @@ func Admin_brute(u string) (username string, password string, loginurl string) {
 			testfalseContentlen = testfalseurl.ContentLength
 		default:
 			falseis500 = true
+			time.Sleep(3 * time.Millisecond)
 		}
 	} else {
 		falseis500 = true

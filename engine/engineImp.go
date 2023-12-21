@@ -113,6 +113,8 @@ func (x1 *Engine) Running() {
 		}()
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, os.Interrupt)
+		tK := time.NewTicker(2 * time.Second)
+		defer tK.Stop()
 		//nMax := 120 // 等xxx秒都没有消息进入就退出
 		//nCnt := 0
 		for {
@@ -143,10 +145,8 @@ func (x1 *Engine) Running() {
 						})
 					}(x1)
 				}
-			default:
+			case <-tK.C:
 				util.DoDelayClear(x1.Wg) // panic: sync: WaitGroup misuse: Add called concurrently with Wait
-				time.Sleep(33 * time.Second)
-				//util.DoSleep()
 			}
 		}
 	}()

@@ -3,7 +3,6 @@ package pocs_go
 import (
 	"fmt"
 	"github.com/GhostTroops/scan4all/brute"
-	"github.com/GhostTroops/scan4all/lib/Smuggling"
 	"github.com/GhostTroops/scan4all/lib/goSqlite_gorm/lib/scan/Const"
 	"github.com/GhostTroops/scan4all/lib/goSqlite_gorm/pkg/models"
 	"github.com/GhostTroops/scan4all/lib/util"
@@ -68,7 +67,8 @@ func POCcheck(wappalyzertechnologies []string, URL string, finalURL string, chec
 				technologies = append(technologies, fmt.Sprintf("ZookeeperUnauthority %s", finalURL))
 			}
 		case "httpCheckSmuggling":
-			Smuggling.DoCheckSmuggling(finalURL, "")
+			//Smuggling.DoCheckSmuggling(finalURL, "")// close
+			break
 		case "RouterOS":
 			a := ms.CVE_2018_14847(hostname)
 			if 0 < len(a) {

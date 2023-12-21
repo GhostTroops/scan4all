@@ -130,9 +130,9 @@ func All_url_ALLjson(urls <-chan string, allresult chan<- all_result) {
 func final_ALLurl_ALLJson(urllist *[]string) {
 	if Configs.UserObject.AllJson == true {
 		size := len(*urllist)
-		allresult := make(chan all_result, size+1)
+		allresult := make(chan all_result)
 		//results := make(chan bool, size+1)
-		jobs_url := make(chan string, size+1)
+		jobs_url := make(chan string)
 		for i := 0; i < Configs.UserObject.ThreadNum; i++ {
 			util.DoSyncFunc(func() {
 				All_url_ALLjson(jobs_url, allresult)
@@ -141,11 +141,18 @@ func final_ALLurl_ALLJson(urllist *[]string) {
 		for i := 0; i < size; i++ {
 			jobs_url <- (*urllist)[i]
 		}
+		close(jobs_url) // send over close
+		i := 0
 		for res := range allresult {
+			i++
 			for key, res_tmp := range res.res {
 				if res_tmp == true {
 					util.SendLog(res.url, "webScan", res.exp_name[key], "")
 				}
+			}
+			if i >= size {
+				close(allresult)
+				break
 			}
 		}
 	}

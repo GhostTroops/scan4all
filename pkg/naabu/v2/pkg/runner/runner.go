@@ -20,6 +20,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -61,7 +62,7 @@ func (r *Runner) Httpxrun(buf *bytes.Buffer, options *runner3.Options) error {
 		httpxrunner.Naabubuffer = Naabubuffer
 	}
 	Cookie := util.GetVal("Cookie")
-	if "" != Cookie {
+	if !strings.Contains(Cookie, "rememberMe") {
 		Cookie = "Cookie: " + Cookie + ";rememberMe=123" // add
 	}
 	//log.Printf("%+v", httpxrunner.Naabubuffer.String())

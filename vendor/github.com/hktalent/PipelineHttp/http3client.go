@@ -15,7 +15,8 @@ func (r *PipelineHttp) GetTransport4Http3() http.RoundTripper {
 		log.Println(err)
 		return nil
 	}
-	var tr http.RoundTripper = &http3.RoundTripper{
+	var tr = &http3.RoundTripper{
+		DisableCompression: false,
 		TLSClientConfig: &tls.Config{
 			RootCAs:            pool,
 			InsecureSkipVerify: true,

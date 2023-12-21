@@ -70,9 +70,8 @@ func doSub(s string) (aRst []string, err1 error) {
 				} else {
 					goto Close
 				}
-			default:
-				util.DoSleep()
 			}
+			util.DoSleep()
 		}
 	Close:
 		bSend = true

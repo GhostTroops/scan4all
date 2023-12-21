@@ -67,9 +67,10 @@ type responseWriter struct {
 	bufferedStr *bufio.Writer
 	buf         []byte
 
-	headerWritten bool
 	contentLen    int64 // if handler set valid Content-Length header
 	numWritten    int64 // bytes written
+	headerWritten bool
+	isHead        bool
 }
 
 var (
@@ -162,13 +163,18 @@ func (w *responseWriter) Write(p []byte) (int, error) {
 		return 0, http.ErrContentLength
 	}
 
+	if w.isHead {
+		return len(p), nil
+	}
+
 	df := &dataFrame{Length: uint64(len(p))}
 	w.buf = w.buf[:0]
 	w.buf = df.Append(w.buf)
 	if _, err := w.bufferedStr.Write(w.buf); err != nil {
-		return 0, err
+		return 0, maybeReplaceError(err)
 	}
-	return w.bufferedStr.Write(p)
+	n, err := w.bufferedStr.Write(p)
+	return n, maybeReplaceError(err)
 }
 
 func (w *responseWriter) FlushError() error {
@@ -177,7 +183,7 @@ func (w *responseWriter) FlushError() error {
 	}
 	if !w.written {
 		if err := w.writeHeader(); err != nil {
-			return err
+			return maybeReplaceError(err)
 		}
 		w.written = true
 	}

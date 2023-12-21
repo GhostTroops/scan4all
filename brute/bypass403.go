@@ -125,7 +125,6 @@ BreakAll:
 				break BreakAll
 			}
 		}
-		time.Sleep(33 * time.Second)
 	}
 	return aR
 }

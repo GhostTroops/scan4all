@@ -39,18 +39,20 @@ const (
 	QUICHandshakeDone               = qtls.QUICHandshakeDone
 )
 
-func SetupConfigForServer(conf *QUICConfig, enable0RTT bool, getDataForSessionTicket func() []byte, accept0RTT func([]byte) bool) {
+func SetupConfigForServer(conf *QUICConfig, enable0RTT bool, getDataForSessionTicket func() []byte, handleSessionTicket func([]byte, bool) bool) {
 	qtls.InitSessionTicketKeys(conf.TLSConfig)
 	conf.TLSConfig = conf.TLSConfig.Clone()
 	conf.TLSConfig.MinVersion = tls.VersionTLS13
 	conf.ExtraConfig = &qtls.ExtraConfig{
-		Enable0RTT:                 enable0RTT,
-		Accept0RTT:                 accept0RTT,
+		Enable0RTT: enable0RTT,
+		Accept0RTT: func(data []byte) bool {
+			return handleSessionTicket(data, true)
+		},
 		GetAppDataForSessionTicket: getDataForSessionTicket,
 	}
 }
 
-func SetupConfigForClient(conf *QUICConfig, getDataForSessionState func() []byte, setDataFromSessionState func([]byte)) {
+func SetupConfigForClient(conf *QUICConfig, getDataForSessionState func() []byte, setDataFromSessionState func([]byte) bool) {
 	conf.ExtraConfig = &qtls.ExtraConfig{
 		GetAppDataForSessionState:  getDataForSessionState,
 		SetAppDataFromSessionState: setDataFromSessionState,
