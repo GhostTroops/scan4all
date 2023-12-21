@@ -19,10 +19,11 @@ var (
 )
 
 // 检查器的设计：解耦、规范、统一，各类专注实现自己
-//  1、允许未响应header、body、js、css等构建不同的检查器
-//  2、每个检查器都有缓存
-//  3、避免重复检查
-//  4、具有自动释放缓存的机制，程序退出时自动消费（内存缓存）
+//
+//	1、允许未响应header、body、js、css等构建不同的检查器
+//	2、每个检查器都有缓存
+//	3、避免重复检查
+//	4、具有自动释放缓存的机制，程序退出时自动消费（内存缓存）
 type CheckerTools struct {
 	Name      string                                `json:"name"`       // RespHeader,RespBody,RespJs,RespCss,RespTitle,ReqHeader
 	checkFunc []func(*CheckerTools, ...interface{}) `json:"check_func"` // 注册的检查器
@@ -78,8 +79,10 @@ func (r *CheckerTools) GetBodyStr(a ...interface{}) string {
 // 检查
 func (r *CheckerTools) Check(parm ...interface{}) {
 	for _, f := range r.checkFunc {
-		log.Printf("Check %+v\n", parm)
-		f(r, parm...)
+		if nil != f {
+			log.Printf("Check %+v\n", parm)
+			f(r, parm...)
+		}
 	}
 }
 
@@ -112,12 +115,15 @@ func CheckRespHeader(parm ...interface{}) {
 }
 
 // 检查 response 对象
-//  1、包括头的检查
-//  2、包括body的检查
+//
+//	1、包括头的检查
+//	2、包括body的检查
 func CheckResp(szU string, resp ...*http.Response) {
-	for _, r := range resp {
-		CheckRespHeader(&r.Header, szU)
-		GetInstance(RespBody).Check(&r, szU)
+	if nil != resp && 0 < len(resp) {
+		for _, r := range resp {
+			CheckRespHeader(&r.Header, szU)
+			GetInstance(RespBody).Check(&r, szU)
+		}
 	}
 }
 
