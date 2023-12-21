@@ -79,7 +79,7 @@
   "enableMultNuclei": false,
   "enableNuclei": true,
   "enableByWaf": true,
-  "enableDevDebug": true,
+  "enableDevDebug": false,
   "enableEmbedYaml": true,
   "enableFileFuzz": true,
   "httpx": {

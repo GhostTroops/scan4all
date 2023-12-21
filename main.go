@@ -22,7 +22,7 @@ var Version string
 /*
 go tool pprof -seconds=180 -http=:9999 http://127.0.0.1:6060/debug/pprof/heap
 no leak
-go tool pprof http://192.168.7.11:6060/debug/pprof/profile
+go tool pprof http://127.0.0.1:6060/debug/pprof/profile
 
 http://localhost:9999/ui/
 */
