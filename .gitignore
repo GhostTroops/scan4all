@@ -8,6 +8,10 @@
 tmp/
 config/tools/
 db/51pwnCc/
+.ipgs
+config/scan4all_db.db
+ip2gs_51pwn.json
+shell
 db/sqlite3.db
 *.dylib
 sqlite3.db
