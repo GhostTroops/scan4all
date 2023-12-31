@@ -4,6 +4,7 @@
 package codecs
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 )
@@ -34,40 +35,32 @@ const (
 	outputStapAHeader = 0x78
 )
 
-func annexbNALUStartCode() []byte { return []byte{0x00, 0x00, 0x00, 0x01} }
+// nolint:gochecknoglobals
+var (
+	naluStartCode       = []byte{0x00, 0x00, 0x01}
+	annexbNALUStartCode = []byte{0x00, 0x00, 0x00, 0x01}
+)
 
 func emitNalus(nals []byte, emit func([]byte)) {
-	nextInd := func(nalu []byte, start int) (indStart int, indLen int) {
-		zeroCount := 0
+	start := 0
+	length := len(nals)
 
-		for i, b := range nalu[start:] {
-			if b == 0 {
-				zeroCount++
-				continue
-			} else if b == 1 {
-				if zeroCount >= 2 {
-					return start + i - zeroCount, zeroCount + 1
-				}
-			}
-			zeroCount = 0
+	for start < length {
+		end := bytes.Index(nals[start:], annexbNALUStartCode)
+		offset := 4
+		if end == -1 {
+			end = bytes.Index(nals[start:], naluStartCode)
+			offset = 3
 		}
-		return -1, -1
-	}
+		if end == -1 {
+			emit(nals[start:])
+			break
+		}
 
-	nextIndStart, nextIndLen := nextInd(nals, 0)
-	if nextIndStart == -1 {
-		emit(nals)
-	} else {
-		for nextIndStart != -1 {
-			prevStart := nextIndStart + nextIndLen
-			nextIndStart, nextIndLen = nextInd(nals, prevStart)
-			if nextIndStart != -1 {
-				emit(nals[prevStart:nextIndStart])
-			} else {
-				// Emit until end of stream, no end indicator found
-				emit(nals[prevStart:])
-			}
-		}
+		emit(nals[start : start+end])
+
+		// next NAL start position
+		start += end + offset
 	}
 }
 
@@ -140,18 +133,17 @@ func (p *H264Payloader) Payload(mtu uint16, payload []byte) [][]byte {
 		// the FU header.  An FU payload MAY have any number of octets and MAY
 		// be empty.
 
-		naluData := nalu
 		// According to the RFC, the first octet is skipped due to redundant information
-		naluDataIndex := 1
-		naluDataLength := len(nalu) - naluDataIndex
-		naluDataRemaining := naluDataLength
+		naluIndex := 1
+		naluLength := len(nalu) - naluIndex
+		naluRemaining := naluLength
 
-		if min(maxFragmentSize, naluDataRemaining) <= 0 {
+		if min(maxFragmentSize, naluRemaining) <= 0 {
 			return
 		}
 
-		for naluDataRemaining > 0 {
-			currentFragmentSize := min(maxFragmentSize, naluDataRemaining)
+		for naluRemaining > 0 {
+			currentFragmentSize := min(maxFragmentSize, naluRemaining)
 			out := make([]byte, fuaHeaderSize+currentFragmentSize)
 
 			// +---------------+
@@ -169,19 +161,19 @@ func (p *H264Payloader) Payload(mtu uint16, payload []byte) [][]byte {
 			// +---------------+
 
 			out[1] = naluType
-			if naluDataRemaining == naluDataLength {
+			if naluRemaining == naluLength {
 				// Set start bit
 				out[1] |= 1 << 7
-			} else if naluDataRemaining-currentFragmentSize == 0 {
+			} else if naluRemaining-currentFragmentSize == 0 {
 				// Set end bit
 				out[1] |= 1 << 6
 			}
 
-			copy(out[fuaHeaderSize:], naluData[naluDataIndex:naluDataIndex+currentFragmentSize])
+			copy(out[fuaHeaderSize:], nalu[naluIndex:naluIndex+currentFragmentSize])
 			payloads = append(payloads, out)
 
-			naluDataRemaining -= currentFragmentSize
-			naluDataIndex += currentFragmentSize
+			naluRemaining -= currentFragmentSize
+			naluIndex += currentFragmentSize
 		}
 	})
 
@@ -203,7 +195,7 @@ func (p *H264Packet) doPackaging(nalu []byte) []byte {
 		return append(naluLength, nalu...)
 	}
 
-	return append(annexbNALUStartCode(), nalu...)
+	return append(annexbNALUStartCode, nalu...)
 }
 
 // IsDetectedFinalPacketInSequence returns true of the packet passed in has the

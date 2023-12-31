@@ -18,6 +18,7 @@ Guilherme <gqgs@protonmail.com>
 Haiyang Wang <ocean2811@outlook.com>
 Hugo Arregui <hugo@decentraland.org>
 John Bradley <jrb@turrettech.com>
+Juho Nurminen <juhonurm@gmail.com>
 Juliusz Chroboczek <jch@irif.fr>
 kawaway <kawawa.y@gmail.com>
 Kazuyuki Honda <hakobera@gmail.com>
@@ -31,6 +32,7 @@ Raphael Derosso Pereira <raphaelpereira@gmail.com>
 Rob Lofthouse <ri.lofthouse@gmail.com>
 Robin Raymond <robin@goheadroom.com>
 Sean <sean@pion.ly>
+Sean <sean@siobud.com>
 Sean DuBois <duboisea@twitch.tv>
 Sean DuBois <seaduboi@amazon.com>
 Sean DuBois <sean@pion.ly>
@@ -40,6 +42,7 @@ Steffen Vogel <post@steffenvogel.de>
 Tarrence van As <tarrence13@gmail.com>
 wangzixiang <wangzixiang@onething.net>
 Woodrow Douglass <wdouglass@carnegierobotics.com>
+訾明华 <565209960@qq.com>
 
 # List of contributors not appearing in Git history
 

@@ -1,16 +1,165 @@
 package go_utils
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"github.com/pion/stun"
+	"golang.org/x/text/encoding/simplifiedchinese"
+	"io"
 	"log"
 	"math/big"
 	"net"
+	"net/http"
 	"strings"
 )
 
 var szCurIp string
+
+func GBKToUTF8(s []byte) []byte {
+	utf8Str := simplifiedchinese.GBK.NewDecoder().Reader(bytes.NewReader(s))
+	if data, err := io.ReadAll(utf8Str); nil == err {
+		return data
+	}
+	return nil
+}
+
+// 通过cloudflare 获取自己当前互联网 ip
+func GetCurPubIp() string {
+	szRst := ""
+	szUrl := "https://www.cloudflare.com/cdn-cgi/trace"
+	DoUrlCbk(szUrl, "", nil, func(resp *http.Response, szUrl string) {
+		if data, err := io.ReadAll(resp.Body); nil == err {
+			s := string(data)
+			if a := strings.Split(s, "ip="); 2 == len(a) {
+				a = strings.Split(a[1], "\n")
+				if 1 < len(a) {
+					szRst = a[0]
+				}
+			}
+		}
+	})
+	return szRst
+}
+
+func DoUrlCbk4byte4Redirect(szUrl string, data []byte, hd map[string]string, cbk func(resp *http.Response, szUrl string), Redirect bool) string {
+	szR := ""
+
+	szM := "GET"
+	if 0 < len(data) {
+		szM = "POST"
+	}
+	PipE.ErrCount = 0
+	PipE.ErrLimit = 999999999
+	if Redirect {
+		PipE.Client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+			return nil
+		}
+	}
+	PipE.DoGetWithClient4SetHd(PipE.Client, szUrl, szM, bytes.NewReader(data), func(resp *http.Response, err error, szU string) {
+		if nil == err && nil != resp {
+			defer resp.Body.Close()
+			cbk(resp, szU)
+		} else {
+			//log.Println(err)
+		}
+	}, func() map[string]string {
+		return hd
+	}, true)
+	return szR
+}
+
+func DoUrlCbk4byte(szUrl string, data []byte, hd map[string]string, cbk func(resp *http.Response, szUrl string)) string {
+	return DoUrlCbk4byte4Redirect(szUrl, data, hd, cbk, false)
+}
+
+// 通用的获取数据的方法
+func DoUrlCbk(szUrl string, data string, hd map[string]string, cbk func(resp *http.Response, szUrl string)) string {
+	return DoUrlCbk4byte(szUrl, []byte(data), hd, cbk)
+}
+
+// get ip location
+func GetIpLocation(x string) string {
+	if m1 := GetIpInfo(x); nil != m1 {
+		if a, ok := (*m1)["data"].([]interface{}); ok {
+			if 0 < len(a) {
+				s := GetJson4Query(a[0], "location")
+				return fmt.Sprintf("%v", s)
+			}
+		}
+	}
+	return ""
+}
+
+var ht1 = PipE.GetClient(nil)
+
+func GetIpInfo2(ip string) *map[string]interface{} {
+	var err error
+	var ipInfo = map[string]interface{}{}
+	PipE.DoGetWithClient4SetHd(ht1, "http://ip-api.com/json/"+ip, "GET", nil, func(resp *http.Response, err1 error, szU string) {
+		err = err1
+		if resp != nil {
+			defer resp.Body.Close() // resp 可能为 nil，不能读取 Body
+		}
+		if err != nil {
+			//log.Println(err)
+			return
+		}
+		err = Json.NewDecoder(resp.Body).Decode(&ipInfo)
+	}, func() map[string]string {
+		return map[string]string{
+			"User-Agent":    "curl/1.0",
+			"Cache-Control": "no-cache",
+			"Connection":    "close",
+		}
+	}, true)
+
+	if nil == err {
+		return &ipInfo
+	}
+
+	return nil
+}
+func GetIpInfo(s string) *map[string]interface{} {
+	m1 := func() *map[string]interface{} {
+		var m = &map[string]interface{}{}
+		DoUrlCbk("https://opendata.baidu.com/api.php?query="+s+"&resource_id=6006&format=json", "", map[string]string{
+			"Cookie":          "BAIDUID=AD297683AEA2BE6DF0794437E0AE9E08:FG=1",
+			"User-Agent":      "VideoGo/1897687 CFNetwork/1410.0.3 Darwin/22.6.0",
+			"Accept-Language": "zh-CN,zh-Hans;q=0.9",
+			"Connection":      "close",
+		}, func(resp *http.Response, szUrl string) {
+			if data, err := io.ReadAll(resp.Body); nil == err {
+				if data1 := GBKToUTF8(data); 0 < len(data1) {
+					Json.Unmarshal(data1, m)
+				}
+			}
+		})
+		return m
+	}()
+	if nil == m1 || 0 == len(*m1) {
+		if m1 = GetIpInfo2(s); nil != m1 {
+			(*m1)["data"] = &map[string]interface{}{"location": fmt.Sprintf("%v %v", (*m1)["country"], (*m1)["city"])}
+		}
+	}
+	return m1
+}
+
+//func GetIpaInfo(a []string) {
+//	for _, x := range a {
+//		if m1 := GetIpInfo(x); nil != m1 {
+//			a := (*m1)["data"].([]interface{})
+//			if 0 == len(a) {
+//				continue
+//			}
+//			s := GetJson4Query(a[0], "location")
+//			if "" == s {
+//				continue
+//			}
+//			fmt.Printf("%s\t%v\n", x, s)
+//		}
+//	}
+//}
 
 // get your public ip
 // auto skip proxy

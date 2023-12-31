@@ -1,6 +1,0 @@
-sys
-system
-admin
-test
-web
-orcl

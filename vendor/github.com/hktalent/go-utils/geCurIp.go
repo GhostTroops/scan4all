@@ -18,6 +18,45 @@ import (
 
 var skpMac = regexp.MustCompile(`docker|lo|utun|gif|stf|awd`)
 
+// 获取本机互联网ip
+func GetActivePlublicIp() (string, string) {
+	var szIp = GetPublicIp()
+	ifc, err := net.Interfaces()
+	if err != nil {
+		fmt.Println(err)
+		return "", ""
+	}
+	for _, i := range ifc {
+		if 0 < len(skpMac.FindAllString(i.Name, -1)) {
+			continue
+		}
+
+		if i.Flags&net.FlagUp == 0 || i.Flags&net.FlagLoopback != 0 {
+			continue
+		}
+
+		addrs, _ := i.Addrs()
+		bHb := false
+		for _, addr := range addrs {
+			if bHb {
+				break
+			}
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+				if ip.IsPrivate() || 20 < len(ip.String()) {
+					continue
+				}
+				if szIp == ip.String() {
+					return szIp, i.Name
+				}
+			}
+		}
+	}
+	return "", ""
+}
+
 // 获取当前 mac 地址 hex 格式，可以作为 51pwn.com 的前缀
 func GetActiveMac() string {
 	ifc, err := net.Interfaces()
@@ -187,6 +226,8 @@ func GetFromIplocation() *map[string]interface{} {
 	return &m1
 }
 
+var hd1 = map[string]string{"User-Agent": "Mozilla/5.0 (Windows NT 6.1; rv:45.0) Gecko/20100101 Firefox/45.0", "Accept": "*/*"}
+
 // 当前ip,自动跳过socks proxy
 // X-Limit: current_qps=1; limit_qps=50; current_pv=10197; limit_pv=1000000
 func GetIp() *map[string]interface{} {
@@ -215,7 +256,7 @@ func GetIp() *map[string]interface{} {
 			}
 		}
 	}, func() map[string]string {
-		return map[string]string{"User-Agent": "Mozilla/5.0 (Windows NT 6.1; rv:45.0) Gecko/20100101 Firefox/45.0", "Accept": "*/*"}
+		return hd1
 	}, false)
 	if m2, ok := m1["result"]; ok {
 		m1 = m2.(map[string]interface{})
@@ -233,7 +274,25 @@ func GetIp() *map[string]interface{} {
 			m1 = *GetFromIplocation()
 		}
 	}
+	if 0 == len(m1) {
+		m1["location"] = GetLocation()
+	}
 	PubIp = &m1
 	PutAny[map[string]interface{}](szIp, m1)
 	return PubIp
+}
+
+// https://www.ipplus360.com/getLocation
+func GetLocation() string {
+	s1 := ""
+	DoUrlCbk("https://www.ipplus360.com/getLocation", "", hd1, func(r *http.Response, szUrl string) {
+		defer r.Body.Close()
+		if data, err := io.ReadAll(r.Body); nil == err {
+			var m1 = map[string]interface{}{}
+			if nil == Json.Unmarshal(data, &m1) {
+				s1 = GetJQ2Str(m1, "data")
+			}
+		}
+	})
+	return s1
 }

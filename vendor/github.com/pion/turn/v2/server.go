@@ -186,6 +186,7 @@ func (s *Server) readLoop(p net.PacketConn, allocationManager *allocation.Manage
 			return
 		case n >= s.inboundMTU:
 			s.log.Debugf("Read bytes exceeded MTU, packet is possibly truncated")
+			continue
 		}
 
 		if err := server.HandleRequest(server.Request{

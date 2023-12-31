@@ -56,7 +56,7 @@ func flight3Parse(ctx context.Context, c flightConn, state *State, cache *handsh
 				if !found {
 					return 0, &alert.Alert{Level: alert.Fatal, Description: alert.IllegalParameter}, errClientNoMatchingSRTPProfile
 				}
-				state.srtpProtectionProfile = profile
+				state.setSRTPProtectionProfile(profile)
 			case *extension.UseExtendedMasterSecret:
 				if cfg.extendedMasterSecret != DisableExtendedMasterSecret {
 					state.extendedMasterSecret = true
@@ -71,7 +71,7 @@ func flight3Parse(ctx context.Context, c flightConn, state *State, cache *handsh
 		if cfg.extendedMasterSecret == RequireExtendedMasterSecret && !state.extendedMasterSecret {
 			return 0, &alert.Alert{Level: alert.Fatal, Description: alert.InsufficientSecurity}, errClientRequiredButNoServerEMS
 		}
-		if len(cfg.localSRTPProtectionProfiles) > 0 && state.srtpProtectionProfile == 0 {
+		if len(cfg.localSRTPProtectionProfiles) > 0 && state.getSRTPProtectionProfile() == 0 {
 			return 0, &alert.Alert{Level: alert.Fatal, Description: alert.InsufficientSecurity}, errRequestedButNoSRTPExtension
 		}
 

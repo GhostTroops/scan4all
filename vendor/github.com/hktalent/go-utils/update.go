@@ -11,7 +11,23 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"time"
 )
+
+func GetDate(arg ...string) string {
+	var currentTime = time.Now()
+	if 1 < len(arg) {
+		t1, err1 := time.Parse(arg[0], arg[1])
+		if nil == err1 {
+			currentTime = t1
+		}
+	}
+	l, err := time.LoadLocation("Asia/Shanghai")
+	if nil == err {
+		currentTime = time.Now().In(l)
+	}
+	return currentTime.Format("2006-01-02 15:04:05")
+}
 
 // 更新到最新版本
 func UpdateScan4allVersionToLatest(verbose bool, u, t, dir string) error {

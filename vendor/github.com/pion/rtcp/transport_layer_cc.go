@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package rtcp
 
 // Author: adwpc
@@ -520,10 +523,10 @@ func (t *TransportLayerCC) Unmarshal(rawPacket []byte) error { //nolint:gocognit
 
 	recvDeltasPos := packetStatusPos
 	for _, delta := range t.RecvDeltas {
-		if recvDeltasPos >= totalLength {
-			return errPacketTooShort
-		}
 		if delta.Type == TypeTCCPacketReceivedSmallDelta {
+			if recvDeltasPos+1 > totalLength {
+				return errPacketTooShort
+			}
 			err := delta.Unmarshal(rawPacket[recvDeltasPos : recvDeltasPos+1])
 			if err != nil {
 				return err
@@ -531,6 +534,9 @@ func (t *TransportLayerCC) Unmarshal(rawPacket []byte) error { //nolint:gocognit
 			recvDeltasPos++
 		}
 		if delta.Type == TypeTCCPacketReceivedLargeDelta {
+			if recvDeltasPos+2 > totalLength {
+				return errPacketTooShort
+			}
 			err := delta.Unmarshal(rawPacket[recvDeltasPos : recvDeltasPos+2])
 			if err != nil {
 				return err

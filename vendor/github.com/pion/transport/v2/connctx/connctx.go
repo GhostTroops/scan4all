@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: MIT
 
 // Package connctx wraps net.Conn using context.Context.
+//
+// Deprecated: use netctx instead.
 package connctx
 
 import (

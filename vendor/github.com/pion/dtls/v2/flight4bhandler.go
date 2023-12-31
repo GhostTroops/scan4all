@@ -59,9 +59,9 @@ func flight4bGenerate(_ flightConn, state *State, cache *handshakeCache, cfg *ha
 			Supported: true,
 		})
 	}
-	if state.srtpProtectionProfile != 0 {
+	if state.getSRTPProtectionProfile() != 0 {
 		extensions = append(extensions, &extension.UseSRTP{
-			ProtectionProfiles: []SRTPProtectionProfile{state.srtpProtectionProfile},
+			ProtectionProfiles: []SRTPProtectionProfile{state.getSRTPProtectionProfile()},
 		})
 	}
 

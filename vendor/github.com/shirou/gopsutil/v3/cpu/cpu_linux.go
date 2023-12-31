@@ -259,8 +259,7 @@ func InfoWithContext(ctx context.Context) ([]InfoStat, error) {
 			}
 		case "Model Name", "model name", "cpu":
 			c.ModelName = value
-			if strings.Contains(value, "POWER8") ||
-				strings.Contains(value, "POWER7") {
+			if strings.Contains(value, "POWER") {
 				c.Model = strings.Split(value, " ")[0]
 				c.Family = "POWER"
 				c.VendorID = "IBM"
@@ -310,7 +309,7 @@ func InfoWithContext(ctx context.Context) ([]InfoStat, error) {
 func parseStatLine(line string) (*TimesStat, error) {
 	fields := strings.Fields(line)
 
-	if len(fields) == 0 {
+	if len(fields) < 8 {
 		return nil, errors.New("stat does not contain cpu info")
 	}
 

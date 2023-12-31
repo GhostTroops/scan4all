@@ -7,6 +7,7 @@ Adrian Cable <adrian.cable@gmail.com>
 Atsushi Watanabe <atsushi.w@ieee.org>
 backkem <mail@backkem.me>
 cnderrauber <zengjie9004@gmail.com>
+Daniel Mangum <georgedanielmangum@gmail.com>
 Hugo Arregui <hugo.arregui@gmail.com>
 Jeremiah Millay <jmillay@fastly.com>
 Jozef Kralik <jojo.lwin@gmail.com>

@@ -2,11 +2,31 @@ package go_utils
 
 import (
 	"net/http"
+	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 )
 
 var mHttp = regexp.MustCompile(`(http[s]?:\/\/[^; $]+)`)
+
+// 调用浏览器 打开url
+func OpenUrl4Browser(s string) {
+	var cmd *exec.Cmd
+	// macOS
+	if runtime.GOOS == "darwin" {
+		cmd = exec.Command("open", s)
+		//cmd = exec.Command("open", "-a", "Safari", s)
+	}
+	// Windows
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", s)
+		//cmd = exec.Command("start", "chrome", s)
+	}
+	if nil != cmd {
+		go cmd.Run()
+	}
+}
 
 // 获取http 响应头信息，并跟踪进入location跳转
 //
@@ -16,6 +36,7 @@ func GetUrlInfoWithRm(u, rmHds string) http.Header {
 	PipE.ErrCount = 0
 	PipE.ErrLimit = 10000
 	c1 := PipE.GetClient4Http2()
+	PipE.UseHttp2 = true
 	c1.CheckRedirect = nil
 	PipE.DoGetWithClient4SetHd(c1, u, "GET", nil, func(resp *http.Response, err error, szU string) {
 		if nil == err {

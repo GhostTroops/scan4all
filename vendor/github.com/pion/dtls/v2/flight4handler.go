@@ -228,9 +228,9 @@ func flight4Generate(_ flightConn, state *State, _ *handshakeCache, cfg *handsha
 			Supported: true,
 		})
 	}
-	if state.srtpProtectionProfile != 0 {
+	if state.getSRTPProtectionProfile() != 0 {
 		extensions = append(extensions, &extension.UseSRTP{
-			ProtectionProfiles: []SRTPProtectionProfile{state.srtpProtectionProfile},
+			ProtectionProfiles: []SRTPProtectionProfile{state.getSRTPProtectionProfile()},
 		})
 	}
 	if state.cipherSuite.AuthenticationType() == CipherSuiteAuthenticationTypeCertificate {

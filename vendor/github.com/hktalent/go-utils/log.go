@@ -12,6 +12,14 @@ var NoColor bool
 // out filename
 var Output = ""
 
+func CheckErr(err error, a ...any) {
+	if err != nil {
+		a1 := []any{a[0], err}
+		a1 = append(a1, a[1:]...)
+		log.Println(a1...)
+	}
+}
+
 //// 调用方法名作为插件名
 //func GetPluginName(defaultVal string) string {
 //	pc, _, _, ok := runtime.Caller(1)

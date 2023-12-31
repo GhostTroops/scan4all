@@ -9,7 +9,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -474,7 +473,11 @@ func IOCountersWithContext(ctx context.Context, names ...string) (map[string]IOC
 		}
 		d.Name = name
 
-		d.SerialNumber, _ = SerialNumberWithContext(ctx, name)
+		// Names passed in can be full paths (/dev/sda) or just device names (sda).
+		// Since `name` here is already a basename, re-add the /dev path.
+		// This is not ideal, but we may break the API by changing how SerialNumberWithContext
+		// works.
+		d.SerialNumber, _ = SerialNumberWithContext(ctx, common.HostDevWithContext(ctx, name))
 		d.Label, _ = LabelWithContext(ctx, name)
 
 		ret[name] = d
@@ -493,7 +496,7 @@ func SerialNumberWithContext(ctx context.Context, name string) (string, error) {
 
 	// Try to get the serial from udev data
 	udevDataPath := common.HostRunWithContext(ctx, fmt.Sprintf("udev/data/b%d:%d", major, minor))
-	if udevdata, err := ioutil.ReadFile(udevDataPath); err == nil {
+	if udevdata, err := os.ReadFile(udevDataPath); err == nil {
 		scanner := bufio.NewScanner(bytes.NewReader(udevdata))
 		for scanner.Scan() {
 			values := strings.Split(scanner.Text(), "=")
@@ -506,8 +509,8 @@ func SerialNumberWithContext(ctx context.Context, name string) (string, error) {
 	// Try to get the serial from sysfs, look at the disk device (minor 0) directly
 	// because if it is a partition it is not going to contain any device information
 	devicePath := common.HostSysWithContext(ctx, fmt.Sprintf("dev/block/%d:0/device", major))
-	model, _ := ioutil.ReadFile(filepath.Join(devicePath, "model"))
-	serial, _ := ioutil.ReadFile(filepath.Join(devicePath, "serial"))
+	model, _ := os.ReadFile(filepath.Join(devicePath, "model"))
+	serial, _ := os.ReadFile(filepath.Join(devicePath, "serial"))
 	if len(model) > 0 && len(serial) > 0 {
 		return fmt.Sprintf("%s_%s", string(model), string(serial)), nil
 	}
@@ -522,7 +525,7 @@ func LabelWithContext(ctx context.Context, name string) (string, error) {
 		return "", nil
 	}
 
-	dmname, err := ioutil.ReadFile(dmname_filename)
+	dmname, err := os.ReadFile(dmname_filename)
 	if err != nil {
 		return "", err
 	}

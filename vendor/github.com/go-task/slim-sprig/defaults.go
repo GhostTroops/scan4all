@@ -1,17 +1,9 @@
 package sprig
 
 import (
-	"bytes"
 	"encoding/json"
-	"math/rand"
 	"reflect"
-	"strings"
-	"time"
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 // dfault checks whether `given` is set, and returns default if not set.
 //
@@ -45,7 +37,7 @@ func empty(given interface{}) bool {
 	case reflect.Array, reflect.Slice, reflect.Map, reflect.String:
 		return g.Len() == 0
 	case reflect.Bool:
-		return !g.Bool()
+		return g.Bool() == false
 	case reflect.Complex64, reflect.Complex128:
 		return g.Complex() == 0
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -69,88 +61,16 @@ func coalesce(v ...interface{}) interface{} {
 	return nil
 }
 
-// all returns true if empty(x) is false for all values x in the list.
-// If the list is empty, return true.
-func all(v ...interface{}) bool {
-	for _, val := range v {
-		if empty(val) {
-			return false
-		}
-	}
-	return true
-}
-
-// any returns true if empty(x) is false for any x in the list.
-// If the list is empty, return false.
-func any(v ...interface{}) bool {
-	for _, val := range v {
-		if !empty(val) {
-			return true
-		}
-	}
-	return false
-}
-
-// fromJson decodes JSON into a structured value, ignoring errors.
-func fromJson(v string) interface{} {
-	output, _ := mustFromJson(v)
-	return output
-}
-
-// mustFromJson decodes JSON into a structured value, returning errors.
-func mustFromJson(v string) (interface{}, error) {
-	var output interface{}
-	err := json.Unmarshal([]byte(v), &output)
-	return output, err
-}
-
 // toJson encodes an item into a JSON string
 func toJson(v interface{}) string {
 	output, _ := json.Marshal(v)
 	return string(output)
 }
 
-func mustToJson(v interface{}) (string, error) {
-	output, err := json.Marshal(v)
-	if err != nil {
-		return "", err
-	}
-	return string(output), nil
-}
-
 // toPrettyJson encodes an item into a pretty (indented) JSON string
 func toPrettyJson(v interface{}) string {
 	output, _ := json.MarshalIndent(v, "", "  ")
 	return string(output)
-}
-
-func mustToPrettyJson(v interface{}) (string, error) {
-	output, err := json.MarshalIndent(v, "", "  ")
-	if err != nil {
-		return "", err
-	}
-	return string(output), nil
-}
-
-// toRawJson encodes an item into a JSON string with no escaping of HTML characters.
-func toRawJson(v interface{}) string {
-	output, err := mustToRawJson(v)
-	if err != nil {
-		panic(err)
-	}
-	return string(output)
-}
-
-// mustToRawJson encodes an item into a JSON string with no escaping of HTML characters.
-func mustToRawJson(v interface{}) (string, error) {
-	buf := new(bytes.Buffer)
-	enc := json.NewEncoder(buf)
-	enc.SetEscapeHTML(false)
-	err := enc.Encode(&v)
-	if err != nil {
-		return "", err
-	}
-	return strings.TrimSuffix(buf.String(), "\n"), nil
 }
 
 // ternary returns the first value if the last value is true, otherwise returns the second value.

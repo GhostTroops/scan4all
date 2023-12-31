@@ -67,6 +67,7 @@ earle <aguilar@dm.ai>
 Egon Elbre <egonelbre@gmail.com>
 Eric Daniels <eric@erdaniels.com>
 Eric Fontaine <ericfontainejazz@gmail.com>
+Evan Sonderegger <evan@rpy.xyz>
 feixiao <feixiao2020@sina.com>
 Forest Johnson <forest.n.johnson@gmail.com>
 frank <frank@huzhedeMacBook-Pro.local>
@@ -76,6 +77,8 @@ Gareth Hayes <gareth.hayes@gmail.com>
 Guilherme <gqgs@protonmail.com>
 Guillaume Denis <gdenispro@gmail.com>
 Hanjun Kim <hallazzang@gmail.com>
+Hans Gylling <hans.gylling@axis.com>
+Hao <shell0fly@gmail.com>
 Hendrik Hofstadt <hendrik@nexantic.com>
 Henry <cryptix@riseup.net>
 Hongchao Ma <hongchao.ma@synaptop.com>
@@ -173,6 +176,7 @@ ronan <ronan.jezequel@gmail.com>
 Ryan Shumate <Ryan.Shumate@garmin.com>
 salmān aljammāz <s@aljmz.com>
 Sam Lancia <sam@vaion.com>
+Sean <sean@pion.ly>
 Sean DuBois <duboisea@justin.tv>
 Sean DuBois <duboisea@twitch.tv>
 Sean DuBois <seaduboi@amazon.com>
@@ -216,6 +220,7 @@ Yuki Igarashi <me@bonprosoft.com>
 yusuke <yusuke.m99@gmail.com>
 Yutaka Takeda <yt0916@gmail.com>
 ZHENK <chengzhenyang@gmail.com>
+zhngs <zhangshuo19991204@163.com>
 zigazeljko <ziga.zeljko@gmail.com>
 Štefan Uram <SterverSVK@users.noreply.github.com>
 박종훈 <jonghun.park.194@gmail.com>

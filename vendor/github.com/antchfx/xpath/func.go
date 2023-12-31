@@ -614,3 +614,34 @@ func reverseFunc(q query, t iterator) func() NodeNavigator {
 		return node
 	}
 }
+
+// string-join is a XPath Node Set functions string-join(node-set, separator).
+func stringJoinFunc(arg1 query) func(query, iterator) interface{} {
+	return func(q query, t iterator) interface{} {
+		var separator string
+		switch v := functionArgs(arg1).Evaluate(t).(type) {
+		case string:
+			separator = v
+		case query:
+			node := v.Select(t)
+			if node != nil {
+				separator = node.Value()
+			}
+		}
+
+		q = functionArgs(q)
+		test := predicate(q)
+		var parts []string
+		switch v := q.Evaluate(t).(type) {
+		case string:
+			return v
+		case query:
+			for node := v.Select(t); node != nil; node = v.Select(t) {
+				if test(node) {
+					parts = append(parts, node.Value())
+				}
+			}
+		}
+		return strings.Join(parts, separator)
+	}
+}

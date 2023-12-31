@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -91,7 +91,7 @@ func UsersWithContext(ctx context.Context) ([]UserStat, error) {
 	}
 	defer file.Close()
 
-	buf, err := ioutil.ReadAll(file)
+	buf, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
@@ -138,13 +138,13 @@ func getlsbStruct(ctx context.Context) (*lsbStruct, error) {
 			}
 			switch field[0] {
 			case "DISTRIB_ID":
-				ret.ID = field[1]
+				ret.ID = strings.ReplaceAll(field[1], `"`, ``)
 			case "DISTRIB_RELEASE":
-				ret.Release = field[1]
+				ret.Release = strings.ReplaceAll(field[1], `"`, ``)
 			case "DISTRIB_CODENAME":
-				ret.Codename = field[1]
+				ret.Codename = strings.ReplaceAll(field[1], `"`, ``)
 			case "DISTRIB_DESCRIPTION":
-				ret.Description = field[1]
+				ret.Description = strings.ReplaceAll(field[1], `"`, ``)
 			}
 		}
 	} else if common.PathExists("/usr/bin/lsb_release") {
@@ -159,13 +159,13 @@ func getlsbStruct(ctx context.Context) (*lsbStruct, error) {
 			}
 			switch field[0] {
 			case "Distributor ID":
-				ret.ID = field[1]
+				ret.ID = strings.ReplaceAll(field[1], `"`, ``)
 			case "Release":
-				ret.Release = field[1]
+				ret.Release = strings.ReplaceAll(field[1], `"`, ``)
 			case "Codename":
-				ret.Codename = field[1]
+				ret.Codename = strings.ReplaceAll(field[1], `"`, ``)
 			case "Description":
-				ret.Description = field[1]
+				ret.Description = strings.ReplaceAll(field[1], `"`, ``)
 			}
 		}
 
@@ -411,13 +411,13 @@ func SensorsTemperaturesWithContext(ctx context.Context) ([]TemperatureStat, err
 		}
 		for _, file := range files {
 			// Get the name of the temperature you are reading
-			name, err := ioutil.ReadFile(filepath.Join(file, "type"))
+			name, err := os.ReadFile(filepath.Join(file, "type"))
 			if err != nil {
 				warns.Add(err)
 				continue
 			}
 			// Get the temperature reading
-			current, err := ioutil.ReadFile(filepath.Join(file, "temp"))
+			current, err := os.ReadFile(filepath.Join(file, "temp"))
 			if err != nil {
 				warns.Add(err)
 				continue
@@ -461,13 +461,13 @@ func SensorsTemperaturesWithContext(ctx context.Context) ([]TemperatureStat, err
 		// Get the label of the temperature you are reading
 		label := ""
 
-		if raw, _ = ioutil.ReadFile(basepath + "_label"); len(raw) != 0 {
+		if raw, _ = os.ReadFile(basepath + "_label"); len(raw) != 0 {
 			// Format the label from "Core 0" to "core_0"
 			label = strings.Join(strings.Split(strings.TrimSpace(strings.ToLower(string(raw))), " "), "_")
 		}
 
 		// Get the name of the temperature you are reading
-		if raw, err = ioutil.ReadFile(filepath.Join(directory, "name")); err != nil {
+		if raw, err = os.ReadFile(filepath.Join(directory, "name")); err != nil {
 			warns.Add(err)
 			continue
 		}
@@ -479,7 +479,7 @@ func SensorsTemperaturesWithContext(ctx context.Context) ([]TemperatureStat, err
 		}
 
 		// Get the temperature reading
-		if raw, err = ioutil.ReadFile(file); err != nil {
+		if raw, err = os.ReadFile(file); err != nil {
 			warns.Add(err)
 			continue
 		}
@@ -513,7 +513,7 @@ func optionalValueReadFromFile(filename string) float64 {
 		return 0
 	}
 
-	if raw, err = ioutil.ReadFile(filename); err != nil {
+	if raw, err = os.ReadFile(filename); err != nil {
 		return 0
 	}
 

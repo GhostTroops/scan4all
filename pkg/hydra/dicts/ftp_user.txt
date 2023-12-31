@@ -1,4 +1,0 @@
-anonymous
-ftp
-test
-web

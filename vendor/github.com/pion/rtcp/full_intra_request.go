@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package rtcp
 
 import (
@@ -62,6 +65,11 @@ func (p *FullIntraRequest) Unmarshal(rawPacket []byte) error {
 
 	if h.Type != TypePayloadSpecificFeedback || h.Count != FormatFIR {
 		return errWrongType
+	}
+
+	// The FCI field MUST contain one or more FIR entries
+	if 4*h.Length-firOffset <= 0 || (4*h.Length)%8 != 0 {
+		return errBadLength
 	}
 
 	p.SenderSSRC = binary.BigEndian.Uint32(rawPacket[headerLength:])

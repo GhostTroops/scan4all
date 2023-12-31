@@ -1,6 +1,9 @@
 package go_utils
 
-import "log"
+import (
+	"log"
+	"time"
+)
 
 // 记录日志到 大数据搜索引擎
 func SendEsLog(m1 interface{}) {
@@ -47,6 +50,7 @@ func DoRunning() {
 		case <-bDo:
 			DoSaves()
 		}
+		time.Sleep(16 * time.Millisecond)
 	}
 }
 

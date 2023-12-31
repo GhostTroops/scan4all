@@ -1,13 +1,83 @@
 package go_utils
 
 import (
+	"bytes"
+	"encoding/json"
 	"log"
+	"os"
 	"runtime"
 	"strings"
 )
 
 type RegFuncs struct {
 	FuncList []func()
+}
+
+// 并发执行所有func，并等待他们执行完
+func WaitFunc(a ...func()) {
+	var wg = NewSizedWaitGroup(len(a))
+	WaitFunc4Wg(&wg, a...)
+	wg.Wait()
+}
+
+// 并行执行方法，并将使用 wg 计数器
+func WaitFunc4Wg(wg *SizedWaitGroup, a ...func()) {
+	for _, x := range a {
+		wg.Add(1)
+		go func(cbk func()) {
+			defer wg.Done()
+			cbk()
+		}(x)
+	}
+}
+
+// 并行执行方法，并将使用 wg 计数器
+// 同时传入参数parms
+func WaitFunc4WgParms[T any](wg *SizedWaitGroup, parms []T, a ...func(x ...T)) {
+	for _, x := range a {
+		wg.Add(1)
+		go func(cbk func(...T)) {
+			defer wg.Done()
+			cbk(parms...)
+		}(x)
+	}
+}
+
+// map format out
+func OutMap(m *map[string]interface{}) {
+	if data, err := Json.Marshal(m); nil == err {
+		var out bytes.Buffer
+		err = json.Indent(&out, data, "", "  ")
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		out.WriteTo(os.Stdout)
+	}
+}
+func WaitOneFunc4WgParmsChan[T any](wg *SizedWaitGroup, cbk func(x T), cT chan struct{}, parms ...T) {
+	for _, x := range parms {
+		cT <- struct{}{}
+		wg.Add(1)
+		go func(p1 T) {
+			defer func() {
+				wg.Done()
+				<-cT
+			}()
+			cbk(p1)
+		}(x)
+	}
+}
+
+// 迭代所有的参数
+func WaitOneFunc4WgParms[T any](wg *SizedWaitGroup, cbk func(x T), parms ...T) {
+	for _, x := range parms {
+		wg.Add(1)
+		go func(p1 T) {
+			defer wg.Done()
+			cbk(p1)
+		}(x)
+	}
 }
 
 // 注册

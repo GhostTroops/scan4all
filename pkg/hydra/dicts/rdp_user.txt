@@ -1,3 +1,0 @@
-administrator
-admin
-test

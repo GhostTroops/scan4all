@@ -60,7 +60,7 @@ func flight0Parse(_ context.Context, _ flightConn, state *State, cache *handshak
 			if !ok {
 				return 0, &alert.Alert{Level: alert.Fatal, Description: alert.InsufficientSecurity}, errServerNoMatchingSRTPProfile
 			}
-			state.srtpProtectionProfile = profile
+			state.setSRTPProtectionProfile(profile)
 		case *extension.UseExtendedMasterSecret:
 			if cfg.extendedMasterSecret != DisableExtendedMasterSecret {
 				state.extendedMasterSecret = true

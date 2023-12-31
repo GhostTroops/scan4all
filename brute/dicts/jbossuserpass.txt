@@ -1,4 +1,0 @@
-jboss,jboss
-admin,admin
-jboss,123456
-admin,123456

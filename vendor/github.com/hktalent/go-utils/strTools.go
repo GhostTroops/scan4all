@@ -1,8 +1,13 @@
 package go_utils
 
 import (
+	"bytes"
+	"crypto/md5"
+	"encoding/base64"
 	"fmt"
+	"github.com/andybalholm/brotli"
 	"hash/fnv"
+	"io"
 	"math/rand"
 	"strings"
 	"time"
@@ -14,6 +19,61 @@ var seededRand *rand.Rand = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 func RandondStr(length int) string {
 	return StringWithCharset(length, "qwertyuiop[]\\asdfghjkl;'zxcvbnm,./`1234567890-=~!@#$%^&*()_QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>")
+}
+
+func GetMd5(data []byte) string {
+	// 创建一个新的 MD5 哈希器
+	h := md5.New()
+	h.Write(data)
+	sum := h.Sum(nil)
+	return fmt.Sprintf("%x", sum)
+}
+
+/*
+使用 UnBrotli 解码
+*/
+func BrotliBase64(data []byte) string {
+	var buf bytes.Buffer
+	w := brotli.NewWriter(&buf)
+	// Check for errors when writing to the brotli writer
+	if _, err := w.Write(data); err != nil {
+		return ""
+	}
+
+	// Check for errors when flushing the brotli writer
+	if err := w.Flush(); err != nil {
+		return ""
+	}
+
+	// Close the brotli writer to free up resources
+	if err := w.Close(); err != nil {
+		return ""
+	}
+	return base64.StdEncoding.EncodeToString(buf.Bytes())
+}
+
+func B64_Brotli2Str(s string) string {
+	if o := UnBrotli(s); nil != o {
+		return string(o)
+	}
+	return ""
+}
+
+/*
+使用 BrotliBase64 编码
+*/
+func UnBrotli(s string) []byte {
+	if data, err := base64.StdEncoding.DecodeString(s); nil == err {
+		reader := brotli.NewReader(bytes.NewReader(data))
+		// 解压缩字符串
+		decompressStr, err := io.ReadAll(reader)
+		if err == nil {
+			return decompressStr
+		}
+		// 打印解压缩后的字符串
+		//fmt.Println(string(decompressStr))
+	}
+	return nil
 }
 
 func StringWithCharset(length int, charset string) string {
@@ -118,6 +178,16 @@ func TransInt64ToN(id int64, szTemplate string) string {
 		}
 	}
 	return string(shortUrl)
+}
+
+func Join2Str(a [][]string) string {
+	var a1 []string
+	for _, x := range a {
+		for _, j := range x {
+			a1 = append(a1, j)
+		}
+	}
+	return strings.Join(a1, "")
 }
 
 // N 进制逆向计算

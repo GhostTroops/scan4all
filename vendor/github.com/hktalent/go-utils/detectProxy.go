@@ -170,9 +170,9 @@ func DetectProxy(szIp, szPort string) bool {
 	go func() {
 		for {
 			select {
-			case bOk := <-bOk:
+			case bOk1 := <-bOk:
 				n--
-				if bOk {
+				if bOk1 {
 					bRst = true
 					cancel()
 					return
@@ -182,6 +182,7 @@ func DetectProxy(szIp, szPort string) bool {
 					return
 				}
 			}
+			time.Sleep(16 * time.Millisecond)
 		}
 	}()
 	for _, x := range aX {

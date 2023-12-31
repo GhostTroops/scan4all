@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package rtcp
 
 import (
@@ -121,11 +124,7 @@ func (c *CompoundPacket) Unmarshal(rawData []byte) error {
 	}
 	*c = out
 
-	if err := c.Validate(); err != nil {
-		return err
-	}
-
-	return nil
+	return c.Validate()
 }
 
 // DestinationSSRC returns the synchronization sources associated with this

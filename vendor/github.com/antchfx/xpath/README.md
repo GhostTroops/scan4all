@@ -49,7 +49,7 @@ Supported Features
 
 - `a/b` : For each node matching a, add the nodes matching b to the result.
 
-- `a//b` : For each node matching a, add the descendant nodes matching b to the result. 
+- `a//b` : For each node matching a, add the descendant nodes matching b to the result.
 
 - `//b` : Returns elements in the entire document matching b.
 
@@ -59,7 +59,7 @@ Supported Features
 
 - `(a/b)` : Selects all matches nodes as grouping set.
 
-#### Node Axes 
+#### Node Axes
 
 - `child::*` : The child axis selects children of the current node.
 
@@ -73,9 +73,9 @@ Supported Features
 
 - `preceding-sibling::*` : Selects nodes before the current node.
 
-- `following::*` : Selects the first matching node following in document order, excluding descendants. 
+- `following::*` : Selects the first matching node following in document order, excluding descendants.
 
-- `preceding::*` : Selects the first matching node preceding in document order, excluding ancestors. 
+- `preceding::*` : Selects the first matching node preceding in document order, excluding ancestors.
 
 - `parent::*` : Selects the parent if it matches. The '..' pattern from the core is equivalent to 'parent::node()'.
 
@@ -151,6 +151,7 @@ Supported Features
 `round()`| ✓ |
 `starts-with()`| ✓ |
 `string()`| ✓ |
+`string-join()`[^1]| ✓ |
 `string-length()`| ✓ |
 `substring()`| ✓ |
 `substring-after()`| ✓ |
@@ -160,3 +161,5 @@ Supported Features
 `translate()`| ✓ |
 `true()`| ✓ |
 `unparsed-entity-url()` | ✗ |
+
+[^1]: XPath-2.0 expression

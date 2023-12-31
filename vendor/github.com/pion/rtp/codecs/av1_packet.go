@@ -4,7 +4,7 @@
 package codecs
 
 import (
-	"github.com/pion/rtp/pkg/obu"
+	"github.com/pion/rtp/codecs/av1/obu"
 )
 
 const (

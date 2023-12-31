@@ -11,7 +11,7 @@ release:
   # Default is extracted from the origin remote URL or empty if its private hosted.
   github:
     owner: hktalent
-    name: scan4all_Pro
+    name: scan4all
 
   draft: false
   replace_existing_draft: true

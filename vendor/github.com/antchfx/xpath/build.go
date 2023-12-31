@@ -218,6 +218,12 @@ func (b *builder) processFunctionNode(root *functionNode) (query, error) {
 		if arg2, err = b.processNode(root.Args[1]); err != nil {
 			return nil, err
 		}
+		// Issue #92, testing the regular expression before.
+		if q, ok := arg2.(*constantQuery); ok {
+			if _, err = getRegexp(q.Val.(string)); err != nil {
+				return nil, fmt.Errorf("matches() got error. %v", err)
+			}
+		}
 		qyOutput = &functionQuery{Input: b.firstInput, Func: matchesFunc(arg1, arg2)}
 	case "substring":
 		//substring( string , start [, length] )
@@ -450,6 +456,19 @@ func (b *builder) processFunctionNode(root *functionNode) (query, error) {
 			return nil, err
 		}
 		qyOutput = &transformFunctionQuery{Input: argQuery, Func: reverseFunc}
+	case "string-join":
+		if len(root.Args) != 2 {
+			return nil, fmt.Errorf("xpath: string-join(node-sets, separator) function requires node-set and argument")
+		}
+		argQuery, err := b.processNode(root.Args[0])
+		if err != nil {
+			return nil, err
+		}
+		arg1, err := b.processNode(root.Args[1])
+		if err != nil {
+			return nil, err
+		}
+		qyOutput = &functionQuery{Input: argQuery, Func: stringJoinFunc(arg1)}
 	default:
 		return nil, fmt.Errorf("not yet support this function %s()", root.FuncName)
 	}

@@ -47,6 +47,31 @@ func (m Migrator) FullDataTypeOf(field *schema.Field) clause.Expr {
 	return expr
 }
 
+func (m Migrator) AddColumn(value interface{}, name string) error {
+	return m.RunWithValue(value, func(stmt *gorm.Statement) error {
+		// avoid using the same name field
+		f := stmt.Schema.LookUpField(name)
+		if f == nil {
+			return fmt.Errorf("failed to look up field with name: %s", name)
+		}
+
+		if !f.IgnoreMigration {
+			fieldType := m.FullDataTypeOf(f)
+			columnName := clause.Column{Name: f.DBName}
+			values := []interface{}{m.CurrentTable(stmt), columnName, fieldType}
+			var alterSql strings.Builder
+			alterSql.WriteString("ALTER TABLE ? ADD ? ?")
+			if f.PrimaryKey || strings.Contains(strings.ToLower(fieldType.SQL), "auto_increment") {
+				alterSql.WriteString(", ADD PRIMARY KEY (?)")
+				values = append(values, columnName)
+			}
+			return m.DB.Exec(alterSql.String(), values...).Error
+		}
+
+		return nil
+	})
+}
+
 func (m Migrator) AlterColumn(value interface{}, field string) error {
 	return m.RunWithValue(value, func(stmt *gorm.Statement) error {
 		if stmt.Schema != nil {

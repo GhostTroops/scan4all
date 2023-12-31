@@ -3,18 +3,18 @@ package sprig
 import (
 	"errors"
 	"html/template"
-	"math/rand"
 	"os"
 	"path"
-	"path/filepath"
-	"reflect"
 	"strconv"
 	"strings"
 	ttemplate "text/template"
 	"time"
+
+	util "github.com/Masterminds/goutils"
+	"github.com/huandu/xstrings"
 )
 
-// FuncMap produces the function map.
+// Produce the function map.
 //
 // Use this to pass the functions into the template engine:
 //
@@ -62,7 +62,7 @@ func GenericFuncMap() map[string]interface{} {
 }
 
 // These functions are not guaranteed to evaluate to the same result for given input, because they
-// refer to the environment or global state.
+// refer to the environemnt or global state.
 var nonhermeticFunctions = []string{
 	// Date functions
 	"date",
@@ -79,76 +79,81 @@ var nonhermeticFunctions = []string{
 	"randAlpha",
 	"randAscii",
 	"randNumeric",
-	"randBytes",
 	"uuidv4",
 
 	// OS
 	"env",
 	"expandenv",
-
-	// Network
-	"getHostByName",
 }
 
 var genericMap = map[string]interface{}{
 	"hello": func() string { return "Hello!" },
 
 	// Date functions
-	"ago":              dateAgo,
-	"date":             date,
-	"date_in_zone":     dateInZone,
-	"date_modify":      dateModify,
-	"dateInZone":       dateInZone,
-	"dateModify":       dateModify,
-	"duration":         duration,
-	"durationRound":    durationRound,
-	"htmlDate":         htmlDate,
-	"htmlDateInZone":   htmlDateInZone,
-	"must_date_modify": mustDateModify,
-	"mustDateModify":   mustDateModify,
-	"mustToDate":       mustToDate,
-	"now":              time.Now,
-	"toDate":           toDate,
-	"unixEpoch":        unixEpoch,
+	"date":           date,
+	"date_in_zone":   dateInZone,
+	"date_modify":    dateModify,
+	"now":            func() time.Time { return time.Now() },
+	"htmlDate":       htmlDate,
+	"htmlDateInZone": htmlDateInZone,
+	"dateInZone":     dateInZone,
+	"dateModify":     dateModify,
+	"ago":            dateAgo,
+	"toDate":         toDate,
+	"unixEpoch":      unixEpoch,
 
 	// Strings
-	"trunc":  trunc,
-	"trim":   strings.TrimSpace,
-	"upper":  strings.ToUpper,
-	"lower":  strings.ToLower,
-	"title":  strings.Title,
-	"substr": substring,
+	"abbrev":     abbrev,
+	"abbrevboth": abbrevboth,
+	"trunc":      trunc,
+	"trim":       strings.TrimSpace,
+	"upper":      strings.ToUpper,
+	"lower":      strings.ToLower,
+	"title":      strings.Title,
+	"untitle":    untitle,
+	"substr":     substring,
 	// Switch order so that "foo" | repeat 5
 	"repeat": func(count int, str string) string { return strings.Repeat(str, count) },
 	// Deprecated: Use trimAll.
 	"trimall": func(a, b string) string { return strings.Trim(b, a) },
 	// Switch order so that "$foo" | trimall "$"
-	"trimAll":    func(a, b string) string { return strings.Trim(b, a) },
-	"trimSuffix": func(a, b string) string { return strings.TrimSuffix(b, a) },
-	"trimPrefix": func(a, b string) string { return strings.TrimPrefix(b, a) },
+	"trimAll":      func(a, b string) string { return strings.Trim(b, a) },
+	"trimSuffix":   func(a, b string) string { return strings.TrimSuffix(b, a) },
+	"trimPrefix":   func(a, b string) string { return strings.TrimPrefix(b, a) },
+	"nospace":      util.DeleteWhiteSpace,
+	"initials":     initials,
+	"randAlphaNum": randAlphaNumeric,
+	"randAlpha":    randAlpha,
+	"randAscii":    randAscii,
+	"randNumeric":  randNumeric,
+	"swapcase":     util.SwapCase,
+	"shuffle":      xstrings.Shuffle,
+	"snakecase":    xstrings.ToSnakeCase,
+	"camelcase":    xstrings.ToCamelCase,
+	"kebabcase":    xstrings.ToKebabCase,
+	"wrap":         func(l int, s string) string { return util.Wrap(s, l) },
+	"wrapWith":     func(l int, sep, str string) string { return util.WrapCustom(str, l, sep, true) },
 	// Switch order so that "foobar" | contains "foo"
-	"contains":   func(substr string, str string) bool { return strings.Contains(str, substr) },
-	"hasPrefix":  func(substr string, str string) bool { return strings.HasPrefix(str, substr) },
-	"hasSuffix":  func(substr string, str string) bool { return strings.HasSuffix(str, substr) },
-	"quote":      quote,
-	"squote":     squote,
-	"cat":        cat,
-	"indent":     indent,
-	"nindent":    nindent,
-	"replace":    replace,
-	"plural":     plural,
-	"sha1sum":    sha1sum,
-	"sha256sum":  sha256sum,
+	"contains":  func(substr string, str string) bool { return strings.Contains(str, substr) },
+	"hasPrefix": func(substr string, str string) bool { return strings.HasPrefix(str, substr) },
+	"hasSuffix": func(substr string, str string) bool { return strings.HasSuffix(str, substr) },
+	"quote":     quote,
+	"squote":    squote,
+	"cat":       cat,
+	"indent":    indent,
+	"nindent":   nindent,
+	"replace":   replace,
+	"plural":    plural,
+	"sha1sum":   sha1sum,
+	"sha256sum": sha256sum,
 	"adler32sum": adler32sum,
-	"toString":   strval,
+	"toString":  strval,
 
 	// Wrap Atoi to stop errors.
-	"atoi":      func(a string) int { i, _ := strconv.Atoi(a); return i },
-	"int64":     toInt64,
-	"int":       toInt,
-	"float64":   toFloat64,
-	"seq":       seq,
-	"toDecimal": toDecimal,
+	"atoi":    func(a string) int { i, _ := strconv.Atoi(a); return i },
+	"int64":   toInt64,
+	"int":     toInt,
+	"float64": toFloat64,
 
 	//"gt": func(a, b int) bool {return a > b},
 	//"gte": func(a, b int) bool {return a >= b},
@@ -184,12 +189,9 @@ var genericMap = map[string]interface{}{
 		}
 		return val
 	},
-	"randInt": func(min, max int) int { return rand.Intn(max-min) + min },
 	"biggest": max,
 	"max":     max,
 	"min":     min,
-	"maxf":    maxf,
-	"minf":    minf,
 	"ceil":    ceil,
 	"floor":   floor,
 	"round":   round,
@@ -200,22 +202,13 @@ var genericMap = map[string]interface{}{
 	"sortAlpha": sortAlpha,
 
 	// Defaults
-	"default":          dfault,
-	"empty":            empty,
-	"coalesce":         coalesce,
-	"all":              all,
-	"any":              any,
-	"compact":          compact,
-	"mustCompact":      mustCompact,
-	"fromJson":         fromJson,
-	"toJson":           toJson,
-	"toPrettyJson":     toPrettyJson,
-	"toRawJson":        toRawJson,
-	"mustFromJson":     mustFromJson,
-	"mustToJson":       mustToJson,
-	"mustToPrettyJson": mustToPrettyJson,
-	"mustToRawJson":    mustToRawJson,
-	"ternary":          ternary,
+	"default":      dfault,
+	"empty":        empty,
+	"coalesce":     coalesce,
+	"compact":      compact,
+	"toJson":       toJson,
+	"toPrettyJson": toPrettyJson,
+	"ternary":      ternary,
 
 	// Reflection
 	"typeOf":     typeOf,
@@ -223,28 +216,17 @@ var genericMap = map[string]interface{}{
 	"typeIsLike": typeIsLike,
 	"kindOf":     kindOf,
 	"kindIs":     kindIs,
-	"deepEqual":  reflect.DeepEqual,
 
 	// OS:
-	"env":       os.Getenv,
-	"expandenv": os.ExpandEnv,
+	"env":       func(s string) string { return os.Getenv(s) },
+	"expandenv": func(s string) string { return os.ExpandEnv(s) },
 
-	// Network:
-	"getHostByName": getHostByName,
-
-	// Paths:
+	// File Paths:
 	"base":  path.Base,
 	"dir":   path.Dir,
 	"clean": path.Clean,
 	"ext":   path.Ext,
 	"isAbs": path.IsAbs,
-
-	// Filepaths:
-	"osBase":  filepath.Base,
-	"osClean": filepath.Clean,
-	"osDir":   filepath.Dir,
-	"osExt":   filepath.Ext,
-	"osIsAbs": filepath.IsAbs,
 
 	// Encoding:
 	"b64enc": base64encode,
@@ -256,7 +238,6 @@ var genericMap = map[string]interface{}{
 	"tuple":  list, // FIXME: with the addition of append/prepend these are no longer immutable.
 	"list":   list,
 	"dict":   dict,
-	"get":    get,
 	"set":    set,
 	"unset":  unset,
 	"hasKey": hasKey,
@@ -264,54 +245,45 @@ var genericMap = map[string]interface{}{
 	"keys":   keys,
 	"pick":   pick,
 	"omit":   omit,
+	"merge":  merge,
+	"mergeOverwrite": mergeOverwrite,
 	"values": values,
 
 	"append": push, "push": push,
-	"mustAppend": mustPush, "mustPush": mustPush,
-	"prepend":     prepend,
-	"mustPrepend": mustPrepend,
-	"first":       first,
-	"mustFirst":   mustFirst,
-	"rest":        rest,
-	"mustRest":    mustRest,
-	"last":        last,
-	"mustLast":    mustLast,
-	"initial":     initial,
-	"mustInitial": mustInitial,
-	"reverse":     reverse,
-	"mustReverse": mustReverse,
-	"uniq":        uniq,
-	"mustUniq":    mustUniq,
-	"without":     without,
-	"mustWithout": mustWithout,
-	"has":         has,
-	"mustHas":     mustHas,
-	"slice":       slice,
-	"mustSlice":   mustSlice,
-	"concat":      concat,
-	"dig":         dig,
-	"chunk":       chunk,
-	"mustChunk":   mustChunk,
+	"prepend": prepend,
+	"first":   first,
+	"rest":    rest,
+	"last":    last,
+	"initial": initial,
+	"reverse": reverse,
+	"uniq":    uniq,
+	"without": without,
+	"has":     has,
+	"slice":   slice,
+
+	// Crypto:
+	"genPrivateKey":     generatePrivateKey,
+	"derivePassword":    derivePassword,
+	"buildCustomCert":   buildCustomCertificate,
+	"genCA":             generateCertificateAuthority,
+	"genSelfSignedCert": generateSelfSignedCertificate,
+	"genSignedCert":     generateSignedCertificate,
+
+	// UUIDs:
+	"uuidv4": uuidv4,
+
+	// SemVer:
+	"semver":        semver,
+	"semverCompare": semverCompare,
 
 	// Flow Control:
 	"fail": func(msg string) (string, error) { return "", errors.New(msg) },
 
 	// Regex
-	"regexMatch":                 regexMatch,
-	"mustRegexMatch":             mustRegexMatch,
-	"regexFindAll":               regexFindAll,
-	"mustRegexFindAll":           mustRegexFindAll,
-	"regexFind":                  regexFind,
-	"mustRegexFind":              mustRegexFind,
-	"regexReplaceAll":            regexReplaceAll,
-	"mustRegexReplaceAll":        mustRegexReplaceAll,
-	"regexReplaceAllLiteral":     regexReplaceAllLiteral,
-	"mustRegexReplaceAllLiteral": mustRegexReplaceAllLiteral,
-	"regexSplit":                 regexSplit,
-	"mustRegexSplit":             mustRegexSplit,
-	"regexQuoteMeta":             regexQuoteMeta,
-
-	// URLs:
-	"urlParse": urlParse,
-	"urlJoin":  urlJoin,
+	"regexMatch":             regexMatch,
+	"regexFindAll":           regexFindAll,
+	"regexFind":              regexFind,
+	"regexReplaceAll":        regexReplaceAll,
+	"regexReplaceAllLiteral": regexReplaceAllLiteral,
+	"regexSplit":             regexSplit,
 }

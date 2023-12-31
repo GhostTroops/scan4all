@@ -1,2 +1,0 @@
-gitleaks detect --source . -v
-

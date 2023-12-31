@@ -66,7 +66,9 @@ func InitDb() *gorm.DB {
 // 获取Gorm db连接、操作对象
 func Init(dbName string, dialector *gorm.Dialector, config *gorm.Config, dst ...interface{}) *gorm.DB {
 	defer func() {
-		GDbUtil.Migrator = dbCC.Migrator()
+		if nil != dbCC {
+			GDbUtil.Migrator = dbCC.Migrator()
+		}
 	}()
 	if nil != dbCC {
 		log.Println("dbCC not is nil, DbName = ", DbName)

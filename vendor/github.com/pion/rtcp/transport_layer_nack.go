@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package rtcp
 
 import (
@@ -130,6 +133,11 @@ func (p *TransportLayerNack) Unmarshal(rawPacket []byte) error {
 
 	if h.Type != TypeTransportSpecificFeedback || h.Count != FormatTLN {
 		return errWrongType
+	}
+
+	// The FCI field MUST contain at least one and MAY contain more than one Generic NACK
+	if 4*h.Length <= nackOffset {
+		return errBadLength
 	}
 
 	p.SenderSSRC = binary.BigEndian.Uint32(rawPacket[headerLength:])

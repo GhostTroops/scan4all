@@ -494,6 +494,10 @@ func (a *Agent) updateConnectionState(newState ConnectionState) {
 	if a.connectionState != newState {
 		// Connection has gone to failed, release all gathered candidates
 		if newState == ConnectionStateFailed {
+			a.removeUfragFromMux()
+			a.checklist = make([]*CandidatePair, 0)
+			a.pendingBindingRequests = make([]bindingRequest, 0)
+			a.setSelectedPair(nil)
 			a.deleteAllCandidates()
 		}
 

@@ -1,4 +1,0 @@
-root
-admin
-test
-dbuser

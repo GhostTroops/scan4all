@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023 The Pion community <https://pion.ly>
+// SPDX-License-Identifier: MIT
+
 package rtcp
 
 // Packet represents an RTCP packet, a protocol used for out-of-band statistics and control information for an RTP session

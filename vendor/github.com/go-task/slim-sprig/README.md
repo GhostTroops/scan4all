@@ -1,32 +1,35 @@
-# Slim-Sprig: Template functions for Go templates [![GoDoc](https://godoc.org/github.com/go-task/slim-sprig?status.svg)](https://godoc.org/github.com/go-task/slim-sprig) [![Go Report Card](https://goreportcard.com/badge/github.com/go-task/slim-sprig)](https://goreportcard.com/report/github.com/go-task/slim-sprig)
+# Sprig: Template functions for Go templates
+[![Stability: Sustained](https://masterminds.github.io/stability/sustained.svg)](https://masterminds.github.io/stability/sustained.html)
+[![Build Status](https://travis-ci.org/Masterminds/sprig.svg?branch=master)](https://travis-ci.org/Masterminds/sprig)
 
-Slim-Sprig is a fork of [Sprig](https://github.com/Masterminds/sprig), but with
-all functions that depend on external (non standard library) or crypto packages
-removed.
-The reason for this is to make this library more lightweight. Most of these
-functions (specially crypto ones) are not needed on most apps, but costs a lot
-in terms of binary size and compilation time.
+The Go language comes with a [built-in template
+language](http://golang.org/pkg/text/template/), but not
+very many template functions. Sprig is a library that provides more than 100 commonly
+used template functions.
+
+It is inspired by the template functions found in
+[Twig](http://twig.sensiolabs.org/documentation) and in various
+JavaScript libraries, such as [underscore.js](http://underscorejs.org/).
 
 ## Usage
 
-**Template developers**: Please use Slim-Sprig's [function documentation](https://go-task.github.io/slim-sprig/) for
+**Template developers**: Please use Sprig's [function documentation](http://masterminds.github.io/sprig/) for
 detailed instructions and code snippets for the >100 template functions available.
 
-**Go developers**: If you'd like to include Slim-Sprig as a library in your program,
-our API documentation is available [at GoDoc.org](http://godoc.org/github.com/go-task/slim-sprig).
+**Go developers**: If you'd like to include Sprig as a library in your program,
+our API documentation is available [at GoDoc.org](http://godoc.org/github.com/Masterminds/sprig).
 
 For standard usage, read on.
 
-### Load the Slim-Sprig library
+### Load the Sprig library
 
-To load the Slim-Sprig `FuncMap`:
+To load the Sprig `FuncMap`:
 
 ```go
 
 import (
+  "github.com/Masterminds/sprig"
   "html/template"
-
-  "github.com/go-task/slim-sprig"
 )
 
 // This example illustrates that the FuncMap *must* be set before the
@@ -34,6 +37,8 @@ import (
 tpl := template.Must(
   template.New("base").Funcs(sprig.FuncMap()).ParseGlob("*.html")
 )
+
+
 ```
 
 ### Calling the functions inside of templates
