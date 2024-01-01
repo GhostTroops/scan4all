@@ -24,7 +24,7 @@
     {
       "x": 2,
       "name": "ksubdomain",
-      "cmd": "ksubdomain e -b 100m -j -stdin",
+      "cmd": "ksubdomain e -b 100m --json --silent --stdin",
       "next": ["ipgs","masscan"]
     },
     {
