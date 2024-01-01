@@ -1,6 +1,7 @@
 package common
 
 import (
+	"bufio"
 	"context"
 	util "github.com/hktalent/go-utils"
 	"io"
@@ -17,6 +18,7 @@ type AsCmd struct {
 	Timeout        time.Duration
 	Wg             *util.SizedWaitGroup
 	InputWriterCbk func(io.WriteCloser)
+	StartFlag      chan bool
 }
 
 func (r *AsCmd) SetTimeout(n time.Duration) *AsCmd {
@@ -54,9 +56,10 @@ func (r *AsCmd) Close() {
 	}
 	if nil != r.Cmd.Process {
 		r.Cmd.Process.Kill()
-		//r.Cmd.Process.Signal(os.Interrupt)
+		r.Cmd.Process.Signal(os.Interrupt)
 	}
 	r.Cmd = nil
+	log.Println(r.Cmdstr, "is closed")
 }
 func (r *AsCmd) Wait() *AsCmd {
 	r.Wg.Wait()
@@ -83,9 +86,8 @@ func (r *AsCmd) Start() *AsCmd {
 			interruptTimer.Stop()
 			killTimer.Stop()
 		}
-
-		if err := r.Cmd.Start(); nil != err {
-			log.Println(err)
+		if err := r.Cmd.Start(); nil == err {
+			log.Println("start", r.Cmdstr)
 		}
 		if err := r.Cmd.Wait(); nil != err {
 			log.Println(err)
@@ -96,35 +98,43 @@ func (r *AsCmd) Start() *AsCmd {
 }
 
 func NewAsCmd(Wg *util.SizedWaitGroup, iw func(io.WriteCloser)) *AsCmd {
-	r := &AsCmd{Wg: Wg, InputWriterCbk: iw}
+	r := &AsCmd{Wg: Wg, InputWriterCbk: iw, StartFlag: make(chan bool, 1)}
 	return r
 }
 
 var re1 = regexp.MustCompile(` +`)
 
+// 所有输出 处理完，关闭 cmd
 func (r *AsCmd) DoCmdOutLine4Cbk(cbk func(*string), arg ...string) *AsCmd {
 	util.WaitFunc4Wg(r.Wg, func() {
+		defer r.Close()
 		var out = make(chan *string)
 		util.WaitFunc4Wg(r.Wg, func() {
 			r.DoCmdOutLine(out, arg...)
 		})
+		var bSt = false
+		// 最后一个 是 nil
 		for i := range out {
 			cbk(i)
+			if !bSt {
+				bSt = true
+				r.StartFlag <- bSt
+			}
 		}
-		r.Close()
 	})
 	return r
 }
 
+// 内部关闭 out
 func (r *AsCmd) DoCmdOutLine(out chan *string, arg ...string) *AsCmd {
 	r.DoCmd(arg...)
 	r1 := r.GetOut4Reader()
 	if nil != r1 {
 		util.WaitFunc4Wg(r.Wg, func() {
+			defer close(out)
 			util.ReadStream4Line(r1, func(s *string) {
 				out <- s
 			})
-			close(out)
 		})
 	}
 	if r.InputWriterCbk != nil {
@@ -170,36 +180,69 @@ func HaveCmd(s ...string) []bool {
 	return a
 }
 
-func DoCmd4Cbk(szCmd string, cbk func(*string), ipt chan *string) {
-	var lk = util.GetLock(szCmd + "_DoCmd4Cbk").Lock()
-	defer lk.Unlock()
+/*
+1、所有的结果处理 cbk 执行结束
+2、延时1秒没有输入，则关闭输入
+*/
+func DoCmd4Cbk(szCmd string, cbk func(*string), ipt chan *string, wg *util.SizedWaitGroup) {
+	//var lk = util.GetLock(szCmd + "_DoCmd4Cbk").Lock()
+	//defer lk.Unlock()
 	var cmdI = GetCmd(szCmd)
 	if nil != cmdI {
 		for x := range ipt {
 			cmdI <- x
 		}
+		// 有 在运行 任务，这里关闭
 		close(ipt)
 		return
 	}
 	RegCmd(szCmd, ipt)
-	var wg = util.NewSizedWaitGroup(5000)
-	cmd := NewAsCmd(&wg, func(wt io.WriteCloser) {
+	cmd := NewAsCmd(wg, func(wt io.WriteCloser) {
 		defer wt.Close()
+		buf := bufio.NewWriter(wt)
 		for x := range ipt {
-			if "" == *x {
+			if "" == *x || util.TestRepeat(szCmd, *x, "WriteCloser") {
 				continue
 			}
-			wt.Write([]byte(*x + "\n"))
+			log.Println("stream input: ", *x, " | ", szCmd)
+			buf.Write([]byte(*x + "\n"))
+			buf.Flush()
 		}
+		log.Println(szCmd, "over input")
 	})
+	var outCbkWg = util.NewSizedWaitGroup(2000)
+	// 必须确保所有回调中调方法都执行完，才能close ipt
 	cmd.DoCmdOutLine4Cbk(func(s *string) {
-		util.WaitFunc4Wg(&wg, func() {
+		util.WaitFunc4Wg(&outCbkWg, func() {
 			cbk(s)
 		})
-		//if nil == s { // time.After(5 * time.Second)
-		//close(ipt)
-		//}
 	}, szCmd)
-	wg.Wait()
-	close(ipt)
+	// 合适的 时机close  ipt
+	go func() {
+		tk := time.NewTicker(128 * time.Millisecond)
+		defer tk.Stop()
+		nCnt := 0
+		bStart := false
+		for {
+			select {
+			case <-cmd.StartFlag:
+				bStart = true
+			case <-tk.C:
+				if bStart && 0 == outCbkWg.WaitLen() {
+					nCnt++
+					if 2 <= nCnt {
+						close(ipt)
+						return
+					}
+				} else {
+					nCnt = 0
+				}
+				//if bStart {
+				//	log.Println("wg.WaitLen: ", outCbkWg.WaitLen())
+				//}
+			}
+		}
+	}()
+	outCbkWg.Wait()
+	//close(ipt)
 }

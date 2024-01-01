@@ -12,6 +12,7 @@ db/51pwnCc/
 config/scan4all_db.db
 ip2gs_51pwn.json
 shell
+config/subdomain.zip
 db/sqlite3.db
 *.dylib
 sqlite3.db

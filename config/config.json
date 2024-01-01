@@ -6,13 +6,13 @@
       "x": 1,
       "name": "tlsx",
       "cmd": "tlsx -cn -nc -silent -sa -j",
-      "self_do": ".subject_an,.subject_cn,.subject_dn",
+      "self_do": ".subject_an,.subject_cn",
       "next_query_path": {
-        "default":".host,.subject_an,.subject_cn,.subject_dn",
+        "default":".domain,.subject_an,.subject_cn,.host",
         "query_path": {"masscan": ".ip"}
       },
       "result_rm_key": "timestamp,fingerprint_hash,wildcard_certificate,tls_connection",
-      "next": ["httpx","ipgs","masscan","ksubdomain"]
+      "next": ["httpx"]
     },
     {
       "x": 1,
@@ -24,7 +24,7 @@
     {
       "x": 2,
       "name": "ksubdomain",
-      "cmd": "ksubdomain e -b 100m -j -stdin -o -",
+      "cmd": "ksubdomain e -b 100m -j -stdin",
       "next": ["ipgs","masscan"]
     },
     {
@@ -42,13 +42,20 @@
     {
       "x": 4,
       "name": "httpx",
-      "cmd": "httpx -title -websocket -method -server -location -ip  -pipeline -csp-probe -http2 -p 443,80 -nc -silent  -cname -t 64 -json",
+      "result_rm_key": "timestamp,hash,time",
+      "cmd": "httpx -title -websocket -method -server -location -ip  -pipeline -fr -csp-probe -http2 -p 443,80 -nc -silent -td -cname -t 64 -json",
       "next": []
     },
     {
       "x": 5,
       "name": "nuclei",
-      "cmd": "nuclei -nc -silent -j -o - ",
+      "cmd": "nuclei -nc -silent -j",
+      "next": ["gopoc"]
+    },
+    {
+      "x": 6,
+      "name":"katana",
+      "cmd": "katana -nc -silent -j -hl -system-chrome -headless-options '--blink-settings=\"imagesEnabled=false\",--enable-quic=\"imagesEnabled=false\"' -jc -kf all",
       "next": ["gopoc"]
     }
   ]

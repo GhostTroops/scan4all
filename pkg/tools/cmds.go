@@ -14,22 +14,26 @@ import (
 /*
 如果 i 是 []string 或者 string 就转换 输入out
 */
-func DoAorS(i interface{}, out chan *string, rTrimX *regexp.Regexp, szTag string) {
+func DoAorS(i interface{}, out chan *string, rTrimX *regexp.Regexp, szTag string) bool {
+	bRst := false
 	if a, ok := i.([]interface{}); ok {
 		for _, x := range a {
 			if util.TestRepeat(x, szTag) {
 				continue
 			}
 			x1 := rTrimX.ReplaceAllString(x.(string), "")
+			bRst = true
 			out <- &x1
 		}
 	} else if s, ok := i.(string); ok {
 		if util.TestRepeat(s, szTag) {
-			return
+			return bRst
 		}
 		s = rTrimX.ReplaceAllString(s, "")
+		bRst = true
 		out <- &s
 	}
+	return bRst
 }
 
 /*
@@ -54,7 +58,7 @@ func NoRepeat(i chan *string, key string, wg *util.SizedWaitGroup) chan *string 
 			if "" == *x {
 				continue
 			}
-			if util.TestRepeat(*x, key, NoRepeat) {
+			if util.TestRepeat(*x, key) {
 				continue
 			}
 			sI := GetInput(*x, nType)
@@ -63,16 +67,17 @@ func NoRepeat(i chan *string, key string, wg *util.SizedWaitGroup) chan *string 
 				log.Println("skip", key, sI)
 				continue
 			}
+			//log.Println("start <- ", *x)
 			out <- x
+			//log.Println("end <- ", *x)
 		}
-		close(i)
 	})
 	return out
 }
 
 func DoNodeCmd(cNode1 *option.Cmd, iptTmp1 chan *string, wg *util.SizedWaitGroup) {
 	util.WaitFunc4Wg(wg, func() {
-		DoCmdNode(cNode1, iptTmp1)
+		DoCmdNode(cNode1, iptTmp1, wg)
 	})
 }
 
@@ -84,19 +89,33 @@ func DoNext(curCmd *option.Cmd, m *map[string]interface{}, wg *util.SizedWaitGro
 	if nil == nq {
 		return
 	}
-	for _, x := range curCmd.Next {
-		if cNode := option.GetCmdNode4key(x); nil != cNode {
-			var szQnext = nq.Default
-			var iptTmp = make(chan *string)
+	for _, x7 := range curCmd.Next {
+		func(x string) {
+			util.WaitFunc4Wg(wg, func() {
+				if cNode := option.GetCmdNode4key(x); nil != cNode {
+					var szQnext = nq.Default
+					if s, ok := nq.QueryPath[x]; ok {
+						szQnext = s
+					}
+					if "" == szQnext {
+						return
+					}
+					var iptTmp = make(chan *string)
+					DoNodeCmd(cNode, iptTmp, wg)
+					// 捕获 输入
+					for _, x1 := range strings.Split(szQnext, ",") {
+						s12 := util.GetJQ(m, x1)
+						if nil == s12 {
+							continue
+						}
+						DoAorS(s12, iptTmp, TrimXx, cNode.Name)
+					}
+					// 运行到这里，理论上 iptTmp 中数据已经清空
+					close(iptTmp)
+				}
+			})
+		}(x7)
 
-			if s, ok := nq.QueryPath[x]; ok {
-				szQnext = s
-			}
-			DoNodeCmd(cNode, iptTmp, wg)
-			for _, x1 := range strings.Split(szQnext, ",") {
-				DoAorS(util.GetJQ(m, x1), iptTmp, TrimXx, cNode.Name)
-			}
-		}
 	}
 }
 
@@ -105,9 +124,9 @@ func DoNext(curCmd *option.Cmd, m *map[string]interface{}, wg *util.SizedWaitGro
 所有的输入流 输出都是 json
 需要为个别 非 json 输出处理
 */
-func DoCmdNode(cmd1 *option.Cmd, i chan *string) bool {
+func DoCmdNode(cmd1 *option.Cmd, i2 chan *string, wg *util.SizedWaitGroup) bool {
 	bRst := false
-	var wg = util.NewSizedWaitGroup(0)
+	i1 := NoRepeat(i2, cmd1.Name, wg)
 	switch cmd1.Name {
 	case Ipgs, Ksubdomain, Httpx, Tlsx, Nuclei: // 输入命令行 管道流
 		common.DoCmd4Cbk(cmd1.Cmd, func(s *string) {
@@ -119,10 +138,13 @@ func DoCmdNode(cmd1 *option.Cmd, i chan *string) bool {
 				m = *util.RmMap(&m, cmd1.ResultRmKey)
 				if Tlsx == cmd1.Name { // 去重复 迭代
 					for _, x := range strings.Split(cmd1.SelfDo, ",") {
-						DoAorS(util.GetJQ(m, x), i, TrimXx, cmd1.Name)
+						DoAorS(util.GetJQ(m, x), i1, TrimXx, cmd1.Name)
 					}
 				}
-				log.Println(m)
+				if cmd1.Name == Httpx {
+					log.Println(m)
+				}
+
 				m["tags"] = cmd1.Name
 				m["id"] = util.GetSha1(cmd1.Cmd, m)
 				if s5, ok := m["host"]; ok {
@@ -130,11 +152,11 @@ func DoCmdNode(cmd1 *option.Cmd, i chan *string) bool {
 					delete(m, "host")
 				}
 				common.Save2RmtDb(m, cmd1.Name, ".id")
-				util.WaitFunc4Wg(&wg, func() {
-					DoNext(cmd1, &m, &wg)
+				util.WaitFunc4Wg(wg, func() {
+					DoNext(cmd1, &m, wg) // "httpx","ipgs","masscan","ksubdomain"
 				})
 			}
-		}, NoRepeat(i, cmd1.Name, &wg))
+		}, i1, wg)
 		bRst = true
 		break
 	case Nmap, Masscan:
@@ -142,14 +164,13 @@ func DoCmdNode(cmd1 *option.Cmd, i chan *string) bool {
 	case Filefuzz:
 
 	}
-	wg.Wait()
 	return bRst
 }
 
-func DoCmds(i chan *string, n int) {
+func DoCmds(i chan *string, n int, wg *util.SizedWaitGroup) {
 	if 0 < len(option.Cmds) {
 		start := option.Cmds[n]
-		if DoCmdNode(start, i) {
+		if DoCmdNode(start, i, wg) {
 			return
 		}
 		//for x := range i {
