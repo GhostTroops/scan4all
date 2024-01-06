@@ -9,6 +9,9 @@ github.com/Masterminds/semver v1.5.0/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF0
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/andybalholm/brotli v1.0.6 h1:Yf9fFpf49Zrxb9NlQaluyE92/+X7UVHlhMNJN2sxfOI=
 github.com/andybalholm/brotli v1.0.6/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
+github.com/antchfx/xmlquery v1.3.18 h1:FSQ3wMuphnPPGJOFhvc+cRQ2CT/rUj4cyQXkJcjOwz0=
+github.com/antchfx/xmlquery v1.3.18/go.mod h1:Afkq4JIeXut75taLSuI31ISJ/zeq+3jG7TunF7noreA=
+github.com/antchfx/xpath v1.2.4/go.mod h1:i54GszH55fYfBmoZXapTHN8T8tkcHfRgLyVwwqzXNcs=
 github.com/antchfx/xpath v1.2.5 h1:hqZ+wtQ+KIOV/S3bGZcIhpgYC26um2bZYP2KVGcR7VY=
 github.com/antchfx/xpath v1.2.5/go.mod h1:i54GszH55fYfBmoZXapTHN8T8tkcHfRgLyVwwqzXNcs=
 github.com/apex/log v1.9.0 h1:FHtw/xuaM8AgmvDDTI9fiwoAL25Sq2cxojnZICUU8l0=
@@ -117,9 +120,9 @@ github.com/google/go-cmp v0.5.6/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.5.9/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
+github.com/google/go-github v17.0.0+incompatible h1:N0LgJ1j65A7kfXrZnUDaYCs/Sf4rEjNlfyDHW9dolSY=
 github.com/google/go-github v17.0.0+incompatible/go.mod h1:zLgOLi98H3fifZn+44m+umXrS52loVEgC2AApnigrVQ=
 github.com/google/go-github v17.0.0/go.mod h1:zLgOLi98H3fifZn+44m+umXrS52loVEgC2AApnigrVQ=
-github.com/google/go-github v17.0.0+incompatible h1:N0LgJ1j65A7kfXrZnUDaYCs/Sf4rEjNlfyDHW9dolSY=
 github.com/google/go-querystring v1.1.0 h1:AnCroh3fv4ZBgVIf1Iwtovgjaw/GiKJo8M8yD/fhyJ8=
 github.com/google/go-querystring v1.1.0/go.mod h1:Kcdr2DB4koayq7X8pmAG4sNG59So17icRSOU623lUBU=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
@@ -154,6 +157,10 @@ github.com/hktalent/go-utils v0.0.0-20231230112330-ae51b078905e h1:9DEwX4IhS5CvZ
 github.com/hktalent/go-utils v0.0.0-20231230112330-ae51b078905e/go.mod h1:55idsvA0/Uka2+GyuCwaoi7M9+cA2I0DSILJ/bSLLcs=
 github.com/hktalent/go-utils v0.0.0-20231231080414-6ef8c98d01bd h1:YpnRfEVvJgn/KGe6e1eGTB1yvuC8ZnYjRHMhb01m8Z0=
 github.com/hktalent/go-utils v0.0.0-20231231080414-6ef8c98d01bd/go.mod h1:55idsvA0/Uka2+GyuCwaoi7M9+cA2I0DSILJ/bSLLcs=
+github.com/hktalent/go-utils v0.0.0-20240106060226-180d15bfd713 h1:mcXUiE9WS5QrtncYfCeizOnH4TN/M44pFuFahlTn6WQ=
+github.com/hktalent/go-utils v0.0.0-20240106060226-180d15bfd713/go.mod h1:55idsvA0/Uka2+GyuCwaoi7M9+cA2I0DSILJ/bSLLcs=
+github.com/hktalent/go-utils v0.0.0-20240106151221-d7ab0ecef653 h1:z1QYcJwSyk27J6h/s9x6TVIyWHZTn7MmcZXK2+dgcOk=
+github.com/hktalent/go-utils v0.0.0-20240106151221-d7ab0ecef653/go.mod h1:55idsvA0/Uka2+GyuCwaoi7M9+cA2I0DSILJ/bSLLcs=
 github.com/hktalent/goxml2json v0.0.0-20221020101014-f91e9a0121fc h1:xCfbmpT1Qgmcm6p/qtlv6wt4CyPvOCLV3/PjfKXXdsI=
 github.com/hktalent/goxml2json v0.0.0-20221020101014-f91e9a0121fc/go.mod h1:ADjILrqfUYHa7t3yutaiNXwsVnxkMd1xXTLa8Dq4d4o=
 github.com/hktalent/htmlquery v0.0.0-20230303073607-1fbec5a16112 h1:60QrkBG37YipZbxv92uUZWhdp5ayJlIcveQHtgTbT24=
@@ -458,6 +465,7 @@ golang.org/x/net v0.0.0-20210428140749-89ef3d95e781/go.mod h1:OJAsFXCWl8Ukc7SiCT
 golang.org/x/net v0.0.0-20220722155237-a158d28d115b/go.mod h1:XRhObCWvk6IyKnWLug+ECip1KBveYUHfp+8e9klMJ9c=
 golang.org/x/net v0.1.0/go.mod h1:Cx3nUiGt4eDBEyega/BKRp+/AlGL8hYe7U9odMt2Cco=
 golang.org/x/net v0.6.0/go.mod h1:2Tu9+aMcznHK/AK1HMvgo6xiTLG5rD5rZLDS+rp2Bjs=
+golang.org/x/net v0.7.0/go.mod h1:2Tu9+aMcznHK/AK1HMvgo6xiTLG5rD5rZLDS+rp2Bjs=
 golang.org/x/net v0.9.0/go.mod h1:d48xBJpPfHeWQsugry2m+kC02ZBRGRgulfHnEXEuWns=
 golang.org/x/net v0.10.0/go.mod h1:0qNGK6F8kojg2nk9dLZ2mShWaEBan6FAoqfSigmmuDg=
 golang.org/x/net v0.11.0/go.mod h1:2L/ixqYpgIVXmeoSA/4Lu7BzTG4KIyPIryS4IsOd1oQ=

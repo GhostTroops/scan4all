@@ -12,6 +12,16 @@ import (
 
 var rSplt = regexp.MustCompile(`[,; ]`)
 
+func CloneObj[T any](i interface{}) *T {
+	if data, err := Json.Marshal(i); nil == err {
+		var m = new(T)
+		if nil == Json.Unmarshal(data, &m) {
+			return m
+		}
+	}
+	return nil
+}
+
 // copy map
 func copyMap(m map[string]string) map[string]string {
 	m2 := reflect.MakeMap(reflect.TypeOf(m))

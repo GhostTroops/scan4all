@@ -10,6 +10,9 @@ github.com/Masterminds/semver
 # github.com/andybalholm/brotli v1.0.6
 ## explicit; go 1.12
 github.com/andybalholm/brotli
+# github.com/antchfx/xmlquery v1.3.18
+## explicit; go 1.14
+github.com/antchfx/xmlquery
 # github.com/antchfx/xpath v1.2.5
 ## explicit; go 1.14
 github.com/antchfx/xpath
@@ -136,7 +139,7 @@ github.com/hktalent/PipelineHttp
 github.com/hktalent/go-update
 github.com/hktalent/go-update/progress
 github.com/hktalent/go-update/stores/github
-# github.com/hktalent/go-utils v0.0.0-20231231080414-6ef8c98d01bd
+# github.com/hktalent/go-utils v0.0.0-20240106151221-d7ab0ecef653
 ## explicit; go 1.21.4
 github.com/hktalent/go-utils
 # github.com/hktalent/goxml2json v0.0.0-20221020101014-f91e9a0121fc

@@ -2,13 +2,14 @@ module github.com/GhostTroops/scan4all
 
 go 1.21.4
 
-require github.com/hktalent/go-utils v0.0.0-20231231080414-6ef8c98d01bd
+require github.com/hktalent/go-utils v0.0.0-20240106151221-d7ab0ecef653
 
 require (
 	github.com/AndreasBriese/bbloom v0.0.0-20190825152654-46b345b51c96 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/andybalholm/brotli v1.0.6 // indirect
+	github.com/antchfx/xmlquery v1.3.18 // indirect
 	github.com/antchfx/xpath v1.2.5 // indirect
 	github.com/apex/log v1.9.0 // indirect
 	github.com/c4milo/unpackit v1.0.0 // indirect

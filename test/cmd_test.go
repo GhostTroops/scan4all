@@ -76,6 +76,23 @@ func testCmd(s string, data string) {
 	wg.Wait()
 	wt.Close()
 }
+
+func TestMasscan(t *testing.T) {
+	//fmt.Println(os.Getenv("PATH"))
+	//if s, err := exec.LookPath("masscan"); nil == err {
+	//	fmt.Println(s)
+	//} else {
+	//	cmd1 := exec.Command("where", "masscan")
+	//	cmd1.Stdout = os.Stdout
+	//	cmd1.Stderr = os.Stdout
+	//	cmd1.Start()
+	//	cmd1.Wait()
+	//	log.Println(err)
+	//}
+	//testCmd("/usr/local/bin/masscan --rate=10000 -oX -p 443 -iL -", "125.64.129.171")
+}
+
+// cat $HOME/MyWork/bug-bounty/data/zq/韩国/url_200.txt|xargs -I % python ../WeblogicScan.py  -u %  -r -v --tags struts2
 func TestKatana(t *testing.T) {
 	testCmd("katana -nc -silent -j -hl -system-chrome -headless-options '--blink-settings=\"imagesEnabled=false\",--enable-quic=\"imagesEnabled=false\"' -jc -kf all", "https://51pwn.com")
 }
@@ -83,7 +100,8 @@ func TestKsubdomain(t *testing.T) {
 	testCmd(`ksubdomain e -b 100m --json -stdin`, "paypal.com")
 }
 func TestNuclei(t *testing.T) {
-	testCmd(`nuclei -nc -silent -j -s info`, "https://www.paypal.com")
+	//  -irt 30m0s
+	testCmd(`nuclei -nc -silent -j -s info -no-stdin -stream`, "https://www.baidu.com")
 }
 func TestHttpx(t *testing.T) {
 	a := re1.Split(`httpx -title -websocket -method -server -location -ip  -pipeline -fr -csp-probe -http2 -p 443,80 -nc -silent -td -cname -t 64 -json`, -1)

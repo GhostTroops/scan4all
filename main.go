@@ -5,6 +5,7 @@ import (
 	util "github.com/hktalent/go-utils"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 )
 
 func main() {
@@ -18,15 +19,14 @@ func main() {
 	}()
 
 	var input = make(chan *string)
+	defer close(input)
 	var wg = util.NewSizedWaitGroup(0)
 	util.DoSyncFunc(func() {
-		tools.DoCmds(input, 5, &wg)
+		tools.DoCmds(input, 0, &wg)
 	})
-	s := "https://www.163.com/"
+	s := "https://www.sina.com.cn/"
 	input <- &s
-	// 第一个输入，必须自己关闭
-	close(input)
 	wg.Wait()
-	util.Wg.Wait()
 	util.CloseAll()
+	util.Wg.Wait()
 }

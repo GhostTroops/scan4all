@@ -19,6 +19,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -640,6 +641,21 @@ func doDir(config *embed.FS, s fs.DirEntry, szPath string) {
 
 var UserHomeDir string = "./"
 
+// 将 config 释放 到 szPath 目录中
+func ExtEmbedFiles(config *embed.FS, szPath string) {
+	if nil != config {
+		if x1, err := config.ReadDir(szPath); nil == err {
+			for _, x2 := range x1 {
+				if x2.IsDir() {
+					doDir(config, x2, szPath)
+				} else {
+					doFile(config, x2, szPath)
+				}
+			}
+		}
+	}
+}
+
 // 初始化到开头
 func Init1(config *embed.FS) {
 	dirname, err := os.UserHomeDir()
@@ -653,22 +669,11 @@ func Init1(config *embed.FS) {
   - "dos"`), os.ModePerm)
 		}
 	}
-	//szPath := "config"
+	szPath := "config"
+
 	//log.Println("wait for init config files ... ")
-	// 释放config目录到本地
-	//if nil != config {
-	//	if x1, err := config.ReadDir(szPath); nil == err {
-	//		for _, x2 := range x1 {
-	//			if x2.IsDir() {
-	//				doDir(config, x2, szPath)
-	//			} else {
-	//				doFile(config, x2, szPath)
-	//			}
-	//		}
-	//	} else {
-	//		log.Println("Init1:", err)
-	//	}
-	//}
+	//释放config目录到本地
+	ExtEmbedFiles(config, szPath)
 	InitConfigFile()
 	Init2()
 	log.Println("init config files is over .")
@@ -698,10 +703,15 @@ func GetSha1(a ...interface{}) string {
 	return hex.EncodeToString(bs) // fmt.Sprintf("%x", bs)
 }
 
-var Abs404 = "/scan4all404"
-var defaultInteractionDuration time.Duration = 180 * time.Second
+var (
+	Abs404                                   = "/scan4all404"
+	defaultInteractionDuration time.Duration = 180 * time.Second
+	trRpt                      sync.Mutex
+)
 
 func TestRepeat(a ...interface{}) bool {
+	trRpt.Lock()
+	defer trRpt.Unlock()
 	if nil == noRpt {
 		return false
 	}

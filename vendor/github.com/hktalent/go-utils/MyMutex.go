@@ -40,8 +40,8 @@ func (r *MyMutex) Lock() *MyMutex {
 func (r *MyMutex) Unlock() {
 	lock1.Lock()
 	defer lock1.Unlock()
-	r.Mutex.Unlock()
 	if r.IsLock {
+		r.Mutex.Unlock()
 		if nil != r.m {
 			delete(*r.m, r.Name)
 		}

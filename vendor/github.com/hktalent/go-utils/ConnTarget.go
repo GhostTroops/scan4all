@@ -175,7 +175,7 @@ func (r *CheckTarget) Log(s string) {
 	//log.Println(s)
 }
 
-var ipReg = regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)
+var IpReg = regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`)
 
 // 连接目标
 // sysctl -w net.ipv4.tcp_keepalive_time=300
@@ -189,7 +189,7 @@ func (r *CheckTarget) ConnTarget() (*CheckTarget, error) {
 			InsecureSkipVerify: true,
 		}
 		ServerName := strings.Split(r.Target, ":")[0]
-		if !ipReg.Match([]byte(ServerName)) {
+		if !IpReg.Match([]byte(ServerName)) {
 			conf.ServerName = ServerName
 		}
 		r.Conn, err = tls.Dial(r.ConnType, fmt.Sprintf("%s:%d", r.Target, r.Port), conf)

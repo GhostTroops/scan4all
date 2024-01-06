@@ -14,7 +14,10 @@ import (
 	"strings"
 )
 
-var szCurIp string
+var (
+	szCurIp string
+	//IpReg   = regexp.MustCompile(`^(\d{1,3}\.){3}\d{1,3}$`) // ip v4
+)
 
 func GBKToUTF8(s []byte) []byte {
 	utf8Str := simplifiedchinese.GBK.NewDecoder().Reader(bytes.NewReader(s))
@@ -22,6 +25,11 @@ func GBKToUTF8(s []byte) []byte {
 		return data
 	}
 	return nil
+}
+
+func IsIp(s string) bool {
+	aIp1 := strings.Split(s, ":")
+	return IpReg.Match([]byte(aIp1[0]))
 }
 
 // 通过cloudflare 获取自己当前互联网 ip
