@@ -1,11 +1,13 @@
 package main
 
 import (
+	"github.com/GhostTroops/scan4all/pkg/common"
 	"github.com/GhostTroops/scan4all/pkg/tools"
 	util "github.com/hktalent/go-utils"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
 )
 
 func main() {
@@ -24,8 +26,10 @@ func main() {
 	util.DoSyncFunc(func() {
 		tools.DoCmds(input, 0, &wg)
 	})
-	s := "https://www.sina.com.cn/"
-	input <- &s
+	os.Args = []string{"", "https://www.sina.com.cn/"}
+	common.DoCommontools(func(s string, wg1 *util.SizedWaitGroup) {
+		input <- &s
+	})
 	wg.Wait()
 	util.CloseAll()
 	util.Wg.Wait()
