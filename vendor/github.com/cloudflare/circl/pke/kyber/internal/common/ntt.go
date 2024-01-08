@@ -146,7 +146,7 @@ func (p *Poly) invNTTGeneric() {
 	k := 127 // Index into Zetas
 	r := -1  // Index into InvNTTReductions.
 
-	// We basically do the oppposite of NTT, but postpone dividing by 2 in the
+	// We basically do the opposite of NTT, but postpone dividing by 2 in the
 	// inverse of the Cooley-Tukey butterfly and accumulate that into a big
 	// division by 2⁷ at the end.  See the comments in the NTT() function.
 

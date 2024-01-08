@@ -17,7 +17,7 @@ func montReduce(x int32) int16 {
 	// we have int32(int64(a)*int64(b)) = int32(a*b) and so the result is ok.
 	m := int16(x * 62209)
 
-	// Note that x - m q is divisable by R; indeed modulo R we have
+	// Note that x - m q is divisible by R; indeed modulo R we have
 	//
 	//  x - m q ≡ x - x q' q ≡ x - x q⁻¹ q ≡ x - x = 0.
 	//
