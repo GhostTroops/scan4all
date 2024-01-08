@@ -71,7 +71,7 @@ func (m *Mat) Derive(seed *[32]byte, transpose bool) {
 	}
 }
 
-// Tranposes A in place.
+// Transposes A in place.
 func (m *Mat) Transpose() {
 	for i := 0; i < K-1; i++ {
 		for j := i + 1; j < K; j++ {

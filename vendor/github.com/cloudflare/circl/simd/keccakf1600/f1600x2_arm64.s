@@ -4,8 +4,8 @@
 
 #include "textflag.h"
 
-// func f1600x2ARM(state *uint64, rc *[24]uint64)
-TEXT ·f1600x2ARM(SB), NOSPLIT, $0-16
+// func f1600x2ARM(state *uint64, rc *[24]uint64, turbo bool)
+TEXT ·f1600x2ARM(SB), NOSPLIT, $0-17
     MOVD state+0(FP), R0
     MOVD rc+8(FP), R1
     MOVD R0, R2
@@ -18,6 +18,12 @@ TEXT ·f1600x2ARM(SB), NOSPLIT, $0-16
     VLD1.P 64(R0), [V16.B16, V17.B16, V18.B16, V19.B16]
     VLD1.P 64(R0), [V20.B16, V21.B16, V22.B16, V23.B16]
     VLD1.P (R0),   [V24.B16]
+
+    MOVBU turbo+16(FP), R4
+    CBZ R4, loop
+
+    SUB  $12, R3, R3
+    ADD  $96, R1, R1
 
 loop:
     // Execute theta but without xorring into the state yet.
