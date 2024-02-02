@@ -14,6 +14,9 @@ import (
 )
 
 /*
+当前：tlsx、httpx都支持流执行，在输入流不关闭的情况下
+*/
+/*
 如果 i 是 []string 或者 string 就转换 输入out
 */
 func DoAorS(i interface{}, out chan *string, rTrimX *regexp.Regexp, szTag string) bool {

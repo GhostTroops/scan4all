@@ -57,14 +57,14 @@
       "x": 4,
       "name": "httpx",
       "result_rm_key": "timestamp,hash,time",
-      "cmd": "httpx -title -websocket -method -server -location -ip  -pipeline -fr -csp-probe -http2 -p 443,80 -nc -silent -td -cname -t 64 -json",
+      "cmd": "httpx -title -stream -websocket -method -server -location -ip  -pipeline -fr -csp-probe -http2 -p 443,80 -nc -silent -td -cname -t 64 -json",
       "next": ["katana","nuclei"]
     },
     {
       "x": 5,
       "name": "nuclei",
-      "cmd": "nuclei -nc -silent -j",
-      "next": ["gopoc"]
+      "cmd": "nuclei -duc -nc -silent -j",
+      "next": []
     },
     {
       "x": 6,

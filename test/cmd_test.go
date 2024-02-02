@@ -104,7 +104,7 @@ func TestNuclei(t *testing.T) {
 	testCmd(`nuclei -nc -silent -j -s info -no-stdin -stream`, "https://www.baidu.com")
 }
 func TestHttpx(t *testing.T) {
-	a := re1.Split(`httpx -title -websocket -method -server -location -ip  -pipeline -fr -csp-probe -http2 -p 443,80 -nc -silent -td -cname -t 64 -json`, -1)
+	a := re1.Split(`httpx -title -stream -websocket -method -server -location -ip  -pipeline -fr -csp-probe -http2 -p 443,80 -nc -silent -td -cname -t 64 -json`, -1)
 	Cmd := exec.Command(a[0], a[1:]...)
 	var err error
 	var wt io.WriteCloser

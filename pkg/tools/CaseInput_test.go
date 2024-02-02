@@ -4,6 +4,10 @@ import (
 	"testing"
 )
 
+func TestNuclei(t *testing.T) {
+	
+}
+
 func TestGetInput(t *testing.T) {
 	type args struct {
 		s string
