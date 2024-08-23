@@ -91,7 +91,7 @@ require (
 	golang.org/x/text v0.14.0
 	golang.org/x/time v0.3.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20230822172742-b8732ec3820d
-	google.golang.org/protobuf v1.31.0
+	google.golang.org/protobuf v1.33.0
 	gopkg.in/irc.v3 v3.1.4
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/sqlite v1.5.3
