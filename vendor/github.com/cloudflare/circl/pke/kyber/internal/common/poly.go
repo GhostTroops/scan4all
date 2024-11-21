@@ -43,7 +43,7 @@ func (p *Poly) normalizeGeneric() {
 
 // Multiplies p in-place by the Montgomery factor 2¹⁶.
 //
-// Coefficients of p can be artbitray.  Resulting coefficients are bounded
+// Coefficients of p can be arbitrary.  Resulting coefficients are bounded
 // in absolute value by q.
 func (p *Poly) ToMont() {
 	for i := 0; i < N; i++ {
@@ -166,7 +166,7 @@ func (p *Poly) CompressMessageTo(m []byte) {
 
 // Set p to Decompress_q(m, 1).
 //
-// Assumes d is in {3, 4, 5, 10, 11}.  p will be normalized.
+// Assumes d is in {4, 5, 10, 11}.  p will be normalized.
 func (p *Poly) Decompress(m []byte, d int) {
 	// Decompress_q(x, d) = ⌈(q/2ᵈ)x⌋
 	//                    = ⌊(q/2ᵈ)x+½⌋
@@ -244,20 +244,28 @@ func (p *Poly) Decompress(m []byte, d int) {
 
 // Writes Compress_q(p, d) to m.
 //
-// Assumes p is normalized and d is in {3, 4, 5, 10, 11}.
+// Assumes p is normalized and d is in {4, 5, 10, 11}.
 func (p *Poly) CompressTo(m []byte, d int) {
 	// Compress_q(x, d) = ⌈(2ᵈ/q)x⌋ mod⁺ 2ᵈ
 	//                  = ⌊(2ᵈ/q)x+½⌋ mod⁺ 2ᵈ
 	//					= ⌊((x << d) + q/2) / q⌋ mod⁺ 2ᵈ
 	//					= DIV((x << d) + q/2, q) & ((1<<d) - 1)
+	//
+	// We approximate DIV(x, q) by computing (x*a)>>e, where a/(2^e) ≈ 1/q.
+	// For d in {10,11} we use 20,642,679/2^36, which computes division by x/q
+	// correctly for 0 ≤ x < 41,522,616, which fits (q << 11) + q/2 comfortably.
+	// For d in {4,5} we use 315/2^20, which doesn't compute division by x/q
+	// correctly for all inputs, but it's close enough that the end result
+	// of the compression is correct. The advantage is that we do not need
+	// to use a 64-bit intermediate value.
 	switch d {
 	case 4:
 		var t [8]uint16
 		idx := 0
 		for i := 0; i < N/8; i++ {
 			for j := 0; j < 8; j++ {
-				t[j] = uint16(((uint32(p[8*i+j])<<4)+uint32(Q)/2)/
-					uint32(Q)) & ((1 << 4) - 1)
+				t[j] = uint16((((uint32(p[8*i+j])<<4)+uint32(Q)/2)*315)>>
+					20) & ((1 << 4) - 1)
 			}
 			m[idx] = byte(t[0]) | byte(t[1]<<4)
 			m[idx+1] = byte(t[2]) | byte(t[3]<<4)
@@ -271,8 +279,8 @@ func (p *Poly) CompressTo(m []byte, d int) {
 		idx := 0
 		for i := 0; i < N/8; i++ {
 			for j := 0; j < 8; j++ {
-				t[j] = uint16(((uint32(p[8*i+j])<<5)+uint32(Q)/2)/
-					uint32(Q)) & ((1 << 5) - 1)
+				t[j] = uint16((((uint32(p[8*i+j])<<5)+uint32(Q)/2)*315)>>
+					20) & ((1 << 5) - 1)
 			}
 			m[idx] = byte(t[0]) | byte(t[1]<<5)
 			m[idx+1] = byte(t[1]>>3) | byte(t[2]<<2) | byte(t[3]<<7)
@@ -287,8 +295,8 @@ func (p *Poly) CompressTo(m []byte, d int) {
 		idx := 0
 		for i := 0; i < N/4; i++ {
 			for j := 0; j < 4; j++ {
-				t[j] = uint16(((uint32(p[4*i+j])<<10)+uint32(Q)/2)/
-					uint32(Q)) & ((1 << 10) - 1)
+				t[j] = uint16((uint64((uint32(p[4*i+j])<<10)+uint32(Q)/2)*
+					20642679)>>36) & ((1 << 10) - 1)
 			}
 			m[idx] = byte(t[0])
 			m[idx+1] = byte(t[0]>>8) | byte(t[1]<<2)
@@ -302,8 +310,8 @@ func (p *Poly) CompressTo(m []byte, d int) {
 		idx := 0
 		for i := 0; i < N/8; i++ {
 			for j := 0; j < 8; j++ {
-				t[j] = uint16(((uint32(p[8*i+j])<<11)+uint32(Q)/2)/
-					uint32(Q)) & ((1 << 11) - 1)
+				t[j] = uint16((uint64((uint32(p[8*i+j])<<11)+uint32(Q)/2)*
+					20642679)>>36) & ((1 << 11) - 1)
 			}
 			m[idx] = byte(t[0])
 			m[idx+1] = byte(t[0]>>8) | byte(t[1]<<3)

@@ -63,7 +63,7 @@ type Scheme interface {
 	// Size of packed public keys.
 	PublicKeySize() int
 
-	// DeriveKeyPair deterministicallly derives a pair of keys from a seed.
+	// DeriveKeyPair deterministically derives a pair of keys from a seed.
 	// Panics if the length of seed is not equal to the value returned by
 	// SeedSize.
 	DeriveKeyPair(seed []byte) (PublicKey, PrivateKey)

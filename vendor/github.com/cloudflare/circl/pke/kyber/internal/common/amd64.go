@@ -10,7 +10,7 @@ import (
 // ZetasAVX2 contains all ζ used in NTT (like the Zetas array), but also
 // the values int16(zeta * 62209) for each zeta, which is used in
 // Montgomery reduction.  There is some duplication and reordering as
-// compared to Zetas to make it more covenient for use with AVX2.
+// compared to Zetas to make it more convenient for use with AVX2.
 var ZetasAVX2 = [...]int16{
 	// level 1: int16(Zetas[1]*62209) and Zetas[1]
 	31499, 2571,

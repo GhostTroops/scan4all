@@ -17,6 +17,7 @@
 package keccakf1600
 
 import (
+	"runtime"
 	"unsafe"
 
 	"github.com/cloudflare/circl/internal/sha3"
@@ -37,6 +38,9 @@ type StateX4 struct {
 
 	// Offset into a that is 32 byte aligned.
 	offset int
+
+	// If true, permute will use 12-round keccak instead of 24-round keccak
+	turbo bool
 }
 
 // StateX2 contains state for the two-way permutation including the two
@@ -53,6 +57,9 @@ type StateX2 struct {
 
 	// Offset into a that is 32 byte aligned.
 	offset int
+
+	// If true, permute will use 12-round keccak instead of 24-round keccak
+	turbo bool
 }
 
 // IsEnabledX4 returns true if the architecture supports a four-way SIMD
@@ -61,15 +68,14 @@ func IsEnabledX4() bool { return cpu.X86.HasAVX2 }
 
 // IsEnabledX2 returns true if the architecture supports a two-way SIMD
 // implementation provided in this package.
-func IsEnabledX2() bool {
-	// After Go 1.16 the flag cpu.ARM64.HasSHA3 is no longer exposed.
-	return false
-}
+func IsEnabledX2() bool { return enabledX2 }
 
 // Initialize the state and returns the buffer on which the four permutations
 // will act: a uint64 slice of length 100.  The first permutation will act
 // on {a[0], a[4], ..., a[96]}, the second on {a[1], a[5], ..., a[97]}, etc.
-func (s *StateX4) Initialize() []uint64 {
+// If turbo is true, applies 12-round variant instead of the usual 24.
+func (s *StateX4) Initialize(turbo bool) []uint64 {
+	s.turbo = turbo
 	rp := unsafe.Pointer(&s.a[0])
 
 	// uint64s are always aligned by a multiple of 8.  Compute the remainder
@@ -87,7 +93,9 @@ func (s *StateX4) Initialize() []uint64 {
 // Initialize the state and returns the buffer on which the two permutations
 // will act: a uint64 slice of length 50.  The first permutation will act
 // on {a[0], a[2], ..., a[48]} and the second on {a[1], a[3], ..., a[49]}.
-func (s *StateX2) Initialize() []uint64 {
+// If turbo is true, applies 12-round variant instead of the usual 24.
+func (s *StateX2) Initialize(turbo bool) []uint64 {
+	s.turbo = turbo
 	rp := unsafe.Pointer(&s.a[0])
 
 	// uint64s are always aligned by a multiple of 8.  Compute the remainder
@@ -106,9 +114,9 @@ func (s *StateX2) Initialize() []uint64 {
 // returned from Initialize().
 func (s *StateX4) Permute() {
 	if IsEnabledX4() {
-		permuteSIMDx4(s.a[s.offset:])
+		permuteSIMDx4(s.a[s.offset:], s.turbo)
 	} else {
-		permuteScalarX4(s.a[s.offset:]) // A slower generic implementation.
+		permuteScalarX4(s.a[s.offset:], s.turbo) // A slower generic implementation.
 	}
 }
 
@@ -116,34 +124,40 @@ func (s *StateX4) Permute() {
 // returned from Initialize().
 func (s *StateX2) Permute() {
 	if IsEnabledX2() {
-		permuteSIMDx2(s.a[s.offset:])
+		permuteSIMDx2(s.a[s.offset:], s.turbo)
 	} else {
-		permuteScalarX2(s.a[s.offset:]) // A slower generic implementation.
+		permuteScalarX2(s.a[s.offset:], s.turbo) // A slower generic implementation.
 	}
 }
 
-func permuteScalarX4(a []uint64) {
+func permuteScalarX4(a []uint64, turbo bool) {
 	var buf [25]uint64
 	for i := 0; i < 4; i++ {
 		for j := 0; j < 25; j++ {
 			buf[j] = a[4*j+i]
 		}
-		sha3.KeccakF1600(&buf)
+		sha3.KeccakF1600(&buf, turbo)
 		for j := 0; j < 25; j++ {
 			a[4*j+i] = buf[j]
 		}
 	}
 }
 
-func permuteScalarX2(a []uint64) {
+func permuteScalarX2(a []uint64, turbo bool) {
 	var buf [25]uint64
 	for i := 0; i < 2; i++ {
 		for j := 0; j < 25; j++ {
 			buf[j] = a[2*j+i]
 		}
-		sha3.KeccakF1600(&buf)
+		sha3.KeccakF1600(&buf, turbo)
 		for j := 0; j < 25; j++ {
 			a[2*j+i] = buf[j]
 		}
 	}
+}
+
+var enabledX2 bool
+
+func init() {
+	enabledX2 = runtime.GOARCH == "arm64" && runtime.GOOS == "darwin"
 }

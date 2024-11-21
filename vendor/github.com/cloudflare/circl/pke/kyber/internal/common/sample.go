@@ -100,7 +100,7 @@ func (p *Poly) DeriveNoise2(seed []byte, nonce uint8) {
 // Can only be called when DeriveX4Available is true.
 func PolyDeriveUniformX4(ps [4]*Poly, seed *[32]byte, xs, ys [4]uint8) {
 	var perm keccakf1600.StateX4
-	state := perm.Initialize()
+	state := perm.Initialize(false)
 
 	// Absorb the seed in the four states
 	for i := 0; i < 4; i++ {

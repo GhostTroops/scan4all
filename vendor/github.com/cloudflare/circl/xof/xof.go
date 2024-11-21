@@ -10,6 +10,8 @@ import (
 	"io"
 
 	"github.com/cloudflare/circl/internal/sha3"
+	"github.com/cloudflare/circl/xof/k12"
+
 	"golang.org/x/crypto/blake2b"
 	"golang.org/x/crypto/blake2s"
 )
@@ -38,6 +40,7 @@ const (
 	SHAKE256
 	BLAKE2XB
 	BLAKE2XS
+	K12D10
 )
 
 func (x ID) New() XOF {
@@ -54,6 +57,9 @@ func (x ID) New() XOF {
 	case BLAKE2XS:
 		x, _ := blake2s.NewXOF(blake2s.OutputLengthUnknown, nil)
 		return blake2xs{x}
+	case K12D10:
+		x := k12.NewDraft10([]byte{})
+		return k12d10{&x}
 	default:
 		panic("crypto: requested unavailable XOF function")
 	}
@@ -70,3 +76,10 @@ func (s blake2xb) Clone() XOF { return blake2xb{s.XOF.Clone()} }
 type blake2xs struct{ blake2s.XOF }
 
 func (s blake2xs) Clone() XOF { return blake2xs{s.XOF.Clone()} }
+
+type k12d10 struct{ *k12.State }
+
+func (s k12d10) Clone() XOF {
+	x := s.State.Clone()
+	return k12d10{&x}
+}
