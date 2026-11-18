@@ -260,7 +260,7 @@ func (fc *RFBConn) recvServerOrder(s []byte, err error) {
 	case 3:
 		core.StartReadBytes(7, fc, fc.recvServerCutTextHeader)
 	default:
-		glog.Errorf("Unknown message type %s", packetType)
+		glog.Errorf("Unknown message type %d", packetType)
 	}
 
 }
@@ -406,7 +406,7 @@ func NewRFB(t core.Transport) *RFB {
 }
 
 func (fb *RFB) recvProtocolVersion(version string) {
-	if version != RFB003003 || version != RFB003007 || version != RFB003008 {
+	if version != RFB003003 && version != RFB003007 && version != RFB003008 {
 		version = RFB003008
 	}
 	glog.Infof("version:%s", version)

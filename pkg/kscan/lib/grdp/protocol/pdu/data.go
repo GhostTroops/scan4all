@@ -535,8 +535,8 @@ func (s *SaveSessionInfo) Unpack(r io.Reader) (err error) {
 	case INFOTYPE_LOGON_EXTENDED_INFO:
 		err = s.logonInfoExtended(r)
 	default:
-		glog.Error("Unhandled saveSessionInfo type 0x%", s.InfoType)
-		return fmt.Errorf("Unhandled saveSessionInfo type 0x%", s.InfoType)
+		glog.Errorf("Unhandled saveSessionInfo type 0x%x", s.InfoType)
+		return fmt.Errorf("unhandled saveSessionInfo type 0x%x", s.InfoType)
 	}
 
 	return err

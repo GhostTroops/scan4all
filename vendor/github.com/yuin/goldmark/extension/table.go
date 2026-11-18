@@ -68,7 +68,7 @@ func NewTableConfig() TableConfig {
 }
 
 // SetOption implements renderer.SetOptioner.
-func (c *TableConfig) SetOption(name renderer.OptionName, value interface{}) {
+func (c *TableConfig) SetOption(name renderer.OptionName, value any) {
 	switch name {
 	case optTableCellAlignMethod:
 		c.TableCellAlignMethod = value.(TableCellAlignMethod)
@@ -125,12 +125,16 @@ func isTableDelim(bs []byte) bool {
 	if w, _ := util.IndentWidth(bs, 0); w > 3 {
 		return false
 	}
+	allSep := true
 	for _, b := range bs {
+		if b != '-' {
+			allSep = false
+		}
 		if !(util.IsSpace(b) || b == '-' || b == '|' || b == ':') {
 			return false
 		}
 	}
-	return true
+	return !allSep
 }
 
 var tableDelimLeft = regexp.MustCompile(`^\s*\:\-+\s*$`)
@@ -150,6 +154,7 @@ func NewTableParagraphTransformer() parser.ParagraphTransformer {
 }
 
 func (b *tableParagraphTransformer) Transform(node *gast.Paragraph, reader text.Reader, pc parser.Context) {
+	ppos := node.Pos()
 	lines := node.Lines()
 	if lines.Len() < 2 {
 		return
@@ -165,6 +170,7 @@ func (b *tableParagraphTransformer) Transform(node *gast.Paragraph, reader text.
 		}
 		table := ast.NewTable()
 		table.Alignments = alignments
+		table.SetPos(ppos)
 		table.AppendChild(table, ast.NewTableHeader(header))
 		for j := i + 1; j < lines.Len(); j++ {
 			table.AppendChild(table, b.parseRow(lines.At(j), alignments, false, reader, pc))
@@ -183,13 +189,15 @@ func (b *tableParagraphTransformer) Transform(node *gast.Paragraph, reader text.
 
 func (b *tableParagraphTransformer) parseRow(segment text.Segment,
 	alignments []ast.Alignment, isHeader bool, reader text.Reader, pc parser.Context) *ast.TableRow {
+	npos := segment
 	source := reader.Source()
+	segment = segment.TrimLeftSpace(source)
+	segment = segment.TrimRightSpace(source)
 	line := segment.Value(source)
 	pos := 0
-	pos += util.TrimLeftSpaceLength(line)
 	limit := len(line)
-	limit -= util.TrimRightSpaceLength(line)
 	row := ast.NewTableRow(alignments)
+	row.SetPos(npos.Start)
 	if len(line) > 0 && line[pos] == '|' {
 		pos++
 	}
@@ -209,6 +217,7 @@ func (b *tableParagraphTransformer) parseRow(segment text.Segment,
 
 		var escapedCell *escapedPipeCell
 		node := ast.NewTableCell()
+		node.SetPos(npos.Start + pos - npos.Padding)
 		node.Alignment = alignment
 		hasBacktick := false
 		closure := pos
@@ -223,7 +232,7 @@ func (b *tableParagraphTransformer) parseRow(segment text.Segment,
 					if escapedCell == nil {
 						escapedCell = &escapedPipeCell{node, []int{}, false}
 						escapedList := pc.ComputeIfAbsent(escapedPipeCellListKey,
-							func() interface{} {
+							func() any {
 								return []*escapedPipeCell{}
 							}).([]*escapedPipeCell)
 						escapedList = append(escapedList, escapedCell)
@@ -358,17 +367,17 @@ func (r *TableHTMLRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegistere
 }
 
 // TableAttributeFilter defines attribute names which table elements can have.
-var TableAttributeFilter = html.GlobalAttributeFilter.Extend(
-	[]byte("align"),       // [Deprecated]
-	[]byte("bgcolor"),     // [Deprecated]
-	[]byte("border"),      // [Deprecated]
-	[]byte("cellpadding"), // [Deprecated]
-	[]byte("cellspacing"), // [Deprecated]
-	[]byte("frame"),       // [Deprecated]
-	[]byte("rules"),       // [Deprecated]
-	[]byte("summary"),     // [Deprecated]
-	[]byte("width"),       // [Deprecated]
-)
+//
+// - align: Deprecated
+// - bgcolor: Deprecated
+// - border: Deprecated
+// - cellpadding: Deprecated
+// - cellspacing: Deprecated
+// - frame: Deprecated
+// - rules: Deprecated
+// - summary: Deprecated
+// - width: Deprecated.
+var TableAttributeFilter = html.GlobalAttributeFilter.ExtendString(`align,bgcolor,border,cellpadding,cellspacing,frame,rules,summary,width`) // nolint: lll
 
 func (r *TableHTMLRenderer) renderTable(
 	w util.BufWriter, source []byte, n gast.Node, entering bool) (gast.WalkStatus, error) {
@@ -385,13 +394,13 @@ func (r *TableHTMLRenderer) renderTable(
 }
 
 // TableHeaderAttributeFilter defines attribute names which <thead> elements can have.
-var TableHeaderAttributeFilter = html.GlobalAttributeFilter.Extend(
-	[]byte("align"),   // [Deprecated since HTML4] [Obsolete since HTML5]
-	[]byte("bgcolor"), // [Not Standardized]
-	[]byte("char"),    // [Deprecated since HTML4] [Obsolete since HTML5]
-	[]byte("charoff"), // [Deprecated since HTML4] [Obsolete since HTML5]
-	[]byte("valign"),  // [Deprecated since HTML4] [Obsolete since HTML5]
-)
+//
+// - align: Deprecated since HTML4, Obsolete since HTML5
+// - bgcolor: Not Standardized
+// - char: Deprecated since HTML4, Obsolete since HTML5
+// - charoff: Deprecated since HTML4, Obsolete since HTML5
+// - valign: Deprecated since HTML4, Obsolete since HTML5.
+var TableHeaderAttributeFilter = html.GlobalAttributeFilter.ExtendString(`align,bgcolor,char,charoff,valign`)
 
 func (r *TableHTMLRenderer) renderTableHeader(
 	w util.BufWriter, source []byte, n gast.Node, entering bool) (gast.WalkStatus, error) {
@@ -413,13 +422,13 @@ func (r *TableHTMLRenderer) renderTableHeader(
 }
 
 // TableRowAttributeFilter defines attribute names which <tr> elements can have.
-var TableRowAttributeFilter = html.GlobalAttributeFilter.Extend(
-	[]byte("align"),   // [Obsolete since HTML5]
-	[]byte("bgcolor"), // [Obsolete since HTML5]
-	[]byte("char"),    // [Obsolete since HTML5]
-	[]byte("charoff"), // [Obsolete since HTML5]
-	[]byte("valign"),  // [Obsolete since HTML5]
-)
+//
+// - align: Obsolete since HTML5
+// - bgcolor: Obsolete since HTML5
+// - char: Obsolete since HTML5
+// - charoff: Obsolete since HTML5
+// - valign: Obsolete since HTML5.
+var TableRowAttributeFilter = html.GlobalAttributeFilter.ExtendString(`align,bgcolor,char,charoff,valign`)
 
 func (r *TableHTMLRenderer) renderTableRow(
 	w util.BufWriter, source []byte, n gast.Node, entering bool) (gast.WalkStatus, error) {
@@ -439,50 +448,41 @@ func (r *TableHTMLRenderer) renderTableRow(
 }
 
 // TableThCellAttributeFilter defines attribute names which table <th> cells can have.
-var TableThCellAttributeFilter = html.GlobalAttributeFilter.Extend(
-	[]byte("abbr"), // [OK] Contains a short abbreviated description of the cell's content [NOT OK in <td>]
-
-	[]byte("align"),   // [Obsolete since HTML5]
-	[]byte("axis"),    // [Obsolete since HTML5]
-	[]byte("bgcolor"), // [Not Standardized]
-	[]byte("char"),    // [Obsolete since HTML5]
-	[]byte("charoff"), // [Obsolete since HTML5]
-
-	[]byte("colspan"), // [OK] Number of columns that the cell is to span
-	[]byte("headers"), // [OK] This attribute contains a list of space-separated
-	// strings, each corresponding to the id attribute of the <th> elements that apply to this element
-
-	[]byte("height"), // [Deprecated since HTML4] [Obsolete since HTML5]
-
-	[]byte("rowspan"), // [OK] Number of rows that the cell is to span
-	[]byte("scope"),   // [OK] This enumerated attribute defines the cells that
-	// the header (defined in the <th>) element relates to [NOT OK in <td>]
-
-	[]byte("valign"), // [Obsolete since HTML5]
-	[]byte("width"),  // [Deprecated since HTML4] [Obsolete since HTML5]
-)
+//
+//   - abbr:  [OK] Contains a short abbreviated description of the cell's content [NOT OK in <td>]
+//   - align:  Obsolete since HTML5
+//   - axis:  Obsolete since HTML5
+//   - bgcolor:  Not Standardized
+//   - char:  Obsolete since HTML5
+//   - charoff:  Obsolete since HTML5
+//   - colspan:  [OK] Number of columns that the cell is to span
+//   - headers:  [OK] This attribute contains a list of space-separated strings,
+//     each corresponding to the id attribute of the <th> elements that apply to this element
+//   - height:  Deprecated since HTML4. Obsolete since HTML5
+//   - rowspan:  [OK] Number of rows that the cell is to span
+//   - scope:  [OK] This enumerated attribute defines the cells that the header
+//     (defined in the <th>) element relates to [NOT OK in <td>]
+//   - valign:  Obsolete since HTML5
+//   - width:  Deprecated since HTML4. Obsolete since HTML5.
+var TableThCellAttributeFilter = html.GlobalAttributeFilter.ExtendString(`abbr,align,axis,bgcolor,char,charoff,colspan,headers,height,rowspan,scope,valign,width`) // nolint:lll
 
 // TableTdCellAttributeFilter defines attribute names which table <td> cells can have.
-var TableTdCellAttributeFilter = html.GlobalAttributeFilter.Extend(
-	[]byte("abbr"),    // [Obsolete since HTML5] [OK in <th>]
-	[]byte("align"),   // [Obsolete since HTML5]
-	[]byte("axis"),    // [Obsolete since HTML5]
-	[]byte("bgcolor"), // [Not Standardized]
-	[]byte("char"),    // [Obsolete since HTML5]
-	[]byte("charoff"), // [Obsolete since HTML5]
-
-	[]byte("colspan"), // [OK] Number of columns that the cell is to span
-	[]byte("headers"), // [OK] This attribute contains a list of space-separated
-	// strings, each corresponding to the id attribute of the <th> elements that apply to this element
-
-	[]byte("height"), // [Deprecated since HTML4] [Obsolete since HTML5]
-
-	[]byte("rowspan"), // [OK] Number of rows that the cell is to span
-
-	[]byte("scope"),  // [Obsolete since HTML5] [OK in <th>]
-	[]byte("valign"), // [Obsolete since HTML5]
-	[]byte("width"),  // [Deprecated since HTML4] [Obsolete since HTML5]
-)
+//
+//   - abbr:  Obsolete since HTML5. [OK in <th>]
+//   - align:  Obsolete since HTML5
+//   - axis:  Obsolete since HTML5
+//   - bgcolor:  Not Standardized
+//   - char:  Obsolete since HTML5
+//   - charoff:  Obsolete since HTML5
+//   - colspan:  [OK] Number of columns that the cell is to span
+//   - headers:  [OK] This attribute contains a list of space-separated strings, each corresponding
+//     to the id attribute of the <th> elements that apply to this element
+//   - height:  Deprecated since HTML4. Obsolete since HTML5
+//   - rowspan:  [OK] Number of rows that the cell is to span
+//   - scope:  Obsolete since HTML5. [OK in <th>]
+//   - valign:  Obsolete since HTML5
+//   - width:  Deprecated since HTML4. Obsolete since HTML5.
+var TableTdCellAttributeFilter = html.GlobalAttributeFilter.ExtendString(`abbr,align,axis,bgcolor,char,charoff,colspan,headers,height,rowspan,scope,valign,width`) // nolint: lll
 
 func (r *TableHTMLRenderer) renderTableCell(
 	w util.BufWriter, source []byte, node gast.Node, entering bool) (gast.WalkStatus, error) {
@@ -492,7 +492,7 @@ func (r *TableHTMLRenderer) renderTableCell(
 		tag = "th"
 	}
 	if entering {
-		fmt.Fprintf(w, "<%s", tag)
+		_, _ = fmt.Fprintf(w, "<%s", tag)
 		if n.Alignment != ast.AlignNone {
 			amethod := r.TableConfig.TableCellAlignMethod
 			if amethod == TableCellAlignDefault {
@@ -505,13 +505,18 @@ func (r *TableHTMLRenderer) renderTableCell(
 			switch amethod {
 			case TableCellAlignAttribute:
 				if _, ok := n.AttributeString("align"); !ok { // Skip align render if overridden
-					fmt.Fprintf(w, ` align="%s"`, n.Alignment.String())
+					_, _ = fmt.Fprintf(w, ` align="%s"`, n.Alignment.String())
 				}
 			case TableCellAlignStyle:
 				v, ok := n.AttributeString("style")
 				var cob util.CopyOnWriteBuffer
 				if ok {
-					cob = util.NewCopyOnWriteBuffer(v.([]byte))
+					switch v := v.(type) {
+					case []byte:
+						cob = util.NewCopyOnWriteBuffer(v)
+					case string:
+						cob = util.NewCopyOnWriteBuffer([]byte(v))
+					}
 					cob.AppendByte(';')
 				}
 				style := fmt.Sprintf("text-align:%s", n.Alignment.String())
@@ -528,7 +533,7 @@ func (r *TableHTMLRenderer) renderTableCell(
 		}
 		_ = w.WriteByte('>')
 	} else {
-		fmt.Fprintf(w, "</%s>\n", tag)
+		_, _ = fmt.Fprintf(w, "</%s>\n", tag)
 	}
 	return gast.WalkContinue, nil
 }

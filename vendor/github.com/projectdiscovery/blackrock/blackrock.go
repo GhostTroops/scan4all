@@ -38,7 +38,7 @@ func New(rangez, seed int64) *BlackRock {
 func (blackrock *BlackRock) F(j, r, seed int64) int64 {
 	var primes = []int64{961752031, 982324657, 15485843, 961752031}
 	r = (r << (r & 0x4)) + r + seed
-	return int64(math.Abs(float64((((primes[j]*r + 25) ^ r) + j))))
+	return (((primes[j]*r + 25) ^ r) + j) & math.MaxInt64
 }
 
 // Outer feistal construction
@@ -88,7 +88,7 @@ func (blackrock *BlackRock) Unfe(r, a, b, m, seed int64) int64 {
 		if j&1 == 1 {
 			tmp = blackrock.F(j, L, seed)
 			if tmp > R {
-				tmp -= -R
+				tmp -= R
 				tmp = a - (tmp % a)
 				if tmp == a {
 					tmp = 0

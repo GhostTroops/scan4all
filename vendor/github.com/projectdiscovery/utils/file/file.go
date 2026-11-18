@@ -15,9 +15,12 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/asaskevich/govalidator"
+	"github.com/mattn/go-isatty"
 	"github.com/pkg/errors"
+	osutils "github.com/projectdiscovery/utils/os"
 	sliceutil "github.com/projectdiscovery/utils/slice"
 	stringsutil "github.com/projectdiscovery/utils/strings"
 	"gopkg.in/yaml.v3"
@@ -131,7 +134,7 @@ func DeleteFilesOlderThan(folder string, filter FileFilters) error {
 			if filter.Callback != nil {
 				return filter.Callback(osPathname)
 			} else {
-				os.RemoveAll(osPathname)
+				_ = os.RemoveAll(osPathname)
 			}
 		}
 		return nil
@@ -149,12 +152,16 @@ func DownloadFile(filepath string, url string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	out, err := os.Create(filepath)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() {
+		_ = out.Close()
+	}()
 	_, err = io.Copy(out, resp.Body)
 	return err
 }
@@ -177,6 +184,9 @@ func CreateFolder(path string) error {
 
 // HasStdin determines if the user has piped input
 func HasStdin() bool {
+	if osutils.IsWindows() && (isatty.IsTerminal(os.Stdin.Fd()) || isatty.IsCygwinTerminal(os.Stdin.Fd())) {
+		return false
+	}
 	stat, err := os.Stdin.Stat()
 	if err != nil {
 		return false
@@ -190,37 +200,52 @@ func HasStdin() bool {
 	return isPipedFromChrDev || isPipedFromFIFO
 }
 
-// ReadFileWithReader and stream on a channel
+// ReadFileWithReader streams r line by line on a channel.
+//
+// Deprecated: use LinesReader, which returns an iter.Seq2[string, error] and
+// surfaces scanner errors. Equivalent invocation:
+//
+//	for line, err := range fileutil.LinesReader(r) { ... }
 func ReadFileWithReader(r io.Reader) (chan string, error) {
 	out := make(chan string)
 	go func() {
 		defer close(out)
-		scanner := bufio.NewScanner(r)
-		for scanner.Scan() {
-			out <- scanner.Text()
+		for line, err := range LinesReader(r) {
+			if err != nil {
+				return
+			}
+			out <- line
 		}
 	}()
-
 	return out, nil
 }
 
-// ReadFileWithReader with specific buffer size and stream on a channel
+// ReadFileWithReaderAndBufferSize streams r line by line on a channel using
+// the given scanner buffer size.
+//
+// Deprecated: use LinesReader with WithBufferSize. Equivalent invocation:
+//
+//	for line, err := range fileutil.LinesReader(r, fileutil.WithBufferSize(n)) { ... }
 func ReadFileWithReaderAndBufferSize(r io.Reader, maxCapacity int) (chan string, error) {
 	out := make(chan string)
 	go func() {
 		defer close(out)
-		scanner := bufio.NewScanner(r)
-		buf := make([]byte, maxCapacity)
-		scanner.Buffer(buf, maxCapacity)
-		for scanner.Scan() {
-			out <- scanner.Text()
+		for line, err := range LinesReader(r, WithBufferSize(maxCapacity)) {
+			if err != nil {
+				return
+			}
+			out <- line
 		}
 	}()
-
 	return out, nil
 }
 
-// ReadFile with filename
+// ReadFile streams the file at filename line by line on a channel.
+//
+// Deprecated: use Lines, which returns an iter.Seq2[string, error] and
+// surfaces open / scanner errors. Equivalent invocation:
+//
+//	for line, err := range fileutil.Lines(filename) { ... }
 func ReadFile(filename string) (chan string, error) {
 	if !FileExists(filename) {
 		return nil, errors.New("file doesn't exist")
@@ -228,21 +253,22 @@ func ReadFile(filename string) (chan string, error) {
 	out := make(chan string)
 	go func() {
 		defer close(out)
-		f, err := os.Open(filename)
-		if err != nil {
-			return
-		}
-		defer f.Close()
-		scanner := bufio.NewScanner(f)
-		for scanner.Scan() {
-			out <- scanner.Text()
+		for line, err := range Lines(filename) {
+			if err != nil {
+				return
+			}
+			out <- line
 		}
 	}()
-
 	return out, nil
 }
 
-// ReadFile with filename and specific buffer size
+// ReadFileWithBufferSize streams the file at filename line by line on a
+// channel using the given scanner buffer size.
+//
+// Deprecated: use Lines with WithBufferSize. Equivalent invocation:
+//
+//	for line, err := range fileutil.Lines(filename, fileutil.WithBufferSize(n)) { ... }
 func ReadFileWithBufferSize(filename string, maxCapacity int) (chan string, error) {
 	if !FileExists(filename) {
 		return nil, errors.New("file doesn't exist")
@@ -250,20 +276,106 @@ func ReadFileWithBufferSize(filename string, maxCapacity int) (chan string, erro
 	out := make(chan string)
 	go func() {
 		defer close(out)
-		f, err := os.Open(filename)
+		for line, err := range Lines(filename, WithBufferSize(maxCapacity)) {
+			if err != nil {
+				return
+			}
+			out <- line
+		}
+	}()
+	return out, nil
+}
+
+// WithComment skips lines whose first non-whitespace characters are prefix,
+// for both Lines and ReadLinesStream. An empty prefix leaves every line in
+// place. The skipped line is not split or trimmed.
+func WithComment(prefix string) LineOption {
+	return func(c *lineConfig) { c.comment = prefix }
+}
+
+// ReadFileWithError reads a file and streams lines with proper error handling
+// Returns two channels: one for lines and one for errors
+func ReadFileWithError(filename string) (<-chan string, <-chan error, error) {
+	if !FileExists(filename) {
+		return nil, nil, errors.New("file doesn't exist")
+	}
+
+	linesCh := make(chan string)
+	errCh := make(chan error, 1)
+
+	go func() {
+		defer close(linesCh)
+		defer close(errCh)
+
+		file, err := os.Open(filename)
 		if err != nil {
+			errCh <- err
 			return
 		}
-		defer f.Close()
-		scanner := bufio.NewScanner(f)
-		buf := make([]byte, maxCapacity)
-		scanner.Buffer(buf, maxCapacity)
+		defer func() { _ = file.Close() }()
+
+		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
-			out <- scanner.Text()
+			linesCh <- scanner.Text()
+		}
+
+		if err := scanner.Err(); err != nil {
+			errCh <- err
 		}
 	}()
 
-	return out, nil
+	return linesCh, errCh, nil
+}
+
+// ReadLinesStream reads a file and streams lines with configurable options
+// Supports trim, skip empty, comment filtering, and custom buffer size
+func ReadLinesStream(filename string, opts ...LineOption) (<-chan string, <-chan error) {
+	linesCh := make(chan string)
+	errCh := make(chan error, 1)
+
+	go func() {
+		defer close(linesCh)
+		defer close(errCh)
+
+		file, err := os.Open(filename)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		defer func() { _ = file.Close() }()
+
+		cfg := &lineConfig{}
+		for _, opt := range opts {
+			opt(cfg)
+		}
+
+		scanner := bufio.NewScanner(file)
+		if cfg.bufferSize > 0 {
+			scanner.Buffer(make([]byte, cfg.bufferSize), cfg.bufferSize)
+		}
+
+		for scanner.Scan() {
+			line := scanner.Text()
+
+			if isComment(line, cfg.comment) {
+				continue
+			}
+			if cfg.trimSpace {
+				line = strings.TrimSpace(line)
+			}
+			if cfg.skipEmpty && line == "" {
+				continue
+			}
+
+			linesCh <- line
+		}
+
+		if err := scanner.Err(); err != nil {
+			errCh <- err
+		}
+	}()
+
+	return linesCh, errCh
 }
 
 // GetTempFileName generate a temporary file name
@@ -289,13 +401,17 @@ func CopyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer srcFile.Close()
+	defer func() {
+		_ = srcFile.Close()
+	}()
 
 	dstFile, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer dstFile.Close()
+	defer func() {
+		_ = dstFile.Close()
+	}()
 
 	_, err = io.Copy(dstFile, srcFile)
 	if err != nil {
@@ -319,7 +435,9 @@ func Unmarshal(encodeType EncodeType, data []byte, obj interface{}) error {
 		if err != nil {
 			return err
 		}
-		defer dataFile.Close()
+		defer func() {
+			_ = dataFile.Close()
+		}()
 		return UnmarshalFromReader(encodeType, dataFile, obj)
 	default:
 		return UnmarshalFromReader(encodeType, bytes.NewReader(data), obj)
@@ -345,7 +463,9 @@ func Marshal(encodeType EncodeType, data []byte, obj interface{}) error {
 		if err != nil {
 			return err
 		}
-		defer dataFile.Close()
+		defer func() {
+			_ = dataFile.Close()
+		}()
 		return MarshalToWriter(encodeType, dataFile, obj)
 	default:
 		return MarshalToWriter(encodeType, bytes.NewBuffer(data), obj)
@@ -389,7 +509,9 @@ func UseMusl(path string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 	elfFile, err := elf.NewFile(file)
 	if err != nil {
 		return false, err
@@ -425,7 +547,7 @@ func HasPermission(fileName string, permission int) (bool, error) {
 		}
 		return false, err
 	}
-	file.Close()
+	_ = file.Close()
 
 	return true, nil
 }
@@ -448,7 +570,9 @@ func CountLinesWithSeparator(separator []byte, filename string) (uint, error) {
 		return 0, err
 	}
 
-	defer file.Close()
+	defer func() {
+		_ = file.Close()
+	}()
 	if len(separator) == 0 {
 		return 0, ErrInvalidSeparator
 	}
@@ -564,4 +688,76 @@ func OpenOrCreateFile(name string) (*os.File, error) {
 		return os.OpenFile(name, os.O_RDWR, 0666)
 	}
 	return os.OpenFile(name, os.O_RDWR|os.O_CREATE, 0666)
+}
+
+// DedupeLines reads a file and removes duplicate lines from it.
+// The function can be memory intensive for large files.
+func DedupeLines(filename string) error {
+	file, err := os.Open(filename)
+	if err != nil {
+		return errors.Wrapf(err, "could not open file: %s", filename)
+	}
+	defer func() {
+		_ = file.Close()
+	}()
+
+	seenLines := make(map[string]struct{})
+	var deduplicatedLines []string
+
+	info, err := file.Stat()
+	if err != nil {
+		return err
+	}
+	scanner := bufio.NewScanner(file)
+	maxSize := int(info.Size())
+	buffer := make([]byte, 0, maxSize)
+	scanner.Buffer(buffer, maxSize)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if _, exists := seenLines[line]; !exists {
+			seenLines[line] = struct{}{}
+			deduplicatedLines = append(deduplicatedLines, line)
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return errors.Wrapf(err, "could not read file: %s", filename)
+	}
+
+	return os.WriteFile(filename, []byte(strings.Join(deduplicatedLines, "\n")+"\n"), 0644)
+}
+
+// IsEmpty checks if the file is empty
+func IsEmpty(filename string) (bool, error) {
+	fileInfo, err := os.Stat(filename)
+	if err != nil {
+		return false, err
+	}
+
+	if fileInfo.Size() == 0 {
+		return true, nil
+	}
+
+	file, err := os.Open(filename)
+	if err != nil {
+		return false, err
+	}
+	defer func() {
+		_ = file.Close()
+	}()
+
+	// Read up to 512 bytes to check for non-space characters
+	buffer := make([]byte, 16)
+	n, err := file.Read(buffer)
+	if err != nil && err != io.EOF {
+		return false, err
+	}
+
+	// Check if all read characters are spaces, null characters, new lines, or carriage returns
+	for i := 0; i < n; i++ {
+		if !unicode.IsSpace(rune(buffer[i])) && buffer[i] != 0 && buffer[i] != '\n' && buffer[i] != '\r' {
+			return false, nil
+		}
+	}
+	return true, nil
 }

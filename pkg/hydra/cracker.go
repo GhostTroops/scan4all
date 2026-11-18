@@ -157,7 +157,7 @@ func redisCracker(i interface{}) interface{} {
 	info.Auth.MakePassword()
 	if ok, err := redis.Check(info.IPAddr, info.Auth.Password, info.Port); ok {
 		if err != nil {
-			slog.Printf(slog.DEBUG, "redis://%s:%s/auth:%s,%s", info.IPAddr, info.Port, info.Auth.Password, err)
+			slog.Printf(slog.DEBUG, "redis://%s:%d/auth:%s,%v", info.IPAddr, info.Port, info.Auth.Password, err)
 			return nil
 		}
 		info.Status = true

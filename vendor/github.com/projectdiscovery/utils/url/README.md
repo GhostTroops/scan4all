@@ -1,6 +1,29 @@
 # urlutil
 The package contains various helpers to interact with URLs
 
+
+## URL Parsing Methods
+
+ Function                                            | Description                                      | Type                          | Behavior                                 |
+-----------------------------------------------------|--------------------------------------------------|-------------------------------|------------------------------------------|
+ `Parse(inputURL string)`                            | Standard URL Parsing (+ Some Edgecases)          | Both Relative & Absolute URLs | NA                                       |
+ `ParseURL(inputURL string, unsafe bool)`            | Standard + Unsafe URL Parsing (+ Edgecases)      | Both Relative & Absolute URLs | NA                                       |
+ `ParseRelativeURL(inputURL string, unsafe bool)`    | Standard + Unsafe URL Parsing (+ Edgecases)      | Only Relative URLs            | error if absolute URL is given           |
+ `ParseRawRelativeURL(inputURL string, unsafe bool)` | Standard + Unsafe URL Parsing                    | Only Relative URLs            | error if absolute URL is given           |
+ `ParseAbsoluteURL(inputURL string, unsafe bool)`    | Standard + Unsafe URL Parsing (+ Edgecases)      | Only Absolute URLs            | error if relative URL is given           |
+
+### Known Edgecases / Changes from `url.URL`
+
+- Query Parameters are Ordered
+- Invalid unicode characters and invalid url encodings allowed in unsafe mode
+- `u.Path` is always `/` prefixed if not empty (Except `ParseRawRelativePath`)
+- allows invalid values / encodings in url path
+- Does not encode characters except reserved characters in query parameters (see: Raw Params)
+- almost proper parsing of url into parts (scheme,host,path,query,fragment) [known limitation of manually added hostnames like mydomain (without `.` in hostname)]
+
+
+> More details on each edgecase/behavior is given below
+
 ## difference b/w `net/url.URL` and `utils/url/URL`
 
 - `url.URL` caters to variety of urls and for that reason its parsing is not that accurate under various conditions
@@ -41,9 +64,17 @@ scanme.sh/%invalid/path
   - `.UpdateRelPath(newrelpath string, unsafe bool)` 
   - `.Clone()` and more
 
+- Dealing with Double URL Encoding of chars like `%0A` when `.Path` is directly updated
+
+    when `url.Parse` is used to parse url like `https://127.0.0.1/%0A` it internally calls `u.setPath` which decodes `%0A` to `\n` and saves it in `u.Path` and when final url is created at time of writing to connection in http.Request Path is then escaped again thus `\n` becomes `%0A` and final url becomes `https://127.0.0.1/%0A` which is expected/required behavior.
+
+    If `u.Path` is changed/updated directly after `url.Parse` ex: `u.Path = "%0A"` then at time of writing to connection in http.Request, Path is escaped again thus `%0A` becomes `%250A` and final url becomes `https://127.0.0.1/%250A` which is not expected/required behavior to avoid this we manually unescape/decode `u.Path` and we set `u.Path = unescape(u.Path)` which takes care of this edgecase.
+
+    This is how `utils/url/URL` handles this edgecase when `u.Path` is directly updated.
 
 ### Note
 
 `utils/url/URL` embeds `url.URL` and thus inherits and exposes all `url.URL` methods and variables.
 Its ok to use any method from `url.URL` (directly/indirectly) except `url.URL.Query()` and `url.URL.String()` (due to parameter encoding issues).
 In any case if it is not possible to follow above point (ex: directly updating/referencing `http.Request.URL`) `.Update()` method should be called before accessing them which updates `url.URL` instance for this edgecase. (Not required if above rule is followed)
+

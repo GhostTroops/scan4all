@@ -10,7 +10,7 @@ import (
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/projectdiscovery/freeport"
-	errorutil "github.com/projectdiscovery/utils/errors"
+	"github.com/projectdiscovery/utils/errkit"
 )
 
 // StatisticsClient is an interface implemented by a statistics client.
@@ -117,62 +117,77 @@ func NewWithOptions(ctx context.Context, options *Options) (*Statistics, error) 
 	return statistics, nil
 }
 
+func (s *Statistics) metricsHandler(w http.ResponseWriter, req *http.Request) {
+	items := make(map[string]interface{})
+
+	// Common fields, set first so that the caller's own values for them win
+	requests, hasRequests := s.GetCounter("requests")
+	startedAt, hasStartedAt := s.GetStatic("startedAt")
+	total, hasTotal := s.GetCounter("total")
+	var (
+		duration    time.Duration
+		hasDuration bool
+	)
+	// duration
+	if hasStartedAt {
+		if stAt, ok := startedAt.(time.Time); ok {
+			duration = time.Since(stAt)
+			items["duration"] = FmtDuration(duration)
+			hasDuration = true
+		}
+	}
+	// rps
+	if hasRequests && hasDuration {
+		items["rps"] = String(uint64(float64(requests) / duration.Seconds()))
+	}
+	// percent
+	if hasRequests && hasTotal {
+		percent := String(uint64(0))
+		if total > 0 {
+			percentData := (float64(requests) * float64(100)) / float64(total)
+			percent = String(uint64(percentData))
+		}
+		items["percent"] = percent
+	}
+	for k, v := range s.counters {
+		items[k] = v.Load()
+	}
+	for k, v := range s.static {
+		items[k] = v
+	}
+	for k, v := range s.dynamic {
+		items[k] = v(s)
+	}
+
+	data, err := jsoniter.Marshal(items)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = fmt.Fprintf(w, `{"error":"%s"}`, err)
+		return
+	}
+	_, _ = w.Write(data)
+}
+
 // Start starts the event loop of the stats client.
 func (s *Statistics) Start() error {
+	if s.httpServer != nil {
+		return errkit.New("server already started")
+	}
+
 	if s.Options.Web {
-		http.HandleFunc("/metrics", func(w http.ResponseWriter, req *http.Request) {
-			items := make(map[string]interface{})
-			for k, v := range s.counters {
-				items[k] = v.Load()
-			}
-			for k, v := range s.static {
-				items[k] = v
-			}
-			for k, v := range s.dynamic {
-				items[k] = v(s)
-			}
+		listenHost := s.Options.ListenHost
+		if listenHost == "" {
+			listenHost = DefaultOptions.ListenHost
+		}
 
-			// Common fields
-			requests, hasRequests := s.GetCounter("requests")
-			startedAt, hasStartedAt := s.GetStatic("startedAt")
-			total, hasTotal := s.GetCounter("total")
-			var (
-				duration    time.Duration
-				hasDuration bool
-			)
-			// duration
-			if hasStartedAt {
-				if stAt, ok := startedAt.(time.Time); ok {
-					duration = time.Since(stAt)
-					items["duration"] = FmtDuration(duration)
-					hasDuration = true
-				}
-			}
-			// rps
-			if hasRequests && hasDuration {
-				items["rps"] = String(uint64(float64(requests) / duration.Seconds()))
-			}
-			// percent
-			if hasRequests && hasTotal {
-				percentData := (float64(requests) * float64(100)) / float64(total)
-				percent := String(uint64(percentData))
-				items["percent"] = percent
-			}
-
-			data, err := jsoniter.Marshal(items)
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-				_, _ = w.Write([]byte(fmt.Sprintf(`{"error":"%s"}`, err)))
-				return
-			}
-			_, _ = w.Write(data)
-		})
+		mux := http.NewServeMux()
+		mux.HandleFunc("/metrics", s.metricsHandler)
 
 		// check if the default port is available
-		port, err := freeport.GetPort(freeport.TCP, "127.0.0.1", s.Options.ListenPort)
+		port, err := freeport.GetPort(freeport.TCP, listenHost, s.Options.ListenPort)
 		if err != nil {
 			// otherwise picks a random one and update the options
-			port, err = freeport.GetFreeTCPPort("127.0.0.1")
+			port, err = freeport.GetFreeTCPPort(listenHost)
 			if err != nil {
 				return err
 			}
@@ -181,13 +196,42 @@ func (s *Statistics) Start() error {
 
 		s.httpServer = &http.Server{
 			Addr:    fmt.Sprintf("%s:%d", port.Address, port.Port),
-			Handler: http.DefaultServeMux,
+			Handler: mux,
 		}
 
+		errChan := make(chan error, 1)
+		var done atomic.Bool
+
 		go func() {
-			_ = s.httpServer.ListenAndServe()
+			if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed && !done.Load() {
+				errChan <- err
+			}
 		}()
+
+		// catch initial fatal errors
+		select {
+		case err := <-errChan:
+			return err
+		case <-time.After(250 * time.Millisecond):
+			done.Store(true)
+			close(errChan)
+		}
+
 	}
+	return nil
+}
+
+// Stop stops the event loop of the stats client
+func (s *Statistics) Stop() error {
+	defer s.cancel()
+
+	if s.httpServer != nil {
+		if err := s.httpServer.Shutdown(s.ctx); err != nil {
+			return err
+		}
+	}
+	s.httpServer = nil
+
 	return nil
 }
 
@@ -196,19 +240,23 @@ func (s *Statistics) GetStatResponse(interval time.Duration, callback func(strin
 	metricCallback := func(url string) (string, error) {
 		response, err := http.Get(url)
 		if err != nil {
-			return "", errorutil.New("Error getting /metrics response: %v", err)
+			return "", errkit.New("Error getting /metrics response: %v", err)
 		}
 		defer func() {
 			_ = response.Body.Close()
 		}()
 		body, err := io.ReadAll(response.Body)
 		if err != nil {
-			return "", errorutil.New("Error reading /metrics response body: %v", err)
+			return "", errkit.New("Error reading /metrics response body: %v", err)
 		}
 		return string(body), nil
 	}
 
-	url := fmt.Sprintf("http://127.0.0.1:%v/metrics", s.Options.ListenPort)
+	listenHost := s.Options.ListenHost
+	if listenHost == "" {
+		listenHost = DefaultOptions.ListenHost
+	}
+	url := fmt.Sprintf("http://%s:%v/metrics", listenHost, s.Options.ListenPort)
 	go func() {
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
@@ -223,15 +271,4 @@ func (s *Statistics) GetStatResponse(interval time.Duration, callback func(strin
 			}
 		}
 	}()
-}
-
-// Stop stops the event loop of the stats client
-func (s *Statistics) Stop() error {
-	s.cancel()
-	if s.httpServer != nil {
-		if err := s.httpServer.Shutdown(context.Background()); err != nil {
-			return err
-		}
-	}
-	return nil
 }

@@ -28,7 +28,7 @@ func (b *listItemParser) Open(parent ast.Node, reader text.Reader, pc Context) (
 	}
 	offset := lastOffset(list)
 	line, _ := reader.PeekLine()
-	match, typ := matchesListItem(line, false)
+	match, typ := parseListItem(line)
 	if typ == notList {
 		return nil, NoChildren
 	}
@@ -53,15 +53,15 @@ func (b *listItemParser) Open(parent ast.Node, reader text.Reader, pc Context) (
 func (b *listItemParser) Continue(node ast.Node, reader text.Reader, pc Context) State {
 	line, _ := reader.PeekLine()
 	if util.IsBlank(line) {
-		reader.Advance(len(line) - 1)
+		reader.AdvanceToEOL()
 		return Continue | HasChildren
 	}
 
 	offset := lastOffset(node.Parent())
-	isEmpty := node.ChildCount() == 0
+	isEmpty := node.ChildCount() == 0 && pc.Get(emptyListItemWithBlankLines) != nil
 	indent, _ := util.IndentWidth(line, reader.LineOffset())
 	if (isEmpty || indent < offset) && indent < 4 {
-		_, typ := matchesListItem(line, true)
+		_, typ := parseListItem(line)
 		// new list item found
 		if typ != notList {
 			pc.Set(skipListParserKey, listItemFlagValue)

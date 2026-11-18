@@ -1,18 +1,17 @@
 package fastdialer
 
-import (
-	"github.com/pkg/errors"
-)
+import "github.com/projectdiscovery/utils/errkit"
 
 var (
-	CouldNotConnectError  = errors.New("could not connect to any address found for host")
-	NoAddressFoundError   = errors.New("no address found for host")
-	NoAddressAllowedError = errors.New("denied address found for host")
-	NoPortSpecifiedError  = errors.New("port was not specified")
-	MalformedIP6Error     = errors.New("malformed IPv6 address")
-	ResolveHostError      = errors.New("could not resolve host")
-	NoTLSHistoryError     = errors.New("no tls data history available")
-	NoTLSDataError        = errors.New("no tls data found for the key")
-	NoDNSDataError        = errors.New("no data found")
-	AsciiConversionError  = errors.New("could not convert hostname to ASCII")
+	CouldNotConnectError  = errkit.New("could not connect to any address found for host").SetKind(errkit.ErrKindNetworkPermanent)
+	NoAddressFoundError   = errkit.New("no address found for host").SetKind(errkit.ErrKindNetworkPermanent)
+	NoAddressAllowedError = errkit.New("denied address found for host").SetKind(errkit.ErrKindNetworkPermanent)
+	NoPortSpecifiedError  = errkit.New("port was not specified").SetKind(errkit.ErrKindNetworkPermanent)
+	MalformedIP6Error     = errkit.New("malformed IPv6 address").SetKind(errkit.ErrKindNetworkPermanent)
+	ResolveHostError      = errkit.New("could not resolve host").SetKind(errkit.ErrKindNetworkPermanent)
+	NoTLSHistoryError     = errkit.New("no tls data history available")
+	NoTLSDataError        = errkit.New("no tls data found for the key")
+	NoDNSDataError        = errkit.New("no data found")
+	AsciiConversionError  = errkit.New("could not convert hostname to ASCII")
+	ErrDialTimeout        = errkit.New("dial timeout").SetKind(errkit.ErrKindNetworkTemporary)
 )

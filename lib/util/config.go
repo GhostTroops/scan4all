@@ -108,21 +108,22 @@ func GetValAsInt(key string, nDefault int) int {
 	return n
 }
 
-var TmpFile = map[string][]*os.File{}
+var (
+	TmpFile   = map[string][]*os.File{}
+	tmpFileMu sync.Mutex
+)
 
 // 临时结果文件，例如 nmap
 func GetTempFile(t string) *os.File {
 	tempInput, err := ioutil.TempFile("", "scan4all-out*")
 	if err != nil {
-		//log.Println(err)
+		log.Println("GetTempFile error:", err)
 		return nil
-	} else {
-		if t1, ok := TmpFile[t]; ok {
-			t1 = append(t1, tempInput)
-		} else {
-			TmpFile[t] = []*os.File{tempInput}
-		}
 	}
+	tmpFileMu.Lock()
+	// 修复：追加后的切片必须写回 map，否则临时文件既不会被 CloseAll 回收，也会造成 map 无限增长
+	TmpFile[t] = append(TmpFile[t], tempInput)
+	tmpFileMu.Unlock()
 	return tempInput
 }
 
@@ -273,33 +274,32 @@ func CheckHvNmap() bool {
 	return false
 }
 
+// doReadBuff 把缓冲区剩余内容全部读出，注意：不再直接打印到 stdout，
+// 否则配合 -silent 的静默模式失效，且会与结果输出重复。
 func doReadBuff(buf *bytes.Buffer) string {
-	var a = []string{}
-	var data []byte = make([]byte, 1024)
-	n, err := buf.Read(data)
-	for nil == err && 0 < n {
-		s1 := string(data[:n])
-		fmt.Println(s1)
-		a = append(a, s1)
-		n, err = buf.Read(data)
+	if nil == buf || 0 == buf.Len() {
+		return ""
 	}
-	return strings.Join(a, "")
+	return buf.String()
 }
 
 // 最佳的方法是将命令写到临时文件，并通过bash进行执行
 func DoCmd(args ...string) (string, error) {
+	if 0 == len(args) || "" == args[0] {
+		return "", fmt.Errorf("DoCmd: empty command")
+	}
 	log.Println("start run: " + strings.Join(args, " "))
 	cmd := exec.Command(args[0], args[1:]...)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout // 标准输出
 	cmd.Stderr = &stderr // 标准错误
 	err := cmd.Run()
-	if nil != err {
-		return "", err
+	outStr := doReadBuff(&stdout)
+	// 命令返回非 0 时可能存在有效输出（例如 nuclei 有告警但已产出结果），
+	// 因此这里保留 stdout；stdout 为空时回落 stderr 便于排查。
+	if "" == strings.TrimSpace(outStr) {
+		outStr = doReadBuff(&stderr)
 	}
-	outStr, _ := doReadBuff(&stdout), doReadBuff(&stderr)
-	// out, err := cmd.CombinedOutput()
-
 	return outStr, err
 }
 

@@ -158,28 +158,6 @@ func (e *ExtendedMasterSecretExtension) Marshal() []byte {
 	return result
 }
 
-type NextProtocolNegotiationExtension struct {
-	Protocols []string
-}
-
-func (e *NextProtocolNegotiationExtension) WriteToConfig(c *Config) error {
-	c.NextProtos = e.Protocols
-	return nil
-}
-
-func (e *NextProtocolNegotiationExtension) CheckImplemented() error {
-	return nil
-}
-
-func (e *NextProtocolNegotiationExtension) Marshal() []byte {
-	result := make([]byte, 4)
-	result[0] = byte(extensionNextProtoNeg >> 8)
-	result[1] = byte(extensionNextProtoNeg & 0xff)
-	result[2] = 0
-	result[3] = 0
-	return result
-}
-
 type StatusRequestExtension struct {
 }
 
@@ -318,28 +296,6 @@ func (e *SessionTicketExtension) Marshal() []byte {
 	if len(e.Ticket) > 0 {
 		copy(result[4:], e.Ticket)
 	}
-	return result
-}
-
-type HeartbeatExtension struct {
-	Mode byte
-}
-
-func (e *HeartbeatExtension) WriteToConfig(c *Config) error {
-	return nil
-}
-
-func (e *HeartbeatExtension) CheckImplemented() error {
-	return nil
-}
-
-func (e *HeartbeatExtension) Marshal() []byte {
-	result := make([]byte, 5)
-	result[0] = byte(extensionHeartbeat >> 8)
-	result[1] = byte(extensionHeartbeat & 0xff)
-	result[2] = uint8(1 >> 8)
-	result[3] = uint8(1)
-	result[4] = e.Mode
 	return result
 }
 

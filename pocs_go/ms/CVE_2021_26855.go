@@ -79,7 +79,7 @@ func append16(v []byte, val uint16) []byte {
 	return append(v, byte(val), byte(val>>8))
 }
 
-func append32(v []byte, val uint16) []byte {
+func append32(v []byte, val uint32) []byte {
 	return append(v, byte(val), byte(val>>8), byte(val>>16), byte(val>>24))
 }
 
@@ -102,7 +102,7 @@ func Negotiate() []byte {
 
 	ret = append(ret, "NTLMSSP\x00"...) // protocol
 	ret = append32(ret, 1)              // type
-	ret = append32(ret, uint16(flags))  // flags
+	ret = append32(ret, uint32(flags))  // flags
 	ret = append16(ret, 0)              // NT domain name length
 	ret = append16(ret, 0)              // NT domain name max length
 	ret = append32(ret, 0)              // NT domain name offset

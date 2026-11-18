@@ -14,7 +14,7 @@ var (
 	ErrInvalidColor = errors.New("invalid color")
 )
 
-// Foreground and Background sequence codes
+// Foreground and Background sequence codes.
 const (
 	Foreground = "38"
 	Background = "48"

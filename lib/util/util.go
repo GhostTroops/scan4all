@@ -217,7 +217,7 @@ func GetResponse(username string, password string, urlstring string, method stri
 			if relocation, err1 := resp.Location(); err1 == nil {
 				location = relocation.String()
 			}
-			resp1, reqbody, location, err = &Response{resp.Status, resp.StatusCode, reqbody, &resp.Header, len(reqbody), resp.Request.URL.String(), location, resp.Proto}, reqbody, location, nil
+			resp1, err = &Response{resp.Status, resp.StatusCode, reqbody, &resp.Header, len(reqbody), resp.Request.URL.String(), location, resp.Proto}, nil
 		}
 	}, func() map[string]string {
 		hd001 := map[string]string{}

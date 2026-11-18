@@ -6,7 +6,7 @@ import (
 	"text/template"
 )
 
-// TemplateFuncMap contains a few useful template helpers
+// TemplateFuncMap contains a few useful template helpers.
 var (
 	TemplateFuncMap = template.FuncMap{
 		"Left": func(values ...interface{}) string {
@@ -29,6 +29,7 @@ var (
 				l = len(s)
 			}
 
+			//nolint:gomnd
 			if len(values) > 2 {
 				r := values[2].(int)
 				if r > len(s) {

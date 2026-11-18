@@ -3,21 +3,22 @@ package formatter
 import (
 	"bytes"
 
-	"github.com/logrusorgru/aurora"
+	"github.com/logrusorgru/aurora/v4"
 	"github.com/projectdiscovery/gologger/levels"
 )
 
 // CLI is a formatter for outputting CLI logs
 type CLI struct {
 	NoUseColors bool
-	aurora      aurora.Aurora
+	aurora      *aurora.Aurora
 }
 
 var _ Formatter = &CLI{}
 
 // NewCLI returns a new CLI based formatter
 func NewCLI(noUseColors bool) *CLI {
-	return &CLI{NoUseColors: noUseColors, aurora: aurora.NewAurora(!noUseColors)}
+	au := aurora.New(aurora.WithColors(!noUseColors))
+	return &CLI{NoUseColors: noUseColors, aurora: au}
 }
 
 // Format formats the log event data into bytes

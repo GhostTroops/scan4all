@@ -18,7 +18,7 @@ func (e *ParagraphElement) Render(w io.Writer, ctx RenderContext) error {
 	rules := ctx.options.Styles.Paragraph
 
 	if !e.First {
-		_, _ = w.Write([]byte("\n"))
+		_, _ = io.WriteString(w, "\n")
 	}
 	be := BlockElement{
 		Block: &bytes.Buffer{},
@@ -46,7 +46,7 @@ func (e *ParagraphElement) Finish(w io.Writer, ctx RenderContext) error {
 		if err != nil {
 			return err
 		}
-		_, _ = mw.Write([]byte("\n"))
+		_, _ = io.WriteString(mw, "\n")
 	}
 
 	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.Suffix)

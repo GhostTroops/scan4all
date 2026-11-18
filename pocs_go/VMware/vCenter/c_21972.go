@@ -124,7 +124,6 @@ func Upload_linux_shell(url, tar_content string) string {
 		if szRst, ok := Upload_shell2(url, buffer); ok {
 			log.Println("start test ", szRst)
 			return Check_shell(url, "linux")
-			break
 		}
 	}
 	return ""

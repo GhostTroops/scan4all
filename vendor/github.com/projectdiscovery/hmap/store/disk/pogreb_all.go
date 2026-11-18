@@ -45,7 +45,7 @@ func (pdb *PogrebDB) Size() int64 {
 
 // Close ...
 func (pdb *PogrebDB) Close() {
-	pdb.db.Close()
+	_ = pdb.db.Close()
 }
 
 // GC - runs the garbage collector

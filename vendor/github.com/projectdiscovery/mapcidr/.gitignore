@@ -1,4 +1,5 @@
 .vscode
+.devcontainer
 mapcidr
 cmd/mapcidr/mapcidr
 cmd/integration-test/mapcidr

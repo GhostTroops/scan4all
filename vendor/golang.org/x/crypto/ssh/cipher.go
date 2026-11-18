@@ -8,6 +8,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/des"
+	"crypto/fips140"
 	"crypto/rc4"
 	"crypto/subtle"
 	"encoding/binary"
@@ -15,6 +16,7 @@ import (
 	"fmt"
 	"hash"
 	"io"
+	"slices"
 
 	"golang.org/x/crypto/chacha20"
 	"golang.org/x/crypto/internal/poly1305"
@@ -58,11 +60,11 @@ func newRC4(key, iv []byte) (cipher.Stream, error) {
 type cipherMode struct {
 	keySize int
 	ivSize  int
-	create  func(key, iv []byte, macKey []byte, algs directionAlgorithms) (packetCipher, error)
+	create  func(key, iv []byte, macKey []byte, algs DirectionAlgorithms) (packetCipher, error)
 }
 
-func streamCipherMode(skip int, createFunc func(key, iv []byte) (cipher.Stream, error)) func(key, iv []byte, macKey []byte, algs directionAlgorithms) (packetCipher, error) {
-	return func(key, iv, macKey []byte, algs directionAlgorithms) (packetCipher, error) {
+func streamCipherMode(skip int, createFunc func(key, iv []byte) (cipher.Stream, error)) func(key, iv []byte, macKey []byte, algs DirectionAlgorithms) (packetCipher, error) {
+	return func(key, iv, macKey []byte, algs DirectionAlgorithms) (packetCipher, error) {
 		stream, err := createFunc(key, iv)
 		if err != nil {
 			return nil, err
@@ -93,41 +95,41 @@ func streamCipherMode(skip int, createFunc func(key, iv []byte) (cipher.Stream, 
 }
 
 // cipherModes documents properties of supported ciphers. Ciphers not included
-// are not supported and will not be negotiated, even if explicitly requested in
-// ClientConfig.Crypto.Ciphers.
-var cipherModes = map[string]*cipherMode{
-	// Ciphers from RFC 4344, which introduced many CTR-based ciphers. Algorithms
-	// are defined in the order specified in the RFC.
-	"aes128-ctr": {16, aes.BlockSize, streamCipherMode(0, newAESCTR)},
-	"aes192-ctr": {24, aes.BlockSize, streamCipherMode(0, newAESCTR)},
-	"aes256-ctr": {32, aes.BlockSize, streamCipherMode(0, newAESCTR)},
+// are not supported and will not be negotiated, even if explicitly configured.
+// When FIPS mode is enabled, only FIPS-approved algorithms are included.
+var cipherModes = map[string]*cipherMode{}
 
-	// Ciphers from RFC 4345, which introduces security-improved arcfour ciphers.
-	// They are defined in the order specified in the RFC.
-	"arcfour128": {16, 0, streamCipherMode(1536, newRC4)},
-	"arcfour256": {32, 0, streamCipherMode(1536, newRC4)},
+func init() {
+	cipherModes[CipherAES128CTR] = &cipherMode{16, aes.BlockSize, streamCipherMode(0, newAESCTR)}
+	cipherModes[CipherAES192CTR] = &cipherMode{24, aes.BlockSize, streamCipherMode(0, newAESCTR)}
+	cipherModes[CipherAES256CTR] = &cipherMode{32, aes.BlockSize, streamCipherMode(0, newAESCTR)}
+	//  Use of GCM with arbitrary IVs is not allowed in FIPS 140-only mode,
+	// we'll wire it up to NewGCMForSSH in Go 1.26.
+	//
+	// For now it means we'll work with fips140=on but not fips140=only.
+	cipherModes[CipherAES128GCM] = &cipherMode{16, 12, newGCMCipher}
+	cipherModes[CipherAES256GCM] = &cipherMode{32, 12, newGCMCipher}
 
-	// Cipher defined in RFC 4253, which describes SSH Transport Layer Protocol.
-	// Note that this cipher is not safe, as stated in RFC 4253: "Arcfour (and
-	// RC4) has problems with weak keys, and should be used with caution."
-	// RFC 4345 introduces improved versions of Arcfour.
-	"arcfour": {16, 0, streamCipherMode(0, newRC4)},
+	if fips140.Enabled() {
+		defaultCiphers = slices.DeleteFunc(defaultCiphers, func(algo string) bool {
+			_, ok := cipherModes[algo]
+			return !ok
+		})
+		return
+	}
 
-	// AEAD ciphers
-	gcm128CipherID:     {16, 12, newGCMCipher},
-	gcm256CipherID:     {32, 12, newGCMCipher},
-	chacha20Poly1305ID: {64, 0, newChaCha20Cipher},
-
+	cipherModes[CipherChaCha20Poly1305] = &cipherMode{64, 0, newChaCha20Cipher}
+	// Insecure ciphers not included in the default configuration.
+	cipherModes[InsecureCipherRC4128] = &cipherMode{16, 0, streamCipherMode(1536, newRC4)}
+	cipherModes[InsecureCipherRC4256] = &cipherMode{32, 0, streamCipherMode(1536, newRC4)}
+	cipherModes[InsecureCipherRC4] = &cipherMode{16, 0, streamCipherMode(0, newRC4)}
 	// CBC mode is insecure and so is not included in the default config.
 	// (See https://www.ieee-security.org/TC/SP2013/papers/4977a526.pdf). If absolutely
 	// needed, it's possible to specify a custom Config to enable it.
 	// You should expect that an active attacker can recover plaintext if
 	// you do.
-	aes128cbcID: {16, aes.BlockSize, newAESCBCCipher},
-
-	// 3des-cbc is insecure and is not included in the default
-	// config.
-	tripledescbcID: {24, des.BlockSize, newTripleDESCBCCipher},
+	cipherModes[InsecureCipherAES128CBC] = &cipherMode{16, aes.BlockSize, newAESCBCCipher}
+	cipherModes[InsecureCipherTripleDESCBC] = &cipherMode{24, des.BlockSize, newTripleDESCBCCipher}
 }
 
 // prefixLen is the length of the packet prefix that contains the packet length
@@ -307,7 +309,7 @@ type gcmCipher struct {
 	buf    []byte
 }
 
-func newGCMCipher(key, iv, unusedMacKey []byte, unusedAlgs directionAlgorithms) (packetCipher, error) {
+func newGCMCipher(key, iv, unusedMacKey []byte, unusedAlgs DirectionAlgorithms) (packetCipher, error) {
 	c, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -405,17 +407,41 @@ func (c *gcmCipher) readCipherPacket(seqNum uint32, r io.Reader) ([]byte, error)
 		return nil, fmt.Errorf("ssh: illegal padding %d", padding)
 	}
 
-	if int(padding+1) >= len(plain) {
+	if int(padding)+1 >= len(plain) {
 		return nil, fmt.Errorf("ssh: padding %d too large", padding)
 	}
 	plain = plain[1 : length-uint32(padding)]
 	return plain, nil
 }
 
-// cbcCipher implements aes128-cbc cipher defined in RFC 4253 section 6.1
+// cbcCipher implements the CBC ciphers defined in RFC 4253 section 6.1, in
+// MAC-then-encrypt mode and, for the *-etm@openssh.com MACs, in the
+// encrypt-then-MAC mode defined in [PROTOCOL], section 1.5.
+//
+//	0               4                prefixLen                   macStart
+//	|               |                |                           |
+//	+---------------+----------------+---------+-----------------+-----------+
+//	| packet_length | padding_length | payload | random padding  |    mac    |
+//	+---------------+----------------+---------+-----------------+-----------+
+//	                |<--------- length = packet_length --------->|< macSize >|
+//	                                           |< paddingLength >|
+//	|<-------------------------- entirePacketSize -------------------------->|
+//
+//	MAC-then-encrypt (encStart = 0)
+//	|<----------------------- encLength ------------------------>|
+//	|<-------------- MAC'd (seqNum || plaintext) --------------->|
+//
+//	encrypt-then-MAC (encStart = 4)
+//	                |<--------------- encLength ---------------->|
+//	|<-------------- MAC'd (seqNum || ciphertext) -------------->|
+//
+// encLength is always a multiple of effectiveBlockSize, and in ETM mode the
+// packet_length field is not part of it. The padding is only trustworthy once
+// the MAC has been verified.
 type cbcCipher struct {
 	mac       hash.Hash
 	macSize   uint32
+	etm       bool
 	decrypter cipher.BlockMode
 	encrypter cipher.BlockMode
 
@@ -429,21 +455,25 @@ type cbcCipher struct {
 	oracleCamouflage uint32
 }
 
-func newCBCCipher(c cipher.Block, key, iv, macKey []byte, algs directionAlgorithms) (packetCipher, error) {
+func newCBCCipher(c cipher.Block, _, iv, macKey []byte, algs DirectionAlgorithms) (packetCipher, error) {
+	macMode := macModes[algs.MAC]
+	if macMode == nil {
+		return nil, fmt.Errorf("ssh: unsupported MAC %v", algs.MAC)
+	}
+	mac := macMode.new(macKey)
 	cbc := &cbcCipher{
-		mac:        macModes[algs.MAC].new(macKey),
+		mac:        mac,
+		macSize:    uint32(mac.Size()),
+		etm:        macMode.etm,
 		decrypter:  cipher.NewCBCDecrypter(c, iv),
 		encrypter:  cipher.NewCBCEncrypter(c, iv),
 		packetData: make([]byte, 1024),
-	}
-	if cbc.mac != nil {
-		cbc.macSize = uint32(cbc.mac.Size())
 	}
 
 	return cbc, nil
 }
 
-func newAESCBCCipher(key, iv, macKey []byte, algs directionAlgorithms) (packetCipher, error) {
+func newAESCBCCipher(key, iv, macKey []byte, algs DirectionAlgorithms) (packetCipher, error) {
 	c, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -457,7 +487,7 @@ func newAESCBCCipher(key, iv, macKey []byte, algs directionAlgorithms) (packetCi
 	return cbc, nil
 }
 
-func newTripleDESCBCCipher(key, iv, macKey []byte, algs directionAlgorithms) (packetCipher, error) {
+func newTripleDESCBCCipher(key, iv, macKey []byte, algs DirectionAlgorithms) (packetCipher, error) {
 	c, err := des.NewTripleDESCipher(key)
 	if err != nil {
 		return nil, err
@@ -469,13 +499,6 @@ func newTripleDESCBCCipher(key, iv, macKey []byte, algs directionAlgorithms) (pa
 	}
 
 	return cbc, nil
-}
-
-func maxUInt32(a, b int) uint32 {
-	if a > b {
-		return uint32(a)
-	}
-	return uint32(b)
 }
 
 const (
@@ -491,25 +514,38 @@ func (e cbcError) Error() string { return string(e) }
 
 func (c *cbcCipher) readCipherPacket(seqNum uint32, r io.Reader) ([]byte, error) {
 	p, err := c.readCipherPacketLeaky(seqNum, r)
-	if err != nil {
-		if _, ok := err.(cbcError); ok {
-			// Verification error: read a fixed amount of
-			// data, to make distinguishing between
-			// failing MAC and failing length check more
-			// difficult.
-			io.CopyN(io.Discard, r, int64(c.oracleCamouflage))
-		}
+	if _, ok := err.(cbcError); ok {
+		// Verification error: read a fixed amount of
+		// data, to make distinguishing between
+		// failing MAC and failing length check more
+		// difficult.
+		io.CopyN(io.Discard, r, int64(c.oracleCamouflage))
 	}
 	return p, err
 }
 
 func (c *cbcCipher) readCipherPacketLeaky(seqNum uint32, r io.Reader) ([]byte, error) {
 	blockSize := c.decrypter.BlockSize()
+	// The encrypted portion of a packet is a multiple of the cipher block size
+	// or 8, whichever is larger.
+	effectiveBlockSize := uint32(max(cbcMinPacketSizeMultiple, blockSize))
+	encStart := uint32(0)
+	// A packet is at least 16 bytes, or the cipher block size if larger. This does
+	// not apply to EtM (but the encrypted length still can't be zero).
+	minEncLength := uint32(max(cbcMinPacketSize, blockSize))
+	// For EtM MACs the packet length is transmitted in the clear and is not part
+	// of the encrypted data, which starts after it.
+	if c.etm {
+		encStart = 4
+		minEncLength = effectiveBlockSize
+	}
 
 	// Read the header, which will include some of the subsequent data in the
-	// case of block ciphers - this is copied back to the payload later.
-	// How many bytes of payload/padding will be read with this first read.
-	firstBlockLength := uint32((prefixLen + blockSize - 1) / blockSize * blockSize)
+	// case of block ciphers - this is copied back to the payload later. The
+	// rounding up to the block size covers at least prefixLen bytes, so the
+	// padding length is always within firstBlock.
+	headerEncLength := prefixLen - encStart
+	firstBlockLength := encStart + (headerEncLength+uint32(blockSize)-1)/uint32(blockSize)*uint32(blockSize)
 	firstBlock := c.packetData[:firstBlockLength]
 	if _, err := io.ReadFull(r, firstBlock); err != nil {
 		return nil, err
@@ -517,30 +553,49 @@ func (c *cbcCipher) readCipherPacketLeaky(seqNum uint32, r io.Reader) ([]byte, e
 
 	c.oracleCamouflage = maxPacket + 4 + c.macSize - firstBlockLength
 
-	c.decrypter.CryptBlocks(firstBlock, firstBlock)
-	length := binary.BigEndian.Uint32(firstBlock[:4])
+	c.mac.Reset()
+	binary.BigEndian.PutUint32(c.seqNumBytes[:], seqNum)
+	c.mac.Write(c.seqNumBytes[:])
+
+	var length uint32
+	if c.etm {
+		// For EtM MACs the MAC is computed over the cleartext packet length
+		// followed by the ciphertext, so it is updated before decrypting.
+		length = binary.BigEndian.Uint32(firstBlock[:encStart])
+		c.mac.Write(firstBlock[:encStart])
+		c.mac.Write(firstBlock[encStart:])
+		c.decrypter.CryptBlocks(firstBlock[encStart:], firstBlock[encStart:])
+	} else {
+		c.decrypter.CryptBlocks(firstBlock, firstBlock)
+		length = binary.BigEndian.Uint32(firstBlock[:4])
+	}
+
 	if length > maxPacket {
 		return nil, cbcError("ssh: packet too large")
 	}
-	if length+4 < maxUInt32(cbcMinPacketSize, blockSize) {
-		// The minimum size of a packet is 16 (or the cipher block size, whichever
-		// is larger) bytes.
+	// Length of the encrypted portion of the packet, which includes the packet
+	// length field only for non-EtM MACs.
+	encLength := 4 + length - encStart
+	if encLength < minEncLength {
 		return nil, cbcError("ssh: packet too small")
 	}
-	// The length of the packet (including the length field but not the MAC) must
-	// be a multiple of the block size or 8, whichever is larger.
-	if (length+4)%maxUInt32(cbcMinPacketSizeMultiple, blockSize) != 0 {
+	if encLength%effectiveBlockSize != 0 {
 		return nil, cbcError("ssh: invalid packet length multiple")
 	}
 
+	// The padding length is part of the encrypted data. For EtM MACs it is not
+	// acted upon before the MAC is verified, otherwise the CBC padding would
+	// still be usable as an oracle, which is what EtM prevents.
 	paddingLength := uint32(firstBlock[4])
-	if paddingLength < cbcMinPaddingSize || length <= paddingLength+1 {
-		return nil, cbcError("ssh: invalid packet length")
+	if !c.etm {
+		if paddingLength < cbcMinPaddingSize || length <= paddingLength+1 {
+			return nil, cbcError("ssh: invalid packet length")
+		}
 	}
 
-	// Positions within the c.packetData buffer:
-	macStart := 4 + length
-	paddingStart := macStart - paddingLength
+	// Positions within the c.packetData buffer: the MAC follows the encrypted
+	// data.
+	macStart := encStart + encLength
 
 	// Entire packet size, starting before length, ending at end of mac.
 	entirePacketSize := macStart + c.macSize
@@ -562,42 +617,58 @@ func (c *cbcCipher) readCipherPacketLeaky(seqNum uint32, r io.Reader) ([]byte, e
 	c.oracleCamouflage -= uint32(n)
 
 	remainingCrypted := c.packetData[firstBlockLength:macStart]
+	if c.etm {
+		c.mac.Write(remainingCrypted)
+	}
 	c.decrypter.CryptBlocks(remainingCrypted, remainingCrypted)
 
-	mac := c.packetData[macStart:]
-	if c.mac != nil {
-		c.mac.Reset()
-		binary.BigEndian.PutUint32(c.seqNumBytes[:], seqNum)
-		c.mac.Write(c.seqNumBytes[:])
+	if !c.etm {
 		c.mac.Write(c.packetData[:macStart])
-		c.macResult = c.mac.Sum(c.macResult[:0])
-		if subtle.ConstantTimeCompare(c.macResult, mac) != 1 {
-			return nil, cbcError("ssh: MAC failure")
+	}
+	c.macResult = c.mac.Sum(c.macResult[:0])
+	if subtle.ConstantTimeCompare(c.macResult, c.packetData[macStart:]) != 1 {
+		return nil, cbcError("ssh: MAC failure")
+	}
+
+	if c.etm {
+		if paddingLength < cbcMinPaddingSize || length <= paddingLength+1 {
+			return nil, cbcError("ssh: invalid packet length")
 		}
 	}
 
-	return c.packetData[prefixLen:paddingStart], nil
+	return c.packetData[prefixLen : macStart-paddingLength], nil
 }
 
-func (c *cbcCipher) writeCipherPacket(seqNum uint32, w io.Writer, rand io.Reader, packet []byte) error {
-	effectiveBlockSize := maxUInt32(cbcMinPacketSizeMultiple, c.encrypter.BlockSize())
-
-	// Length of encrypted portion of the packet (header, payload, padding).
-	// Enforce minimum padding and packet size.
-	encLength := maxUInt32(prefixLen+len(packet)+cbcMinPaddingSize, cbcMinPaddingSize)
+func (c *cbcCipher) writeCipherPacket(seqNum uint32, w io.Writer, rand io.Reader, payload []byte) error {
+	blockSize := c.encrypter.BlockSize()
+	// The encrypted portion of a packet is a multiple of the cipher block size
+	// or 8, whichever is larger.
+	effectiveBlockSize := uint32(max(cbcMinPacketSizeMultiple, blockSize))
+	// For EtM MACs the packet length is transmitted in the clear and is not part
+	// of the encrypted data, which starts after it.
+	encStart := uint32(0)
+	if c.etm {
+		encStart = 4
+	}
+	// Length of the encrypted portion of the packet (header, payload, padding),
+	// enforcing the minimum padding and the minimum packet size of RFC 4253,
+	// Section 6: 16 bytes, or the cipher block size if larger, excluding the
+	// MAC.
+	encLength := uint32(max(prefixLen-int(encStart)+len(payload)+cbcMinPaddingSize, cbcMinPacketSize-int(encStart)))
 	// Enforce block size.
 	encLength = (encLength + effectiveBlockSize - 1) / effectiveBlockSize * effectiveBlockSize
-
-	length := encLength - 4
-	paddingLength := int(length) - (1 + len(packet))
+	// The packet length field covers the whole packet except the field itself.
+	length := encStart + encLength - 4
+	paddingLength := int(length) - (1 + len(payload))
 
 	// Overall buffer contains: header, payload, padding, mac.
 	// Space for the MAC is reserved in the capacity but not the slice length.
-	bufferSize := encLength + c.macSize
-	if uint32(cap(c.packetData)) < bufferSize {
-		c.packetData = make([]byte, encLength, bufferSize)
+	macStart := encStart + encLength
+	entirePacketSize := macStart + c.macSize
+	if uint32(cap(c.packetData)) < entirePacketSize {
+		c.packetData = make([]byte, macStart, entirePacketSize)
 	} else {
-		c.packetData = c.packetData[:encLength]
+		c.packetData = c.packetData[:macStart]
 	}
 
 	p := c.packetData
@@ -609,24 +680,29 @@ func (c *cbcCipher) writeCipherPacket(seqNum uint32, w io.Writer, rand io.Reader
 
 	// Payload.
 	p = p[1:]
-	copy(p, packet)
+	copy(p, payload)
 
 	// Padding.
-	p = p[len(packet):]
+	p = p[len(payload):]
 	if _, err := io.ReadFull(rand, p); err != nil {
 		return err
 	}
 
-	if c.mac != nil {
-		c.mac.Reset()
-		binary.BigEndian.PutUint32(c.seqNumBytes[:], seqNum)
-		c.mac.Write(c.seqNumBytes[:])
+	c.mac.Reset()
+	binary.BigEndian.PutUint32(c.seqNumBytes[:], seqNum)
+	c.mac.Write(c.seqNumBytes[:])
+	if c.etm {
+		// For EtM MACs the MAC is computed over the cleartext packet length
+		// followed by the ciphertext.
+		c.mac.Write(c.packetData[:encStart])
+		c.encrypter.CryptBlocks(c.packetData[encStart:], c.packetData[encStart:])
+		c.mac.Write(c.packetData[encStart:])
+	} else {
 		c.mac.Write(c.packetData)
-		// The MAC is now appended into the capacity reserved for it earlier.
-		c.packetData = c.mac.Sum(c.packetData)
+		c.encrypter.CryptBlocks(c.packetData, c.packetData)
 	}
-
-	c.encrypter.CryptBlocks(c.packetData[:encLength], c.packetData[:encLength])
+	// The MAC is now appended into the capacity reserved for it earlier.
+	c.packetData = c.mac.Sum(c.packetData)
 
 	if _, err := w.Write(c.packetData); err != nil {
 		return err
@@ -634,8 +710,6 @@ func (c *cbcCipher) writeCipherPacket(seqNum uint32, w io.Writer, rand io.Reader
 
 	return nil
 }
-
-const chacha20Poly1305ID = "chacha20-poly1305@openssh.com"
 
 // chacha20Poly1305Cipher implements the chacha20-poly1305@openssh.com
 // AEAD, which is described here:
@@ -650,7 +724,7 @@ type chacha20Poly1305Cipher struct {
 	buf        []byte
 }
 
-func newChaCha20Cipher(key, unusedIV, unusedMACKey []byte, unusedAlgs directionAlgorithms) (packetCipher, error) {
+func newChaCha20Cipher(key, unusedIV, unusedMACKey []byte, unusedAlgs DirectionAlgorithms) (packetCipher, error) {
 	if len(key) != 64 {
 		panic(len(key))
 	}

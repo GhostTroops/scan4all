@@ -8,7 +8,7 @@ import (
 )
 
 func Check(Host, Password string, Port int) (bool, error) {
-	netloc := fmt.Sprintf("%s:%d", Host, Port)
+	netloc := net.JoinHostPort(Host, fmt.Sprintf("%d", Port))
 	conn, err := net.DialTimeout("tcp", netloc, 5*time.Second)
 	if err != nil {
 		return false, err

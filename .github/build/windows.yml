@@ -5,13 +5,13 @@ project_name: scan4all
 builds:
   - id: scan4all-windows
     ldflags:
-      - -s -w
+      - -s -w -X main.Version={{ .Version }}
     binary: scan4all
+    # Windows 上 pkg/naabu 的 pcap 实现被 build tag 排除（scan_unix.go: linux||darwin），
+    # 因此无需 libpcap/mingw，关闭 cgo 即可原生编译，避免依赖 runner 上不存在的交叉编译器
     env:
-      - CGO_ENABLED=1
-      - CC=x86_64-w64-mingw32-gcc
-      - CXX=x86_64-w64-mingw32-g++
-    main: main.go
+      - CGO_ENABLED=0
+    main: .
     goos:
       - windows
     goarch:
@@ -21,11 +21,11 @@ builds:
 #      - from: ../config
 #        to: config
 archives:
-  - format: zip
+  - formats: [zip]
     files:
       - LICENSE*
       - README*
       - config/**/*
 
-checksum:
+checksums:
   name_template: "{{ .ProjectName }}-windows-checksums.txt"

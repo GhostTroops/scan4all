@@ -107,7 +107,7 @@ func New(options Options) (*HybridMap, error) {
 			modTime := tmpFileInfo.ModTime()
 			if now.Sub(modTime) > options.RemoveOlderThan {
 				targetFolderFullPath := filepath.Join(targetCleanupDir, tmpFileInfo.Name())
-				os.RemoveAll(targetFolderFullPath)
+				_ = os.RemoveAll(targetFolderFullPath)
 			}
 		}
 	}

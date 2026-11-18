@@ -21,13 +21,13 @@ type SystemPathStr string
 
 // masscan 参数
 type Masscan struct {
-	SystemPath SystemPathStr `inject` // 系统目录
-	Args       []string      `inject` // 参数
-	Ports      PortsStr      `inject` // 端口
-	Target     TargetStr     `inject` // 目标
-	Ranges     RangesStr     `inject` // 范围
-	Rate       RateStr       `inject` // 速率
-	Exclude    ExcludeStr    `inject` // 排除，执行过的，加入排除列表
+	SystemPath SystemPathStr `inject:"1"` // 系统目录
+	Args       []string      `inject:"1"` // 参数
+	Ports      PortsStr      `inject:"1"` // 端口
+	Target     TargetStr     `inject:"1"` // 目标
+	Ranges     RangesStr     `inject:"1"` // 范围
+	Rate       RateStr       `inject:"1"` // 速率
+	Exclude    ExcludeStr    `inject:"1"` // 排除，执行过的，加入排除列表
 	Evt        *models.EventData
 }
 

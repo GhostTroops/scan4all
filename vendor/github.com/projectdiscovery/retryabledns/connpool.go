@@ -14,6 +14,7 @@ type ConnPool struct {
 	items      map[*dns.Conn]bool
 	newArrival chan *waitingClient
 	finished   chan *dns.Conn
+	done       chan struct{}
 	clients    clientQueue
 	cancel     context.CancelFunc
 	resolver   NetworkResolver
@@ -25,6 +26,7 @@ func NewConnPool(resolver NetworkResolver, poolSize int) (*ConnPool, error) {
 		items:      make(map[*dns.Conn]bool, poolSize),
 		newArrival: make(chan *waitingClient),
 		finished:   make(chan *dns.Conn),
+		done:       make(chan struct{}),
 		cancel:     cancel,
 		resolver:   resolver,
 	}
@@ -65,12 +67,14 @@ func (cp *ConnPool) Exchange(ctx context.Context, client *dns.Client, msg *dns.M
 
 func (cp *ConnPool) Close() {
 	cp.cancel()
+	<-cp.done
 	for conn := range cp.items {
-		conn.Close()
+		_ = conn.Close()
 	}
 }
 
 func (cp *ConnPool) coordinate(ctx context.Context) {
+	defer close(cp.done)
 	for {
 		select {
 		case <-ctx.Done():
@@ -106,15 +110,22 @@ func (cp *ConnPool) getConnection(ctx context.Context) (*dns.Conn, error) {
 	case cp.newArrival <- client:
 	case <-ctx.Done():
 		return nil, ctx.Err()
+	case <-cp.done:
+		return nil, context.Canceled
 	}
 	select {
 	case conn := <-client.returnCh:
 		return conn, nil
 	case <-ctx.Done():
 		return nil, ctx.Err()
+	case <-cp.done:
+		return nil, context.Canceled
 	}
 }
 
 func (cp *ConnPool) releaseConnection(conn *dns.Conn) {
-	cp.finished <- conn
+	select {
+	case cp.finished <- conn:
+	case <-cp.done:
+	}
 }

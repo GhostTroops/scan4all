@@ -16,11 +16,29 @@ var cdnWappalyzerTechnologies = map[string]string{
 	"cloudflare": "cloudflare",
 	"cloudfront": "amazon",
 	"akamai":     "akamai",
+	"fastly":     "fastly",
+	"sucuri":     "sucuri",
+	"reblaze":    "reblaze",
+	"stackpath":  "stackpath",
+	"bunny":      "bunny",
+	"bunnycdn":   "bunny",
+	"cdn77":      "cdn77",
+	"keycdn":     "keycdn",
+	"vercel":     "vercel",
+	"netlify":    "netlify",
+	"azure cdn":  "azure",
+	"cachefly":   "cachefly",
+	"edgecast":   "edgecast",
+	"limelight":  "limelight",
+	"ddos-guard": "ddos-guard",
+	"arvancloud": "arvancloud",
+	"qrator":     "qrator",
+	"section.io": "section.io",
 }
 
 // CheckFQDN checks if fqdns are known cloud ones
 func (c *Client) CheckSuffix(fqdns ...string) (isCDN bool, provider string, itemType string, err error) {
-	c.Once.Do(func() {
+	c.Do(func() {
 		suffixToSource = make(map[string]string)
 		for source, suffixes := range generatedData.Common {
 			for _, suffix := range suffixes {

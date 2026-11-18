@@ -58,47 +58,38 @@ var closeProcessingInstruction = []byte("?>")
 var openCDATA = []byte("<![CDATA[")
 var closeCDATA = []byte("]]>")
 var closeDecl = []byte(">")
-var emptyComment = []byte("<!---->")
-var invalidComment1 = []byte("<!-->")
-var invalidComment2 = []byte("<!--->")
+var emptyComment1 = []byte("<!-->")
+var emptyComment2 = []byte("<!--->")
 var openComment = []byte("<!--")
 var closeComment = []byte("-->")
-var doubleHyphen = []byte("--")
 
-func (s *rawHTMLParser) parseComment(block text.Reader, pc Context) ast.Node {
+func (s *rawHTMLParser) parseComment(block text.Reader, _ Context) ast.Node {
 	savedLine, savedSegment := block.Position()
 	node := ast.NewRawHTML()
 	line, segment := block.PeekLine()
-	if bytes.HasPrefix(line, emptyComment) {
-		node.Segments.Append(segment.WithStop(segment.Start + len(emptyComment)))
-		block.Advance(len(emptyComment))
+	if bytes.HasPrefix(line, emptyComment1) {
+		node.Segments.Append(segment.WithStop(segment.Start + len(emptyComment1)))
+		block.Advance(len(emptyComment1))
 		return node
 	}
-	if bytes.HasPrefix(line, invalidComment1) || bytes.HasPrefix(line, invalidComment2) {
-		return nil
+	if bytes.HasPrefix(line, emptyComment2) {
+		node.Segments.Append(segment.WithStop(segment.Start + len(emptyComment2)))
+		block.Advance(len(emptyComment2))
+		return node
 	}
 	offset := len(openComment)
 	line = line[offset:]
 	for {
-		hindex := bytes.Index(line, doubleHyphen)
-		if hindex > -1 {
-			hindex += offset
+		index := bytes.Index(line, closeComment)
+		if index > -1 {
+			node.Segments.Append(segment.WithStop(segment.Start + offset + index + len(closeComment)))
+			block.Advance(offset + index + len(closeComment))
+			return node
 		}
-		index := bytes.Index(line, closeComment) + offset
-		if index > -1 && hindex == index {
-			if index == 0 || len(line) < 2 || line[index-offset-1] != '-' {
-				node.Segments.Append(segment.WithStop(segment.Start + index + len(closeComment)))
-				block.Advance(index + len(closeComment))
-				return node
-			}
-		}
-		if hindex > 0 {
-			break
-		}
+		offset = 0
 		node.Segments.Append(segment)
 		block.AdvanceLine()
 		line, segment = block.PeekLine()
-		offset = 0
 		if line == nil {
 			break
 		}
@@ -107,7 +98,7 @@ func (s *rawHTMLParser) parseComment(block text.Reader, pc Context) ast.Node {
 	return nil
 }
 
-func (s *rawHTMLParser) parseUntil(block text.Reader, closer []byte, pc Context) ast.Node {
+func (s *rawHTMLParser) parseUntil(block text.Reader, closer []byte, _ Context) ast.Node {
 	savedLine, savedSegment := block.Position()
 	node := ast.NewRawHTML()
 	for {
@@ -128,7 +119,7 @@ func (s *rawHTMLParser) parseUntil(block text.Reader, closer []byte, pc Context)
 	return nil
 }
 
-func (s *rawHTMLParser) parseMultiLineRegexp(reg *regexp.Regexp, block text.Reader, pc Context) ast.Node {
+func (s *rawHTMLParser) parseMultiLineRegexp(reg *regexp.Regexp, block text.Reader, _ Context) ast.Node {
 	sline, ssegment := block.Position()
 	if block.Match(reg) {
 		node := ast.NewRawHTML()

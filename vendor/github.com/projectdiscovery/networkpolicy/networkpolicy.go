@@ -1,21 +1,25 @@
 package networkpolicy
 
 import (
+	"fmt"
 	"net"
+	"net/netip"
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 
+	"github.com/gaissmai/bart"
 	iputil "github.com/projectdiscovery/utils/ip"
-	"github.com/yl2chen/cidranger"
+	urlutil "github.com/projectdiscovery/utils/url"
 )
 
 func init() {
 	DefaultOptions.DenyList = append(DefaultOptions.DenyList, DefaultIPv4DenylistRanges...)
 	DefaultOptions.DenyList = append(DefaultOptions.DenyList, DefaultIPv6Denylist...)
-	DefaultOptions.DenyList = append(DefaultOptions.DenyList, DefaultIPv4DenylistRanges...)
+	DefaultOptions.DenyList = append(DefaultOptions.DenyList, DefaultIPv6DenylistRanges...)
 	DefaultOptions.DenyList = append(DefaultOptions.DenyList, DefaultIPv6Denylist...)
-	DefaultOptions.AllowSchemeList = append(DefaultOptions.DenyList, DefaultSchemeAllowList...)
+	DefaultOptions.AllowSchemeList = append(DefaultOptions.AllowSchemeList, DefaultSchemeAllowList...)
 }
 
 type Options struct {
@@ -31,10 +35,12 @@ type Options struct {
 var DefaultOptions Options
 
 type NetworkPolicy struct {
-	Options         *Options
-	hasFilters      bool
-	DenyRanger      cidranger.Ranger
-	AllowRanger     cidranger.Ranger
+	Options    *Options
+	hasFilters bool
+
+	DenyRanger  *bart.Table[net.IP]
+	AllowRanger *bart.Table[net.IP]
+
 	AllowRules      map[string]*regexp.Regexp
 	DenyRules       map[string]*regexp.Regexp
 	AllowSchemeList map[string]struct{}
@@ -47,27 +53,32 @@ type NetworkPolicy struct {
 func New(options Options) (*NetworkPolicy, error) {
 	allowSchemeList := make(map[string]struct{})
 	for _, scheme := range options.AllowSchemeList {
+		if !schemePattern.MatchString(scheme) {
+			return nil, fmt.Errorf("invalid scheme format for allow list: %s", scheme)
+		}
 		allowSchemeList[scheme] = struct{}{}
 	}
 
 	denySchemeList := make(map[string]struct{})
 	for _, scheme := range options.DenySchemeList {
+		if !schemePattern.MatchString(scheme) {
+			return nil, fmt.Errorf("invalid scheme format for deny list: %s", scheme)
+		}
 		denySchemeList[scheme] = struct{}{}
 	}
 
 	allowRules := make(map[string]*regexp.Regexp)
 	denyRules := make(map[string]*regexp.Regexp)
 
-	var allowRanger cidranger.Ranger
+	var allowRanger *bart.Table[net.IP]
 	if len(options.AllowList) > 0 {
-		allowRanger = cidranger.NewPCTrieRanger()
+		allowRanger = new(bart.Table[net.IP])
+
 		for _, r := range options.AllowList {
 			// handle if ip/cidr
 			cidr, err := asCidr(r)
 			if err == nil {
-				if err := allowRanger.Insert(cidranger.NewBasicRangerEntry(*cidr)); err != nil {
-					return nil, err
-				}
+				allowRanger.Insert(cidr, nil)
 				continue
 			}
 
@@ -80,16 +91,15 @@ func New(options Options) (*NetworkPolicy, error) {
 		}
 	}
 
-	var denyRanger cidranger.Ranger
+	var denyRanger *bart.Table[net.IP]
 	if len(options.DenyList) > 0 {
-		denyRanger = cidranger.NewPCTrieRanger()
+		denyRanger = new(bart.Table[net.IP])
+
 		for _, r := range options.DenyList {
 			// handle if ip/cidr
 			cidr, err := asCidr(r)
 			if err == nil {
-				if err := denyRanger.Insert(cidranger.NewBasicRangerEntry(*cidr)); err != nil {
-					return nil, err
-				}
+				denyRanger.Insert(cidr, nil)
 				continue
 			}
 
@@ -124,17 +134,13 @@ func (r NetworkPolicy) Validate(host string) bool {
 	}
 
 	// check if it's an ip
-	if iputil.IsIP(host) {
-		IP := net.ParseIP(host)
-		if r.DenyRanger != nil && r.DenyRanger.Len() > 0 && rangerContains(r.DenyRanger, IP) {
-			return false
-		}
+	if addr, ok := parseAddr(host); ok {
+		return r.validateAddr(addr)
+	}
 
-		if r.AllowRanger != nil && r.AllowRanger.Len() > 0 {
-			return rangerContains(r.AllowRanger, IP)
-		}
-
-		return true
+	// names that resolvers and browsers read as an address (127.1, 2130706433, localhost) must not reach a denied range
+	if r.hostAddrsDenied(host) {
+		return false
 	}
 
 	// try to obtain scheme and port
@@ -144,12 +150,27 @@ func (r NetworkPolicy) Validate(host string) bool {
 	var scheme string
 
 	// check if it's a valid URL
-	if URL, err := url.Parse(host); err == nil {
+	var u *url.URL
+	if URL, err := urlutil.Parse(host); err == nil {
+		u = URL.URL
+	} else if URL, err := url.Parse(host); err == nil {
+		// urlutil rejects schemes it doesn't know (gopher, dict, file...), which would otherwise skip the scheme and port lists
+		u = URL
+	}
+	// the host of a URL or host:port value; urlutil keeps some hosts (http://2130706433/) in the path
+	if u != nil && r.hostAddrsDenied(u.Hostname()) {
+		return false
+	}
+	if URL, err := url.Parse(host); err == nil && r.hostAddrsDenied(URL.Hostname()) {
+		return false
+	}
+	if u != nil {
 		// parse scheme
-		scheme := URL.Scheme
+		scheme = u.Scheme
 		hasScheme = scheme != ""
 		// parse port
-		port, err = strconv.Atoi(URL.Port())
+		var err error
+		port, err = strconv.Atoi(u.Port())
 		if err == nil {
 			hasPort = true
 		}
@@ -158,22 +179,22 @@ func (r NetworkPolicy) Validate(host string) bool {
 	// check the port
 	var isPortInDenyList, isPortInAllowedList bool
 
-	if r.DenyPortList != nil && hasPort {
+	if len(r.DenyPortList) > 0 && hasPort {
 		_, isPortInDenyList = r.DenyPortList[port]
 	}
 
-	if r.AllowPortList != nil && hasPort {
-		_, isPortInAllowedList = r.DenyPortList[port]
+	if len(r.AllowPortList) > 0 && hasPort {
+		_, isPortInAllowedList = r.AllowPortList[port]
 	} else {
 		isPortInAllowedList = true
 	}
 
 	var isSchemeInDenyList, isSchemeInAllowedList bool
-	if r.DenySchemeList != nil && hasScheme {
+	if len(r.DenySchemeList) > 0 && hasScheme {
 		_, isSchemeInDenyList = r.DenySchemeList[scheme]
 	}
 
-	if r.AllowSchemeList != nil && hasScheme {
+	if len(r.AllowSchemeList) > 0 && hasScheme {
 		_, isSchemeInAllowedList = r.AllowSchemeList[scheme]
 	} else {
 		isSchemeInAllowedList = true
@@ -209,19 +230,61 @@ func (r NetworkPolicy) ValidateURLWithIP(host string, ip string) bool {
 }
 
 func (r NetworkPolicy) ValidateAddress(IP string) bool {
-	IPDest := net.ParseIP(IP)
-	if IPDest == nil {
+	IPDest, ok := parseAddr(IP)
+	if !ok {
 		return false
 	}
-	if r.DenyRanger != nil && r.DenyRanger.Len() > 0 && rangerContains(r.DenyRanger, IPDest) {
+	return r.validateAddr(IPDest)
+}
+
+// validateAddr checks an address in its canonical form: zone removed and IPv4-mapped IPv6 (::ffff:a.b.c.d) unmapped,
+// so IPv4 ranges also match the IPv6 forms that dial the same IPv4 host
+func (r NetworkPolicy) validateAddr(addr netip.Addr) bool {
+	if r.addrDenied(addr) {
 		return false
 	}
 
-	if r.AllowRanger != nil && r.AllowRanger.Len() > 0 {
-		return rangerContains(r.AllowRanger, IPDest)
+	if r.AllowRanger != nil && r.AllowRanger.Size() > 0 {
+		addr = addr.WithZone("")
+		return rangerContains(r.AllowRanger, addr.Unmap()) || rangerContains(r.AllowRanger, addr)
 	}
 
 	return true
+}
+
+// addrDenied checks the address as given and in its canonical form.
+// The unspecified address (0.0.0.0, ::) dials the local host, so it is also checked as loopback.
+func (r NetworkPolicy) addrDenied(addr netip.Addr) bool {
+	if r.DenyRanger == nil || r.DenyRanger.Size() == 0 {
+		return false
+	}
+	addr = addr.WithZone("")
+	canonical := addr.Unmap()
+	if rangerContains(r.DenyRanger, addr) || rangerContains(r.DenyRanger, canonical) {
+		return true
+	}
+	if canonical.IsUnspecified() {
+		for _, loopback := range loopbackAddrs {
+			if rangerContains(r.DenyRanger, loopback) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// hostAddrsDenied reports whether host is an address form (IP literal, legacy IPv4 notation, localhost name)
+// that dials an address in the deny list
+func (r NetworkPolicy) hostAddrsDenied(host string) bool {
+	if addr, ok := parseAddr(host); ok {
+		return r.addrDenied(addr)
+	}
+	for _, addr := range hostAddrs(host) {
+		if r.addrDenied(addr) {
+			return true
+		}
+	}
+	return false
 }
 
 func (r NetworkPolicy) ValidateAddressWithPort(IP string, port int) bool {
@@ -233,28 +296,34 @@ func (r NetworkPolicy) ValidatePort(port int) bool {
 		return false
 	}
 
-	if r.AllowPortList != nil {
+	if len(r.AllowPortList) > 0 {
 		return portIsListed(r.AllowPortList, port)
 	}
 
 	return true
 }
 
-func asCidr(s string) (*net.IPNet, error) {
+func asCidr(s string) (netip.Prefix, error) {
 	if iputil.IsIP(s) {
-		s += "/32"
+		addr, err := netip.ParseAddr(s)
+		if err == nil {
+			if addr.Is4() {
+				s += "/32"
+			} else {
+				s += "/128"
+			}
+		}
 	}
-	_, cidr, err := net.ParseCIDR(s)
+	cidr, err := netip.ParsePrefix(s)
 	if err != nil {
-		return nil, err
+		return cidr, err
 	}
-
 	return cidr, nil
 }
 
-func rangerContains(ranger cidranger.Ranger, IP net.IP) bool {
-	ok, err := ranger.Contains(IP)
-	return ok && err == nil
+func rangerContains(ranger *bart.Table[net.IP], IP netip.Addr) bool {
+	_, ok := ranger.Lookup(IP)
+	return ok
 }
 
 func portIsListed(list map[int]struct{}, port int) bool {
@@ -264,8 +333,14 @@ func portIsListed(list map[int]struct{}, port int) bool {
 
 // ValidateHost checks all the ips associated to a hostname and returns the valid ip if any
 func (r NetworkPolicy) ValidateHost(host string) (string, bool) {
-	if iputil.IsIP(host) {
+	if addr, ok := parseAddr(host); ok {
+		if strings.HasPrefix(host, "[") {
+			host = addr.String()
+		}
 		return host, r.Validate(host)
+	}
+	if r.hostAddrsDenied(host) {
+		return "", false
 	}
 	// obtain ips from system resolvers
 	addrs, err := net.LookupHost(host)

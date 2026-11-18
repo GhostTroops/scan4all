@@ -61,8 +61,8 @@ var allowedBlockTags = map[string]bool{
 	"option":     true,
 	"p":          true,
 	"param":      true,
+	"search":     true,
 	"section":    true,
-	"source":     true,
 	"summary":    true,
 	"table":      true,
 	"tbody":      true,
@@ -114,9 +114,6 @@ func (b *htmlBlockParser) Open(parent ast.Node, reader text.Reader, pc Context) 
 	var node *ast.HTMLBlock
 	line, segment := reader.PeekLine()
 	last := pc.LastOpenedBlock().Node
-	if pos := pc.BlockOffset(); pos < 0 || line[pos] != '<' {
-		return nil, NoChildren
-	}
 
 	if m := htmlBlockType1OpenRegexp.FindSubmatchIndex(line); m != nil {
 		node = ast.NewHTMLBlock(ast.HTMLBlockType1)
@@ -150,7 +147,7 @@ func (b *htmlBlockParser) Open(parent ast.Node, reader text.Reader, pc Context) 
 		}
 	}
 	if node != nil {
-		reader.Advance(segment.Len() - util.TrimRightSpaceLength(line))
+		reader.AdvanceToEOL()
 		node.Lines().Append(segment)
 		return node, NoChildren
 	}
@@ -173,7 +170,7 @@ func (b *htmlBlockParser) Continue(node ast.Node, reader text.Reader, pc Context
 		}
 		if htmlBlockType1CloseRegexp.Match(line) {
 			htmlBlock.ClosureLine = segment
-			reader.Advance(segment.Len() - util.TrimRightSpaceLength(line))
+			reader.AdvanceToEOL()
 			return Close
 		}
 	case ast.HTMLBlockType2:
@@ -202,7 +199,7 @@ func (b *htmlBlockParser) Continue(node ast.Node, reader text.Reader, pc Context
 		}
 		if bytes.Contains(line, closurePattern) {
 			htmlBlock.ClosureLine = segment
-			reader.Advance(segment.Len())
+			reader.AdvanceToEOL()
 			return Close
 		}
 
@@ -212,7 +209,7 @@ func (b *htmlBlockParser) Continue(node ast.Node, reader text.Reader, pc Context
 		}
 	}
 	node.Lines().Append(segment)
-	reader.Advance(segment.Len() - util.TrimRightSpaceLength(line))
+	reader.AdvanceToEOL()
 	return Continue | NoChildren
 }
 

@@ -31,6 +31,8 @@ import (
     "fmt"
     "crypto/md5"
     "crypto/sha1"
+    "crypto/sha256"
+    "crypto/sha512"
     "github.com/cnf/structhash"
 )
 
@@ -58,11 +60,23 @@ func main() {
     fmt.Printf("%x\n", structhash.Sha1(s, 1))
     // Prints: 5ff72df7212ce8c55838fb3ec6ad0c019881a772
 
+    fmt.Printf("%x\n", structhash.Sha256(s, 1))
+    // Prints: bd3a6f1cd66990e0641c4a0f55bd91997f2cb61fcb959b4456fef406f9eff200
+
+    fmt.Printf("%x\n", structhash.Sha512(s, 1))
+    // Prints: c760d52d6535f25e158b1a9e0702a3a214c0828bd5f7f80208b4fedc53136625713a08b9305d8a2f5e39a11aa2262e2e0fcf8d3aef0ed2b52a25f646d076b1bf
+
     fmt.Printf("%x\n", md5.Sum(structhash.Dump(s, 1)))
     // Prints: 41011bfa1a996db6d0b1075981f5aa8f
 
     fmt.Printf("%x\n", sha1.Sum(structhash.Dump(s, 1)))
     // Prints: 5ff72df7212ce8c55838fb3ec6ad0c019881a772
+
+    fmt.Printf("%x\n", sha256.Sum256(structhash.Dump(s, 1)))
+    // Prints: bd3a6f1cd66990e0641c4a0f55bd91997f2cb61fcb959b4456fef406f9eff200
+
+    fmt.Printf("%x\n", sha512.Sum512(structhash.Dump(s, 1)))
+    // Prints: c760d52d6535f25e158b1a9e0702a3a214c0828bd5f7f80208b4fedc53136625713a08b9305d8a2f5e39a11aa2262e2e0fcf8d3aef0ed2b52a25f646d076b1bf
 }
 ```
 

@@ -2,15 +2,18 @@ package stringsutil
 
 import (
 	"strings"
+	"unicode"
 
 	"github.com/microcosm-cc/bluemonday"
 )
 
 type NormalizeOptions struct {
-	TrimSpaces bool
-	StripHTML  bool
-	Lowercase  bool
-	Uppercase  bool
+	TrimSpaces    bool
+	TrimCutset    string
+	StripHTML     bool
+	Lowercase     bool
+	Uppercase     bool
+	StripComments bool
 }
 
 var DefaultNormalizeOptions NormalizeOptions = NormalizeOptions{
@@ -25,6 +28,10 @@ func NormalizeWithOptions(data string, options NormalizeOptions) string {
 		data = strings.TrimSpace(data)
 	}
 
+	if options.TrimCutset != "" {
+		data = strings.Trim(data, options.TrimCutset)
+	}
+
 	if options.Lowercase {
 		data = strings.ToLower(data)
 	}
@@ -35,6 +42,12 @@ func NormalizeWithOptions(data string, options NormalizeOptions) string {
 
 	if options.StripHTML {
 		data = HTMLPolicy.Sanitize(data)
+	}
+
+	if options.StripComments {
+		if cut := strings.IndexAny(data, "#"); cut >= 0 {
+			data = strings.TrimRightFunc(data[:cut], unicode.IsSpace)
+		}
 	}
 
 	return data

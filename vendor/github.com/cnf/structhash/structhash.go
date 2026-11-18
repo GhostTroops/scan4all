@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"crypto/md5"
 	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
 	"fmt"
 	"reflect"
 	"sort"
@@ -56,6 +58,20 @@ func Md5(c interface{}, version int) []byte {
 // This is a shorthand for sha1.Sum(Dump(c, version)).
 func Sha1(c interface{}, version int) []byte {
 	sum := sha1.Sum(Dump(c, version))
+	return sum[:]
+}
+
+// Sha256 takes a data structure and returns its SHA 256 hash.
+// This is a shorthand for sha256.Sum256(Dump(c, version)).
+func Sha256(c interface{}, version int) []byte {
+	sum := sha256.Sum256(Dump(c, version))
+	return sum[:]
+}
+
+// Sha512 takes a data structure and returns its SHA 512 hash.
+// This is a shorthand for sha512.Sum512(Dump(c, version)).
+func Sha512(c interface{}, version int) []byte {
+	sum := sha512.Sum512(Dump(c, version))
 	return sum[:]
 }
 

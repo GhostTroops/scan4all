@@ -2,12 +2,13 @@
 package goldmark
 
 import (
+	"io"
+
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/renderer/html"
 	"github.com/yuin/goldmark/text"
 	"github.com/yuin/goldmark/util"
-	"io"
 )
 
 // DefaultParser returns a new Parser that is configured by default values.
@@ -44,7 +45,7 @@ type Markdown interface {
 	// SetParser sets a Parser to this object.
 	SetParser(parser.Parser)
 
-	// Parser returns a Renderer that will be used for conversion.
+	// Renderer returns a Renderer that will be used for conversion.
 	Renderer() renderer.Renderer
 
 	// SetRenderer sets a Renderer to this object.

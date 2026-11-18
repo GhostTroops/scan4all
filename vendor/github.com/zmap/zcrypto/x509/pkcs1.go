@@ -5,18 +5,18 @@
 package x509
 
 import (
-	"crypto/rsa"
 	"errors"
 	"math/big"
 
 	"github.com/zmap/zcrypto/encoding/asn1"
+	"github.com/zmap/zcrypto/rsa"
 )
 
 // pkcs1PrivateKey is a structure which mirrors the PKCS#1 ASN.1 for an RSA private key.
 type pkcs1PrivateKey struct {
 	Version int
 	N       *big.Int
-	E       int
+	E       *big.Int // ZCrypto - use bigint to capture large exponents
 	D       *big.Int
 	P       *big.Int
 	Q       *big.Int
@@ -37,9 +37,12 @@ type pkcs1AdditionalRSAPrime struct {
 }
 
 // pkcs1PublicKey reflects the ASN.1 structure of a PKCS#1 public key.
+// ZCrypto - E changed from int to *big.Int to allow parsing certificates with
+// public exponents too large to fit in a Go int (e.g. > 2^63).
+// Original: E int
 type pkcs1PublicKey struct {
 	N *big.Int
-	E int
+	E *big.Int
 }
 
 // ParsePKCS1PrivateKey returns an RSA private key from its ASN.1 PKCS#1 DER encoded form.
@@ -63,7 +66,7 @@ func ParsePKCS1PrivateKey(der []byte) (*rsa.PrivateKey, error) {
 
 	key := new(rsa.PrivateKey)
 	key.PublicKey = rsa.PublicKey{
-		E: priv.E,
+		E: priv.E, // ZCrypto - convert to using BigInt
 		N: priv.N,
 	}
 
@@ -87,6 +90,38 @@ func ParsePKCS1PrivateKey(der []byte) (*rsa.PrivateKey, error) {
 	key.Precompute()
 
 	return key, nil
+}
+
+// ParsePKCS1PublicKey parses an [RSA] public key in PKCS #1, ASN.1 DER form.
+//
+// This kind of key is commonly encoded in PEM blocks of type "RSA PUBLIC KEY".
+func ParsePKCS1PublicKey(der []byte) (*rsa.PublicKey, error) {
+	var pub pkcs1PublicKey
+	rest, err := asn1.Unmarshal(der, &pub)
+	if err != nil {
+		if _, err := asn1.Unmarshal(der, &publicKeyInfo{}); err == nil {
+			return nil, errors.New("x509: failed to parse public key (use ParsePKIXPublicKey instead for this key format)")
+		}
+		return nil, err
+	}
+	if len(rest) > 0 {
+		return nil, asn1.SyntaxError{Msg: "trailing data"}
+	}
+
+	if pub.N.Sign() <= 0 || pub.E.Sign() <= 0 {
+		return nil, errors.New("x509: public key contains zero or negative value")
+	}
+	// ZCrypto - with our fork of crypto/rsa, we allow large public exponents
+	//if pub.E > 1<<31-1 {
+	//	return nil, errors.New("x509: public key contains large public exponent")
+	//}
+
+	return &rsa.PublicKey{
+		// Defensively copy E so callers cannot mutate it through the
+		// parsed wire structure.
+		E: new(big.Int).Set(pub.E),
+		N: new(big.Int).Set(pub.N),
+	}, nil
 }
 
 // MarshalPKCS1PrivateKey converts a private key to ASN.1 DER encoded form.

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/pkg/cvescan"
 	"github.com/GhostTroops/scan4all/pkg/fingerprint"
 	"github.com/GhostTroops/scan4all/projectdiscovery/nuclei_Yaml"
 	"github.com/GhostTroops/scan4all/webScan"
@@ -93,6 +94,8 @@ func (r *Runner) Httpxrun(buf *bytes.Buffer, options *runner3.Options) error {
 			})
 		}
 		nuclei_Yaml.RunNuclei(&httpxrunner.Naabubuffer)
+		// 集成 cve-scanner 的指纹驱动 CVE 扫描/利用（默认关闭，需 enableCveScan=true 或 -cve）
+		cvescan.Run(&httpxrunner.Naabubuffer)
 	})
 	// 指纹去重复 请求路径
 	if "" != fingerprint.FgDictFile {
@@ -686,24 +689,24 @@ func (r *Runner) handleOutput() {
 func writeCSVHeaders(data *Result, writer *csv.Writer) {
 	headers, err := data.CSVHeaders()
 	if err != nil {
-		gologger.Error().Msgf(err.Error())
+		gologger.Error().Msg(err.Error())
 		return
 	}
 
 	if err := writer.Write(headers); err != nil {
 		errMsg := errors.Wrap(err, "Could not write headers")
-		gologger.Error().Msgf(errMsg.Error())
+		gologger.Error().Msg(errMsg.Error())
 	}
 }
 
 func writeCSVRow(data *Result, writer *csv.Writer) {
 	rowData, err := data.CSVFields()
 	if err != nil {
-		gologger.Error().Msgf(err.Error())
+		gologger.Error().Msg(err.Error())
 		return
 	}
 	if err := writer.Write(rowData); err != nil {
 		errMsg := errors.Wrap(err, "Could not write row")
-		gologger.Error().Msgf(errMsg.Error())
+		gologger.Error().Msg(errMsg.Error())
 	}
 }

@@ -5,11 +5,12 @@ import (
 
 	"github.com/pkg/errors"
 	fileutil "github.com/projectdiscovery/utils/file"
+	stringsutil "github.com/projectdiscovery/utils/strings"
 )
 
-var quotes = []rune{'"', '\'', '`'}
+var quotes = []byte{'"', '\'', '`'}
 
-func isQuote(char rune) (bool, rune) {
+func isQuote(char byte) (bool, byte) {
 	for _, quote := range quotes {
 		if quote == char {
 			return true, quote
@@ -18,16 +19,22 @@ func isQuote(char rune) (bool, rune) {
 	return false, 0
 }
 
-func searchPart(value string, stop rune) (bool, string) {
-	var result string
-	for _, char := range value {
-		if char != stop {
-			result += string(char)
-		} else {
-			return true, result
+func searchPart(value string, stop byte) (bool, string, int) {
+	var result strings.Builder
+	i := 0
+	for i < len(value) {
+		if value[i] == '\\' && i+1 < len(value) && value[i+1] == stop {
+			result.WriteByte(stop)
+			i += 2
+			continue
 		}
+		if value[i] == stop {
+			return true, result.String(), i
+		}
+		result.WriteByte(value[i])
+		i++
 	}
-	return false, result
+	return false, result.String(), i
 }
 
 func ToString(slice []string) string {
@@ -64,10 +71,10 @@ func ToStringSlice(value string, options Options) ([]string, error) {
 	}
 
 	addPartToResult := func(part string) {
+		if options.Normalize != nil {
+			part = options.Normalize(part)
+		}
 		if !options.IsEmpty(part) {
-			if options.Normalize != nil {
-				part = options.Normalize(part)
-			}
 			result = append(result, part)
 		}
 	}
@@ -84,24 +91,24 @@ func ToStringSlice(value string, options Options) ([]string, error) {
 	} else {
 		index := 0
 		for index < len(value) {
-			char := rune(value[index])
+			char := value[index]
 			if isQuote, quote := isQuote(char); isQuote {
-				quoteFound, part := searchPart(value[index+1:], quote)
+				quoteFound, part, consumed := searchPart(value[index+1:], quote)
 
 				if !quoteFound {
 					return nil, errors.New("Unclosed quote in path")
 				}
 
-				index += len(part) + 2
+				index += consumed + 2
 
 				addPartToResult(part)
 			} else {
-				commaFound, part := searchPart(value[index:], ',')
+				commaFound, part, consumed := searchPart(value[index:], ',')
 
 				if commaFound {
-					index += len(part) + 1
+					index += consumed + 1
 				} else {
-					index += len(part)
+					index += consumed
 				}
 
 				addPartToResult(part)
@@ -120,13 +127,31 @@ func isFromFile(_ string) bool {
 }
 
 func normalizeTrailingParts(s string) string {
-	return strings.TrimSpace(s)
+	return stringsutil.NormalizeWithOptions(s,
+		stringsutil.NormalizeOptions{
+			StripComments: true,
+			TrimSpaces:    true,
+		},
+	)
 }
 
 func normalize(s string) string {
-	return strings.TrimSpace(strings.Trim(strings.TrimSpace(s), string(quotes)))
+	return stringsutil.NormalizeWithOptions(s,
+		stringsutil.NormalizeOptions{
+			StripComments: true,
+			TrimCutset:    string(quotes),
+			TrimSpaces:    true,
+		},
+	)
 }
 
 func normalizeLowercase(s string) string {
-	return strings.TrimSpace(strings.Trim(strings.TrimSpace(strings.ToLower(s)), string(quotes)))
+	return stringsutil.NormalizeWithOptions(s,
+		stringsutil.NormalizeOptions{
+			StripComments: true,
+			TrimCutset:    string(quotes),
+			TrimSpaces:    true,
+			Lowercase:     true,
+		},
+	)
 }

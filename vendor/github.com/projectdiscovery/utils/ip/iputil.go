@@ -277,7 +277,9 @@ func WhatsMyIP() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("error fetching ip: %s", resp.Status)
@@ -304,7 +306,9 @@ func GetSourceIP(target string) (net.IP, error) {
 		return nil, dialUpErr
 	}
 
-	defer con.Close()
+	defer func() {
+		_ = con.Close()
+	}()
 
 	if udpaddr, ok := con.LocalAddr().(*net.UDPAddr); ok {
 		return udpaddr.IP, nil
@@ -328,7 +332,7 @@ func GetBindableAddress(port int, ips ...string) (string, error) {
 			errs = multierr.Append(errs, err)
 			continue
 		}
-		l.Close()
+		_ = l.Close()
 		udpAddr := net.UDPAddr{
 			Port: port,
 			IP:   net.ParseIP(ip),
@@ -339,7 +343,7 @@ func GetBindableAddress(port int, ips ...string) (string, error) {
 			errs = multierr.Append(errs, err)
 			continue
 		}
-		lu.Close()
+		_ = lu.Close()
 
 		// we found a bindable ip
 		return ip, nil

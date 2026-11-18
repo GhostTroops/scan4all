@@ -1,7 +1,7 @@
 # goflags
 
 [![License](https://img.shields.io/github/license/projectdiscovery/goflags)](LICENSE.md)
-![Go version](https://img.shields.io/github/go-mod/go-version/projectdiscovery/nuclei?filename=v2%2Fgo.mod)
+![Go version](https://img.shields.io/github/go-mod/go-version/projectdiscovery/goflags?filename=go.mod)
 [![Release](https://img.shields.io/github/release/projectdiscovery/goflags)](https://github.com/projectdiscovery/goflags/releases/)
 [![Checks](https://github.com/projectdiscovery/goflags/actions/workflows/build-test.yml/badge.svg)](https://github.com/projectdiscovery/goflags/actions/workflows/build-test.yml)
 
@@ -9,7 +9,7 @@ An extension of the go `flag` library that adds convenience functions and functi
 
 ## Features
 
-- In-built YAML Configuration file support.
+- YAML configuration with ordered file precedence.
 - Better usage instructions
 - Short and long flags support
 - Custom String Slice types with different options (comma-separated,normalized,etc)
@@ -44,6 +44,8 @@ The following types are supported by the goflags library. The `<name>P` suffix m
 | VarP                     | Custom value with long short name implementing flag.Value interface |
 | EnumVar                  | Enum value with long name                                           |
 | EnumVarP                 | Enum value with long short name                                     |
+| AuthVar                  | Auth token with long name (supports interactive prompt and env var) |
+| AuthVarP                 | Auth token with long short name                                     |
 | CallbackVar			   | Callback function as value with long name							 |
 | CallbackVarP			   | Callback function as value with long short name					 |
 | SizeVar                  | String value with long name                                         |
@@ -61,6 +63,44 @@ The following types are supported by the goflags library. The `<name>P` suffix m
 | FileNormalizedStringSliceOptions     | Comma        | Standard      | List of normalized string slice from file/cli |
 | FileStringSliceOptions               | Standard     | Standard      | List of string slice from file                |
 | NormalizedStringSliceOptions         | Comma        | Standard      | List of normalized string slice               |
+
+### Cascading Configuration
+
+Use `SetConfigFilePaths` to load more than one YAML configuration file. List the
+files from lowest to highest priority. For example, you can load system-wide
+configuration first and let the user's configuration override it:
+
+```go
+userConfigFile, err := flagSet.GetConfigFilePath()
+if err != nil {
+	log.Fatal(err)
+}
+
+flagSet.SetConfigFilePaths("/etc/example/config.yaml", userConfigFile)
+if err := flagSet.Parse(); err != nil {
+	log.Fatal(err)
+}
+```
+
+The following precedence rules apply:
+
+- Command-line flags override all configuration files.
+- A value in a later file overrides the value from an earlier file.
+- If a later file does not contain an option, the earlier value remains in use.
+
+The last path is the primary user configuration file. `Parse` creates this file
+if it does not exist. Missing lower-priority files are skipped, but other file
+errors are returned. Earlier files are always read-only.
+
+`Parse` and `MergeConfigFile` return configuration errors (malformed YAML,
+unsupported or invalid values). A failure while applying cascaded files rolls
+back every assignment from that apply, including values from lower-priority
+files, so compiled defaults remain. Sequential `MergeConfigFile` calls roll
+back only the failed file.
+
+Built-in collection types replace the complete collection instead of merging
+items. Custom `flag.Value` implementations keep their own `Set` behavior.
+Callback flags are CLI-only, so configuration files cannot run them.
 
 ## Example
 

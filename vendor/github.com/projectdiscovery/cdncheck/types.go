@@ -2,8 +2,9 @@ package cdncheck
 
 import (
 	"net"
+	"net/netip"
 
-	"github.com/yl2chen/cidranger"
+	"github.com/gaissmai/bart"
 )
 
 // InputCompiled contains a compiled list of input structure
@@ -20,18 +21,18 @@ type InputCompiled struct {
 
 // providerScraper is a structure for scraping providers
 type providerScraper struct {
-	rangers map[string]cidranger.Ranger
+	rangers map[string]*bart.Table[net.IP]
 }
 
 // newProviderScraper returns a new provider scraper instance
 func newProviderScraper(ranges map[string][]string) *providerScraper {
-	scraper := &providerScraper{rangers: make(map[string]cidranger.Ranger)}
+	scraper := &providerScraper{rangers: make(map[string]*bart.Table[net.IP])}
 
 	for provider, items := range ranges {
-		ranger := cidranger.NewPCTrieRanger()
+		ranger := new(bart.Table[net.IP])
 		for _, cidr := range items {
-			if _, network, err := net.ParseCIDR(cidr); err == nil {
-				_ = ranger.Insert(cidranger.NewBasicRangerEntry(*network))
+			if network, err := netip.ParsePrefix(cidr); err == nil {
+				ranger.Insert(network, nil)
 			}
 		}
 		scraper.rangers[provider] = ranger
@@ -41,8 +42,13 @@ func newProviderScraper(ranges map[string][]string) *providerScraper {
 
 // Match returns true if the IP matches provided CIDR ranges
 func (p *providerScraper) Match(ip net.IP) (bool, string, error) {
+	parsed, err := netip.ParseAddr(ip.String())
+	if err != nil {
+		return false, "", err
+	}
+
 	for provider, ranger := range p.rangers {
-		if contains, err := ranger.Contains(ip); contains {
+		if _, contains := ranger.Lookup(parsed); contains {
 			return true, provider, err
 		}
 	}

@@ -68,7 +68,7 @@ func (d *dialer) DialWithProxy(protocol, addr, proxyURL string, timeout time.Dur
 	}
 	switch u.Scheme {
 	case "http":
-		c, err = proxy.HTTPDialer(proxyURL, timeout)(addr)
+		c, err = proxy.HTTPFastDialer(proxyURL, timeout, options.FastDialer)(addr)
 	case "socks5", "socks5h":
 		c, err = proxy.Socks5Dialer(proxyURL, timeout)(addr)
 	default:

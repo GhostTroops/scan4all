@@ -5,11 +5,11 @@ project_name: scan4all
 builds:
   - id: scan4all-darwin
     ldflags:
-      - -s -w -X main.Version={{.Version}}
+      - -s -w -X main.Version={{ .Version }}
     binary: scan4all
     env:
       - CGO_ENABLED=1
-    main: main.go
+    main: .
     goos:
       - darwin
     goarch:
@@ -20,10 +20,10 @@ builds:
 #        to: config
 
 archives:
-  - format: zip
+  - formats: [zip]
     files:
       - LICENSE*
       - README*
       - config/**/*
-checksum:
+checksums:
   name_template: "{{ .ProjectName }}-mac-checksums.txt"

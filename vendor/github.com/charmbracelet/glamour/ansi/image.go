@@ -9,7 +9,7 @@ type ImageElement struct {
 	Text    string
 	BaseURL string
 	URL     string
-	Child   ElementRenderer // FIXME
+	Child   ElementRenderer
 }
 
 func (e *ImageElement) Render(w io.Writer, ctx RenderContext) error {

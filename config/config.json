@@ -104,5 +104,14 @@
     "Path": "./config/poc/",
     "Logs": "./logs/errror.log"
   },
-  "enableWebScan": false
+  "enableWebScan": false,
+  "enableCveScan": false,
+  "cveScanThreads": 20,
+  "cveScanTimeout": 8,
+  "cveScanCmd": "hostname",
+  "cveScanLhost": "",
+  "cveScanWls": true,
+  "cveScanPhp": true,
+  "cveScanWeb": true,
+  "cveScanApps": true
 }

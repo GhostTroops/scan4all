@@ -4,12 +4,27 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/url"
 	"time"
 )
 
 var (
 	ErrMaxRetriesZero = errors.New("retries must be at least 1")
 	ErrResolversEmpty = errors.New("resolvers list must not be empty")
+
+	ErrProxySchemeUnsupported = errors.New("proxy scheme must be socks5 or socks5h")
+
+	BaseResolvers = []string{
+		"1.1.1.1:53",
+		"1.0.0.1:53",
+		"8.8.8.8:53",
+		"8.8.4.4:53",
+	}
+	DefaultOptions = Options{
+		BaseResolvers: BaseResolvers,
+		MaxRetries:    1,
+		Timeout:       3 * time.Second,
+	}
 )
 
 type Options struct {
@@ -20,6 +35,49 @@ type Options struct {
 	LocalAddrIP           net.IP
 	LocalAddrPort         uint16
 	ConnectionPoolThreads int
+	MaxPerCNAMEFollows    int
+
+	// Proxy is the URL of a SOCKS5 proxy that queries go through, for
+	// example "socks5://user:password@127.0.0.1:1080". The credentials
+	// are optional. Only the socks5 and socks5h schemes are accepted;
+	// any other scheme, including http and https, makes Validate fail
+	// with ErrProxySchemeUnsupported. When set, UDP resolvers are
+	// queried over TCP. An empty value disables the proxy.
+	Proxy string
+
+	// ExitOnStatusCodes lists DNS rcodes that terminate the retry
+	// loop. When non-empty, only attempts whose rcode is in this list
+	// are considered definitive: the response is parsed into the
+	// returned DNSData and the loop exits. Attempts with any other
+	// rcode are treated like transport errors - the response is not
+	// parsed, DNSData is not mutated, and the loop continues with the
+	// next resolver.
+	//
+	// Common values:
+	//
+	//	[]int{dns.RcodeSuccess}                       // NOERROR only
+	//	[]int{dns.RcodeSuccess, dns.RcodeNameError}   // NOERROR or NXDOMAIN
+	//
+	// An empty/nil list preserves the legacy behavior: every attempt
+	// is parsed, DNSData.Raw accumulates across retries, and only
+	// RcodeSuccess breaks the loop.
+	ExitOnStatusCodes []int
+}
+
+// exitOnRcode reports whether rcode is one of the configured
+// terminating status codes. It returns true when no list is set so the
+// historical "break on success" path keeps working unchanged at the
+// call sites that gate on it.
+func (options *Options) exitOnRcode(rcode int) bool {
+	if len(options.ExitOnStatusCodes) == 0 {
+		return rcode == 0 // dns.RcodeSuccess
+	}
+	for _, c := range options.ExitOnStatusCodes {
+		if c == rcode {
+			return true
+		}
+	}
+	return false
 }
 
 // Returns a net.Addr of a UDP or TCP type depending on whats required
@@ -73,5 +131,27 @@ func (options *Options) Validate() error {
 	if len(options.BaseResolvers) == 0 {
 		return ErrResolversEmpty
 	}
-	return nil
+
+	return options.validateProxy()
+}
+
+// validateProxy checks that Proxy, when set, is a SOCKS5 proxy URL.
+func (options *Options) validateProxy() error {
+	if options.Proxy == "" {
+		return nil
+	}
+	proxyURL, err := url.Parse(options.Proxy)
+	if err != nil {
+		// drop the raw URL that url.Error carries, it may hold credentials
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			err = urlErr.Err
+		}
+		return fmt.Errorf("invalid proxy URL: %w", err)
+	}
+	switch proxyURL.Scheme {
+	case "socks5", "socks5h":
+		return nil
+	}
+	return fmt.Errorf("%w: got %q", ErrProxySchemeUnsupported, proxyURL.Scheme)
 }

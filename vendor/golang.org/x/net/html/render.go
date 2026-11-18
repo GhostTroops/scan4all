@@ -113,14 +113,14 @@ func render1(w writer, n *Node) error {
 				if _, err := w.WriteString(" PUBLIC "); err != nil {
 					return err
 				}
-				if err := writeQuoted(w, p); err != nil {
+				if err := writeDoctypeQuoted(w, p); err != nil {
 					return err
 				}
 				if s != "" {
 					if err := w.WriteByte(' '); err != nil {
 						return err
 					}
-					if err := writeQuoted(w, s); err != nil {
+					if err := writeDoctypeQuoted(w, s); err != nil {
 						return err
 					}
 				}
@@ -128,7 +128,7 @@ func render1(w writer, n *Node) error {
 				if _, err := w.WriteString(" SYSTEM "); err != nil {
 					return err
 				}
-				if err := writeQuoted(w, s); err != nil {
+				if err := writeDoctypeQuoted(w, s); err != nil {
 					return err
 				}
 			}
@@ -184,7 +184,7 @@ func render1(w writer, n *Node) error {
 		return err
 	}
 
-	// Add initial newline where there is danger of a newline beging ignored.
+	// Add initial newline where there is danger of a newline being ignored.
 	if c := n.FirstChild; c != nil && c.Type == TextNode && strings.HasPrefix(c.Data, "\n") {
 		switch n.Data {
 		case "pre", "listing", "textarea":
@@ -243,27 +243,49 @@ func childTextNodesAreLiteral(n *Node) bool {
 	if n.Namespace != "" {
 		return false
 	}
+
 	switch n.Data {
 	case "iframe", "noembed", "noframes", "noscript", "plaintext", "script", "style", "xmp":
+		// n's text is literal only if the parser would keep n in the HTML
+		// namespace when the output is re-parsed. An ancestor may have been
+		// fostered under a foreign element (such as an HTML <mglyph> under
+		// <mtext>) where the parser would instead create it, and its
+		// descendants, in that element's namespace. We walk up the whole tree
+		// and check that every transition out of a non-HTML namespace happens
+		// at an HTML integration point. This is stricter than the parser, so
+		// some text that would be safe literally is escaped.
+		for c, p := n, n.Parent; p != nil; c, p = p, p.Parent {
+			if p.Namespace != "" && p.Namespace != c.Namespace && !htmlIntegrationPoint(p) {
+				return false
+			}
+		}
+
 		return true
 	default:
 		return false
 	}
 }
 
-// writeQuoted writes s to w surrounded by quotes. Normally it will use double
+// writeDoctypeQuoted writes s to w surrounded by quotes. Normally it will use double
 // quotes, but if s contains a double quote, it will use single quotes.
+// If s contains any '>' characters, they are replaced with &gt; in order
+// to prevent triggering an abrupt-doctype-system-identifier parse error.
 // It is used for writing the identifiers in a doctype declaration.
 // In valid HTML, they can't contain both types of quotes.
-func writeQuoted(w writer, s string) error {
+func writeDoctypeQuoted(w writer, s string) error {
 	var q byte = '"'
 	if strings.Contains(s, `"`) {
+		// parseDoctype will never produce a Node with both quote types, but a user
+		// can construct their own Node that violates this assumption.
+		if strings.Contains(s, `'`) {
+			return errors.New("doctype contains both quote types, cannot be safely rendered")
+		}
 		q = '\''
 	}
 	if err := w.WriteByte(q); err != nil {
 		return err
 	}
-	if _, err := w.WriteString(s); err != nil {
+	if _, err := w.WriteString(strings.ReplaceAll(s, ">", "&gt;")); err != nil {
 		return err
 	}
 	if err := w.WriteByte(q); err != nil {

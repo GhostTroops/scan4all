@@ -16,8 +16,8 @@ import (
 	"io"
 )
 
-// a keyAgreement implements the client and server side of a TLS key agreement
-// protocol by generating and processing key exchange messages.
+// A keyAgreement implements the client and server side of a TLS 1.0–1.2 key
+// agreement protocol by generating and processing key exchange messages.
 type keyAgreement interface {
 	// On the server side, the first two methods are called in order.
 
@@ -126,11 +126,11 @@ func md5SHA1Hash(slices [][]byte) []byte {
 }
 
 // hashForServerKeyExchange hashes the given slices and returns their digest
-// using the given hash function (for >= TLS 1.2) or using a default based on
+// using the given hash function (for TLS 1.2) or using a default based on
 // the sigType (for earlier TLS versions). For Ed25519 signatures, which don't
 // do pre-hashing, it returns the concatenation of the slices.
 func hashForServerKeyExchange(sigType uint8, hashFunc crypto.Hash, version uint16, slices ...[]byte) []byte {
-	if sigType == signatureEd25519 || circlSchemeBySigType(sigType) != nil { // [UTLS] ported from cloudflare/go
+	if sigType == signatureEd25519 {
 		var signed []byte
 		for _, slice := range slices {
 			signed = append(signed, slice...)
@@ -169,7 +169,7 @@ type ecdheKeyAgreement struct {
 func (ka *ecdheKeyAgreement) generateServerKeyExchange(config *Config, cert *Certificate, clientHello *clientHelloMsg, hello *serverHelloMsg) (*serverKeyExchangeMsg, error) {
 	var curveID CurveID
 	for _, c := range clientHello.supportedCurves {
-		if config.supportsCurve(c) && curveIdToCirclScheme(c) == nil {
+		if config.supportsCurve(ka.version, c) {
 			curveID = c
 			break
 		}

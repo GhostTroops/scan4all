@@ -2,7 +2,6 @@ package asnmap
 
 import (
 	"bufio"
-	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,16 +13,39 @@ import (
 	"strings"
 	"time"
 
+	"github.com/projectdiscovery/gologger"
+	"github.com/projectdiscovery/utils/auth/pdcp"
+	"github.com/projectdiscovery/utils/env"
 	fileutil "github.com/projectdiscovery/utils/file"
 	stringsutil "github.com/projectdiscovery/utils/strings"
+	updateutils "github.com/projectdiscovery/utils/update"
+	urlutil "github.com/projectdiscovery/utils/url"
 	"golang.org/x/net/proxy"
 )
 
-const serverURL = "https://api.asnmap.sh/"
+const (
+	serverURL = "https://asn.projectdiscovery.io/"
+	// the largest ASN responses arrive in a few seconds, so this only trips on a stalled server
+	requestTimeout = 30 * time.Second
+)
+
+var (
+	PDCPApiKey      = env.GetEnvOrDefault("PDCP_API_KEY", "")
+	ErrUnAuthorized = errors.New("unauthorized: 401 (get free api key to configure from https://cloud.projectdiscovery.io/?ref=api_key)")
+)
+
+func init() {
+	if PDCPApiKey == "" {
+		pch := pdcp.PDCPCredHandler{}
+		if creds, err := pch.GetCreds(); err == nil {
+			PDCPApiKey = creds.APIKey
+		}
+	}
+}
 
 type Client struct {
 	url  *url.URL
-	http http.Client
+	http *http.Client
 }
 
 // generatefullURL creates the complete URL with path, scheme, and host
@@ -34,7 +56,7 @@ func generateFullURL(host string) (*url.URL, error) {
 	}
 
 	if !stringsutil.EqualFoldAny(rawURL.Scheme, "http", "https") {
-		return nil, errors.New("Host should start with http or https.")
+		return nil, errors.New("host should start with http or https")
 	}
 
 	rawURL.Path = "api/v1/asnmap"
@@ -56,14 +78,9 @@ func NewClient() (*Client, error) {
 		return nil, err
 	}
 
-	// ignore expired SSL certificates
-	transCfg := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-
 	client := Client{
 		url:  URL,
-		http: http.Client{Transport: transCfg},
+		http: &http.Client{Timeout: requestTimeout},
 	}
 	return &client, nil
 }
@@ -94,7 +111,7 @@ func (c *Client) setProxyFromFile(fileName string) (*url.URL, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		proxy := strings.TrimSpace(scanner.Text())
@@ -126,8 +143,7 @@ func (c *Client) setProxy(proxyString string) (*url.URL, error) {
 	switch proxyurl.Scheme {
 	case "http", "https":
 		c.http.Transport = &http.Transport{
-			Proxy:           http.ProxyURL(proxyurl),
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			Proxy: http.ProxyURL(proxyurl),
 		}
 		return proxyurl, nil
 	case "socks5":
@@ -135,8 +151,12 @@ func (c *Client) setProxy(proxyString string) (*url.URL, error) {
 		if err != nil {
 			return nil, err
 		}
+		contextDialer, ok := dialer.(proxy.ContextDialer)
+		if !ok {
+			return nil, errors.New("socks5 dialer does not support DialContext")
+		}
 		c.http.Transport = &http.Transport{
-			Dial: dialer.Dial,
+			DialContext: contextDialer.DialContext,
 		}
 		return proxyurl, nil
 	default:
@@ -144,19 +164,44 @@ func (c *Client) setProxy(proxyString string) (*url.URL, error) {
 	}
 }
 
-func generateRawQuery(query, value string) string {
-	return query + "=" + value
-}
+func (c Client) makeRequest(reqURL string) ([]byte, error) {
+	if c.http == nil {
+		return nil, errors.New("http client is not initialized")
+	}
 
-func (c Client) makeRequest() ([]byte, error) {
-	req, _ := http.NewRequest(http.MethodGet, c.url.String(), nil)
-	res, err := c.http.Do(req)
+	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
+	if PDCPApiKey == "" {
+		gologger.Error().Label("asnmap-api").Msgf("missing or invalid api key (get free api key & configure it from https://cloud.projectdiscovery.io/?ref=api_key)")
+		return nil, ErrUnAuthorized
+	}
+	req.Header.Set("X-PDCP-Key", PDCPApiKey)
+	res, err := c.do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = res.Body.Close() }()
+	if res.StatusCode == http.StatusUnauthorized {
+		gologger.Error().Msgf("missing or invalid api key (get free api key & configure it from https://cloud.projectdiscovery.io/?ref=api_key)")
+		return nil, ErrUnAuthorized
+	}
 
-	resBody, _ := io.ReadAll(res.Body)
+	if res.StatusCode == http.StatusBadRequest {
+		body, _ := io.ReadAll(res.Body)
+		bodyStr := string(body)
+		return nil, fmt.Errorf("bad request: %s", bodyStr)
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status: %s", res.Status)
+	}
+
+	resBody, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
 	return resBody, nil
 }
 
@@ -170,21 +215,28 @@ func (c Client) GetDataWithCustomInput(inputToQuery, inputToUseInResponse string
 
 func (c Client) GetData(input string, medatadas ...string) ([]*Response, error) {
 	inputToStore := input
+	params := urlutil.NewOrderedParams()
 	switch IdentifyInput(input) {
 	case ASN:
 		inputToStore = strings.TrimPrefix(strings.ToLower(input), "as")
-		c.url.RawQuery = generateRawQuery("asn", inputToStore)
+		params.Add("asn", inputToStore)
 	case ASNID:
-		c.url.RawQuery = generateRawQuery("asn", input)
+		params.Add("asn", input)
 	case IP:
-		c.url.RawQuery = generateRawQuery("ip", input)
+		params.Add("ip", input)
 	case Org:
-		c.url.RawQuery = generateRawQuery("org", input)
+		params.Add("org", input)
 	case Unknown:
 		return nil, errors.New("unknown type")
 	}
 
-	resp, err := c.makeRequest()
+	params.Decode(updateutils.GetpdtmParams(Version))
+
+	// copy so concurrent calls don't share the query
+	reqURL := *c.url
+	reqURL.RawQuery = params.Encode()
+
+	resp, err := c.makeRequest(reqURL.String())
 	if err != nil {
 		return nil, err
 	}

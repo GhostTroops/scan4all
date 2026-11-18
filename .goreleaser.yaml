@@ -1,11 +1,5 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
-#before:
-#  hooks:
-    # You may remove this if you don't use go modules.
-#    - go mod tidy
-    # you may remove this if you don't need go generate
-#    - go generate ./...
+# goreleaser v2 配置
+# 注意：v2 已移除 archives.replacements / snapshot.name_template，checksum 更名为 checksums
 release:
   # Repo in which the release will be created.
   # Default is extracted from the origin remote URL or empty if its private hosted.
@@ -24,10 +18,11 @@ release:
   footer: |
     ## Thanks!
 builds:
+  # cgo 必需：naabu 的 SYN 扫描依赖 libpcap（gopacket/pcap）
   - env:
-      - CGO_ENABLED=0
-    goos: [windows,linux,darwin]
-    goarch: [amd64,386,arm,arm64]
+      - CGO_ENABLED=1
+    goos: [windows, linux, darwin]
+    goarch: [amd64, 386, arm, arm64]
     ignore:
       - goos: darwin
         goarch: 386
@@ -37,18 +32,23 @@ builds:
         goarch: arm64
     flags:
       - -trimpath
+    ldflags:
+      - -s -w -X main.Version={{ .Version }}
 archives:
-  - replacements:
-      darwin: Darwin
-      linux: Linux
-      windows: Windows
-      arm64: arm64
-      386: i386
-      amd64: x86_64
-checksum:
+  - formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    files:
+      - LICENSE*
+      - README*
+      - config/**/*
+checksums:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 changelog:
   sort: asc
   filters:

@@ -6,8 +6,5 @@ import (
 
 // 更新到最新版本
 func TestUpdateScan4allVersionToLatest(t *testing.T) {
-	err := UpdateScan4allVersionToLatest(true)
-	if err != nil {
-		t.Error("fail TestupdateNucleiVersionToLatest")
-	}
+	t.Skip("UpdateScan4allVersionToLatest 已迁移到 github.com/hktalent/go-utils，且该测试会访问网络，默认跳过")
 }

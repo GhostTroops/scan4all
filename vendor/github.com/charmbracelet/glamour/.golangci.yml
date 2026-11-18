@@ -14,7 +14,7 @@ linters:
     - godot
     - godox
     - goimports
-    - gomnd
+    - mnd
     - goprintffuncname
     - gosec
     - misspell

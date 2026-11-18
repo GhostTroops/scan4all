@@ -134,6 +134,7 @@ type UtlsPreSharedKeyExtension struct {
 	PreSharedKeyCommon
 	cipherSuite  *cipherSuiteTLS13
 	cachedLength *int
+	// Deprecated: Set OmitEmptyPsk in Config instead.
 	OmitEmptyPsk bool
 }
 
@@ -268,7 +269,7 @@ func (e *UtlsPreSharedKeyExtension) PatchBuiltHello(hello *PubClientHelloMsg) er
 	if private == nil {
 		private = hello.getPrivatePtr()
 	}
-	private.raw = hello.Raw
+	private.original = hello.Raw
 	private.pskBinders = e.Binders // set the placeholder to the private Hello
 
 	//--- mirror loadSession() begin ---//
@@ -283,6 +284,21 @@ func (e *UtlsPreSharedKeyExtension) PatchBuiltHello(hello *PubClientHelloMsg) er
 	if err := private.updateBinders(pskBinders); err != nil {
 		return err
 	}
+
+	// copied from handshake_messages.go in 1.22
+	lenWithoutBinders := len(helloBytes)
+	b := cryptobyte.NewFixedBuilder(private.original[:lenWithoutBinders])
+	b.AddUint16LengthPrefixed(func(b *cryptobyte.Builder) {
+		for _, binder := range private.pskBinders {
+			b.AddUint8LengthPrefixed(func(b *cryptobyte.Builder) {
+				b.AddBytes(binder)
+			})
+		}
+	})
+	if out, err := b.Bytes(); err != nil || len(out) != len(private.original) {
+		return errors.New("tls: internal error: failed to update binders")
+	}
+
 	//--- mirror loadSession() end ---//
 	e.Binders = pskBinders
 
@@ -308,8 +324,9 @@ func (e *UtlsPreSharedKeyExtension) UnmarshalJSON(_ []byte) error {
 type FakePreSharedKeyExtension struct {
 	UnimplementedPreSharedKeyExtension
 
-	Identities   []PskIdentity `json:"identities"`
-	Binders      [][]byte      `json:"binders"`
+	Identities []PskIdentity `json:"identities"`
+	Binders    [][]byte      `json:"binders"`
+	// Deprecated: Set OmitEmptyPsk in Config instead.
 	OmitEmptyPsk bool
 }
 

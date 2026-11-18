@@ -32,7 +32,7 @@ const (
 )
 
 // SetOption implements SetOptioner.
-func (c *LinkifyConfig) SetOption(name parser.OptionName, value interface{}) {
+func (c *LinkifyConfig) SetOption(name parser.OptionName, value any) {
 	switch name {
 	case optLinkifyAllowedProtocols:
 		c.AllowedProtocols = value.([][]byte)
@@ -66,10 +66,12 @@ func (o *withLinkifyAllowedProtocols) SetLinkifyOption(p *LinkifyConfig) {
 // WithLinkifyAllowedProtocols is a functional option that specify allowed
 // protocols in autolinks. Each protocol must end with ':' like
 // 'http:' .
-func WithLinkifyAllowedProtocols(value [][]byte) LinkifyOption {
-	return &withLinkifyAllowedProtocols{
-		value: value,
+func WithLinkifyAllowedProtocols[T []byte | string](value []T) LinkifyOption {
+	opt := &withLinkifyAllowedProtocols{}
+	for _, v := range value {
+		opt.value = append(opt.value, []byte(v))
 	}
+	return opt
 }
 
 type withLinkifyURLRegexp struct {
@@ -202,37 +204,6 @@ func (s *linkifyParser) Parse(parent ast.Node, block text.Reader, pc parser.Cont
 	if m != nil && m[0] != 0 {
 		m = nil
 	}
-	if m != nil && m[0] == 0 {
-		lastChar := line[m[1]-1]
-		if lastChar == '.' {
-			m[1]--
-		} else if lastChar == ')' {
-			closing := 0
-			for i := m[1] - 1; i >= m[0]; i-- {
-				if line[i] == ')' {
-					closing++
-				} else if line[i] == '(' {
-					closing--
-				}
-			}
-			if closing > 0 {
-				m[1] -= closing
-			}
-		} else if lastChar == ';' {
-			i := m[1] - 2
-			for ; i >= m[0]; i-- {
-				if util.IsAlphaNumeric(line[i]) {
-					continue
-				}
-				break
-			}
-			if i != m[1]-2 {
-				if line[i] == '&' {
-					m[1] -= m[1] - i
-				}
-			}
-		}
-	}
 	if m == nil {
 		if len(line) > 0 && util.IsPunct(line[0]) {
 			return nil
@@ -252,7 +223,7 @@ func (s *linkifyParser) Parse(parent ast.Node, block text.Reader, pc parser.Cont
 		}
 		at := bytes.IndexByte(line, '@')
 		m = []int{0, stop, at, stop - 1}
-		if m == nil || bytes.IndexByte(line[m[2]:m[3]], '.') < 0 {
+		if bytes.IndexByte(line[m[2]:m[3]], '.') < 0 {
 			return nil
 		}
 		lastChar := line[m[1]-1]
@@ -284,6 +255,20 @@ func (s *linkifyParser) Parse(parent ast.Node, block text.Reader, pc parser.Cont
 	}
 endfor:
 	i++
+	if line[i-1] == ')' {
+		i -= max(0, bytes.Count(line[:i], []byte{')'})-bytes.Count(line[:i], []byte{'('}))
+	} else if line[i-1] == ';' {
+		j := i - 2
+		for ; j >= m[0]; j-- {
+			if util.IsAlphaNumeric(line[j]) {
+				continue
+			}
+			break
+		}
+		if j != i-2 && line[j] == '&' {
+			i = j
+		}
+	}
 	consumes += i
 	block.Advance(consumes)
 	n := ast.NewTextSegment(text.NewSegment(start, start+i))

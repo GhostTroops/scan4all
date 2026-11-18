@@ -10,7 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/miekg/dns"
 	"golang.org/x/exp/constraints"
 	extmaps "golang.org/x/exp/maps"
 )
@@ -57,49 +56,6 @@ func HTTPToMap(resp *http.Response, body, headers string, duration time.Duration
 
 	// Converts duration to seconds (floating point) for DSL syntax
 	m[fmt.Sprintf(format, "duration")] = duration.Seconds()
-
-	return m
-}
-
-// DNSToMap Converts DNS to Matcher Map
-func DNSToMap(msg *dns.Msg, format string) (m map[string]interface{}) {
-	m = make(map[string]interface{})
-
-	if format == "" {
-		format = defaultFormat
-	}
-
-	m[fmt.Sprintf(format, "rcode")] = msg.Rcode
-
-	var qs string
-
-	for _, question := range msg.Question {
-		qs += fmt.Sprintln(question.String())
-	}
-
-	m[fmt.Sprintf(format, "question")] = qs
-
-	var exs string
-	for _, extra := range msg.Extra {
-		exs += fmt.Sprintln(extra.String())
-	}
-
-	m[fmt.Sprintf(format, "extra")] = exs
-
-	var ans string
-	for _, answer := range msg.Answer {
-		ans += fmt.Sprintln(answer.String())
-	}
-
-	m[fmt.Sprintf(format, "answer")] = ans
-
-	var nss string
-	for _, ns := range msg.Ns {
-		nss += fmt.Sprintln(ns.String())
-	}
-
-	m[fmt.Sprintf(format, "ns")] = nss
-	m[fmt.Sprintf(format, "raw")] = msg.String()
 
 	return m
 }
@@ -154,7 +110,9 @@ func HTTPResponseToMap(resp *http.Response) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	resp.Body = io.NopCloser(bytes.NewBuffer(body))
 	m["body"] = string(body)
 

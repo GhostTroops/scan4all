@@ -50,7 +50,7 @@ func (ldb *LevelDB) Size() int64 {
 
 // Close ...
 func (ldb *LevelDB) Close() {
-	ldb.db.Close()
+	_ = ldb.db.Close()
 }
 
 // GC - runs the garbage collector

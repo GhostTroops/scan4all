@@ -49,12 +49,17 @@ type ECPoint struct {
 
 // MarshalJSON implements the json.Marshler interface
 func (p *ECPoint) MarshalJSON() ([]byte, error) {
+	var y *cryptoParameter
+	if p.Y != nil { // Not present for x25519
+		y = &cryptoParameter{Int: p.Y}
+	}
+
 	aux := struct {
 		X *cryptoParameter `json:"x"`
-		Y *cryptoParameter `json:"y"`
+		Y *cryptoParameter `json:"y,omitempty"`
 	}{
 		X: &cryptoParameter{Int: p.X},
-		Y: &cryptoParameter{Int: p.Y},
+		Y: y,
 	}
 	return json.Marshal(&aux)
 }

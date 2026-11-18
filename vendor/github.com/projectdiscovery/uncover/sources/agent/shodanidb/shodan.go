@@ -1,6 +1,7 @@
 package shodanidb
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -13,7 +14,7 @@ import (
 	iputil "github.com/projectdiscovery/utils/ip"
 )
 
-const (
+var (
 	URL = "https://internetdb.shodan.io/%s"
 )
 
@@ -23,7 +24,7 @@ func (agent *Agent) Name() string {
 	return "shodan-idb"
 }
 
-func (agent *Agent) Query(session *sources.Session, query *sources.Query) (chan sources.Result, error) {
+func (agent *Agent) Query(ctx context.Context, session *sources.Session, query *sources.Query) (chan sources.Result, error) {
 	results := make(chan sources.Result)
 
 	if !iputil.IsIP(query.Query) && !iputil.IsCIDR(query.Query) {
@@ -34,22 +35,22 @@ func (agent *Agent) Query(session *sources.Session, query *sources.Query) (chan 
 		defer close(results)
 
 		shodanRequest := &ShodanRequest{Query: query.Query}
-		agent.query(URL, session, shodanRequest, results)
+		agent.query(ctx, URL, session, shodanRequest, results)
 	}()
 
 	return results, nil
 }
 
-func (agent *Agent) queryURL(session *sources.Session, URL string, shodanRequest *ShodanRequest) (*http.Response, error) {
+func (agent *Agent) queryURL(ctx context.Context, session *sources.Session, URL string, shodanRequest *ShodanRequest) (*http.Response, error) {
 	shodanURL := fmt.Sprintf(URL, url.QueryEscape(shodanRequest.Query))
-	request, err := sources.NewHTTPRequest(http.MethodGet, shodanURL, nil)
+	request, err := sources.NewHTTPRequest(ctx, http.MethodGet, shodanURL, nil)
 	if err != nil {
 		return nil, err
 	}
 	return session.Do(request, agent.Name())
 }
 
-func (agent *Agent) query(URL string, session *sources.Session, shodanRequest *ShodanRequest, results chan sources.Result) {
+func (agent *Agent) query(ctx context.Context, URL string, session *sources.Session, shodanRequest *ShodanRequest, results chan sources.Result) {
 	var query string
 	if iputil.IsIP(shodanRequest.Query) {
 		if iputil.IsIPv4(shodanRequest.Query) {
@@ -62,31 +63,41 @@ func (agent *Agent) query(URL string, session *sources.Session, shodanRequest *S
 	}
 	ipChan, err := mapcidr.IPAddressesAsStream(query)
 	if err != nil {
-		results <- sources.Result{Source: agent.Name(), Error: err}
+		sources.SendResult(ctx, results, sources.Result{Source: agent.Name(), Error: err})
 		return
 	}
 	for ip := range ipChan {
-		resp, err := agent.queryURL(session, URL, &ShodanRequest{Query: ip})
+		if ctx.Err() != nil {
+			return
+		}
+		resp, err := agent.queryURL(ctx, session, URL, &ShodanRequest{Query: ip})
 		if err != nil {
-			results <- sources.Result{Source: agent.Name(), Error: err}
+			if !sources.SendResult(ctx, results, sources.Result{Source: agent.Name(), Error: err}) {
+				return
+			}
 			continue
 		}
 
 		shodanResponse := &ShodanResponse{}
 		if err := json.NewDecoder(resp.Body).Decode(shodanResponse); err != nil {
-			results <- sources.Result{Source: agent.Name(), Error: err}
+			if !sources.SendResult(ctx, results, sources.Result{Source: agent.Name(), Error: err}) {
+				return
+			}
 			continue
 		}
 
-		// we must output all combinations of ip/hostname with ports
 		result := sources.Result{Source: agent.Name(), IP: shodanResponse.IP}
 		result.Raw, _ = json.Marshal(shodanResponse)
 		for _, port := range shodanResponse.Ports {
 			result.Port = port
-			results <- result
+			if !sources.SendResult(ctx, results, result) {
+				return
+			}
 			for _, hostname := range shodanResponse.Hostnames {
 				result.Host = hostname
-				results <- result
+				if !sources.SendResult(ctx, results, result) {
+					return
+				}
 			}
 		}
 	}

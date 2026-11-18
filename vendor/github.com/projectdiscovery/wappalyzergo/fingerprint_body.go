@@ -8,8 +8,8 @@ import (
 )
 
 // checkBody checks for fingerprints in the HTML body
-func (s *Wappalyze) checkBody(body []byte) []string {
-	var technologies []string
+func (s *Wappalyze) checkBody(body []byte) []matchPartResult {
+	var technologies []matchPartResult
 
 	bodyString := unsafeToString(body)
 
@@ -36,7 +36,7 @@ func (s *Wappalyze) checkBody(body []byte) []string {
 					// Check the script tags for script fingerprints
 					technologies = append(
 						technologies,
-						s.fingerprints.matchString(source, scriptPart)...,
+						s.fingerprints.matchString(source, scriptSrcPart)...,
 					)
 					continue
 				}

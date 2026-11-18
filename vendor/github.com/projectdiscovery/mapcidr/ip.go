@@ -9,7 +9,9 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"math/bits"
 	"net"
+	"net/netip"
 	"regexp"
 	"sort"
 	"strconv"
@@ -277,16 +279,21 @@ func ipNetToRange(ipNet net.IPNet) netWithRange {
 	firstIP = firstIP.Mask(ipNet.Mask)
 	lastIP = lastIP.Mask(ipNet.Mask)
 
-	if firstIP.To4() != nil {
-		firstIP = append(v4Mappedv6Prefix, firstIP...)
-		lastIP = append(v4Mappedv6Prefix, lastIP...)
+	if ip4 := firstIP.To4(); ip4 != nil {
+		firstIP = append(v4Mappedv6Prefix, ip4...)
+	}
+	if ip4 := lastIP.To4(); ip4 != nil {
+		lastIP = append(v4Mappedv6Prefix, ip4...)
 	}
 
 	lastIPMask := make(net.IPMask, len(ipNet.Mask))
 	copy(lastIPMask, ipNet.Mask)
 	for i := range lastIPMask {
-		lastIPMask[len(lastIPMask)-i-1] = ^lastIPMask[len(lastIPMask)-i-1]
-		lastIP[net.IPv6len-i-1] |= lastIPMask[len(lastIPMask)-i-1]
+		index := len(lastIPMask) - 1 - i
+		lastIPMask[index] = ^lastIPMask[index]
+		if net.IPv6len-i-1 < len(lastIP) {
+			lastIP[net.IPv6len-i-1] |= lastIPMask[index]
+		}
 	}
 
 	return netWithRange{First: &firstIP, Last: &lastIP, Network: &ipNet}
@@ -507,9 +514,30 @@ func CoalesceCIDRs(cidrs []*net.IPNet) (coalescedIPV4, coalescedIPV6 []*net.IPNe
 	return
 }
 
-func AggregateApproxIPV4s(ips []*net.IPNet) (approxIPs []*net.IPNet) {
-	cidrs := make(map[string]*net.IPNet)
+// This function is used to aggregate a list of IPv4 addresses into smaller approximated
+// CIDR /24 blocks (class C)
+func AggregateApproxIPv4To24(ips []*net.IPNet) ([]*net.IPNet, error) {
+	if len(ips) < 2 {
+		return nil, errors.New("no enough ip to aggregate")
+	}
+	sort.Slice(ips, func(i, j int) bool {
+		return bytes.Compare(ips[i].IP, ips[j].IP) < 0
+	})
+	// Parse IP addresses
+	ip1 := ips[0].IP
+	ip2 := ips[len(ips)-1].IP
 
+	bothIPv4 := IsIPv4(ip1) && IsIPv4(ip2)
+
+	if !bothIPv4 {
+		return nil, errors.New("only ipv4 is supported")
+	}
+
+	if ip1 == nil || ip2 == nil {
+		return nil, errors.New("invalid IP address")
+	}
+
+	cidrs := make(map[string]*net.IPNet)
 	for _, ip := range ips {
 		if n, ok := cidrs[ip.IP.Mask(net.CIDRMask(24, 32)).String()]; ok {
 			var baseNet byte
@@ -531,18 +559,62 @@ func AggregateApproxIPV4s(ips []*net.IPNet) (approxIPs []*net.IPNet) {
 		}
 	}
 
-	approxIPs = make([]*net.IPNet, len(cidrs))
+	approxIPs := make([]*net.IPNet, len(cidrs))
 	var index int
 	for _, cidr := range cidrs {
 		approxIPs[index] = cidr
 		index++
 	}
-
 	sort.Slice(approxIPs, func(i, j int) bool {
 		return bytes.Compare(approxIPs[i].IP, approxIPs[j].IP) < 0
 	})
+	return approxIPs, nil
+}
 
-	return approxIPs
+// FindMinCIDR finds the most specific CIDR containing all given IPs
+func FindMinCIDR(ipNets []*net.IPNet) (*net.IPNet, error) {
+	if len(ipNets) == 0 {
+		return nil, errors.New("empty IP list")
+	}
+
+	// Find the minimum and maximum IP addresses
+	minIP := ipNets[0].IP
+	maxIP := ipNets[0].IP
+	for _, ipNet := range ipNets {
+		if bytes.Compare(ipNet.IP, minIP) < 0 {
+			minIP = ipNet.IP
+		}
+		if bytes.Compare(ipNet.IP, maxIP) > 0 {
+			maxIP = ipNet.IP
+		}
+	}
+
+	// Calculate the difference between max and min IP
+	diff := make(net.IP, len(minIP))
+	for i := range minIP {
+		diff[i] = maxIP[i] ^ minIP[i]
+	}
+
+	// Find the position of the most significant bit set in the difference
+	prefixLen := len(minIP) * 8
+	for i, b := range diff {
+		if b == 0 {
+			continue
+		}
+		prefixLen = i*8 + bits.LeadingZeros8(b)
+		break
+	}
+
+	// Adjust the prefix length to get the next power of 2
+	prefixLen = (len(minIP) * 8) - bits.Len(uint((1<<uint(len(minIP)*8-prefixLen))-1))
+
+	// Create the CIDR
+	mask := net.CIDRMask(prefixLen, len(minIP)*8)
+	finalIPnet := &net.IPNet{
+		IP:   minIP.Mask(mask),
+		Mask: mask,
+	}
+	return finalIPnet, nil
 }
 
 // rangeToCIDRs converts the range of IPs covered by firstIP and lastIP to
@@ -895,33 +967,47 @@ func FmtIp6(ip net.IP, short bool) (string, error) {
 
 func FixedPad(ip net.IP, padding int) string {
 	parts := strings.Split(ip.String(), ".")
-	var format bytes.Buffer
-	format.WriteString("%#0" + fmt.Sprint(padding) + "s")
-	format.WriteString(".%#0" + fmt.Sprint(padding) + "s")
-	format.WriteString(".%#0" + fmt.Sprint(padding) + "s")
-	format.WriteString(".%#0" + fmt.Sprint(padding) + "s")
-	return fmt.Sprintf(format.String(), parts[0], parts[1], parts[2], parts[3])
+	a, _ := strconv.Atoi(parts[0])
+	b, _ := strconv.Atoi(parts[1])
+	c, _ := strconv.Atoi(parts[2])
+	d, _ := strconv.Atoi(parts[3])
+	return fmt.Sprintf("%0*d.%0*d.%0*d.%0*d", padding, a, padding, b, padding, c, padding, d)
 }
 
 func IncrementalPad(ip net.IP, padding int) []string {
 	parts := strings.Split(ip.String(), ".")
-	var ips []string
-	for p1 := 0; p1 < padding; p1++ {
-		for p2 := 0; p2 < padding; p2++ {
-			for p3 := 0; p3 < padding; p3++ {
-				for p4 := 0; p4 < padding; p4++ {
-					var format bytes.Buffer
-					format.WriteString("%#0" + fmt.Sprint(p1) + "s")
-					format.WriteString(".%#0" + fmt.Sprint(p2) + "s")
-					format.WriteString(".%#0" + fmt.Sprint(p3) + "s")
-					format.WriteString(".%#0" + fmt.Sprint(p4) + "s")
-					alteredIP := fmt.Sprintf(format.String(), parts[0], parts[1], parts[2], parts[3])
-					ips = append(ips, alteredIP)
+	if len(parts) != 4 {
+		return []string{ip.String()}
+	}
+	if padding < 1 {
+		padding = 1
+	}
+
+	toInt := func(s string) int { n, _ := strconv.Atoi(s); return n }
+	a, b, c, d := toInt(parts[0]), toInt(parts[1]), toInt(parts[2]), toInt(parts[3])
+
+	widths := make([]int, 0, padding)
+	for w := 1; w <= padding; w++ {
+		widths = append(widths, w)
+	}
+
+	seen := make(map[string]struct{})
+	out := make([]string, 0, padding*padding*padding*padding)
+
+	for _, wa := range widths {
+		for _, wb := range widths {
+			for _, wc := range widths {
+				for _, wd := range widths {
+					s := fmt.Sprintf("%0*d.%0*d.%0*d.%0*d", wa, a, wb, b, wc, c, wd, d)
+					if _, ok := seen[s]; !ok {
+						seen[s] = struct{}{}
+						out = append(out, s)
+					}
 				}
 			}
 		}
 	}
-	return ips
+	return out
 }
 
 func AlterIP(ip string, formats []string, zeroPadN int, zeroPadPermutation bool) []string {
@@ -1057,4 +1143,139 @@ func GetCIDRFromIPRange(firstIP, lastIP net.IP) ([]*net.IPNet, error) {
 		return bytes.Compare(cidrs[i].IP, cidrs[j].IP) < 0
 	})
 	return cidrs, nil
+}
+
+func IpRangeToCIDR(start, end string) ([]string, error) {
+	ips, err := netip.ParseAddr(start)
+	if err != nil {
+		return nil, err
+	}
+	ipe, err := netip.ParseAddr(end)
+	if err != nil {
+		return nil, err
+	}
+
+	isV4 := ips.Is4()
+	if isV4 != ipe.Is4() {
+		return nil, errors.New("start and end types are different")
+	}
+	if ips.Compare(ipe) > 0 {
+		return nil, errors.New("start > end")
+	}
+
+	var (
+		ipsInt = new(big.Int).SetBytes(ips.AsSlice())
+		ipeInt = new(big.Int).SetBytes(ipe.AsSlice())
+		nextIp = new(big.Int)
+		maxBit = new(big.Int)
+		cmpSh  = new(big.Int)
+		bits   = new(big.Int)
+		mask   = new(big.Int)
+		one    = big.NewInt(1)
+		buf    []byte
+		cidr   []string
+		bitSh  uint
+	)
+	if isV4 {
+		maxBit.SetUint64(32)
+		buf = make([]byte, 4)
+	} else {
+		maxBit.SetUint64(128)
+		buf = make([]byte, 16)
+	}
+
+	for {
+		bits.SetUint64(1)
+		mask.SetUint64(1)
+		for bits.Cmp(maxBit) < 0 {
+			nextIp.Or(ipsInt, mask)
+
+			bitSh = uint(bits.Uint64())
+			cmpSh.Lsh(cmpSh.Rsh(ipsInt, bitSh), bitSh)
+			if (nextIp.Cmp(ipeInt) > 0) || (cmpSh.Cmp(ipsInt) != 0) {
+				bits.Sub(bits, one)
+				mask.Rsh(mask, 1)
+				break
+			}
+			bits.Add(bits, one)
+			mask.Add(mask.Lsh(mask, 1), one)
+		}
+
+		addr, _ := netip.AddrFromSlice(ipsInt.FillBytes(buf))
+		cidr = append(cidr, addr.String()+"/"+bits.Sub(maxBit, bits).String())
+
+		if nextIp.Or(ipsInt, mask); nextIp.Cmp(ipeInt) >= 0 {
+			break
+		}
+		ipsInt.Add(nextIp, one)
+	}
+	return cidr, nil
+}
+
+/*
+ExpandIPPattern expands an IPv4 pattern string into a list of net.IP addresses.
+The pattern must be in the form of four octets separated by dots (a.b.c.d).
+*/
+func ExpandIPPattern(pattern string) ([]net.IP, error) {
+	parts := strings.Split(pattern, ".")
+	if len(parts) != 4 {
+		return nil, fmt.Errorf("invalid IP pattern: %s", pattern)
+	}
+
+	var octets [][]int
+	for _, part := range parts {
+		if strings.Contains(part, "-") {
+			bounds := strings.Split(part, "-")
+			if len(bounds) != 2 {
+				return nil, fmt.Errorf("invalid range in %s", part)
+			}
+
+			start, err1 := strconv.Atoi(bounds[0])
+			end, err2 := strconv.Atoi(bounds[1])
+
+			if err1 != nil || err2 != nil || start > end {
+				return nil, fmt.Errorf("invalid range: %s", part)
+			}
+
+			var nums []int
+			for i := start; i <= end; i++ {
+				nums = append(nums, i)
+			}
+			octets = append(octets, nums)
+
+		} else {
+			v, err := strconv.Atoi(part)
+			if err != nil {
+				return nil, fmt.Errorf("invalid octet: %s", part)
+			}
+
+			octets = append(octets, []int{v})
+		}
+	}
+
+	var ips []net.IP
+	for _, o1 := range octets[0] {
+		if o1 < 0 || o1 > 255 {
+			return nil, fmt.Errorf("invalid octet value: %d", o1)
+		}
+		for _, o2 := range octets[1] {
+			if o2 < 0 || o2 > 255 {
+				return nil, fmt.Errorf("invalid octet value: %d", o2)
+			}
+			for _, o3 := range octets[2] {
+				if o3 < 0 || o3 > 255 {
+					return nil, fmt.Errorf("invalid octet value: %d", o3)
+				}
+				for _, o4 := range octets[3] {
+					if o4 < 0 || o4 > 255 {
+						return nil, fmt.Errorf("invalid octet value: %d", o4)
+					}
+					ip := net.IPv4(byte(o1), byte(o2), byte(o3), byte(o4))
+					ips = append(ips, ip)
+				}
+			}
+		}
+	}
+
+	return ips, nil
 }

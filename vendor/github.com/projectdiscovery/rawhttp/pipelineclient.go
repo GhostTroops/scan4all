@@ -1,8 +1,10 @@
 package rawhttp
 
 import (
+	"crypto/tls"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/projectdiscovery/rawhttp/clientpipeline"
 	retryablehttp "github.com/projectdiscovery/retryablehttp-go"
@@ -11,21 +13,38 @@ import (
 
 // PipelineClient is a client for making pipelined http requests
 type PipelineClient struct {
-	client  *clientpipeline.PipelineClient
-	options PipelineOptions
+	// connections are pooled per scheme; the request URL picks one
+	plainClient *clientpipeline.PipelineClient
+	tlsClient   *clientpipeline.PipelineClient
+	options     PipelineOptions
 }
 
 // NewPipelineClient creates a new pipelined http request client
 func NewPipelineClient(options PipelineOptions) *PipelineClient {
-	client := &PipelineClient{
-		client: &clientpipeline.PipelineClient{
-			Dial:               options.Dialer,
-			Addr:               options.Host,
-			MaxConns:           options.MaxConnections,
-			MaxPendingRequests: options.MaxPendingRequests,
-			ReadTimeout:        options.Timeout,
-		},
-		options: options,
+	return &PipelineClient{
+		plainClient: newSchemeClient(options, false),
+		tlsClient:   newSchemeClient(options, true),
+		options:     options,
+	}
+}
+
+// newSchemeClient returns the pipelined connections to options.Host for one
+// scheme. It dials nothing until the first request.
+func newSchemeClient(options PipelineOptions, isTLS bool) *clientpipeline.PipelineClient {
+	client := &clientpipeline.PipelineClient{
+		Dial:               options.Dialer,
+		Addr:               options.Host,
+		MaxConns:           options.MaxConnections,
+		MaxPendingRequests: options.MaxPendingRequests,
+		ReadTimeout:        options.Timeout,
+		// also bounds the TLS handshake, which otherwise has no deadline
+		// when a request larger than the write buffer triggers it
+		WriteTimeout: options.Timeout,
+		IsTLS:        isTLS,
+	}
+	if isTLS {
+		// same policy as Client: targets are arbitrary hosts, so skip verification
+		client.TLSConfig = &tls.Config{InsecureSkipVerify: true, Renegotiation: tls.RenegotiateOnceAsClient}
 	}
 	return client
 }
@@ -98,9 +117,18 @@ func (c *PipelineClient) do(method, url, uripath string, headers map[string][]st
 	}
 
 	req := clientpipeline.ToRequest(method, path, nil, headers, body)
-	var resp clientpipeline.Response
+	// a caller-supplied Host wins; RFC 9110 asks for Host as the first field
+	if options.AutomaticHostHeader && u.Host != "" && !hasHeader(headers, "Host") {
+		req.Headers = append([]clientpipeline.Header{{Key: "Host", Value: u.Host}}, req.Headers...)
+	}
 
-	err = c.client.Do(req, &resp)
+	client := c.plainClient
+	if u.Scheme == "https" {
+		client = c.tlsClient
+	}
+
+	var resp clientpipeline.Response
+	err = client.Do(req, &resp)
 
 	// response => net/http response
 	r := http.Response{
@@ -116,4 +144,15 @@ func (c *PipelineClient) do(method, url, uripath string, headers map[string][]st
 	r.Body = io.NopCloser(resp.Body)
 
 	return &r, err
+}
+
+// hasHeader reports whether headers contains key, ignoring case as raw
+// header maps are not canonicalized.
+func hasHeader(headers map[string][]string, key string) bool {
+	for k := range headers {
+		if strings.EqualFold(k, key) {
+			return true
+		}
+	}
+	return false
 }

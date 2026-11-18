@@ -136,4 +136,3 @@ func CpuUtilTotalStat() (*CPUUtil, error) {
 	u := perfstatcpuutil2cpuutil(cpuutil)
 	return &u, nil
 }
-

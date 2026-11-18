@@ -47,12 +47,8 @@ type RemouteServerce struct {
 	Port     int    `gorm:"column:port;unique_index:ip_port" yaml:"port,omitempty" json:"port,omitempty" jsonschema:"title=remote port,description=ssh default 22"`
 	User     string `gorm:"type:varchar(50);index"  yaml:"user,omitempty" json:"user,omitempty" jsonschema:"title=user name,description=user name"`
 	P5wd     string `yaml:"p5wd,omitempty" gorm:"type:varchar(50);" json:"p5wd,omitempty" jsonschema:"title=password,description=password"`
-	Key      string `yaml:"key,omitempty" gorm:"type:varchar(2000);" json:"key,omitempty" jsonschema:"title=ssh -i identity_file,description=Selects a file from which the identity (private key) for public key authentication is read.  You can also specify a public key file to use the corresponding
-             private key that is loaded in ssh-agent(1) when the private key file is not present locally.  The default is ~/.ssh/id_rsa, ~/.ssh/id_ecdsa,
-             ~/.ssh/id_ecdsa_sk, ~/.ssh/id_ed25519, ~/.ssh/id_ed25519_sk and ~/.ssh/id_dsa.  Identity files may also be specified on a per-host basis in the configuration
-             file.  It is possible to have multiple -i options (and multiple identities specified in configuration files).  If no certificates have been explicitly
-             specified by the CertificateFile directive, ssh will also try to load certificate information from the filename obtained by appending -cert.pub to identity
-             filenames"`
+	// Key 支持 ssh -i 指定的私钥内容（原本写进 jsonschema tag 的长描述含换行，已移出为注释）
+	Key     string `yaml:"key,omitempty" gorm:"type:varchar(2000);" json:"key,omitempty" jsonschema:"title=ssh identity_file,description=ssh private key content"`
 	KeyP5wd string `yaml:"keyP5wd,omitempty" gorm:"type:varchar(2000);" json:"keyP5wd,omitempty" jsonschema:"title=key paswd,description=key paswd"`
 	Type    string `yaml:"type,omitempty" gorm:"type:varchar(20);" json:"type,omitempty" jsonschema:"title=type:vnc ssh rdp,description=type:vnc ssh rdp"`
 	Tags    string `gorm:"index;type:varchar(200);" yaml:"tags,omitempty" json:"tags,omitempty" jsonschema:"title=tags hackerone butian,description=tags hackerone butian"` // 比较时hackerone，还是其他

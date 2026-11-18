@@ -1,75 +1,48 @@
 package ansi
 
 import (
+	"bytes"
 	"io"
 	"net/url"
 )
 
 // A LinkElement is used to render hyperlinks.
 type LinkElement struct {
-	Text    string
-	BaseURL string
-	URL     string
-	Child   ElementRenderer // FIXME
+	BaseURL  string
+	URL      string
+	Children []ElementRenderer
 }
 
 func (e *LinkElement) Render(w io.Writer, ctx RenderContext) error {
-	var textRendered bool
-	if len(e.Text) > 0 && e.Text != e.URL {
-		textRendered = true
-
-		el := &BaseElement{
-			Token: e.Text,
-			Style: ctx.options.Styles.LinkText,
-		}
-		err := el.Render(w, ctx)
-		if err != nil {
-			return err
+	for _, child := range e.Children {
+		if r, ok := child.(StyleOverriderElementRenderer); ok {
+			st := ctx.options.Styles.LinkText
+			if err := r.StyleOverrideRender(w, ctx, st); err != nil {
+				return err
+			}
+		} else {
+			var b bytes.Buffer
+			if err := child.Render(&b, ctx); err != nil {
+				return err
+			}
+			el := &BaseElement{
+				Token: b.String(),
+				Style: ctx.options.Styles.LinkText,
+			}
+			if err := el.Render(w, ctx); err != nil {
+				return err
+			}
 		}
 	}
 
-	/*
-		if node.LastChild != nil {
-			if node.LastChild.Type == bf.Image {
-				el := tr.NewElement(node.LastChild)
-				err := el.Renderer.Render(w, node.LastChild, tr)
-				if err != nil {
-					return err
-				}
-			}
-			if len(node.LastChild.Literal) > 0 &&
-				string(node.LastChild.Literal) != string(node.LinkData.Destination) {
-				textRendered = true
-				el := &BaseElement{
-					Token: string(node.LastChild.Literal),
-					Style: ctx.style[LinkText],
-				}
-				err := el.Render(w, node.LastChild, tr)
-				if err != nil {
-					return err
-				}
-			}
-		}
-	*/
-
 	u, err := url.Parse(e.URL)
-	if err == nil &&
-		"#"+u.Fragment != e.URL { // if the URL only consists of an anchor, ignore it
-		pre := " "
-		style := ctx.options.Styles.Link
-		if !textRendered {
-			pre = ""
-			style.BlockPrefix = ""
-			style.BlockSuffix = ""
-		}
-
+	if err == nil && "#"+u.Fragment != e.URL { // if the URL only consists of an anchor, ignore it
 		el := &BaseElement{
 			Token:  resolveRelativeURL(e.BaseURL, e.URL),
-			Prefix: pre,
-			Style:  style,
+			Prefix: " ",
+			Style:  ctx.options.Styles.Link,
 		}
-		err := el.Render(w, ctx)
-		if err != nil {
+		if err := el.Render(w, ctx); err != nil {
 			return err
 		}
 	}

@@ -43,13 +43,23 @@ func (r *reader) ReadVersion() (Version, error) {
 				major = int(int(c) - 0x30)
 			}
 		case 6:
-			if c != '.' {
+			// For HTTP/2 and HTTP/3 there is no any '.', just do nothing
+			if c != '.' && major == 1 {
 				return readVersionErr(pos, '.', c)
+			}
+			if c != ' ' && (major == 2 || major == 3) {
+				return readVersionErr(pos, ' ', c)
+			}
+			if c == ' ' && (major == 2 || major == 3) {
+				return Version{Major: major, Minor: minor}, nil
 			}
 		case 7:
 			switch c {
 			case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 				minor = int(int(c) - 0x30)
+			case ' ':
+				// HTTP/2 case
+				minor = 0
 			}
 		case 8:
 			if c != ' ' {
@@ -107,7 +117,13 @@ func (r *reader) ReadHeader() (string, string, bool, error) {
 	if err != nil {
 		return "", "", false, err
 	}
-	if line := string(line); line == "\r\n" || line == "\n" {
+	return parseHeaderLine(line)
+}
+
+// parseHeaderLine parses a single header line. done reports whether the line
+// is the blank line that ends the header section.
+func parseHeaderLine(line []byte) (key, value string, done bool, err error) {
+	if string(line) == "\r\n" || string(line) == "\n" {
 		return "", "", true, nil
 	}
 	v := bytes.SplitN(line, []byte(":"), 2)

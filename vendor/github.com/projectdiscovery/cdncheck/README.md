@@ -40,7 +40,7 @@ cdncheck is a tool for identifying the technology associated with dns / ip netwo
 
 # Installation
 
-**cdncheck** requires **go1.19** to install successfully. Run the following command to install the latest version:
+**cdncheck** requires **go1.26.10** to install successfully. Run the following command to install the latest version:
 
 ```sh
 go install -v github.com/projectdiscovery/cdncheck/cmd/cdncheck@latest

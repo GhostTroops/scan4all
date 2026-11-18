@@ -55,6 +55,11 @@ type Reader interface {
 	// reader.
 	AdvanceAndSetPadding(int, int)
 
+	// AdvanceToEOL advances the internal pointer to the end of line.
+	// If the line ends with a newline, it will be included in the segment.
+	// If the line ends with EOF, it will not be included in the segment.
+	AdvanceToEOL()
+
 	// AdvanceLine advances the internal pointer to the next line head.
 	AdvanceLine()
 
@@ -220,21 +225,46 @@ func (r *reader) AdvanceAndSetPadding(n, padding int) {
 	}
 }
 
+func (r *reader) AdvanceToEOL() {
+	if r.pos.Start >= r.sourceLength {
+		return
+	}
+
+	r.lineOffset = -1
+	i := -1
+	if r.peekedLine != nil {
+		r.pos.Start += len(r.peekedLine) - r.pos.Padding - 1
+		if r.source[r.pos.Start] == '\n' {
+			i = 0
+		}
+	}
+	if i == -1 {
+		i = bytes.IndexByte(r.source[r.pos.Start:], '\n')
+	}
+	r.peekedLine = nil
+	if i != -1 {
+		r.pos.Start += i
+	} else {
+		r.pos.Start = r.sourceLength
+	}
+	r.pos.Padding = 0
+}
+
 func (r *reader) AdvanceLine() {
 	r.lineOffset = -1
 	r.peekedLine = nil
 	r.pos.Start = r.pos.Stop
 	r.head = r.pos.Start
-	if r.pos.Start < 0 {
+	if r.pos.Start < 0 || r.pos.Start >= r.sourceLength {
 		return
 	}
 	r.pos.Stop = r.sourceLength
-	for i := r.pos.Start; i < r.sourceLength; i++ {
-		c := r.source[i]
-		if c == '\n' {
-			r.pos.Stop = i + 1
-			break
-		}
+	i := 0
+	if r.source[r.pos.Start] != '\n' {
+		i = bytes.IndexByte(r.source[r.pos.Start:], '\n')
+	}
+	if i != -1 {
+		r.pos.Stop = r.pos.Start + i + 1
 	}
 	r.line++
 	r.pos.Padding = 0
@@ -444,6 +474,17 @@ func (r *blockReader) AdvanceAndSetPadding(n, padding int) {
 	}
 }
 
+func (r *blockReader) AdvanceToEOL() {
+	r.lineOffset = -1
+	r.pos.Padding = 0
+	c := r.source[r.pos.Stop-1]
+	if c == '\n' {
+		r.pos.Start = r.pos.Stop - 1
+	} else {
+		r.pos.Start = r.pos.Stop
+	}
+}
+
 func (r *blockReader) AdvanceLine() {
 	r.SetPosition(r.line+1, NewSegment(invalidValue, invalidValue))
 	r.head = r.pos.Start
@@ -626,7 +667,7 @@ func findClosureReader(r Reader, opener, closer byte, opts FindClosureOptions) (
 						if ret == nil {
 							ret = NewSegments()
 						}
-						ret.Append(seg.WithStop(seg.Start + i))
+						ret.Append(seg.WithStop(seg.Start + i - seg.Padding))
 						r.Advance(i + 1)
 						closed = true
 						goto end

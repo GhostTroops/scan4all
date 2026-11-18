@@ -19,22 +19,27 @@ var clientAuthTypeNames map[int]string
 var signatureSchemeNames map[uint16]string
 
 func init() {
-	// RFC 5246 7.4.1.4.1
+	// Signature algorithms (for internal signaling use). Starting at 225 to avoid overlap with
+	// TLS 1.2 codepoints (RFC 5246, Appendix A.4.1), with which these have nothing to do.
 	signatureNames = make(map[uint8]string, 8)
-	// TODO FIXME: the RFC also defines anonymous(0) and (255).
 	signatureNames[signatureRSA] = "rsa"
 	signatureNames[signatureDSA] = "dsa"
+	signatureNames[signaturePKCS1v15] = "pkcs1v15"
+	signatureNames[signatureRSAPSS] = "rsapss"
 	signatureNames[signatureECDSA] = "ecdsa"
+	signatureNames[signatureEd25519] = "ed25519"
 
 	// RFC 5246 7.4.1.4.1
+	// https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-18
 	hashNames = make(map[uint8]string, 16)
-	// TODO FIXME: the RFC also defines none(0) and (255).
+	hashNames[hashNone] = "none"
 	hashNames[hashMD5] = "md5"
 	hashNames[hashSHA1] = "sha1"
 	hashNames[hashSHA224] = "sha224"
 	hashNames[hashSHA256] = "sha256"
 	hashNames[hashSHA384] = "sha384"
 	hashNames[hashSHA512] = "sha512"
+	hashNames[hashIntrinsic] = "intrinsic"
 
 	cipherSuiteNames = make(map[int]string, 512)
 	cipherSuiteNames[0x0000] = "TLS_NULL_WITH_NULL_NULL"
@@ -199,6 +204,11 @@ func init() {
 	cipherSuiteNames[0x00C4] = "TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA256"
 	cipherSuiteNames[0x00C5] = "TLS_DH_ANON_WITH_CAMELLIA_256_CBC_SHA256"
 	cipherSuiteNames[0x00FF] = "TLS_RENEGO_PROTECTION_REQUEST"
+
+	cipherSuiteNames[0x1301] = "TLS_AES_128_GCM_SHA256"
+	cipherSuiteNames[0x1302] = "TLS_AES_256_GCM_SHA384"
+	cipherSuiteNames[0x1303] = "TLS_CHACHA20_POLY1305_SHA256"
+
 	cipherSuiteNames[0x5600] = "TLS_FALLBACK_SCSV"
 	cipherSuiteNames[0xC001] = "TLS_ECDH_ECDSA_WITH_NULL_SHA"
 	cipherSuiteNames[0xC002] = "TLS_ECDH_ECDSA_WITH_RC4_128_SHA"
@@ -375,13 +385,13 @@ func init() {
 	cipherSuiteNames[0xC0AD] = "TLS_ECDHE_ECDSA_WITH_AES_256_CCM"
 	cipherSuiteNames[0xC0AE] = "TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8"
 	cipherSuiteNames[0xC0AF] = "TLS_ECDHE_ECDSA_WITH_AES_256_CCM_8"
-	cipherSuiteNames[0xCAFE] = "TLS_ECDHE_PSK_WITH_AES_128_GCM_SHA256"
 	cipherSuiteNames[0xCC13] = "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256_OLD"
 	cipherSuiteNames[0xCC14] = "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256_OLD"
 	cipherSuiteNames[0xCC15] = "TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256_OLD"
 	cipherSuiteNames[0xCCA8] = "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
 	cipherSuiteNames[0xCCA9] = "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
 	cipherSuiteNames[0xCCAA] = "TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+	cipherSuiteNames[0xD001] = "TLS_ECDHE_PSK_WITH_AES_128_GCM_SHA256"
 	cipherSuiteNames[0xFEFE] = "SSL_RSA_FIPS_WITH_DES_CBC_SHA"
 	cipherSuiteNames[0xFEFF] = "SSL_RSA_FIPS_WITH_3DES_EDE_CBC_SHA"
 	cipherSuiteNames[0xFFE0] = "SSL_RSA_FIPS_WITH_3DES_EDE_CBC_SHA"
@@ -429,13 +439,17 @@ func init() {
 	curveNames[26] = "brainpoolP256r1"
 	curveNames[27] = "brainpoolP384r1"
 	curveNames[28] = "brainpoolP512r1"
-	curveNames[29] = "ecdh_x25519" // TEMPORARY -- expires 1Mar2018
-	curveNames[30] = "ecdh_x448"   // TEMPORARY -- expires 1Mar2018
+	curveNames[29] = "x25519"
+	curveNames[30] = "x448"
 	curveNames[256] = "ffdhe2048"
 	curveNames[257] = "ffdhe3072"
 	curveNames[258] = "ffdhe4096"
 	curveNames[259] = "ffdhe6144"
 	curveNames[260] = "ffdhe8192"
+	curveNames[514] = "mlkem1024"
+	curveNames[4587] = "secp256r1mlkem768"
+	curveNames[4588] = "x25519mlkem768"
+	curveNames[4589] = "secp384r1mlkem1024"
 	curveNames[65281] = "arbitrary_explicit_prime_curves"
 	curveNames[65282] = "arbitrary_explicit_char2_curves"
 
@@ -505,15 +519,17 @@ func hashToName(n string) uint8 {
 }
 
 func nameForSuite(cs uint16) string {
-	cipher := CipherSuite(cs)
+	cipher := CipherSuiteID(cs)
 	return cipher.String()
 }
 
-func (cs CipherSuite) Bytes() []byte {
+type CipherSuiteID uint16
+
+func (cs CipherSuiteID) Bytes() []byte {
 	return []byte{uint8(cs >> 8), uint8(cs)}
 }
 
-func (cs CipherSuite) String() string {
+func (cs CipherSuiteID) String() string {
 	if name, ok := cipherSuiteNames[int(cs)]; ok {
 		return name
 	}
@@ -527,12 +543,14 @@ func (cm CompressionMethod) String() string {
 	return "unknown"
 }
 
+/*
 func (curveID CurveID) String() string {
 	if name, ok := curveNames[uint16(curveID)]; ok {
 		return name
 	}
 	return "unknown"
 }
+*/
 
 func (pFormat PointFormat) String() string {
 	if name, ok := pointFormatNames[uint8(pFormat)]; ok {
@@ -570,6 +588,8 @@ func (v TLSVersion) String() string {
 		return "TLSv1.1"
 	case 0x0303:
 		return "TLSv1.2"
+	case 0x0304:
+		return "TLSv1.3"
 	default:
 		return "unknown"
 	}
@@ -580,13 +600,22 @@ func nameForSignatureScheme(scheme uint16) string {
 	return sigScheme.String()
 }
 
+/*
 func (sigScheme *SignatureScheme) String() string {
 	if name, ok := signatureSchemeNames[uint16(*sigScheme)]; ok {
 		return name
 	}
 	return "unknown"
 }
+*/
 
 func (sigScheme *SignatureScheme) Bytes() []byte {
 	return []byte{byte(*sigScheme >> 8), byte(*sigScheme)}
+}
+
+func (curveID CurveID) String() string {
+	if name, ok := curveNames[uint16(curveID)]; ok {
+		return name
+	}
+	return "unknown"
 }

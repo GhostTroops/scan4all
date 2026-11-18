@@ -20,7 +20,7 @@ const (
 	// Version identifies the current library version.
 	// This is a pro forma convention given that Go dependencies
 	// tends to be fetched directly from the repo.
-	Version = "0.30.1"
+	Version = "0.50.3"
 
 	// NormalType represents a normal rule such as "com"
 	NormalType = 1
@@ -270,11 +270,11 @@ func MustNewRule(content string) *Rule {
 // Match checks if the rule matches the name.
 //
 // A domain name is said to match a rule if and only if all of the following conditions are met:
-// - When the domain and rule are split into corresponding labels,
-//   that the domain contains as many or more labels than the rule.
-// - Beginning with the right-most labels of both the domain and the rule,
-//   and continuing for all labels in the rule, one finds that for every pair,
-//   either they are identical, or that the label from the rule is "*".
+//   - When the domain and rule are split into corresponding labels,
+//     that the domain contains as many or more labels than the rule.
+//   - Beginning with the right-most labels of both the domain and the rule,
+//     and continuing for all labels in the rule, one finds that for every pair,
+//     either they are identical, or that the label from the rule is "*".
 //
 // See https://publicsuffix.org/list/
 func (r *Rule) Match(name string) bool {
@@ -356,11 +356,10 @@ type DomainName struct {
 //
 // Examples:
 //
-// 	DomainName{"com", "example"}.String()
+//	DomainName{"com", "example"}.String()
 //	// example.com
-// 	DomainName{"com", "example", "www"}.String()
+//	DomainName{"com", "example", "www"}.String()
 //	// www.example.com
-//
 func (d *DomainName) String() string {
 	switch {
 	case d.TLD == "":
@@ -379,13 +378,12 @@ func (d *DomainName) String() string {
 //
 // Examples:
 //
-// 	publicsuffix.Domain("example.com")
+//	publicsuffix.Domain("example.com")
 //	// example.com
-// 	publicsuffix.Domain("www.example.com")
+//	publicsuffix.Domain("www.example.com")
 //	// example.com
-// 	publicsuffix.Domain("www.example.co.uk")
+//	publicsuffix.Domain("www.example.co.uk")
 //	// example.co.uk
-//
 func Domain(name string) (string, error) {
 	return DomainFromListWithOptions(DefaultList, name, DefaultFindOptions)
 }
@@ -398,13 +396,12 @@ func Domain(name string) (string, error) {
 //
 //	list := NewList()
 //
-// 	publicsuffix.Parse("example.com")
+//	publicsuffix.Parse("example.com")
 //	// &DomainName{"com", "example"}
-// 	publicsuffix.Parse("www.example.com")
+//	publicsuffix.Parse("www.example.com")
 //	// &DomainName{"com", "example", "www"}
-// 	publicsuffix.Parse("www.example.co.uk")
+//	publicsuffix.Parse("www.example.co.uk")
 //	// &DomainName{"co.uk", "example"}
-//
 func Parse(name string) (*DomainName, error) {
 	return ParseFromListWithOptions(DefaultList, name, DefaultFindOptions)
 }
@@ -416,13 +413,12 @@ func Parse(name string) (*DomainName, error) {
 //
 //	list := NewList()
 //
-// 	publicsuffix.DomainFromListWithOptions(list, "example.com")
+//	publicsuffix.DomainFromListWithOptions(list, "example.com")
 //	// example.com
-// 	publicsuffix.DomainFromListWithOptions(list, "www.example.com")
+//	publicsuffix.DomainFromListWithOptions(list, "www.example.com")
 //	// example.com
-// 	publicsuffix.DomainFromListWithOptions(list, "www.example.co.uk")
+//	publicsuffix.DomainFromListWithOptions(list, "www.example.co.uk")
 //	// example.co.uk
-//
 func DomainFromListWithOptions(l *List, name string, options *FindOptions) (string, error) {
 	dn, err := ParseFromListWithOptions(l, name, options)
 	if err != nil {
@@ -439,13 +435,12 @@ func DomainFromListWithOptions(l *List, name string, options *FindOptions) (stri
 //
 //	list := NewList()
 //
-// 	publicsuffix.ParseFromListWithOptions(list, "example.com")
+//	publicsuffix.ParseFromListWithOptions(list, "example.com")
 //	// &DomainName{"com", "example"}
-// 	publicsuffix.ParseFromListWithOptions(list, "www.example.com")
+//	publicsuffix.ParseFromListWithOptions(list, "www.example.com")
 //	// &DomainName{"com", "example", "www"}
-// 	publicsuffix.ParseFromListWithOptions(list, "www.example.co.uk")
+//	publicsuffix.ParseFromListWithOptions(list, "www.example.co.uk")
 //	// &DomainName{"co.uk", "example"}
-//
 func ParseFromListWithOptions(l *List, name string, options *FindOptions) (*DomainName, error) {
 	n, err := normalize(name)
 	if err != nil {

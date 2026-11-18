@@ -41,6 +41,9 @@ func (s *taskCheckBoxParser) Parse(parent gast.Node, block text.Reader, pc parse
 		return nil
 	}
 
+	if parent.HasChildren() {
+		return nil
+	}
 	if _, ok := parent.Parent().(*gast.ListItem); !ok {
 		return nil
 	}

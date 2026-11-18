@@ -21,7 +21,10 @@ func NewWithOptions(options Options) *Client {
 }
 
 func New() *Client {
-	httpClient := NewHttpClientWithTimeout(DefaultTimeout)
+	httpClient := NewHttpClient(
+		WithTimeout(DefaultTimeout),
+		WithInsecureSkipVerify(),
+	)
 	return NewWithOptions(Options{DefaultResolver: Cloudflare, HttpClient: httpClient})
 }
 
@@ -48,7 +51,7 @@ func (c *Client) QueryWithJsonAPI(r Resolver, name string, question QuestionType
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.Body == nil {
 		return nil, errors.New("empty response body")
@@ -111,7 +114,7 @@ func (c *Client) QueryWithDOHMsg(method Method, r Resolver, msg *dns.Msg) (*dns.
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.Body == nil {
 		return nil, errors.New("empty response body")

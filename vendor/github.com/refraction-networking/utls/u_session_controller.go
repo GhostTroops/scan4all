@@ -3,6 +3,8 @@ package tls
 import (
 	"errors"
 	"fmt"
+
+	"github.com/refraction-networking/utls/internal/tls13"
 )
 
 // Tracking the state of calling conn.loadSession
@@ -54,8 +56,8 @@ type sessionController struct {
 func newSessionController(uconn *UConn) *sessionController {
 	return &sessionController{
 		uconnRef:           uconn,
-		sessionTicketExt:   &SessionTicketExtension{},
-		pskExtension:       &UtlsPreSharedKeyExtension{},
+		sessionTicketExt:   nil,
+		pskExtension:       nil,
 		state:              NoSession,
 		locked:             false,
 		callingLoadSession: false,
@@ -121,6 +123,12 @@ func (s *sessionController) assertNotLocked(caller string) {
 	}
 }
 
+func (s *sessionController) assertCanSkip(caller, extensionName string) {
+	if !s.uconnRef.skipResumptionOnNilExtension {
+		panic(fmt.Sprintf("tls: %s failed: session resumption is enabled, but there is no %s in the ClientHelloSpec; Please consider provide one in the ClientHelloSpec; If this is intentional, you may consider disable resumption by setting Config.SessionTicketsDisabled to true, or set Config.PreferSkipResumptionOnNilExtension to true to suppress this exception", caller, extensionName))
+	}
+}
+
 // finalCheck performs a comprehensive check on the updated state to ensure the correctness of the changes.
 // If the checks pass successfully, the sessionController's state will be locked.
 // Any failure in passing the tests indicates incorrect implementations in the utls, which will result in triggering a panic.
@@ -141,7 +149,11 @@ func (s *sessionController) initSessionTicketExt(session *SessionState, ticket [
 	s.assertNotLocked("initSessionTicketExt")
 	s.assertHelloNotBuilt("initSessionTicketExt")
 	s.assertControllerState("initSessionTicketExt", NoSession)
-	panicOnNil("initSessionTicketExt", s.sessionTicketExt, session, ticket)
+	panicOnNil("initSessionTicketExt", session, ticket)
+	if s.sessionTicketExt == nil {
+		s.assertCanSkip("initSessionTicketExt", "session ticket extension")
+		return
+	}
 	initializationGuard(s.sessionTicketExt, func(e ISessionTicketExtension) {
 		s.sessionTicketExt.InitializeByUtls(session, ticket)
 	})
@@ -151,12 +163,15 @@ func (s *sessionController) initSessionTicketExt(session *SessionState, ticket [
 // initPSK initializes the PSK extension using a valid session. The PSK extension
 // should not be initialized previously, and the parameters must not be nil;
 // otherwise, this function will trigger a panic.
-func (s *sessionController) initPskExt(session *SessionState, earlySecret []byte, binderKey []byte, pskIdentities []pskIdentity) {
+func (s *sessionController) initPskExt(session *SessionState, earlySecret *tls13.EarlySecret, binderKey []byte, pskIdentities []pskIdentity) {
 	s.assertNotLocked("initPskExt")
 	s.assertHelloNotBuilt("initPskExt")
 	s.assertControllerState("initPskExt", NoSession)
-	panicOnNil("initPskExt", s.pskExtension, session, earlySecret, pskIdentities)
-
+	panicOnNil("initPskExt", session, earlySecret, pskIdentities)
+	if s.pskExtension == nil {
+		s.assertCanSkip("initPskExt", "pre-shared key extension")
+		return
+	}
 	initializationGuard(s.pskExtension, func(e PreSharedKeyExtension) {
 		publicPskIdentities := mapSlice(pskIdentities, func(private pskIdentity) PskIdentity {
 			return PskIdentity{
@@ -164,7 +179,7 @@ func (s *sessionController) initPskExt(session *SessionState, earlySecret []byte
 				ObfuscatedTicketAge: private.obfuscatedTicketAge,
 			}
 		})
-		e.InitializeByUtls(session, earlySecret, binderKey, publicPskIdentities)
+		e.InitializeByUtls(session, earlySecret.Secret(), binderKey, publicPskIdentities)
 	})
 
 	s.state = PskExtInitialized

@@ -14,6 +14,8 @@ const (
 	Random
 	// JA3 or Raw is the strategy which parses a client hello spec from ja3 full string
 	Custom
+	// Chrome is the strategy which impersonates a client hello spec from Chrome
+	Chrome
 )
 
 // Identity contains the structured client hello spec

@@ -7,6 +7,7 @@ package tls
 import (
 	"context"
 	"errors"
+	"fmt"
 )
 
 // A UQUICConn represents a connection which uses a QUIC implementation as the underlying
@@ -108,16 +109,22 @@ func (q *UQUICConn) HandleData(level QUICEncryptionLevel, data []byte) error {
 		return nil
 	}
 	// The handshake goroutine has exited.
+	c.handshakeMutex.Lock()
+	defer c.handshakeMutex.Unlock()
 	c.hand.Write(c.quic.readbuf)
 	c.quic.readbuf = nil
 	for q.conn.hand.Len() >= 4 && q.conn.handshakeErr == nil {
 		b := q.conn.hand.Bytes()
 		n := int(b[1])<<16 | int(b[2])<<8 | int(b[3])
-		if 4+n < len(b) {
+		if n > maxHandshake {
+			q.conn.handshakeErr = fmt.Errorf("tls: handshake message of length %d bytes exceeds maximum of %d bytes", n, maxHandshake)
+			break
+		}
+		if len(b) < 4+n {
 			return nil
 		}
 		if err := q.conn.handlePostHandshakeMessage(); err != nil {
-			return quicError(err)
+			q.conn.handshakeErr = err
 		}
 	}
 	if q.conn.handshakeErr != nil {
@@ -141,7 +148,7 @@ func (q *UQUICConn) SendSessionTicket(opts QUICSessionTicketOptions) error {
 		return quicError(errors.New("tls: SendSessionTicket called multiple times"))
 	}
 	q.sessionTicketSent = true
-	return quicError(c.sendSessionTicket(opts.EarlyData))
+	return quicError(c.sendSessionTicket(opts.EarlyData, opts.Extra))
 }
 
 // ConnectionState returns basic TLS details about the connection.

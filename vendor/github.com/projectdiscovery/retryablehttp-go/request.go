@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptrace"
 	"net/http/httputil"
@@ -32,6 +33,8 @@ type Request struct {
 	Metrics Metrics
 
 	Auth *Auth
+
+	TraceInfo *TraceInfo
 }
 
 // Metrics contains the metrics about each request
@@ -90,7 +93,7 @@ func (r *Request) WithContext(ctx context.Context) *Request {
 // This function is not thread-safe; do not call it at the same time as another
 // call, or at the same time this request is being used with Client.Do.
 func (r *Request) BodyBytes() ([]byte, error) {
-	if r.Request.Body == nil {
+	if r.Body == nil {
 		return nil, nil
 	}
 	buf := new(bytes.Buffer)
@@ -101,26 +104,129 @@ func (r *Request) BodyBytes() ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// SetBodyReader sets the request body and populates GetBody for retries.
+//
+// The provided body MUST be reusable (e.g. created via
+// [readerutil.NewReusableReadCloser]).
+// If the body is not reusable, retries and 307/308 redirects will send an
+// empty body.
+//
+// This method does NOT set content length. The caller must set it manually.
+//
+// Prefer [SetBody], [SetBodyString], or [SetBodyStream] which handle
+// reusability and content length automatically.
+func (r *Request) SetBodyReader(body io.ReadCloser) {
+	r.Body = body
+	r.GetBody = func() (io.ReadCloser, error) {
+		return body, nil
+	}
+}
+
+// SetBody sets the request body from a byte slice.
+// It creates a reusable reader, sets content length, and populates GetBody for
+// retries.
+func (r *Request) SetBody(body []byte) error {
+	bodyReader, err := readerutil.NewReusableReadCloser(body)
+	if err != nil {
+		return err
+	}
+
+	r.Body = bodyReader
+	r.ContentLength = int64(len(body))
+	r.GetBody = func() (io.ReadCloser, error) {
+		return readerutil.NewReusableReadCloser(body)
+	}
+
+	return nil
+}
+
+// SetBodyString sets the request body from a string.
+// It creates a reusable reader, sets content length, and populates GetBody for
+// retries.
+func (r *Request) SetBodyString(body string) error {
+	return r.SetBody([]byte(body))
+}
+
+// SetBodyStream sets the request body from an [io.Reader].
+//
+// If bodySize is >= 0, it reads exactly that many bytes.
+// If bodySize < 0, it reads bodyStream until io.EOF.
+//
+// It creates a reusable reader, calculates and sets content length, and
+// populates GetBody for retries.
+//
+// If bodyStream implements [io.Closer], it is closed after the content is
+// read into the reusable reader.
+func (r *Request) SetBodyStream(bodyStream io.Reader, bodySize int64) error {
+	if closer, ok := bodyStream.(io.Closer); ok {
+		defer func() {
+			_ = closer.Close()
+		}()
+
+		// Wrap in NopCloser to prevent NewReusableReadCloser from closing it,
+		// since we are handling the close via defer.
+		bodyStream = io.NopCloser(bodyStream)
+	}
+
+	if bodySize >= 0 {
+		bodyStream = io.LimitReader(bodyStream, bodySize)
+	}
+
+	bodyReader, err := readerutil.NewReusableReadCloser(bodyStream)
+	if err != nil {
+		return err
+	}
+
+	r.SetBodyReader(bodyReader)
+
+	// If bodySize is provided, use it as ContentLength
+	if bodySize >= 0 {
+		r.ContentLength = bodySize
+		return nil
+	}
+
+	// Otherwise, calculate the length by reading the body
+	length, err := getLength(bodyReader)
+	if err == nil {
+		r.ContentLength = length
+	} else {
+		r.ContentLength = 0
+	}
+
+	return nil
+}
+
 // Update request URL with new changes of parameters if any
 func (r *Request) Update() {
+	// Make a copy of the URL to avoid data races
+	r.URL = r.URL.Clone()
 	r.URL.Update()
+	r.Request.URL = r.URL.URL
 	updateScheme(r.URL.URL)
 }
 
 // SetURL updates request url (i.e http.Request.URL) with given url
 func (r *Request) SetURL(u *urlutil.URL) {
-	r.URL = u
+	// Make a copy of the URL to avoid data races
+	r.URL = u.Clone()
 	r.Request.URL = u.URL
 	r.Update()
 }
 
-// Clones and returns new Request
+// Clone returns a copy of the request. It does not mutate the original.
+// The urlutil URL is deep-copied and the stdlib URL comes from http.Request.Clone,
+// so query values written only to Request.URL.RawQuery are preserved on both
+// the original and the dump of the clone.
 func (r *Request) Clone(ctx context.Context) *Request {
-	r.Update()
 	ux := r.URL.Clone()
 	req := r.Request.Clone(ctx)
-	req.URL = ux.URL
-	ux.Update()
+	if req.URL != nil {
+		// Point the cloned urlutil wrapper at the cloned stdlib URL so later
+		// Update() on the copy cannot alias back to the original request.
+		ux.URL = req.URL
+	} else {
+		req.URL = ux.URL
+	}
 	var auth *Auth
 	if r.hasAuth() {
 		auth = &Auth{
@@ -186,7 +292,7 @@ func FromRequest(r *http.Request) (*Request, error) {
 		if err != nil {
 			return nil, err
 		}
-		r.Body = body
+		req.SetBodyReader(body)
 		req.ContentLength, err = getLength(body)
 		if err != nil {
 			return nil, err
@@ -246,16 +352,24 @@ func NewRequestFromURLWithContext(ctx context.Context, method string, urlx *urlu
 		return nil, err
 	}
 	urlx.Update()
+
 	httpReq.URL = urlx.URL
 	updateScheme(httpReq.URL)
+
+	request := &Request{
+		Request: httpReq,
+		URL:     urlx,
+		Metrics: Metrics{},
+	}
+
 	// content-length and body should be assigned only
 	// if request has body
 	if bodyReader != nil {
-		httpReq.ContentLength = contentLength
-		httpReq.Body = bodyReader
+		request.SetBodyReader(bodyReader)
+		request.ContentLength = contentLength
 	}
 
-	return &Request{httpReq, urlx, Metrics{}, nil}, nil
+	return request, nil
 }
 
 // NewRequest creates a new wrapped request

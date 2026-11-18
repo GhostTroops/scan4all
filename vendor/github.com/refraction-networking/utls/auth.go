@@ -15,9 +15,6 @@ import (
 	"fmt"
 	"hash"
 	"io"
-
-	circlPki "github.com/cloudflare/circl/pki"
-	circlSign "github.com/cloudflare/circl/sign"
 )
 
 // verifyHandshakeSignature verifies a signature against pre-hashed
@@ -58,20 +55,7 @@ func verifyHandshakeSignature(sigType uint8, pubkey crypto.PublicKey, hashFunc c
 			return err
 		}
 	default:
-		// [UTLS SECTION BEGINS]
-		// Ported from cloudflare/go
-		scheme := circlSchemeBySigType(sigType)
-		if scheme == nil {
-			return errors.New("internal error: unknown signature type")
-		}
-		pubKey, ok := pubkey.(circlSign.PublicKey)
-		if !ok {
-			return fmt.Errorf("expected a %s public key, got %T", scheme.Name(), pubkey)
-		}
-		if !scheme.Verify(pubKey, signed, sig, nil) {
-			return fmt.Errorf("%s verification failure", scheme.Name())
-		}
-		// [UTLS SECTION ENDS]
+		return errors.New("internal error: unknown signature type")
 	}
 	return nil
 }
@@ -122,18 +106,7 @@ func typeAndHashFromSignatureScheme(signatureAlgorithm SignatureScheme) (sigType
 	case Ed25519:
 		sigType = signatureEd25519
 	default:
-		// [UTLS SECTION BEGINS]
-		// Ported from cloudflare/go
-		scheme := circlPki.SchemeByTLSID(uint(signatureAlgorithm))
-		if scheme == nil {
-			return 0, 0, fmt.Errorf("unsupported signature algorithm: %v", signatureAlgorithm)
-		}
-		sigType = sigTypeByCirclScheme(scheme)
-		if sigType == 0 {
-			return 0, 0, fmt.Errorf("circl scheme %s not supported",
-				scheme.Name())
-		}
-		// [UTLS SECTION ENDS]
+		return 0, 0, fmt.Errorf("unsupported signature algorithm: %v", signatureAlgorithm)
 	}
 	switch signatureAlgorithm {
 	case PKCS1WithSHA1, ECDSAWithSHA1:
@@ -147,14 +120,7 @@ func typeAndHashFromSignatureScheme(signatureAlgorithm SignatureScheme) (sigType
 	case Ed25519:
 		hash = directSigning
 	default:
-		// [UTLS SECTION BEGINS]
-		// Ported from cloudflare/go
-		scheme := circlPki.SchemeByTLSID(uint(signatureAlgorithm))
-		if scheme == nil {
-			return 0, 0, fmt.Errorf("unsupported signature algorithm: %v", signatureAlgorithm)
-		}
-		hash = directSigning
-		// [UTLS SECTION ENDS]
+		return 0, 0, fmt.Errorf("unsupported signature algorithm: %v", signatureAlgorithm)
 	}
 	return sigType, hash, nil
 }
@@ -174,11 +140,6 @@ func legacyTypeAndHashFromPublicKey(pub crypto.PublicKey) (sigType uint8, hash c
 		// full signature, and not even OpenSSL bothers with the
 		// complexity, so we can't even test it properly.
 		return 0, 0, fmt.Errorf("tls: Ed25519 public keys are not supported before TLS 1.2")
-	// [UTLS SECTION BEGINS]
-	// Ported from cloudflare/go
-	case circlSign.PublicKey:
-		return 0, 0, fmt.Errorf("tls: circl public keys are not supported before TLS 1.2")
-	// [UTLS SECTION ENDS]
 	default:
 		return 0, 0, fmt.Errorf("tls: unsupported public key: %T", pub)
 	}
@@ -249,16 +210,6 @@ func signatureSchemesForCertificate(version uint16, cert *Certificate) []Signatu
 		}
 	case ed25519.PublicKey:
 		sigAlgs = []SignatureScheme{Ed25519}
-	// [UTLS SECTION BEGINS]
-	// Ported from cloudflare/go
-	case circlSign.PublicKey:
-		scheme := pub.Scheme()
-		tlsScheme, ok := scheme.(circlPki.TLSScheme)
-		if !ok {
-			return nil
-		}
-		sigAlgs = []SignatureScheme{SignatureScheme(tlsScheme.TLSIdentifier())}
-	// [UTLS SECTION ENDS]
 	default:
 		return nil
 	}
@@ -291,9 +242,11 @@ func selectSignatureScheme(vers uint16, c *Certificate, peerAlgs []SignatureSche
 	// Pick signature scheme in the peer's preference order, as our
 	// preference order is not configurable.
 	for _, preferredAlg := range peerAlgs {
-		if needFIPS() && !isSupportedSignatureAlgorithm(preferredAlg, fipsSupportedSignatureAlgorithms) {
-			continue
-		}
+		// [uTLS] SECTION BEGIN
+		// if fips140tls.Required() && !isSupportedSignatureAlgorithm(preferredAlg, defaultSupportedSignatureAlgorithmsFIPS) {
+		// 	continue
+		// }
+		// [uTLS] SECTION END
 		if isSupportedSignatureAlgorithm(preferredAlg, supportedAlgs) {
 			return preferredAlg, nil
 		}

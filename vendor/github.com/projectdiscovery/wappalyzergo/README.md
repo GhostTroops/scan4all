@@ -2,7 +2,9 @@
 
 A high performance port of the Wappalyzer Technology Detection Library to Go. Inspired by [Webanalyze](https://github.com/rverton/webanalyze).
 
-Uses data from https://github.com/AliasIO/wappalyzer
+Uses data from 
+- https://github.com/enthec/webappanalyzer
+- https://github.com/HTTPArchive/wappalyzer
 
 ## Features
 
@@ -26,7 +28,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 
@@ -38,7 +40,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	data, _ := ioutil.ReadAll(resp.Body) // Ignoring error for example
+	data, _ := io.ReadAll(resp.Body) // Ignoring error for example
 
 	wappalyzerClient, err := wappalyzer.New()
 	fingerprints := wappalyzerClient.Fingerprint(resp.Header, data)
@@ -47,3 +49,27 @@ func main() {
 	// Output: map[Acquia Cloud Platform:{} Amazon EC2:{} Apache:{} Cloudflare:{} Drupal:{} PHP:{} Percona:{} React:{} Varnish:{}]
 }
 ```
+
+### Optional runtime detection
+
+`Fingerprint` still uses only the response headers and body. Use
+`FingerprintWithRuntime` to also check JavaScript properties, the rendered DOM,
+and script content. The optional `headless` adapter works with a Rod page that
+the caller has already loaded. The caller remains responsible for launching,
+navigating, and closing the browser.
+
+```go
+collector := headless.New(page)
+
+fingerprints, err := wappalyzerClient.FingerprintWithRuntime(
+	ctx, resp.Header, data,
+	wappalyzer.RuntimeOptions{
+		Collector: collector,
+		Timeout:   10 * time.Second,
+	},
+)
+```
+
+If runtime collection returns an error, the result still includes passive
+matches and any matches found before the failure. Other browser integrations
+can implement `wappalyzer.RuntimeCollector` without importing the Rod adapter.

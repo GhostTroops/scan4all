@@ -38,7 +38,6 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 	}
 
 	out := termenv.String(s)
-
 	if rules.Upper != nil && *rules.Upper {
 		out = termenv.String(strings.ToUpper(s))
 	}
@@ -76,38 +75,72 @@ func renderText(w io.Writer, p termenv.Profile, rules StylePrimitive, s string) 
 		out = out.Blink()
 	}
 
-	_, _ = w.Write([]byte(out.String()))
+	_, _ = io.WriteString(w, out.String())
+}
+
+func (e *BaseElement) StyleOverrideRender(w io.Writer, ctx RenderContext, style StylePrimitive) error {
+	bs := ctx.blockStack
+	st1 := cascadeStylePrimitives(bs.Current().Style.StylePrimitive, style)
+	st2 := cascadeStylePrimitives(bs.With(e.Style), style)
+
+	return e.doRender(w, ctx.options.ColorProfile, st1, st2)
 }
 
 func (e *BaseElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
+	st1 := bs.Current().Style.StylePrimitive
+	st2 := bs.With(e.Style)
+	return e.doRender(w, ctx.options.ColorProfile, st1, st2)
+}
 
-	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, e.Prefix)
+func (e *BaseElement) doRender(w io.Writer, p termenv.Profile, st1, st2 StylePrimitive) error {
+	renderText(w, p, st1, e.Prefix)
 	defer func() {
-		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, e.Suffix)
+		renderText(w, p, st1, e.Suffix)
 	}()
 
-	rules := bs.With(e.Style)
 	// render unstyled prefix/suffix
-	renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockPrefix)
+	renderText(w, p, st1, st2.BlockPrefix)
 	defer func() {
-		renderText(w, ctx.options.ColorProfile, bs.Current().Style.StylePrimitive, rules.BlockSuffix)
+		renderText(w, p, st1, st2.BlockSuffix)
 	}()
 
 	// render styled prefix/suffix
-	renderText(w, ctx.options.ColorProfile, rules, rules.Prefix)
+	renderText(w, p, st2, st2.Prefix)
 	defer func() {
-		renderText(w, ctx.options.ColorProfile, rules, rules.Suffix)
+		renderText(w, p, st2, st2.Suffix)
 	}()
 
 	s := e.Token
-	if len(rules.Format) > 0 {
+	if len(st2.Format) > 0 {
 		var err error
-		s, err = formatToken(rules.Format, s)
+		s, err = formatToken(st2.Format, s)
 		if err != nil {
 			return err
 		}
 	}
-	renderText(w, ctx.options.ColorProfile, rules, s)
+	renderText(w, p, st2, escapeReplacer.Replace(s))
 	return nil
 }
+
+// https://www.markdownguide.org/basic-syntax/#characters-you-can-escape
+var escapeReplacer = strings.NewReplacer(
+	"\\\\", "\\",
+	"\\`", "`",
+	"\\*", "*",
+	"\\_", "_",
+	"\\{", "{",
+	"\\}", "}",
+	"\\[", "[",
+	"\\]", "]",
+	"\\<", "<",
+	"\\>", ">",
+	"\\(", "(",
+	"\\)", ")",
+	"\\#", "#",
+	"\\+", "+",
+	"\\-", "-",
+	"\\.", ".",
+	"\\!", "!",
+	"\\|", "|",
+)

@@ -2,13 +2,16 @@ goldmark
 ==========================================
 
 [![https://pkg.go.dev/github.com/yuin/goldmark](https://pkg.go.dev/badge/github.com/yuin/goldmark.svg)](https://pkg.go.dev/github.com/yuin/goldmark)
-[![https://github.com/yuin/goldmark/actions?query=workflow:test](https://github.com/yuin/goldmark/workflows/test/badge.svg?branch=master&event=push)](https://github.com/yuin/goldmark/actions?query=workflow:test)
+[![https://github.com/yuin/goldmark/actions?query=workflow:test](https://github.com/yuin/goldmark/actions/workflows/test.yaml/badge.svg?branch=master&event=push)](https://github.com/yuin/goldmark/actions?query=workflow:test)
 [![https://coveralls.io/github/yuin/goldmark](https://coveralls.io/repos/github/yuin/goldmark/badge.svg?branch=master)](https://coveralls.io/github/yuin/goldmark)
-[![https://goreportcard.com/report/github.com/yuin/goldmark](https://goreportcard.com/badge/github.com/yuin/goldmark)](https://goreportcard.com/report/github.com/yuin/goldmark)
 
 > A Markdown parser written in Go. Easy to extend, standards-compliant, well-structured.
 
-goldmark is compliant with CommonMark 0.30.
+goldmark is compliant with CommonMark 0.31.2.
+
+- [goldmark playground](https://yuin.github.io/goldmark/playground/) : Try goldmark online. This playground is built with WASM(5-10MB).
+
+There is also a Rust version of goldmark: [rushdown](https://github.com/yuin/rushdown)
 
 Motivation
 ----------------------
@@ -260,7 +263,7 @@ You can override autolinking patterns via options.
 
 | Functional option | Type | Description |
 | ----------------- | ---- | ----------- |
-| `extension.WithLinkifyAllowedProtocols` | `[][]byte` | List of allowed protocols such as `[][]byte{ []byte("http:") }` |
+| `extension.WithLinkifyAllowedProtocols` | `[][]byte \| []string` | List of allowed protocols such as `[]string{ "http:" }` |
 | `extension.WithLinkifyURLRegexp` | `*regexp.Regexp` | Regexp that defines URLs, including protocols |
 | `extension.WithLinkifyWWWRegexp` | `*regexp.Regexp` | Regexp that defines URL starting with `www.`. This pattern corresponds to [the extended www autolink](https://github.github.com/gfm/#extended-www-autolink) |
 | `extension.WithLinkifyEmailRegexp` | `*regexp.Regexp` | Regexp that defines email addresses` |
@@ -277,12 +280,12 @@ markdown := goldmark.New(
     ),
     goldmark.WithExtensions(
         extension.NewLinkify(
-            extension.WithLinkifyAllowedProtocols([][]byte{
-                []byte("http:"),
-                []byte("https:"),
+            extension.WithLinkifyAllowedProtocols([]string{
+                "http:",
+                "https:",
             }),
             extension.WithLinkifyURLRegexp(
-                xurls.Strict,
+                xurls.Strict(),
             ),
         ),
     ),
@@ -297,13 +300,13 @@ This extension has some options:
 
 | Functional option | Type | Description |
 | ----------------- | ---- | ----------- |
-| `extension.WithFootnoteIDPrefix` | `[]byte` |  a prefix for the id attributes.|
+| `extension.WithFootnoteIDPrefix` | `[]byte \| string` |  a prefix for the id attributes.|
 | `extension.WithFootnoteIDPrefixFunction` | `func(gast.Node) []byte` |  a function that determines the id attribute for given Node.|
-| `extension.WithFootnoteLinkTitle` | `[]byte` |  an optional title attribute for footnote links.|
-| `extension.WithFootnoteBacklinkTitle` | `[]byte` |  an optional title attribute for footnote backlinks. |
-| `extension.WithFootnoteLinkClass` | `[]byte` |  a class for footnote links. This defaults to `footnote-ref`. |
-| `extension.WithFootnoteBacklinkClass` | `[]byte` |  a class for footnote backlinks. This defaults to `footnote-backref`. |
-| `extension.WithFootnoteBacklinkHTML` | `[]byte` |  a class for footnote backlinks. This defaults to `&#x21a9;&#xfe0e;`. |
+| `extension.WithFootnoteLinkTitle` | `[]byte \| string` |  an optional title attribute for footnote links.|
+| `extension.WithFootnoteBacklinkTitle` | `[]byte \| string` |  an optional title attribute for footnote backlinks. |
+| `extension.WithFootnoteLinkClass` | `[]byte \| string` |  a class for footnote links. This defaults to `footnote-ref`. |
+| `extension.WithFootnoteBacklinkClass` | `[]byte \| string` |  a class for footnote backlinks. This defaults to `footnote-backref`. |
+| `extension.WithFootnoteBacklinkHTML` | `[]byte \| string` |  a class for footnote backlinks. This defaults to `&#x21a9;&#xfe0e;`. |
 
 Some options can have special substitutions. Occurrences of “^^” in the string will be replaced by the corresponding footnote number in the HTML output. Occurrences of “%%” will be replaced by a number for the reference (footnotes can have multiple references).
 
@@ -319,7 +322,7 @@ for _, path := range files {
     markdown := goldmark.New(
         goldmark.WithExtensions(
             NewFootnote(
-                WithFootnoteIDPrefix([]byte(path)),
+                WithFootnoteIDPrefix(path),
             ),
         ),
     )
@@ -379,10 +382,48 @@ This extension provides additional options for CJK users.
 
 | Functional option | Type | Description |
 | ----------------- | ---- | ----------- |
-| `extension.WithEastAsianLineBreaks` | `-` | Soft line breaks are rendered as a newline. Some asian users will see it as an unnecessary space. With this option, soft line breaks between east asian wide characters will be ignored. |
+| `extension.WithEastAsianLineBreaks` | `...extension.EastAsianLineBreaksStyle` | Soft line breaks are rendered as a newline. Some asian users will see it as an unnecessary space. With this option, soft line breaks between east asian wide characters will be ignored. This defaults to `EastAsianLineBreaksStyleSimple`. |
 | `extension.WithEscapedSpace` | `-` | Without spaces around an emphasis started with east asian punctuations, it is not interpreted as an emphasis(as defined in CommonMark spec). With this option, you can avoid this inconvenient behavior by putting 'not rendered' spaces around an emphasis like `太郎は\ **「こんにちわ」**\ といった`. |
 
- 
+#### Styles of Line Breaking
+
+| Style | Description |
+| ----- | ----------- |
+| `EastAsianLineBreaksStyleSimple` | Soft line breaks are ignored if both sides of the break are east asian wide character. This behavior is the same as [`east_asian_line_breaks`](https://pandoc.org/MANUAL.html#extension-east_asian_line_breaks) in Pandoc. |
+| `EastAsianLineBreaksCSS3Draft` | This option implements CSS text level3 [Segment Break Transformation Rules](https://drafts.csswg.org/css-text-3/#line-break-transform) with [some enhancements](https://github.com/w3c/csswg-drafts/issues/5086). |
+
+#### Example of `EastAsianLineBreaksStyleSimple`
+
+Input Markdown:
+
+```md
+私はプログラマーです。
+東京の会社に勤めています。
+GoでWebアプリケーションを開発しています。
+```
+
+Output:
+
+```html
+<p>私はプログラマーです。東京の会社に勤めています。\nGoでWebアプリケーションを開発しています。</p>
+```
+
+#### Example of `EastAsianLineBreaksCSS3Draft`
+
+Input Markdown:
+
+```md
+私はプログラマーです。
+東京の会社に勤めています。
+GoでWebアプリケーションを開発しています。
+```
+
+Output:
+
+```html
+<p>私はプログラマーです。東京の会社に勤めています。GoでWebアプリケーションを開発しています。</p>
+```
+
 Security
 --------------------
 By default, goldmark does not render raw HTML or potentially-dangerous URLs.
@@ -429,6 +470,7 @@ As you can see, goldmark's performance is on par with cmark's.
 
 Extensions
 --------------------
+### List of extensions
 
 - [goldmark-meta](https://github.com/yuin/goldmark-meta): A YAML metadata
   extension for the goldmark Markdown parser.
@@ -452,6 +494,19 @@ Extensions
 - [goldmark-d2](https://github.com/FurqanSoftware/goldmark-d2): Adds support for [D2](https://d2lang.com/) diagrams.
 - [goldmark-katex](https://github.com/FurqanSoftware/goldmark-katex): Adds support for [KaTeX](https://katex.org/) math and equations.
 - [goldmark-img64](https://github.com/tenkoh/goldmark-img64): Adds support for embedding images into the document as DataURL (base64 encoded).
+- [goldmark-enclave](https://github.com/quailyquaily/goldmark-enclave): Adds support for embedding youtube/bilibili video, X's [oembed X](https://publish.x.com/), [tradingview chart](https://www.tradingview.com/widget/)'s chart, [quaily widget](https://quaily.com), [spotify embeds](https://developer.spotify.com/documentation/embeds), [dify embed](https://dify.ai/) and html audio into the document.
+- [goldmark-wiki-table](https://github.com/movsb/goldmark-wiki-table): Adds support for embedding Wiki Tables.
+- [goldmark-tgmd](https://github.com/Mad-Pixels/goldmark-tgmd): A Telegram markdown renderer that can be passed to `goldmark.WithRenderer()`.
+- [goldmark-treeblood](https://github.com/Wyatt915/goldmark-treeblood): Renders $\LaTeX$ expressions as MathML (pure Go, no external dependencies).
+- [goldmark-subtext](https://github.com/zeozeozeo/goldmark-subtext): Support for Discord-style markdown subtexts
+- [goldmark-customtag](https://github.com/tendstofortytwo/goldmark-customtag): Allows you to define custom block tags.
+- [goldmark-cjk-friendly](https://github.com/tats-u/goldmark-cjk-friendly): Port of npm package [`remark-cjk-friendly` / `markdown-it-cjk-friendly`](https://github.com/tats-u/markdown-cjk-friendly) to goldmark. Similar to the [CJK extension](#cjk-extension) (`WithEscapedSpace`), but you do not need to explicitly add `\ ` around `*` and `**`. You can combine this with the [CJK extension](#cjk-extension).
+- [goldmark-chart](https://github.com/TheGreatRambler/goldmark-chart): Generate static ChartJS charts using the simple [Markvis](https://markvis.js.org/#/) format.
+
+### Loading extensions at runtime
+[goldmark-dynamic](https://github.com/yuin/goldmark-dynamic) allows you to write a goldmark extension in Lua and load it at runtime without re-compilation.
+
+Please refer to  [goldmark-dynamic](https://github.com/yuin/goldmark-dynamic) for details.
 
 
 goldmark internal(for extension developers)

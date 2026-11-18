@@ -39,7 +39,7 @@ func (b *BBoltDB) Size() int64 {
 
 // Close ...
 func (b *BBoltDB) Close() {
-	b.db.Close()
+	_ = b.db.Close()
 }
 
 // GC - runs the garbage collector

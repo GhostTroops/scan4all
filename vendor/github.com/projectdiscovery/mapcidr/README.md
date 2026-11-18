@@ -4,7 +4,7 @@
   <br>
 </h1>
 
-<h4 align="center">A utility program to perform multiple operations for a given subnet/cidr ranges.</h4>
+<h4 align="center">A utility program to perform multiple operations for a given subnet/CIDR range.</h4>
 
 
 <p align="center">
@@ -24,7 +24,7 @@
 
 ----
 
-mapCIDR is developed to ease load distribution for mass scanning operations, it can be used both as a library and as independent CLI tool.
+mapCIDR is developed to ease load distribution for mass scanning operations; it can be used both as a library and as an independent CLI tool.
 
 # Features
 
@@ -102,7 +102,7 @@ OUTPUT:
 
 # Running mapCIDR
 
-In order to get list of IPs for a give CIDR, use the following command.
+To get a list of IPs for a given CIDR, use the following command:
 
 ### CIDR expansion
 
@@ -134,7 +134,8 @@ mapcidr -cidr 173.0.84.0/24
 173.0.84.16
 ```
 
-It is also possible to get list of IP's for a given IP range, use the following command
+It is also possible to get a list of IPs for a given IP range, using the following command:
+
 ```console
 $ echo "192.168.0.0-192.168.0.5" | mapcidr
 ```
@@ -148,7 +149,7 @@ $ echo "192.168.0.0-192.168.0.5" | mapcidr
 ```
 ### CIDR Slicing by CIDR Count
 
-In order to slice given CIDR or list of CIDR by CIDR count or slice into multiple and equal smaller subnets, use the following command.
+To slice given CIDR or list of CIDRs by CIDR count or slice into multiple and equal smaller subnets, use the following command:
 
 
 ```console
@@ -170,7 +171,7 @@ mapcidr -cidr 173.0.84.0/24 -sbc 10 -silent
 
 ### CIDR slicing by HOST Count
 
-In order to slice given CIDR for equal number of host count in each CIDR, use the following command.
+To slice the given CIDR for an equal number of hosts in each CIDR, use the following command:
 
 ```console
 mapcidr -cidr 173.0.84.0/16 -sbh 20000 -silent
@@ -183,23 +184,23 @@ mapcidr -cidr 173.0.84.0/16 -sbh 20000 -silent
 173.0.192.0/18
 ```
 
-Note: it's possible to obtain a perfect split only when the desired amount of slices or hosts per subnet is a powers of two. Otherwise, the tool will attempt to automatically find the best split strategy to obtain the desired outcome. 
+Note: It's possible to obtain a perfect split only when the desired number of slices or hosts per subnet is a power of two. Otherwise, the tool will attempt to automatically find the best split strategy to obtain the desired outcome. 
 
 ### CIDR/IP Aggregation
 
-In order to merge multiple CIDR ranges into smaller subnet block, use the following command.
+To merge multiple CIDR ranges into a smaller subnet block, use the following command:
 
 ```console
 $ mapcidr -cl cidrs.txt -aggregate
 ```
 
-In order to list CIDR blocks for given list of IPs, use the following command.
+To list CIDR blocks for a given list of IPs, use the following command:
 
 ```console
 $ mapcidr -il ips.txt -aggregate
 ```
 
-It's also possible to perform approximated aggregations for sparse ips groups (only version 4). The final interval will contain contiguous ips not belonging to the input:
+It's also possible to perform approximated aggregations for sparse IP groups (only version 4). The final interval will contain contiguous IPs not belonging to the input:
 
 ```console
 $ cat ips.txt 
@@ -215,7 +216,7 @@ $ cat ips.txt | mapcidr -aggregate-approx
 1.1.1.0/27
 ```
 
-In order to list CIDR blocks for given IP Range (**IPv4 | IPv6**), use the following command.
+To list CIDR blocks for a given IP Range (**IPv4 | IPv6**), use the following command:
 ```
  $ mapcidr  -cl 192.168.0.1-192.168.0.255 -aggregate
  OR
@@ -232,16 +233,16 @@ In order to list CIDR blocks for given IP Range (**IPv4 | IPv6**), use the follo
 192.168.0.128/25
 
 ```
-### Match / Filter IP's from CIDR
+### Match / Filter IPs from CIDR
 
-In order to match IPs from the given list of CIDR ranges, use the following command.
+To match IPs from the given list of CIDR ranges, use the following command:
 
 ```console
 $ mapcidr -cidr 192.168.1.0/24 -mi 192.168.1.253,192.168.1.252
 $ mapcidr -cidr 192.168.1.0/24 -mi ip_list_to_match.txt
 ```
 
-In order to match IPs from the given list of CIDR ranges, use the following command.
+To filter IPs from the given list of CIDR ranges, use the following command:
 
 ```console
 $ mapcidr -cidr 192.168.1.224/28 -fi 192.168.1.233,192.168.1.234
@@ -250,7 +251,7 @@ $ mapcidr -cidr 192.168.1.224/28 -fi ip_list_to_filter.txt
 
 ### IP Formats
 
-In order to represent given IP into multiple formats, `-if 0` flag can be used to display all the supported format values, and specific type of format can be displayed using specific index number as listed [here](https://github.com/projectdiscovery/mapcidr/wiki/IP-Format-Index), currently [10 unique formats are supported](https://github.com/projectdiscovery/mapcidr/wiki/IP-Format-Index).
+To represent given IP into multiple formats, the `-if 0` flag can be used to display all the supported format values, and a specific type of format can be displayed using a specific index number as listed [here](https://github.com/projectdiscovery/mapcidr/wiki/IP-Format-Index). Currently, [10 unique formats are supported](https://github.com/projectdiscovery/mapcidr/wiki/IP-Format-Index).
 
 ```console
 $ echo 127.0.1.0 | mapcidr -if 0 -silent
@@ -293,7 +294,7 @@ $ mapcidr -cl ips.txt -t6
 <td>
 <h3>Note:</h3>
 
-Not all IPv6 address can be converted to IPv4. You can only convert valid IPv4 represented IPv6 addresses.
+Not all IPv6 addresses can be converted to IPv4. You can only convert valid IPv4-represented IPv6 addresses.
 
 </td>
 </tr>
@@ -301,7 +302,7 @@ Not all IPv6 address can be converted to IPv4. You can only convert valid IPv4 r
 
 ### CIDR Host Counting
 
-In order to count number of hosts for a given CIDR or list of CIDR, use the following command.
+To count the number of hosts for a given CIDR or list of CIDRs, use the following command:
 
 ```console
 $ echo 173.0.84.0/16 | mapcidr -count -silent
@@ -311,7 +312,7 @@ $ echo 173.0.84.0/16 | mapcidr -count -silent
 
 ### ASN Input
 
-In order to get the IP address of ASN number, use the following command
+To get the IP address of the ASN number, use the following command:
 ```
 echo AS15133 | mapcidr -silent
 
@@ -324,7 +325,7 @@ echo AS15133 | mapcidr -silent
 
 # Use mapCIDR as a library
 
-It's possible to use the library directly in your go programs. The following code snippets outline how to divide a cidr into subnets, and how to divide the same into subnets containing a certain number of hosts
+It's possible to use the library directly in your Go programs. The following code snippets outline how to divide a CIDR into subnets, and how to divide the same into subnets containing a certain number of hosts:
 
 ```go
 package main
@@ -347,7 +348,7 @@ func main() {
 		fmt.Println(subnet)
 	}
 
-	// List all ips in the CIDR
+	// List all IPs in the CIDR
 	ips, _ := mapcidr.IPAddresses("192.168.1.0/24")
 	for _, ip := range ips {
 		fmt.Println(ip)
@@ -357,4 +358,4 @@ func main() {
 ```
 
 
-mapCDIR is made with 🖤 by the [projectdiscovery](https://projectdiscovery.io) team.
+mapCIDR is made with 🖤 by the [projectdiscovery](https://projectdiscovery.io) team.

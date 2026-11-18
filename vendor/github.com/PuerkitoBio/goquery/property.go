@@ -1,37 +1,31 @@
 package goquery
 
 import (
-	"bytes"
-	"regexp"
 	"strings"
 
 	"golang.org/x/net/html"
 )
 
-var rxClassTrim = regexp.MustCompile("[\t\r\n]")
+var classTrimReplacer = strings.NewReplacer("\t", " ", "\r", " ", "\n", " ")
 
 // Attr gets the specified attribute's value for the first element in the
 // Selection. To get the value for each element individually, use a looping
 // construct such as Each or Map method.
-func (s *Selection) Attr(attrName string) (val string, exists bool) {
-	if len(s.Nodes) == 0 {
-		return
+func (s *Selection) Attr(attrName string) (string, bool) {
+	if len(s.Nodes) != 0 {
+		if attr := getAttributePtr(attrName, s.Nodes[0]); attr != nil {
+			return attr.Val, true
+		}
 	}
-	return getAttributeValue(attrName, s.Nodes[0])
+	return "", false
 }
 
 // AttrOr works like Attr but returns default value if attribute is not present.
 func (s *Selection) AttrOr(attrName, defaultValue string) string {
-	if len(s.Nodes) == 0 {
-		return defaultValue
+	if val, exists := s.Attr(attrName); exists {
+		return val
 	}
-
-	val, exists := getAttributeValue(attrName, s.Nodes[0])
-	if !exists {
-		return defaultValue
-	}
-
-	return val
+	return defaultValue
 }
 
 // RemoveAttr removes the named attribute from each element in the set of matched elements.
@@ -60,26 +54,22 @@ func (s *Selection) SetAttr(attrName, val string) *Selection {
 // Text gets the combined text contents of each element in the set of matched
 // elements, including their descendants.
 func (s *Selection) Text() string {
-	var buf bytes.Buffer
-
-	// Slightly optimized vs calling Each: no single selection object created
-	var f func(*html.Node)
-	f = func(n *html.Node) {
-		if n.Type == html.TextNode {
-			// Keep newlines and spaces, like jQuery
-			buf.WriteString(n.Data)
-		}
-		if n.FirstChild != nil {
-			for c := n.FirstChild; c != nil; c = c.NextSibling {
-				f(c)
-			}
-		}
-	}
+	var builder strings.Builder
 	for _, n := range s.Nodes {
-		f(n)
+		s.textHelper(n, &builder)
 	}
 
-	return buf.String()
+	return builder.String()
+}
+
+func (s *Selection) textHelper(n *html.Node, builder *strings.Builder) {
+	if n.Type == html.TextNode {
+		// Keep newlines and spaces, like jQuery
+		builder.WriteString(n.Data)
+	}
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		s.textHelper(c, builder)
+	}
 }
 
 // Size is an alias for Length.
@@ -97,16 +87,16 @@ func (s *Selection) Length() int {
 func (s *Selection) Html() (ret string, e error) {
 	// Since there is no .innerHtml, the HTML content must be re-created from
 	// the nodes using html.Render.
-	var buf bytes.Buffer
+	var builder strings.Builder
 
 	if len(s.Nodes) > 0 {
 		for c := s.Nodes[0].FirstChild; c != nil; c = c.NextSibling {
-			e = html.Render(&buf, c)
+			e = html.Render(&builder, c)
 			if e != nil {
 				return
 			}
 		}
-		ret = buf.String()
+		ret = builder.String()
 	}
 
 	return
@@ -123,7 +113,7 @@ func (s *Selection) AddClass(class ...string) *Selection {
 
 	tcls := getClassesSlice(classStr)
 	for _, n := range s.Nodes {
-		curClasses, attr := getClassesAndAttr(n, true)
+		curClasses, attr := getClassesAndAttr(n)
 		for _, newClass := range tcls {
 			if !strings.Contains(curClasses, " "+newClass+" ") {
 				curClasses += newClass + " "
@@ -139,11 +129,20 @@ func (s *Selection) AddClass(class ...string) *Selection {
 // HasClass determines whether any of the matched elements are assigned the
 // given class.
 func (s *Selection) HasClass(class string) bool {
+	rawClass := class
 	class = " " + class + " "
 	for _, n := range s.Nodes {
-		classes, _ := getClassesAndAttr(n, false)
-		if strings.Contains(classes, class) {
-			return true
+		if n.Type != html.ElementNode {
+			continue
+		}
+		if attr := getAttributePtr("class", n); attr != nil {
+			if !strings.Contains(attr.Val, rawClass) {
+				continue
+			}
+			val := classTrimReplacer.Replace(attr.Val)
+			if strings.Contains(" "+val+" ", class) {
+				return true
+			}
 		}
 	}
 	return false
@@ -166,9 +165,9 @@ func (s *Selection) RemoveClass(class ...string) *Selection {
 		if remove {
 			removeAttr(n, "class")
 		} else {
-			classes, attr := getClassesAndAttr(n, true)
+			classes, attr := getClassesAndAttr(n)
 			for _, rcl := range rclasses {
-				classes = strings.Replace(classes, " "+rcl+" ", " ", -1)
+				classes = strings.ReplaceAll(classes, " "+rcl+" ", " ")
 			}
 
 			setClasses(n, attr, classes)
@@ -190,10 +189,11 @@ func (s *Selection) ToggleClass(class ...string) *Selection {
 	tcls := getClassesSlice(classStr)
 
 	for _, n := range s.Nodes {
-		classes, attr := getClassesAndAttr(n, true)
+		classes, attr := getClassesAndAttr(n)
 		for _, tcl := range tcls {
-			if strings.Contains(classes, " "+tcl+" ") {
-				classes = strings.Replace(classes, " "+tcl+" ", " ", -1)
+			spaceAroundTcl := " " + tcl + " "
+			if strings.Contains(classes, spaceAroundTcl) {
+				classes = strings.ReplaceAll(classes, spaceAroundTcl, " ")
 			} else {
 				classes += tcl + " "
 			}
@@ -218,21 +218,12 @@ func getAttributePtr(attrName string, n *html.Node) *html.Attribute {
 	return nil
 }
 
-// Private function to get the specified attribute's value from a node.
-func getAttributeValue(attrName string, n *html.Node) (val string, exists bool) {
-	if a := getAttributePtr(attrName, n); a != nil {
-		val = a.Val
-		exists = true
-	}
-	return
-}
-
 // Get and normalize the "class" attribute from the node.
-func getClassesAndAttr(n *html.Node, create bool) (classes string, attr *html.Attribute) {
+func getClassesAndAttr(n *html.Node) (classes string, attr *html.Attribute) {
 	// Applies only to element nodes
 	if n.Type == html.ElementNode {
 		attr = getAttributePtr("class", n)
-		if attr == nil && create {
+		if attr == nil {
 			n.Attr = append(n.Attr, html.Attribute{
 				Key: "class",
 				Val: "",
@@ -244,14 +235,14 @@ func getClassesAndAttr(n *html.Node, create bool) (classes string, attr *html.At
 	if attr == nil {
 		classes = " "
 	} else {
-		classes = rxClassTrim.ReplaceAllString(" "+attr.Val+" ", " ")
+		classes = classTrimReplacer.Replace(" " + attr.Val + " ")
 	}
 
 	return
 }
 
 func getClassesSlice(classes string) []string {
-	return strings.Split(rxClassTrim.ReplaceAllString(" "+classes+" ", " "), " ")
+	return strings.Fields(classes)
 }
 
 func removeAttr(n *html.Node, attrName string) {

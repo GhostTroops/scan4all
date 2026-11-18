@@ -145,7 +145,7 @@ var verifyCommand = &cli.Command{
 		if c.String("output") != "" {
 			fileWriter, err := output.NewFileOutput(c.String("output"), onlyDomain)
 			if err != nil {
-				gologger.Fatalf(err.Error())
+				gologger.Fatalf("%s", err.Error())
 			}
 			writer = append(writer, fileWriter)
 		}
@@ -154,7 +154,7 @@ var verifyCommand = &cli.Command{
 		}
 		screenWriter, err := output.NewScreenOutput(onlyDomain)
 		if err != nil {
-			gologger.Fatalf(err.Error())
+			gologger.Fatalf("%s", err.Error())
 		}
 		writer = append(writer, screenWriter)
 

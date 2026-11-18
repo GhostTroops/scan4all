@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"encoding/hex"
 	"testing"
+
+	"github.com/GhostTroops/scan4all/pkg/kscan/lib/grdp/core"
 )
 
 func TestWriteUInt16LE(t *testing.T) {
 	buff := &bytes.Buffer{}
-	WriteUInt32LE(66538, buff)
+	core.WriteUInt32LE(66538, buff)
 	result := hex.EncodeToString(buff.Bytes())
 	expected := "ea030100"
 	if result != expected {

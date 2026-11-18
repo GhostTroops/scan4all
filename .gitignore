@@ -30,3 +30,9 @@ config/rockyou.txt
 # Dependency directories (remove the comment below to include it)
 
 dist/
+
+# 测试/运行期产物
+TmpXx1/
+config/scan4all_db.db
+config/scan4all_db/
+*.log

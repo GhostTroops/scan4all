@@ -6,7 +6,7 @@ import (
 
 // checkHeaders checks if the headers for a target match the fingerprints
 // and returns the matched IDs if any.
-func (s *Wappalyze) checkHeaders(headers map[string]string) []string {
+func (s *Wappalyze) checkHeaders(headers map[string]string) []matchPartResult {
 	technologies := s.fingerprints.matchMapString(headers, headersPart)
 	return technologies
 }

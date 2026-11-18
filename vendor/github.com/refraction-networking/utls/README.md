@@ -4,7 +4,7 @@
 ---
 uTLS is a fork of "crypto/tls", which provides ClientHello fingerprinting resistance, low-level access to handshake, fake session tickets and some other features. Handshake is still performed by "crypto/tls", this library merely changes ClientHello part of it and provides low-level access.  
 
-Golang 1.20+ is required.  
+**Minimum Go Version**: Go 1.21 
 
 If you have any questions, bug reports or contributions, you are welcome to publish those on GitHub. If you want to do so in private, ~~you can contact one of developers personally via sergey.frolov@colorado.edu~~.
 
@@ -86,11 +86,11 @@ This is not a problem, if you fully control the server and turn unsupported thin
 #### Parrots FAQ
 > Does it really look like, say, Google Chrome with all the [GREASE](https://tools.ietf.org/html/draft-davidben-tls-grease-01) and stuff?
 
-It LGTM, but please open up Wireshark and check. If you see something — [say something](issues).
+It LGTM, but please open up Wireshark and check. If you see something — [say something](https://github.com/refraction-networking/utls/issues).
 
 > Aren't there side channels? Everybody knows that the ~~bird is a word~~[parrot is dead](https://people.cs.umass.edu/~amir/papers/parrot.pdf)
 
-There sure are. If you found one that approaches practicality at line speed — [please tell us](issues).
+There sure are. If you found one that approaches practicality at line speed — [please tell us](https://github.com/refraction-networking/utls/issues).
 
 However, there is a difference between this sort of parroting and techniques like SkypeMorth.
 Namely, TLS is highly standardized protocol, therefore simply not that many subtle things in TLS protocol

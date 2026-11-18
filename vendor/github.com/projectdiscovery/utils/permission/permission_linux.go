@@ -1,4 +1,4 @@
-//go:build linux
+//go:build linux && !(armv7l || armv8l) && !android
 
 package permissionutil
 
@@ -27,16 +27,16 @@ func checkCurrentUserCapNetRaw() (bool, error) {
 		Version: unix.LINUX_CAPABILITY_VERSION_3,
 		Pid:     int32(os.Getpid()),
 	}
-	data := unix.CapUserData{}
+	data := [2]unix.CapUserData{}
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()
 
-	err := unix.Capget(&header, &data)
+	err := unix.Capget(&header, &data[0])
 	if err != nil {
 		return false, err
 	}
-	data.Inheritable = (1 << unix.CAP_NET_RAW)
-	if err = unix.Capset(&header, &data); err != nil {
+	data[0].Inheritable = (1 << unix.CAP_NET_RAW)
+	if err = unix.Capset(&header, &data[0]); err != nil {
 		return false, err
 	}
 	return true, nil

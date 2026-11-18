@@ -15,6 +15,11 @@ const (
 	localhostName = "localhost"
 )
 
+var (
+	// MaxLines defines the maximum number of lines the Parse function will process from the hosts file.
+	MaxLines = 4096
+)
+
 func Path() string {
 	if isWindows() {
 		return fmt.Sprintf(`%s\System32\Drivers\etc\hosts`, os.Getenv("SystemRoot"))
@@ -31,13 +36,18 @@ func Parse(p string) (map[string][]string, error) {
 		return nil, errors.New("hosts file doesn't exist")
 	}
 
-	hostsFileCh, err := fileutil.ReadFile(p)
-	if err != nil {
-		return nil, err
-	}
-
 	items := make(map[string][]string)
-	for line := range hostsFileCh {
+	lineCount := 0
+
+	for line, err := range fileutil.Lines(p) {
+		if err != nil {
+			return nil, err
+		}
+		lineCount++
+		if lineCount > MaxLines {
+			break
+		}
+
 		line = strings.TrimSpace(line)
 		// skip comments and empty lines
 		if line == "" || strings.HasPrefix(line, "#") {

@@ -139,7 +139,7 @@ func process_message(s []byte) {
 	flag, _ := core.ReadUint16LE(r)
 	length, _ := core.ReadUInt32LE(r)
 
-	glog.Debug("cliprdr: type=%d flag=%d length=%d", msgType, flag, length)
+	glog.Debugf("cliprdr: type=%d flag=%d length=%d", msgType, flag, length)
 
 	switch msgType {
 	case CB_MONITOR_READY:
@@ -167,7 +167,7 @@ func process_message(s []byte) {
 		//data + 8, length);
 		break
 	default:
-		glog.Error("type %d not supported", msgType)
+		glog.Errorf("type %d not supported", msgType)
 		break
 	}
 

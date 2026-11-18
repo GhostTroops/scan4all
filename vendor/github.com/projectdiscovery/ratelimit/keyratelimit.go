@@ -5,12 +5,12 @@ import (
 	"sync"
 	"time"
 
-	errorutil "github.com/projectdiscovery/utils/errors"
+	"github.com/projectdiscovery/utils/errkit"
 )
 
 var (
-	ErrKeyAlreadyExists = errorutil.NewWithTag("MultiLimiter", "key already exists")
-	ErrKeyMissing       = errorutil.NewWithTag("MultiLimiter", "key does not exist")
+	ErrKeyAlreadyExists = errkit.New("multilimiter: key already exists")
+	ErrKeyMissing       = errkit.New("multilimiter: key does not exist")
 )
 
 // Options of MultiLimiter
@@ -25,13 +25,13 @@ type Options struct {
 func (o *Options) Validate() error {
 	if !o.IsUnlimited {
 		if o.Key == "" {
-			return errorutil.NewWithTag("MultiLimiter", "empty keys not allowed")
+			return errkit.New("multilimiter: empty keys not allowed")
 		}
 		if o.MaxCount == 0 {
-			return errorutil.NewWithTag("MultiLimiter", "maxcount cannot be zero")
+			return errkit.New("multilimiter: maxcount cannot be zero")
 		}
 		if o.Duration == 0 {
-			return errorutil.NewWithTag("MultiLimiter", "time duration not set")
+			return errkit.New("multilimiter: time duration not set")
 		}
 	}
 	return nil
@@ -57,7 +57,7 @@ func (m *MultiLimiter) Add(opts *Options) error {
 	// ok is true if key already exists
 	_, ok := m.limiters.LoadOrStore(opts.Key, rlimiter)
 	if ok {
-		return ErrKeyAlreadyExists.Msgf("key: %v", opts.Key)
+		return errkit.Wrapf(ErrKeyAlreadyExists, "key: %v", opts.Key)
 	}
 	return nil
 }
@@ -122,12 +122,12 @@ func (m *MultiLimiter) Stop(keys ...string) {
 func (m *MultiLimiter) get(key string) (*Limiter, error) {
 	val, _ := m.limiters.Load(key)
 	if val == nil {
-		return nil, ErrKeyMissing.Msgf("key: %v", key)
+		return nil, errkit.Wrapf(ErrKeyMissing, "key: %v", key)
 	}
 	if limiter, ok := val.(*Limiter); ok {
 		return limiter, nil
 	}
-	return nil, errorutil.NewWithTag("MultiLimiter", "type assertion of rateLimiter failed in multiLimiter")
+	return nil, errkit.New("multilimiter: type assertion of rateLimiter failed")
 }
 
 // NewMultiLimiter : Limits

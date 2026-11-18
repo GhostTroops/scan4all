@@ -6,7 +6,6 @@ package x509
 
 import (
 	"crypto/ecdsa"
-	"crypto/rsa"
 	"encoding/json"
 	"errors"
 	"net"
@@ -17,6 +16,7 @@ import (
 	"github.com/zmap/zcrypto/dsa"
 	"github.com/zmap/zcrypto/encoding/asn1"
 	jsonKeys "github.com/zmap/zcrypto/json"
+	"github.com/zmap/zcrypto/rsa"
 	"github.com/zmap/zcrypto/util"
 	"github.com/zmap/zcrypto/x509/pkix"
 )
@@ -481,13 +481,13 @@ func (c *Certificate) MarshalJSON() ([]byte, error) {
 	}
 
 	jc.SubjectKeyInfo = c.jsonifySubjectKey()
-	jc.Extensions, jc.UnknownExtensions = c.jsonifyExtensions()
+	jc.Extensions, jc.UnknownExtensions = c.JsonifyExtensions()
 
 	// TODO: Handle the fact this might not match
 	jc.SignatureAlgorithm = c.jsonifySignatureAlgorithm()
 	jc.Signature.SignatureAlgorithm = jc.SignatureAlgorithm
 	jc.Signature.Value = c.Signature
-	jc.Signature.Valid = c.validSignature
+	jc.Signature.Valid = c.ValidSignature
 	jc.Signature.SelfSigned = c.SelfSigned
 	if c.SelfSigned {
 		jc.Signature.Valid = true

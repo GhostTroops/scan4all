@@ -83,7 +83,7 @@ func newDefaultSubstitutions() [][]byte {
 }
 
 // SetOption implements SetOptioner.
-func (b *TypographerConfig) SetOption(name parser.OptionName, value interface{}) {
+func (b *TypographerConfig) SetOption(name parser.OptionName, value any) {
 	switch name {
 	case optTypographicSubstitutions:
 		b.Substitutions = value.([][]byte)
@@ -115,10 +115,10 @@ func (o *withTypographicSubstitutions) SetTypographerOption(p *TypographerConfig
 
 // WithTypographicSubstitutions is a functional otpion that specify replacement text
 // for punctuations.
-func WithTypographicSubstitutions(values map[TypographicPunctuation][]byte) TypographerOption {
+func WithTypographicSubstitutions[T []byte | string](values map[TypographicPunctuation]T) TypographerOption {
 	replacements := newDefaultSubstitutions()
 	for k, v := range values {
-		replacements[k] = v
+		replacements[k] = []byte(v)
 	}
 
 	return &withTypographicSubstitutions{replacements}

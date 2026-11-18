@@ -28,12 +28,13 @@ func (b *blockquoteParser) process(reader text.Reader) bool {
 		reader.Advance(pos)
 		return true
 	}
-	if line[pos] == ' ' || line[pos] == '\t' {
-		pos++
-	}
 	reader.Advance(pos)
-	if line[pos-1] == '\t' {
-		reader.SetPadding(2)
+	if line[pos] == ' ' || line[pos] == '\t' {
+		padding := 0
+		if line[pos] == '\t' {
+			padding = util.TabWidth(reader.LineOffset()) - 1
+		}
+		reader.AdvanceAndSetPadding(1, padding)
 	}
 	return true
 }

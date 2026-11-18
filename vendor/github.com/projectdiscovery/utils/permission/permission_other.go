@@ -1,4 +1,4 @@
-//go:build darwin || freebsd || netbsd || openbsd || solaris || android || ios || (linux && armv7l)
+//go:build darwin || freebsd || netbsd || dragonfly || openbsd || solaris || android || ios || (linux && armv7l) || (linux && armv8l)
 
 package permissionutil
 

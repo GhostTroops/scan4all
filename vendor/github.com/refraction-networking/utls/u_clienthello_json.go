@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gaukas/godicttls"
+	"github.com/refraction-networking/utls/dicttls"
 )
 
 var ErrUnknownExtension = errors.New("extension name is unknown to the dictionary")
@@ -45,7 +45,7 @@ func (c *CipherSuitesJSONUnmarshaler) UnmarshalJSON(jsonStr []byte) error {
 			continue
 		}
 
-		if id, ok := godicttls.DictCipherSuiteNameIndexed[name]; ok {
+		if id, ok := dicttls.DictCipherSuiteNameIndexed[name]; ok {
 			c.cipherSuites = append(c.cipherSuites, id)
 		} else {
 			return fmt.Errorf("unknown cipher suite name: %s", name)
@@ -70,7 +70,7 @@ func (c *CompressionMethodsJSONUnmarshaler) UnmarshalJSON(jsonStr []byte) error 
 	}
 
 	for _, name := range compressionMethodNames {
-		if id, ok := godicttls.DictCompMethNameIndexed[name]; ok {
+		if id, ok := dicttls.DictCompMethNameIndexed[name]; ok {
 			c.compressionMethods = append(c.compressionMethods, id)
 		} else {
 			return fmt.Errorf("unknown compression method name: %s", name)
@@ -103,7 +103,7 @@ func (e *TLSExtensionsJSONUnmarshaler) UnmarshalJSON(jsonStr []byte) error {
 			continue
 		}
 
-		if extID, ok := godicttls.DictExtTypeNameIndexed[accepter.extNameOnly.Name]; !ok {
+		if extID, ok := dicttls.DictExtTypeNameIndexed[accepter.extNameOnly.Name]; !ok {
 			return fmt.Errorf("%w: %s", ErrUnknownExtension, accepter.extNameOnly.Name)
 		} else {
 			// get extension type from ID

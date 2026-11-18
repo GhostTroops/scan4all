@@ -14,9 +14,11 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/charmbracelet/glamour"
+	styles "github.com/charmbracelet/glamour/styles"
 	"github.com/minio/selfupdate"
 	"github.com/projectdiscovery/gologger"
-	errorutil "github.com/projectdiscovery/utils/errors"
+	"github.com/projectdiscovery/machineid"
+	"github.com/projectdiscovery/utils/errkit"
 )
 
 const (
@@ -27,6 +29,7 @@ const (
 var (
 	// By default when tool is updated release notes of latest version are printed
 	HideReleaseNotes      = false
+	NoColorReleaseNotes   = false
 	HideProgressBar       = false
 	VersionCheckTimeout   = time.Duration(5) * time.Second
 	DownloadUpdateTimeout = time.Duration(30) * time.Second
@@ -75,6 +78,9 @@ func GetUpdateToolFromRepoCallback(toolName, version, repoName string) func() {
 		if err != nil {
 			gologger.Fatal().Label("updater").Msgf("executable %v not found in release asset `%v` got: %v", toolName, gh.AssetID, err)
 		}
+		if len(bin) == 0 {
+			gologger.Fatal().Label("updater").Msgf("executable %v in release asset `%v` is empty", toolName, gh.AssetID)
+		}
 
 		if err = selfupdate.Apply(bytes.NewBuffer(bin), updateOpts); err != nil {
 			gologger.Error().Msgf("update of %v %v -> %v failed, rolling back update", toolName, currentVersion.String(), latestVersion.String())
@@ -89,8 +95,12 @@ func GetUpdateToolFromRepoCallback(toolName, version, repoName string) func() {
 
 		if !HideReleaseNotes {
 			output := gh.Latest.GetBody()
-			// adjust colors for both dark / light terminal themes
-			r, err := glamour.NewTermRenderer(glamour.WithAutoStyle())
+
+			style := glamour.WithAutoStyle()
+			if NoColorReleaseNotes {
+				style = glamour.WithStyles(styles.ASCIIStyleConfig)
+			}
+			r, err := glamour.NewTermRenderer(style)
 			if err != nil {
 				gologger.Error().Msgf("markdown rendering not supported: %v", err)
 			}
@@ -110,7 +120,7 @@ func GetUpdateToolFromRepoCallback(toolName, version, repoName string) func() {
 // if repoName is empty then tool name is considered as repoName
 func GetToolVersionCallback(toolName, version string) func() (string, error) {
 	return func() (string, error) {
-		updateURL := fmt.Sprintf(UpdateCheckEndpoint, toolName) + "?" + getpdtmParams(version)
+		updateURL := fmt.Sprintf(UpdateCheckEndpoint, toolName) + "?" + GetpdtmParams(version)
 		if DefaultHttpClient == nil {
 			// not needed but as a precaution to avoid nil panics
 			DefaultHttpClient = http.DefaultClient
@@ -118,41 +128,60 @@ func GetToolVersionCallback(toolName, version string) func() (string, error) {
 		}
 		resp, err := DefaultHttpClient.Get(updateURL)
 		if err != nil {
-			return "", errorutil.NewWithErr(err).Msgf("http Get %v failed", updateURL).WithTag("updater")
+			return "", errkit.Wrapf(err, "http Get %v failed", updateURL)
 		}
 		if resp.Body != nil {
-			defer resp.Body.Close()
+			defer func() {
+				_ = resp.Body.Close()
+			}()
 		}
 		if resp.StatusCode != 200 {
-			return "", errorutil.NewWithTag("updater", "version check failed expected status 200 but got %v for GET %v", resp.StatusCode, updateURL)
+			return "", errkit.Newf("version check failed expected status 200 but got %v for GET %v", resp.StatusCode, updateURL)
 		}
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {
-			return "", errorutil.NewWithErr(err).Msgf("failed to get response body of GET %v", updateURL).WithTag("updater")
+			return "", errkit.Wrapf(err, "failed to get response body of GET %v", updateURL)
 		}
 		var toolDetails Tool
 		if err := json.Unmarshal(body, &toolDetails); err != nil {
-			return "", errorutil.NewWithErr(err).Msgf("failed to unmarshal %v", string(body)).WithTag("updater")
+			return "", errkit.Wrapf(err, "failed to unmarshal %v", string(body))
 		}
 		if toolDetails.Version == "" {
 			msg := fmt.Sprintf("something went wrong, expected version string but got empty string for GET `%v` response `%v`", updateURL, string(body))
-			if err == nil {
-				return "", errorutil.New(msg)
-			}
-			return "", errorutil.NewWithErr(err).Msgf(msg)
+			return "", errkit.Newf("%s", msg)
 		}
 		return toolDetails.Version, nil
 	}
 }
 
-// getpdtmParams returns encoded query parameters sent to update check endpoint
-func getpdtmParams(version string) string {
+// GetpdtmParams returns encoded query parameters sent to update check endpoint
+func GetpdtmParams(version string) string {
 	params := &url.Values{}
-	params.Add("os", runtime.GOOS)
+	os := runtime.GOOS
+	if runtime.GOOS == "linux" {
+		// be more specific
+		os = GetOSVendor()
+	}
+	params.Add("os", os)
 	params.Add("arch", runtime.GOARCH)
 	params.Add("go_version", runtime.Version())
 	params.Add("v", version)
+	params.Add("machine_id", GetMachineID()) // for rate limiting
+	params.Add("utm_source", getUtmSource())
 	return params.Encode()
+}
+
+// GetMachineID return a unique identifier that is unique to the machine
+// it is a sha256 hashed value with pdtm as salt
+func GetMachineID() string {
+	machineId, err := machineid.ProtectedID("pdtm")
+	if err != nil {
+		return getCustomMID()
+	}
+	if machineId == "" {
+		return getCustomMID()
+	}
+	return machineId
 }
 
 // Deprecated: use GetToolVersionCheckCallback instead
@@ -165,7 +194,7 @@ func init() {
 		Timeout: VersionCheckTimeout,
 		Transport: &http.Transport{
 			Proxy:           http.ProxyFromEnvironment,
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12},
 		},
 	}
 }

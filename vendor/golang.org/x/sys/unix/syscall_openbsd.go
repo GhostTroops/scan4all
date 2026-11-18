@@ -166,6 +166,20 @@ func Getresgid() (rgid, egid, sgid int) {
 
 //sys	sysctl(mib []_C_int, old *byte, oldlen *uintptr, new *byte, newlen uintptr) (err error) = SYS___SYSCTL
 
+//sys	fcntl(fd int, cmd int, arg int) (n int, err error)
+//sys	fcntlPtr(fd int, cmd int, arg unsafe.Pointer) (n int, err error) = SYS_FCNTL
+
+// FcntlInt performs a fcntl syscall on fd with the provided command and argument.
+func FcntlInt(fd uintptr, cmd, arg int) (int, error) {
+	return fcntl(int(fd), cmd, arg)
+}
+
+// FcntlFlock performs a fcntl syscall for the F_GETLK, F_SETLK or F_SETLKW command.
+func FcntlFlock(fd uintptr, cmd int, lk *Flock_t) error {
+	_, err := fcntlPtr(int(fd), cmd, unsafe.Pointer(lk))
+	return err
+}
+
 //sys	ppoll(fds *PollFd, nfds int, timeout *Timespec, sigmask *Sigset_t) (n int, err error)
 
 func Ppoll(fds []PollFd, timeout *Timespec, sigmask *Sigset_t) (n int, err error) {
@@ -279,12 +293,17 @@ func Uname(uname *Utsname) error {
 //sys	Mkfifoat(dirfd int, path string, mode uint32) (err error)
 //sys	Mknod(path string, mode uint32, dev int) (err error)
 //sys	Mknodat(dirfd int, path string, mode uint32, dev int) (err error)
+//sys	Mount(fsType string, dir string, flags int, data unsafe.Pointer) (err error)
 //sys	Nanosleep(time *Timespec, leftover *Timespec) (err error)
 //sys	Open(path string, mode int, perm uint32) (fd int, err error)
 //sys	Openat(dirfd int, path string, mode int, perm uint32) (fd int, err error)
 //sys	Pathconf(path string, name int) (val int, err error)
 //sys	pread(fd int, p []byte, offset int64) (n int, err error)
 //sys	pwrite(fd int, p []byte, offset int64) (n int, err error)
+//sys	readv(fd int, iovecs []Iovec) (n int, err error)
+//sys	writev(fd int, iovecs []Iovec) (n int, err error)
+//sys	preadv(fd int, iovecs []Iovec, offset int64) (n int, err error)
+//sys	pwritev(fd int, iovecs []Iovec, offset int64) (n int, err error)
 //sys	read(fd int, p []byte) (n int, err error)
 //sys	Readlink(path string, buf []byte) (n int, err error)
 //sys	Readlinkat(dirfd int, path string, buf []byte) (n int, err error)

@@ -5,7 +5,7 @@
 // Package ocsp parses OCSP responses as specified in RFC 2560. OCSP responses
 // are signed messages attesting to the validity of a certificate for a small
 // period of time. This is used to manage revocation for X.509 certificates.
-package ocsp // import "golang.org/x/crypto/ocsp"
+package ocsp
 
 import (
 	"crypto"
@@ -85,7 +85,8 @@ type certID struct {
 
 // https://tools.ietf.org/html/rfc2560#section-4.1.1
 type ocspRequest struct {
-	TBSRequest tbsRequest
+	TBSRequest        tbsRequest
+	OptionalSignature asn1.RawValue `asn1:"explicit,tag:0,optional"`
 }
 
 type tbsRequest struct {
@@ -279,21 +280,22 @@ func getOIDFromHashAlgorithm(target crypto.Hash) asn1.ObjectIdentifier {
 
 // This is the exposed reflection of the internal OCSP structures.
 
-// The status values that can be expressed in OCSP.  See RFC 6960.
+// The status values that can be expressed in OCSP. See RFC 6960.
+// These are used for the Response.Status field.
 const (
 	// Good means that the certificate is valid.
-	Good = iota
+	Good = 0
 	// Revoked means that the certificate has been deliberately revoked.
-	Revoked
+	Revoked = 1
 	// Unknown means that the OCSP responder doesn't know about the certificate.
-	Unknown
+	Unknown = 2
 	// ServerFailed is unused and was never used (see
 	// https://go-review.googlesource.com/#/c/18944). ParseResponse will
 	// return a ResponseError when an error response is parsed.
-	ServerFailed
+	ServerFailed = 3
 )
 
-// The enumerated reasons for revoking a certificate.  See RFC 5280.
+// The enumerated reasons for revoking a certificate. See RFC 5280.
 const (
 	Unspecified          = 0
 	KeyCompromise        = 1
@@ -320,10 +322,10 @@ type Request struct {
 func (req *Request) Marshal() ([]byte, error) {
 	hashAlg := getOIDFromHashAlgorithm(req.HashAlgorithm)
 	if hashAlg == nil {
-		return nil, errors.New("Unknown hash algorithm")
+		return nil, errors.New("unknown hash algorithm")
 	}
 	return asn1.Marshal(ocspRequest{
-		tbsRequest{
+		TBSRequest: tbsRequest{
 			Version: 0,
 			RequestList: []request{
 				{
@@ -417,8 +419,10 @@ func (p ParseError) Error() string {
 }
 
 // ParseRequest parses an OCSP request in DER form. It only supports
-// requests for a single certificate. Signed requests are not supported.
-// If a request includes a signature, it will result in a ParseError.
+// requests for a single certificate identifier. If a request includes
+// multiple certificate identifiers, only the first will be included in
+// the parsed Request. Signed requests are not supported. If a request
+// includes a signature, it will result in a ParseError.
 func ParseRequest(bytes []byte) (*Request, error) {
 	var req ocspRequest
 	rest, err := asn1.Unmarshal(bytes, &req)
@@ -427,6 +431,10 @@ func ParseRequest(bytes []byte) (*Request, error) {
 	}
 	if len(rest) > 0 {
 		return nil, ParseError("trailing data in OCSP request")
+	}
+
+	if len(req.OptionalSignature.FullBytes) > 0 {
+		return nil, ParseError("signed OCSP requests are not supported")
 	}
 
 	if len(req.TBSRequest.RequestList) == 0 {

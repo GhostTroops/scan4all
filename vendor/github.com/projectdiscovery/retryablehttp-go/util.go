@@ -19,7 +19,7 @@ func Discard(req *Request, resp *http.Response, RespReadLimit int64) {
 	if err != nil {
 		req.Metrics.DrainErrors++
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 }
 
 // getLength returns length of a Reader efficiently

@@ -7,9 +7,9 @@ import (
 // 常用安全术语库
 type SafetyTerm struct {
 	ID        uint   `json:"id" gorm:"primarykey"`
-	ShortSame string `json:"short_same" gorm:"index;type:varchar(50);`
-	EnName    string `json:"en_same" gorm:"index;type:varchar(500);`
-	CnName    string `json:"cn_same" gorm:"index;type:varchar(500);`
+	ShortSame string `json:"short_same" gorm:"index;type:varchar(50);"`
+	EnName    string `json:"en_same" gorm:"index;type:varchar(500);"`
+	CnName    string `json:"cn_same" gorm:"index;type:varchar(500);"`
 }
 
 // domain info

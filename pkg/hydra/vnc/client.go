@@ -108,7 +108,7 @@ func (c *ClientConn) CutText(text string) error {
 
 	for _, char := range text {
 		if char > unicode.MaxLatin1 {
-			return fmt.Errorf("Character '%s' is not valid Latin-1", char)
+			return fmt.Errorf("character %q is not valid Latin-1", char)
 		}
 
 		if err := binary.Write(&buf, binary.BigEndian, uint8(char)); err != nil {

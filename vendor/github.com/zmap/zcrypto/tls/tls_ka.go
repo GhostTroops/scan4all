@@ -44,52 +44,76 @@ func (sh *SignatureAndHash) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
+// DigitalSignature represents a signature for a digitally-signed-struct in the
+// TLS record protocol. It is dependent on the version of TLS in use. In TLS
+// 1.2, the first two bytes of the signature specify the signature and hash
+// algorithms. These are contained the TLSSignature.Raw field, but also parsed
+// out into TLSSignature.SigHashExtension. In older versions of TLS, the
+// signature and hash extension is not used, and so
+// TLSSignature.SigHashExtension will be empty. The version string is stored in
+// TLSSignature.TLSVersion.
+type DigitalSignature struct {
+	Raw              []byte            `json:"raw"`
+	Type             string            `json:"type,omitempty"`
+	Valid            bool              `json:"valid"`
+	SigHashExtension *SignatureAndHash `json:"signature_and_hash_type,omitempty"`
+	Version          TLSVersion        `json:"tls_version"`
+}
+
+func signatureTypeToName(sigType uint8) string {
+	switch sigType {
+	case signatureRSA:
+		return "rsa"
+	case signatureDSA:
+		return "dsa"
+	case signaturePKCS1v15:
+		return "pkcs1v15"
+	case signatureRSAPSS:
+		return "rsapss"
+	case signatureECDSA:
+		return "ecdsa"
+	case signatureEd25519:
+		return "ed25519"
+	default:
+		break
+	}
+	return "unknown." + strconv.Itoa(int(sigType))
+}
+
+func (ka *signedKeyAgreement) Signature() *DigitalSignature {
+	out := DigitalSignature{
+		Raw:     ka.raw,
+		Type:    signatureTypeToName(ka.sigType),
+		Valid:   ka.valid,
+		Version: TLSVersion(ka.version),
+	}
+	if ka.version >= VersionTLS12 {
+		out.SigHashExtension = new(SignatureAndHash)
+		*out.SigHashExtension = SignatureAndHash(ka.sh)
+	}
+	return &out
+}
+
 func (ka *rsaKeyAgreement) RSAParams() *jsonKeys.RSAPublicKey {
 	out := new(jsonKeys.RSAPublicKey)
-	out.PublicKey = ka.publicKey
 	return out
 }
 
 func (ka *ecdheKeyAgreement) ECDHParams() *jsonKeys.ECDHParams {
 	out := new(jsonKeys.ECDHParams)
-	out.TLSCurveID = jsonKeys.TLSCurveID(ka.curveID)
-	out.ServerPublic = &jsonKeys.ECPoint{}
-	if ka.x != nil {
-		out.ServerPublic.X = new(big.Int)
-		out.ServerPublic.X.Set(ka.x)
-	}
-	if ka.y != nil {
-		out.ServerPublic.Y = new(big.Int)
-		out.ServerPublic.Y.Set(ka.y)
-	}
-	if len(ka.serverPrivKey) > 0 {
-		out.ServerPrivate = new(jsonKeys.ECDHPrivateParams)
-		out.ServerPrivate.Length = len(ka.serverPrivKey)
-		out.ServerPrivate.Value = make([]byte, len(ka.serverPrivKey))
-		copy(out.ServerPrivate.Value, ka.serverPrivKey)
-	}
+	out.TLSCurveID = jsonKeys.TLSCurveID(ka.serverParams.CurveID())
+
+	out.ServerPublic, out.ServerPrivate = ka.serverParams.MakeLog()
+
 	return out
 }
 
 func (ka *ecdheKeyAgreement) ClientECDHParams() *jsonKeys.ECDHParams {
 	out := new(jsonKeys.ECDHParams)
-	out.TLSCurveID = jsonKeys.TLSCurveID(ka.curveID)
-	out.ClientPublic = &jsonKeys.ECPoint{}
-	if ka.clientX != nil {
-		out.ClientPublic.X = new(big.Int)
-		out.ClientPublic.X.Set(ka.clientX)
-	}
-	if ka.clientY != nil {
-		out.ClientPublic.Y = new(big.Int)
-		out.ClientPublic.Y.Set(ka.clientY)
-	}
+	out.TLSCurveID = jsonKeys.TLSCurveID(ka.params.CurveID())
 
-	if len(ka.clientPrivKey) > 0 {
-		out.ClientPrivate = new(jsonKeys.ECDHPrivateParams)
-		out.ClientPrivate.Length = len(ka.clientPrivKey)
-		out.ClientPrivate.Value = make([]byte, len(ka.clientPrivKey))
-		copy(out.ClientPrivate.Value, ka.clientPrivKey)
-	}
+	out.ClientPublic, out.ClientPrivate = ka.params.MakeLog()
+
 	return out
 }
 
@@ -125,48 +149,4 @@ func (ka *dheKeyAgreement) ClientDHParams() *jsonKeys.DHParams {
 		}
 	}
 	return out
-}
-
-// DigitalSignature represents a signature for a digitally-signed-struct in the
-// TLS record protocol. It is dependent on the version of TLS in use. In TLS
-// 1.2, the first two bytes of the signature specify the signature and hash
-// algorithms. These are contained the TLSSignature.Raw field, but also parsed
-// out into TLSSignature.SigHashExtension. In older versions of TLS, the
-// signature and hash extension is not used, and so
-// TLSSignature.SigHashExtension will be empty. The version string is stored in
-// TLSSignature.TLSVersion.
-type DigitalSignature struct {
-	Raw              []byte            `json:"raw"`
-	Type             string            `json:"type,omitempty"`
-	Valid            bool              `json:"valid"`
-	SigHashExtension *SignatureAndHash `json:"signature_and_hash_type,omitempty"`
-	Version          TLSVersion        `json:"tls_version"`
-}
-
-func signatureTypeToName(sigType uint8) string {
-	switch sigType {
-	case signatureRSA:
-		return "rsa"
-	case signatureDSA:
-		return "dsa"
-	case signatureECDSA:
-		return "ecdsa"
-	default:
-		break
-	}
-	return "unknown." + strconv.Itoa(int(sigType))
-}
-
-func (ka *signedKeyAgreement) Signature() *DigitalSignature {
-	out := DigitalSignature{
-		Raw:     ka.raw,
-		Type:    signatureTypeToName(ka.sigType),
-		Valid:   ka.valid,
-		Version: TLSVersion(ka.version),
-	}
-	if ka.version >= VersionTLS12 {
-		out.SigHashExtension = new(SignatureAndHash)
-		*out.SigHashExtension = SignatureAndHash(ka.sh)
-	}
-	return &out
 }

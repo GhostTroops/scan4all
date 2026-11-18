@@ -17,6 +17,10 @@ type ElementRenderer interface {
 	Render(w io.Writer, ctx RenderContext) error
 }
 
+type StyleOverriderElementRenderer interface {
+	StyleOverrideRender(w io.Writer, ctx RenderContext, style StylePrimitive) error
+}
+
 // ElementFinisher is called when leaving a markdown node.
 type ElementFinisher interface {
 	Finish(w io.Writer, ctx RenderContext) error
@@ -34,8 +38,6 @@ type Element struct {
 // NewElement returns the appropriate render Element for a given node.
 func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	ctx := tr.context
-	// fmt.Print(strings.Repeat("  ", ctx.blockStack.Len()), node.Type(), node.Kind())
-	// defer fmt.Println()
 
 	switch node.Kind() {
 	// Document
@@ -65,8 +67,11 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	// Paragraph
 	case ast.KindParagraph:
-		if node.Parent() != nil && node.Parent().Kind() == ast.KindListItem {
-			return Element{}
+		if node.Parent() != nil {
+			kind := node.Parent().Kind()
+			if kind == ast.KindListItem {
+				return Element{}
+			}
 		}
 		return Element{
 			Renderer: &ParagraphElement{
@@ -78,10 +83,9 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	// Blockquote
 	case ast.KindBlockquote:
 		e := &BlockElement{
-			Block:   &bytes.Buffer{},
-			Style:   cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.BlockQuote, false),
-			Margin:  true,
-			Newline: true,
+			Block:  &bytes.Buffer{},
+			Style:  cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.BlockQuote, false),
+			Margin: true,
 		}
 		return Element{
 			Entering: "\n",
@@ -178,16 +182,16 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	case ast.KindEmphasis:
 		n := node.(*ast.Emphasis)
-		s := string(n.Text(source))
-		style := ctx.options.Styles.Emph
-		if n.Level > 1 {
-			style = ctx.options.Styles.Strong
+		var children []ElementRenderer
+		nn := n.FirstChild()
+		for nn != nil {
+			children = append(children, tr.NewElement(nn, source).Renderer)
+			nn = nn.NextSibling()
 		}
-
 		return Element{
-			Renderer: &BaseElement{
-				Token: html.UnescapeString(s),
-				Style: style,
+			Renderer: &EmphasisElement{
+				Level:    n.Level,
+				Children: children,
 			},
 		}
 
@@ -215,26 +219,45 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 	// Links
 	case ast.KindLink:
 		n := node.(*ast.Link)
+		var children []ElementRenderer
+		nn := n.FirstChild()
+		for nn != nil {
+			children = append(children, tr.NewElement(nn, source).Renderer)
+			nn = nn.NextSibling()
+		}
 		return Element{
 			Renderer: &LinkElement{
-				Text:    textFromChildren(node, source),
-				BaseURL: ctx.options.BaseURL,
-				URL:     string(n.Destination),
+				BaseURL:  ctx.options.BaseURL,
+				URL:      string(n.Destination),
+				Children: children,
 			},
 		}
 	case ast.KindAutoLink:
 		n := node.(*ast.AutoLink)
 		u := string(n.URL(source))
-		label := string(n.Label(source))
+
+		var children []ElementRenderer
+		nn := n.FirstChild()
+		for nn != nil {
+			children = append(children, tr.NewElement(nn, source).Renderer)
+			nn = nn.NextSibling()
+		}
+
+		if len(children) == 0 {
+			children = append(children, &BaseElement{
+				Token: u,
+			})
+		}
+
 		if n.AutoLinkType == ast.AutoLinkEmail && !strings.HasPrefix(strings.ToLower(u), "mailto:") {
 			u = "mailto:" + u
 		}
 
 		return Element{
 			Renderer: &LinkElement{
-				Text:    label,
-				BaseURL: ctx.options.BaseURL,
-				URL:     u,
+				Children: children,
+				BaseURL:  ctx.options.BaseURL,
+				URL:      u,
 			},
 		}
 
@@ -283,39 +306,43 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		}
 
 	case ast.KindCodeSpan:
-		// n := node.(*ast.CodeSpan)
-		e := &BlockElement{
-			Block: &bytes.Buffer{},
-			Style: cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.Code, false),
-		}
+		n := node.(*ast.CodeSpan)
+		s := string(n.Text(source))
 		return Element{
-			Renderer: e,
-			Finisher: e,
+			Renderer: &CodeSpanElement{
+				Text:  html.UnescapeString(s),
+				Style: cascadeStyle(ctx.blockStack.Current().Style, ctx.options.Styles.Code, false).StylePrimitive,
+			},
 		}
 
 	// Tables
 	case astext.KindTable:
-		te := &TableElement{}
+		table := node.(*astext.Table)
+		te := &TableElement{
+			table: table,
+		}
 		return Element{
 			Entering: "\n",
+			Exiting:  "\n",
 			Renderer: te,
 			Finisher: te,
 		}
 
 	case astext.KindTableCell:
-		s := ""
-		n := node.FirstChild()
-		for n != nil {
-			s += string(n.Text(source))
-			// s += string(n.LinkData.Destination)
-			n = n.NextSibling()
+		n := node.(*astext.TableCell)
+		var children []ElementRenderer
+		nn := n.FirstChild()
+		for nn != nil {
+			children = append(children, tr.NewElement(nn, source).Renderer)
+			nn = nn.NextSibling()
 		}
 
+		r := &TableCellElement{
+			Children: children,
+			Head:     node.Parent().Kind() == astext.KindTableHeader,
+		}
 		return Element{
-			Renderer: &TableCellElement{
-				Text: s,
-				Head: node.Parent().Kind() == astext.KindTableHeader,
-			},
+			Renderer: r,
 		}
 
 	case astext.KindTableHeader:
@@ -354,13 +381,13 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 			Newline: true,
 		}
 		return Element{
-			Entering: "\n",
 			Renderer: e,
 			Finisher: e,
 		}
 
 	case astext.KindDefinitionTerm:
 		return Element{
+			Entering: "\n",
 			Renderer: &BaseElement{
 				Style: ctx.options.Styles.DefinitionTerm,
 			},
@@ -368,6 +395,7 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 
 	case astext.KindDefinitionDescription:
 		return Element{
+			Exiting: "\n",
 			Renderer: &BaseElement{
 				Style: ctx.options.Styles.DefinitionDescription,
 			},
@@ -393,22 +421,4 @@ func (tr *ANSIRenderer) NewElement(node ast.Node, source []byte) Element {
 		fmt.Println("Warning: unhandled element", node.Kind().String())
 		return Element{}
 	}
-}
-
-func textFromChildren(node ast.Node, source []byte) string {
-	var s string
-	for c := node.FirstChild(); c != nil; c = c.NextSibling() {
-		if c.Kind() == ast.KindText {
-			cn := c.(*ast.Text)
-			s += string(cn.Segment.Value(source))
-
-			if cn.HardLineBreak() || (cn.SoftLineBreak()) {
-				s += "\n"
-			}
-		} else {
-			s += string(c.Text(source))
-		}
-	}
-
-	return s
 }

@@ -74,7 +74,7 @@ func getinputurl(domainurl string) (domainurlx []string) {
 		if util.StrContains(domainx, "http") {
 			loginurl = append(loginurl, domainx)
 		} else if domainx == "" {
-			loginurl = loginurl
+			// 空域名，无需追加
 		} else if domainx[0:1] == "/" {
 			u, _ := url.Parse(strings.TrimSpace(domainurl))
 			loginurl = append(loginurl, u.Scheme+"://"+u.Host+domainx)

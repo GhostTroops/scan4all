@@ -104,12 +104,12 @@ func tlsClientHandshake(rawConn net.Conn, tlsConfig *tls.Config, timeout time.Du
 
 	select {
 	case <-tc.C:
-		rawConn.Close()
-		<-ch
+		_ = rawConn.Close()
+		<-ch //nolint:errcheck // drain the goroutine result before reuse
 		return nil, ErrTLSHandshakeTimeout
 	case err := <-ch:
 		if err != nil {
-			rawConn.Close()
+			_ = rawConn.Close()
 			return nil, err
 		}
 		return conn, nil
@@ -211,15 +211,15 @@ func (c *PipelineClient) Do(req *Request, resp *Response) error {
 }
 
 func (c *pipelineConnClient) Do(req *Request, resp *Response) error {
-	c.init()
-
 	w := acquirePipelineWork(&c.workPool, 0)
 	w.req = req
 	if resp != nil {
 		w.resp = resp
 	}
 
-	// Put the request to outgoing queue
+	// Enqueue under chLock so the worker can't stop between init and the send.
+	c.chLock.Lock()
+	c.init()
 	select {
 	case c.chW <- w:
 	default:
@@ -233,10 +233,12 @@ func (c *pipelineConnClient) Do(req *Request, resp *Response) error {
 		select {
 		case c.chW <- w:
 		default:
+			c.chLock.Unlock()
 			releasePipelineWork(&c.workPool, w)
 			return ErrPipelineOverflow
 		}
 	}
+	c.chLock.Unlock()
 
 	// Wait for the response
 	<-w.done
@@ -310,8 +312,8 @@ var ErrPipelineOverflow = errors.New("pipelined requests' queue has been overflo
 
 const DefaultMaxPendingRequests = 1024
 
+// init starts the worker if none is running. The caller holds chLock.
 func (c *pipelineConnClient) init() {
-	c.chLock.Lock()
 	if c.chR == nil {
 		maxPendingRequests := c.MaxPendingRequests
 		if maxPendingRequests <= 0 {
@@ -330,8 +332,9 @@ func (c *pipelineConnClient) init() {
 					w.done <- struct{}{}
 				} else {
 					c.chLock.Lock()
+					// Clear the queues on stop so the next Do starts a new worker.
 					stop := len(c.chR) == 0 && len(c.chW) == 0
-					if !stop {
+					if stop {
 						c.chR = nil
 						c.chW = nil
 					}
@@ -344,7 +347,6 @@ func (c *pipelineConnClient) init() {
 			}
 		}()
 	}
-	c.chLock.Unlock()
 }
 
 func (c *pipelineConnClient) worker() error {
@@ -369,13 +371,13 @@ func (c *pipelineConnClient) worker() error {
 	// Wait until reader and writer are stopped
 	select {
 	case err = <-doneW:
-		conn.Close()
+		_ = conn.Close()
 		close(stopR)
-		<-doneR
+		<-doneR //nolint:errcheck // drain the goroutine result before reuse
 	case err = <-doneR:
-		conn.Close()
+		_ = conn.Close()
 		close(stopW)
-		<-doneW
+		<-doneW //nolint:errcheck // drain the goroutine result before reuse
 	}
 
 	// Notify pending readers
@@ -410,7 +412,7 @@ func (c *pipelineConnClient) writer(conn net.Conn, stopCh <-chan struct{}) error
 		writeBufferSize = defaultWriteBufferSize
 	}
 	bw := bufio.NewWriterSize(conn, writeBufferSize)
-	defer bw.Flush()
+	defer func() { _ = bw.Flush() }()
 	chR := c.chR
 	chW := c.chW
 	writeTimeout := c.WriteTimeout
@@ -566,9 +568,8 @@ func (c *PipelineClient) PendingRequests() int {
 }
 
 func (c *pipelineConnClient) PendingRequests() int {
-	c.init()
-
 	c.chLock.Lock()
+	c.init()
 	n := len(c.chR) + len(c.chW)
 	c.chLock.Unlock()
 	return n

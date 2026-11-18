@@ -1,0 +1,53 @@
+package dicttls
+
+// source: https://www.iana.org/assignments/hpke/hpke.xhtml
+// last updated: December 2023
+
+const (
+	DHKEM_P256_HKDF_SHA256      uint16 = 0x0010 // RFC 5869
+	DHKEM_P384_HKDF_SHA384      uint16 = 0x0011 // RFC 5869
+	DHKEM_P521_HKDF_SHA512      uint16 = 0x0012 // RFC 5869
+	DHKEM_CP256_HKDF_SHA256     uint16 = 0x0013 // RFC 6090
+	DHKEM_CP384_HKDF_SHA384     uint16 = 0x0014 // RFC 6090
+	DHKEM_CP521_HKDF_SHA512     uint16 = 0x0015 // RFC 6090
+	DHKEM_SECP256K1_HKDF_SHA256 uint16 = 0x0016 // draft-wahby-cfrg-hpke-kem-secp256k1-01
+
+	DHKEM_X25519_HKDF_SHA256 uint16 = 0x0020 // RFC 7748
+	DHKEM_X448_HKDF_SHA512   uint16 = 0x0021 // RFC 7748
+
+	X25519_KYBER768_DRAFT00 uint16 = 0x0030 // draft-westerbaan-cfrg-hpke-xyber768d00-02
+)
+
+var DictKEMIdentifierValueIndexed = map[uint16]string{
+	0x0000: "Reserved", // RFC 9180
+
+	0x0010: "DHKEM(P-256, HKDF-SHA256)",
+	0x0011: "DHKEM(P-384, HKDF-SHA384)",
+	0x0012: "DHKEM(P-521, HKDF-SHA512)",
+	0x0013: "DHKEM(CP-256, HKDF-SHA256)",
+	0x0014: "DHKEM(CP-384, HKDF-SHA384)",
+	0x0015: "DHKEM(CP-521, HKDF-SHA512)",
+	0x0016: "DHKEM(secp256k1, HKDF-SHA256)",
+
+	0x0020: "DHKEM(X25519, HKDF-SHA256)",
+	0x0021: "DHKEM(X448, HKDF-SHA512)",
+
+	0x0030: "X25519Kyber768Draft00",
+}
+
+var DictKEMIdentifierNameIndexed = map[string]uint16{
+	"Reserved": 0x0000, // RFC 9180
+
+	"DHKEM(P-256, HKDF-SHA256)":     0x0010,
+	"DHKEM(P-384, HKDF-SHA384)":     0x0011,
+	"DHKEM(P-521, HKDF-SHA512)":     0x0012,
+	"DHKEM(CP-256, HKDF-SHA256)":    0x0013,
+	"DHKEM(CP-384, HKDF-SHA384)":    0x0014,
+	"DHKEM(CP-521, HKDF-SHA512)":    0x0015,
+	"DHKEM(secp256k1, HKDF-SHA256)": 0x0016,
+
+	"DHKEM(X25519, HKDF-SHA256)": 0x0020,
+	"DHKEM(X448, HKDF-SHA512)":   0x0021,
+
+	"X25519Kyber768Draft00": 0x0030,
+}

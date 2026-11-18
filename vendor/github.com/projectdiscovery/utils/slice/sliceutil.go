@@ -1,7 +1,7 @@
 package sliceutil
 
 import (
-	"math/rand"
+	"math/rand/v2"
 	"strconv"
 	"time"
 
@@ -37,9 +37,31 @@ func Dedupe[T comparable](inputSlice []T) (result []T) {
 	return
 }
 
+// DedupeFunc removes duplicates from a slice of elements using a key function
+// The key function is used to return a key for each element in the slice
+// and then the key is used to check for duplicates
+// If the key function is nil, we return the original input slice
+func DedupeFunc[T any](inputSlice []T, keyFunc func(T) any) (result []T) {
+	if keyFunc == nil {
+		return inputSlice
+	}
+	seen := make(map[any]struct{})
+	for _, inputValue := range inputSlice {
+		key := keyFunc(inputValue)
+		if _, ok := seen[key]; !ok {
+			seen[key] = struct{}{}
+			result = append(result, inputValue)
+		}
+	}
+
+	return
+}
+
+// DedupeFuncDeep checks for deep equality of two elements
+
 // PickRandom item from a slice of elements
 func PickRandom[T any](v []T) T {
-	return v[rand.Intn(len(v))]
+	return v[rand.IntN(len(v))]
 }
 
 // Contains if a slice contains an element

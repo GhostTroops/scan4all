@@ -277,14 +277,14 @@ func sendmail(target, token, sid, email string) {
 }
 
 func main() {
-	Banner()
+	fmt.Println("[*] Exchange ProxyShell checker (package exchange，仅供独立调试)")
 	var target, token, sid, email string
 	flag.StringVar(&target, "u", "", "")
 	flag.StringVar(&token, "t", "", "")
 	flag.StringVar(&sid, "i", "", "")
 	flag.StringVar(&email, "e", "", "")
 	flag.CommandLine.Usage = func() {
-		fmt.Println("usage：\nexec: ./chkproxyshell -u <target url>\n")
+		fmt.Print("usage:\nexec: ./chkproxyshell -u <target url>\n\n")
 	}
 	flag.Parse()
 

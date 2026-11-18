@@ -25,8 +25,8 @@ var (
 //	3、避免重复检查
 //	4、具有自动释放缓存的机制，程序退出时自动消费（内存缓存）
 type CheckerTools struct {
-	Name      string                                `json:"name"`       // RespHeader,RespBody,RespJs,RespCss,RespTitle,ReqHeader
-	checkFunc []func(*CheckerTools, ...interface{}) `json:"check_func"` // 注册的检查器
+	Name      string                                `json:"name"` // RespHeader,RespBody,RespJs,RespCss,RespTitle,ReqHeader
+	checkFunc []func(*CheckerTools, ...interface{}) // 注册的检查器
 }
 
 func GetInstance(name string) *CheckerTools {

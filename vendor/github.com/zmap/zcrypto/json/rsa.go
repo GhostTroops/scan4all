@@ -15,10 +15,11 @@
 package json
 
 import (
-	"crypto/rsa"
 	"encoding/json"
 	"fmt"
 	"math/big"
+
+	"github.com/zmap/zcrypto/rsa"
 )
 
 // RSAPublicKey provides JSON methods for the standard rsa.PublicKey.
@@ -26,10 +27,13 @@ type RSAPublicKey struct {
 	*rsa.PublicKey
 }
 
+// ZCrypto - auxRSAPublicKey uses json.Number for the exponent so that
+// arbitrarily large values can be marshaled as JSON integers (not strings).
+// Original: Exponent int
 type auxRSAPublicKey struct {
-	Exponent int    `json:"exponent"`
-	Modulus  []byte `json:"modulus"`
-	Length   int    `json:"length"`
+	Exponent json.Number `json:"exponent"`
+	Modulus  []byte      `json:"modulus"`
+	Length   int         `json:"length"`
 }
 
 // RSAClientParams are the TLS key exchange parameters for RSA keys.
@@ -42,7 +46,7 @@ type RSAClientParams struct {
 func (rp *RSAPublicKey) MarshalJSON() ([]byte, error) {
 	var aux auxRSAPublicKey
 	if rp.PublicKey != nil {
-		aux.Exponent = rp.E
+		aux.Exponent = json.Number(rp.E.String())
 		aux.Modulus = rp.N.Bytes()
 		aux.Length = len(aux.Modulus) * 8
 	}
@@ -58,7 +62,11 @@ func (rp *RSAPublicKey) UnmarshalJSON(b []byte) error {
 	if rp.PublicKey == nil {
 		rp.PublicKey = new(rsa.PublicKey)
 	}
-	rp.E = aux.Exponent
+	rp.E = new(big.Int)
+	_, ok := rp.E.SetString(aux.Exponent.String(), 10) // ZCrypto - to handle arbitrarily large exponents, we use bigint
+	if !ok {
+		return fmt.Errorf("failed to parse exponent: %s", aux.Exponent.String())
+	}
 	rp.N = big.NewInt(0).SetBytes(aux.Modulus)
 	if len(aux.Modulus)*8 != aux.Length {
 		return fmt.Errorf("mismatched length (got %d, field specified %d)", len(aux.Modulus), aux.Length)

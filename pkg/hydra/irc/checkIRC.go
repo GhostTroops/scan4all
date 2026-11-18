@@ -7,7 +7,7 @@ import (
 )
 
 func Check(Host, Username, Password string, Port int) (bool, error) {
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", Host, Port))
+	conn, err := net.Dial("tcp", net.JoinHostPort(Host, fmt.Sprintf("%d", Port)))
 	bRst := false
 	if err != nil {
 		return bRst, err

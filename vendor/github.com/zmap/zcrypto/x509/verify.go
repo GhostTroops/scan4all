@@ -94,6 +94,8 @@ func (e CertificateInvalidError) Error() string {
 		return "x509: issuer name does not match subject from issuing certificate"
 	case NeverValid:
 		return "x509: certificate will never be valid"
+	case IsSelfSigned:
+		return "x509: certificate is self-signed and not a trusted root"
 	}
 	return "x509: unknown error"
 }
@@ -279,10 +281,26 @@ func (c *Certificate) isValid(certType CertificateType, currentChain Certificate
 //
 // WARNING: this doesn't do any revocation checking.
 func (c *Certificate) Verify(opts VerifyOptions) (current, expired, never []CertificateChain, err error) {
+	// Platform-specific verification needs the ASN.1 contents so
+	// this makes the behavior consistent across platforms.
+	if len(c.Raw) == 0 {
+		return nil, nil, nil, errNotParsed
+	}
+	for i := 0; i < opts.Intermediates.Size(); i++ {
+		c, err := opts.Intermediates.cert(i)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("crypto/x509: error fetching intermediate: %w", err)
+		}
+		if len(c.Raw) == 0 {
+			return nil, nil, nil, errNotParsed
+		}
+	}
 
 	if opts.Roots == nil {
-		err = SystemRootsError{}
-		return
+		opts.Roots = systemRootsPool()
+		if opts.Roots == nil {
+			return nil, nil, nil, SystemRootsError{systemRootsErr}
+		}
 	}
 
 	err = c.isValid(CertificateTypeLeaf, nil)
@@ -290,9 +308,14 @@ func (c *Certificate) Verify(opts VerifyOptions) (current, expired, never []Cert
 		return
 	}
 
-	candidateChains, err := c.buildChains(make(map[int][]CertificateChain), []*Certificate{c}, &opts)
-	if err != nil {
-		return
+	var candidateChains []CertificateChain
+	if opts.Roots.Contains(c) {
+		candidateChains = append(candidateChains, CertificateChain{c})
+	} else {
+		candidateChains, err = c.buildChains(make(map[int][]CertificateChain), CertificateChain{c}, &opts)
+		if err != nil {
+			return nil, nil, nil, err
+		}
 	}
 
 	keyUsages := opts.KeyUsages

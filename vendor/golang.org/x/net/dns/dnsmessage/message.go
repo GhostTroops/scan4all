@@ -17,8 +17,21 @@ import (
 )
 
 // Message formats
+//
+// To add a new Resource Record type:
+// 1. Create Resource Record types
+//   1.1. Add a Type constant named "Type<name>"
+//   1.2. Add the corresponding entry to the typeNames map
+//   1.3. Add a [ResourceBody] implementation named "<name>Resource"
+// 2. Implement packing
+//   2.1. Implement Builder.<name>Resource()
+// 3. Implement unpacking
+//   3.1. Add the unpacking code to unpackResourceBody()
+//   3.2. Implement Parser.<name>Resource()
 
-// A Type is a type of DNS request and response.
+// A Type is the type of a DNS Resource Record, as defined in the [IANA registry].
+//
+// [IANA registry]: https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml#dns-parameters-4
 type Type uint16
 
 const (
@@ -33,6 +46,8 @@ const (
 	TypeAAAA  Type = 28
 	TypeSRV   Type = 33
 	TypeOPT   Type = 41
+	TypeSVCB  Type = 64
+	TypeHTTPS Type = 65
 
 	// Question.Type
 	TypeWKS   Type = 11
@@ -53,6 +68,8 @@ var typeNames = map[Type]string{
 	TypeAAAA:  "TypeAAAA",
 	TypeSRV:   "TypeSRV",
 	TypeOPT:   "TypeOPT",
+	TypeSVCB:  "TypeSVCB",
+	TypeHTTPS: "TypeHTTPS",
 	TypeWKS:   "TypeWKS",
 	TypeHINFO: "TypeHINFO",
 	TypeMINFO: "TypeMINFO",
@@ -273,7 +290,8 @@ var (
 	errTooManyAdditionals = errors.New("too many Additionals to pack (>65535)")
 	errNonCanonicalName   = errors.New("name is not in canonical format (it must end with a .)")
 	errStringTooLong      = errors.New("character string exceeds maximum length (255)")
-	errCompressedSRV      = errors.New("compressed name in SRV resource data")
+	errParamOutOfOrder    = errors.New("parameter out of order")
+	errTooLongSVCBValue   = errors.New("value too long (>65535 bytes)")
 )
 
 // Internal constants.
@@ -733,10 +751,7 @@ func (p *Parser) AllAnswers() ([]Resource, error) {
 	//
 	// Pre-allocate up to a certain limit, since p.header is
 	// untrusted data.
-	n := int(p.header.answers)
-	if n > 20 {
-		n = 20
-	}
+	n := min(int(p.header.answers), 20)
 	as := make([]Resource, 0, n)
 	for {
 		a, err := p.Answer()
@@ -786,10 +801,7 @@ func (p *Parser) AllAuthorities() ([]Resource, error) {
 	//
 	// Pre-allocate up to a certain limit, since p.header is
 	// untrusted data.
-	n := int(p.header.authorities)
-	if n > 10 {
-		n = 10
-	}
+	n := min(int(p.header.authorities), 10)
 	as := make([]Resource, 0, n)
 	for {
 		a, err := p.Authority()
@@ -839,10 +851,7 @@ func (p *Parser) AllAdditionals() ([]Resource, error) {
 	//
 	// Pre-allocate up to a certain limit, since p.header is
 	// untrusted data.
-	n := int(p.header.additionals)
-	if n > 10 {
-		n = 10
-	}
+	n := min(int(p.header.additionals), 10)
 	as := make([]Resource, 0, n)
 	for {
 		a, err := p.Additional()
@@ -2028,10 +2037,6 @@ func (n *Name) pack(msg []byte, compression map[string]uint16, compressionOff in
 
 // unpack unpacks a domain name.
 func (n *Name) unpack(msg []byte, off int) (int, error) {
-	return n.unpackCompressed(msg, off, true /* allowCompression */)
-}
-
-func (n *Name) unpackCompressed(msg []byte, off int, allowCompression bool) (int, error) {
 	// currOff is the current working offset.
 	currOff := off
 
@@ -2071,14 +2076,15 @@ Loop:
 					return off, errInvalidName
 				}
 			}
-
+			// Reject names that are too long while unpacking
+			// See issue golang/go#77540
+			if len(name)+(endOff-currOff) >= nonEncodedNameMax {
+				return off, errNameTooLong
+			}
 			name = append(name, msg[currOff:endOff]...)
 			name = append(name, '.')
 			currOff = endOff
 		case 0xC0: // Pointer
-			if !allowCompression {
-				return off, errCompressedSRV
-			}
 			if currOff >= len(msg) {
 				return off, errInvalidPtr
 			}
@@ -2099,9 +2105,6 @@ Loop:
 	}
 	if len(name) == 0 {
 		name = append(name, '.')
-	}
-	if len(name) > nonEncodedNameMax {
-		return off, errNameTooLong
 	}
 	n.Length = uint8(len(name))
 	if ptr == 0 {
@@ -2228,6 +2231,16 @@ func unpackResourceBody(msg []byte, off int, hdr ResourceHeader) (ResourceBody, 
 		rb, err = unpackSRVResource(msg, off)
 		r = &rb
 		name = "SRV"
+	case TypeSVCB:
+		var rb SVCBResource
+		rb, err = unpackSVCBResource(msg, off, hdr.Length)
+		r = &rb
+		name = "SVCB"
+	case TypeHTTPS:
+		var rb HTTPSResource
+		rb.SVCBResource, err = unpackSVCBResource(msg, off, hdr.Length)
+		r = &rb
+		name = "HTTPS"
 	case TypeOPT:
 		var rb OPTResource
 		rb, err = unpackOPTResource(msg, off, hdr.Length)
@@ -2549,7 +2562,7 @@ func unpackSRVResource(msg []byte, off int) (SRVResource, error) {
 		return SRVResource{}, &nestedError{"Port", err}
 	}
 	var target Name
-	if _, err := target.unpackCompressed(msg, off, false /* allowCompression */); err != nil {
+	if _, err := target.unpack(msg, off); err != nil {
 		return SRVResource{}, &nestedError{"Target", err}
 	}
 	return SRVResource{priority, weight, port, target}, nil

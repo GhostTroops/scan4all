@@ -13,7 +13,7 @@ import (
 	"github.com/projectdiscovery/rawhttp/client"
 )
 
-func HTTPDialer(proxyAddr string, timeout time.Duration) DialFunc {
+func httpDialer(proxyAddr string, timeout time.Duration, fd *fastdialer.Dialer) DialFunc {
 	return func(addr string) (net.Conn, error) {
 		var netConn net.Conn
 		var err error
@@ -21,7 +21,7 @@ func HTTPDialer(proxyAddr string, timeout time.Duration) DialFunc {
 		// close the connection when an error occurs
 		defer func() {
 			if err != nil && netConn != nil {
-				netConn.Close()
+				_ = netConn.Close()
 			}
 		}()
 		u, err := url.Parse(proxyAddr)
@@ -33,15 +33,10 @@ func HTTPDialer(proxyAddr string, timeout time.Duration) DialFunc {
 			auth = base64.StdEncoding.EncodeToString([]byte(split[0]))
 			proxyAddr = split[1]
 		}
-		fd, err := fastdialer.NewDialer(fastdialer.DefaultOptions)
-		if err != nil {
-			if timeout == 0 {
-				netConn, err = net.Dial("tcp", u.Host)
-			} else {
-				netConn, err = net.DialTimeout("tcp", u.Host, timeout)
-			}
-		} else {
+		if fd != nil {
 			netConn, err = fd.Dial(context.TODO(), "tcp", u.Host)
+		} else {
+			netConn, err = net.DialTimeout("tcp", u.Host, timeout)
 		}
 
 		if err != nil {
@@ -70,4 +65,12 @@ func HTTPDialer(proxyAddr string, timeout time.Duration) DialFunc {
 
 		return netConn, nil
 	}
+}
+
+func HTTPDialer(proxyAddr string, timeout time.Duration) DialFunc {
+	return httpDialer(proxyAddr, timeout, nil)
+}
+
+func HTTPFastDialer(proxyAddr string, timeout time.Duration, fd *fastdialer.Dialer) DialFunc {
+	return httpDialer(proxyAddr, timeout, fd)
 }

@@ -14,23 +14,32 @@ type HeadingElement struct {
 	First bool
 }
 
+const (
+	h1 = iota + 1
+	h2
+	h3
+	h4
+	h5
+	h6
+)
+
 func (e *HeadingElement) Render(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 	rules := ctx.options.Styles.Heading
 
 	switch e.Level {
-	case 1:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H1)
-	case 2:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H2)
-	case 3:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H3)
-	case 4:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H4)
-	case 5:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H5)
-	case 6:
-		rules = cascadeStyles(true, rules, ctx.options.Styles.H6)
+	case h1:
+		rules = cascadeStyles(rules, ctx.options.Styles.H1)
+	case h2:
+		rules = cascadeStyles(rules, ctx.options.Styles.H2)
+	case h3:
+		rules = cascadeStyles(rules, ctx.options.Styles.H3)
+	case h4:
+		rules = cascadeStyles(rules, ctx.options.Styles.H4)
+	case h5:
+		rules = cascadeStyles(rules, ctx.options.Styles.H5)
+	case h6:
+		rules = cascadeStyles(rules, ctx.options.Styles.H6)
 	}
 
 	if !e.First {

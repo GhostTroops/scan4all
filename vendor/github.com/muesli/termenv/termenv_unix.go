@@ -1,5 +1,5 @@
-//go:build darwin || dragonfly || freebsd || linux || netbsd || openbsd || solaris
-// +build darwin dragonfly freebsd linux netbsd openbsd solaris
+//go:build darwin || dragonfly || freebsd || linux || netbsd || openbsd || solaris || zos
+// +build darwin dragonfly freebsd linux netbsd openbsd solaris zos
 
 package termenv
 
@@ -50,7 +50,7 @@ func (o *Output) ColorProfile() Profile {
 	}
 
 	switch term {
-	case "xterm-kitty", "wezterm":
+	case "xterm-kitty", "wezterm", "xterm-ghostty":
 		return TrueColor
 	case "linux":
 		return ANSI
@@ -227,7 +227,7 @@ func (o Output) termStatusReport(sequence int) (string, error) {
 	// screen/tmux can't support OSC, because they can be connected to multiple
 	// terminals concurrently.
 	term := o.environ.Getenv("TERM")
-	if strings.HasPrefix(term, "screen") || strings.HasPrefix(term, "tmux") {
+	if strings.HasPrefix(term, "screen") || strings.HasPrefix(term, "tmux") || strings.HasPrefix(term, "dumb") {
 		return "", ErrStatusReport
 	}
 

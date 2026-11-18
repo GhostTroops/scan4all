@@ -108,10 +108,10 @@ func Join(elems []interface{}, sep string) string {
 
 	var b strings.Builder
 	b.Grow(n)
-	b.WriteString(fmt.Sprint(elems[0]))
+	fmt.Fprint(&b, elems[0])
 	for _, s := range elems[1:] {
 		b.WriteString(sep)
-		b.WriteString(fmt.Sprint(s))
+		fmt.Fprint(&b, s)
 	}
 	return b.String()
 }
@@ -231,41 +231,48 @@ type LongestSequence struct {
 
 // LongestRepeatingSequence finds the longest repeating non-overlapping sequence in a string
 func LongestRepeatingSequence(s string) LongestSequence {
-	res := ""
-	resLength := 0
 	n := len(s)
-	lcsre := make([][]int, n+1)
-
-	for i := range lcsre {
-		lcsre[i] = make([]int, n+1)
+	if n == 0 {
+		return LongestSequence{}
 	}
 
-	idx := 0
+	// Use single row instead of full matrix
+	prev := make([]int, n+1)
+	curr := make([]int, n+1)
+
+	maxLen := 0
+	endPos := 0
+
 	for i := 1; i <= n; i++ {
 		for j := i + 1; j <= n; j++ {
-			if s[i-1] == s[j-1] && lcsre[i-1][j-1] < (j-i) {
-				lcsre[i][j] = lcsre[i-1][j-1] + 1
-				if lcsre[i][j] > resLength {
-					resLength = lcsre[i][j]
-					if i > idx {
-						idx = i
-					}
+			if s[i-1] == s[j-1] && prev[j-1] < (j-i) {
+				curr[j] = prev[j-1] + 1
+				if curr[j] > maxLen {
+					maxLen = curr[j]
+					endPos = i
 				}
 			} else {
-				lcsre[i][j] = 0
+				curr[j] = 0
 			}
 		}
-	}
-	if resLength > 0 {
-		for i := idx - resLength + 1; i <= idx; i++ {
-			res += string(s[i-1])
+		prev, curr = curr, prev
+		for j := range curr {
+			curr[j] = 0
 		}
 	}
-	resCount := 0
-	if res != "" {
-		resCount = strings.Count(s, res)
+
+	var sequence string
+	if maxLen > 0 {
+		start := endPos - maxLen
+		if start >= 0 {
+			sequence = s[start:endPos]
+		}
 	}
-	return LongestSequence{Sequence: res, Count: resCount}
+
+	return LongestSequence{
+		Sequence: sequence,
+		Count:    strings.Count(s, sequence),
+	}
 }
 
 // IsPrintable checks if the strings is made only of printable characters
@@ -301,4 +308,25 @@ func IndexAny(s string, seps ...string) (int, string) {
 		}
 	}
 	return -1, ""
+}
+
+// ContainsAll returns true if s contains all specified substrings.
+func ContainsAll(s string, ss ...string) bool {
+	for _, sub := range ss {
+		if !strings.Contains(s, sub) {
+			return false
+		}
+	}
+	return true
+}
+
+// ContainsAllI returns true if s contains all specified substrings (case-insensitive).
+func ContainsAllI(s string, ss ...string) bool {
+	lowerS := strings.ToLower(s)
+	for _, sub := range ss {
+		if !strings.Contains(lowerS, strings.ToLower(sub)) {
+			return false
+		}
+	}
+	return true
 }

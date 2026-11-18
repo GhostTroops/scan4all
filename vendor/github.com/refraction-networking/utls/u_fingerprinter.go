@@ -8,7 +8,6 @@ package tls
 type Fingerprinter struct {
 	// AllowBluntMimicry will ensure that unknown extensions are
 	// passed along into the resulting ClientHelloSpec as-is
-	// It will not ensure that the PSK is passed along, if you require that, use KeepPSK
 	// WARNING: there could be numerous subtle issues with ClientHelloSpecs
 	// that are generated with this flag which could compromise security and/or mimicry
 	AllowBluntMimicry bool

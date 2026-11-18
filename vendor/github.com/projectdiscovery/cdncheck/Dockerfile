@@ -1,15 +1,15 @@
-# Base
-FROM golang:1.20.4-alpine AS builder
+FROM alpine:latest
 
-RUN apk add --no-cache git build-base gcc musl-dev
-WORKDIR /app
-COPY . /app
-RUN go mod download
-RUN go build ./cmd/cdncheck
+LABEL org.opencontainers.image.authors="ProjectDiscovery"
+LABEL org.opencontainers.image.description="cdncheck is a tool for identifying the technology associated with dns / ip network addresses."
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.title="cdncheck"
+LABEL org.opencontainers.image.url="https://github.com/projectdiscovery/cdncheck"
 
-FROM alpine:3.18.0
 RUN apk -U upgrade --no-cache \
     && apk add --no-cache bind-tools ca-certificates
-COPY --from=builder /app/cdncheck /usr/local/bin/
+
+ARG TARGETPLATFORM
+COPY $TARGETPLATFORM/cdncheck /usr/local/bin/
 
 ENTRYPOINT ["cdncheck"]

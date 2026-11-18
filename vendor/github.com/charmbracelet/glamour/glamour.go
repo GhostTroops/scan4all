@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/muesli/termenv"
@@ -14,8 +13,15 @@ import (
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/util"
+	"golang.org/x/term"
 
 	"github.com/charmbracelet/glamour/ansi"
+	styles "github.com/charmbracelet/glamour/styles"
+)
+
+const (
+	defaultWidth = 80
+	highPriority = 1000
 )
 
 // A TermRendererOption sets an option on a TermRenderer.
@@ -69,7 +75,7 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 			),
 		),
 		ansiOptions: ansi.Options{
-			WordWrap:     80,
+			WordWrap:     defaultWidth,
 			ColorProfile: termenv.TrueColor,
 		},
 	}
@@ -82,7 +88,7 @@ func NewTermRenderer(options ...TermRendererOption) (*TermRenderer, error) {
 	tr.md.SetRenderer(
 		renderer.NewRenderer(
 			renderer.WithNodeRenderers(
-				util.Prioritized(ar, 1000),
+				util.Prioritized(ar, highPriority),
 			),
 		),
 	)
@@ -122,7 +128,7 @@ func WithStandardStyle(style string) TermRendererOption {
 // WithAutoStyle sets a TermRenderer's styles with either the standard dark
 // or light style, depending on the terminal's background color at run-time.
 func WithAutoStyle() TermRendererOption {
-	return WithStandardStyle("auto")
+	return WithStandardStyle(styles.AutoStyle)
 }
 
 // WithEnvironmentConfig sets a TermRenderer's styles based on the
@@ -138,7 +144,7 @@ func WithStylePath(stylePath string) TermRendererOption {
 	return func(tr *TermRenderer) error {
 		styles, err := getDefaultStyle(stylePath)
 		if err != nil {
-			jsonBytes, err := ioutil.ReadFile(stylePath)
+			jsonBytes, err := os.ReadFile(stylePath)
 			if err != nil {
 				return err
 			}
@@ -169,7 +175,7 @@ func WithStylesFromJSONBytes(jsonBytes []byte) TermRendererOption {
 // WithStylesFromJSONFile sets a TermRenderer's styles from a JSON file.
 func WithStylesFromJSONFile(filename string) TermRendererOption {
 	return func(tr *TermRenderer) error {
-		jsonBytes, err := ioutil.ReadFile(filename)
+		jsonBytes, err := os.ReadFile(filename)
 		if err != nil {
 			return err
 		}
@@ -237,21 +243,24 @@ func (tr *TermRenderer) RenderBytes(in []byte) ([]byte, error) {
 func getEnvironmentStyle() string {
 	glamourStyle := os.Getenv("GLAMOUR_STYLE")
 	if len(glamourStyle) == 0 {
-		glamourStyle = "auto"
+		glamourStyle = styles.AutoStyle
 	}
 
 	return glamourStyle
 }
 
 func getDefaultStyle(style string) (*ansi.StyleConfig, error) {
-	if style == "auto" {
-		if termenv.HasDarkBackground() {
-			return &DarkStyleConfig, nil
+	if style == styles.AutoStyle {
+		if !term.IsTerminal(int(os.Stdout.Fd())) {
+			return &styles.NoTTYStyleConfig, nil
 		}
-		return &LightStyleConfig, nil
+		if termenv.HasDarkBackground() {
+			return &styles.DarkStyleConfig, nil
+		}
+		return &styles.LightStyleConfig, nil
 	}
 
-	styles, ok := DefaultStyles[style]
+	styles, ok := styles.DefaultStyles[style]
 	if !ok {
 		return nil, fmt.Errorf("%s: style not found", style)
 	}

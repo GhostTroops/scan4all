@@ -2,6 +2,8 @@ package goflags
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"strings"
 )
 
@@ -14,11 +16,10 @@ func (e *EnumVariable) String() string {
 type AllowdTypes map[string]EnumVariable
 
 func (a AllowdTypes) String() string {
-	var str string
-	for k := range a {
-		str += fmt.Sprintf("%s, ", k)
-	}
-	return strings.TrimSuffix(str, ", ")
+	// Sorted, because ranging over the map gives a different order from one
+	// call to the next, which makes both the help output and the "allowed
+	// values are" error text unstable.
+	return strings.Join(slices.Sorted(maps.Keys(a)), ", ")
 }
 
 type EnumVar struct {

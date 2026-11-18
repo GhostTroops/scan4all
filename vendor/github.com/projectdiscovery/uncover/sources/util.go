@@ -1,14 +1,15 @@
 package sources
 
 import (
+	"context"
 	"io"
 	"net/url"
 
 	"github.com/projectdiscovery/retryablehttp-go"
 )
 
-func NewHTTPRequest(method, url string, body io.Reader) (*retryablehttp.Request, error) {
-	request, err := retryablehttp.NewRequest(method, url, body)
+func NewHTTPRequest(ctx context.Context, method, url string, body io.Reader) (*retryablehttp.Request, error) {
+	request, err := retryablehttp.NewRequestWithContext(ctx, method, url, body)
 	if err != nil {
 		return nil, err
 	}

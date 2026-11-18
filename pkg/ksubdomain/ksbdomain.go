@@ -38,7 +38,7 @@ func DoSubfinder(a []string, out chan string, done chan bool) {
 
 			err = app.Run(os.Args)
 			if err != nil {
-				gologger.Fatalf(err.Error())
+				gologger.Fatalf("%s", err.Error())
 			}
 
 		}

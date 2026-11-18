@@ -5,11 +5,14 @@ project_name: scan4all
 builds:
   - id: scan4all-linux
     ldflags:
-      - -s -w
+      - -s -w -X main.Version={{ .Version }}
     binary: scan4all
+    # 交叉编译 arm64 需要 aarch64 工具链（libpcap 走 cgo，无法用 CGO_ENABLED=0）
     env:
       - CGO_ENABLED=1
-    main: main.go
+      - CC=aarch64-linux-gnu-gcc
+      - CXX=aarch64-linux-gnu-g++
+    main: .
     goos:
       - linux
     goarch:
@@ -18,11 +21,11 @@ builds:
 #      - from: ../config
 #        to: config
 archives:
-  - format: zip
+  - formats: [zip]
     files:
       - LICENSE*
       - README*
       - config/**/*
 
-checksum:
+checksums:
   name_template: "{{ .ProjectName }}-linux-checksums.txt"

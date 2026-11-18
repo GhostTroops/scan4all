@@ -35,7 +35,7 @@ func (bdb *BuntDB) Size() int64 {
 
 // Close
 func (bdb *BuntDB) Close() {
-	bdb.db.Close()
+	_ = bdb.db.Close()
 }
 
 // GC - runs the garbage collector

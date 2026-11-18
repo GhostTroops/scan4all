@@ -86,8 +86,16 @@ func FullJitterBackoff() func(min, max time.Duration, attemptNum int, resp *http
 	return func(min, max time.Duration, attemptNum int, resp *http.Response) time.Duration {
 		duration := attemptNum * 1000000000 << 1
 
+		// On the first retry attemptNum is 0, so duration-attemptNum is 0 and
+		// rand.Intn would panic ("invalid argument to Intn"). Clamp the span to
+		// at least 1 so the jitter is always drawn from a valid range.
+		span := duration - attemptNum
+		if span < 1 {
+			span = 1
+		}
+
 		randMutex.Lock()
-		jitter := rand.Intn(duration-attemptNum) + int(min)
+		jitter := rand.Intn(span) + int(min)
 		randMutex.Unlock()
 
 		if jitter > int(max) {

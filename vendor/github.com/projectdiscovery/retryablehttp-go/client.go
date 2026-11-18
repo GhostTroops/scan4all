@@ -4,8 +4,6 @@ import (
 	"net/http"
 	"sync/atomic"
 	"time"
-
-	"golang.org/x/net/http2"
 )
 
 // Client is used to make HTTP requests. It adds additional functionality
@@ -13,7 +11,7 @@ import (
 type Client struct {
 	// HTTPClient is the internal HTTP client (http1x + http2 via connection upgrade upgrade).
 	HTTPClient *http.Client
-	// HTTPClient is the internal HTTP client configured to fallback to native http2 at transport level
+	// HTTPClient2 is a copy of HTTPClient that attempts native http2 at transport level, used as fallback
 	HTTPClient2 *http.Client
 
 	requestCounter atomic.Uint32
@@ -61,30 +59,43 @@ type Options struct {
 	NoAdjustTimeout bool
 	// Custom http client
 	HttpClient *http.Client
+	// WrapTransport wraps the underlying [http.RoundTripper].
+	// The function receives the default transport (with fastdialer, TLS config)
+	// and should return the transport to use.
+	// Applied to both HTTP/1.1 and HTTP/2 clients.
+	WrapTransport func(http.RoundTripper) http.RoundTripper
+	// Trace enables tracing of the HTTP request
+	Trace bool
+	// TLSSessionCacheSize specifies the size of the TLS session cache.
+	//
+	// If less than or equal to zero, defaults to 1024.
+	TLSSessionCacheSize int
 }
 
 // DefaultOptionsSpraying contains the default options for host spraying
 // scenarios where lots of requests need to be sent to different hosts.
 var DefaultOptionsSpraying = Options{
-	RetryWaitMin:    1 * time.Second,
-	RetryWaitMax:    30 * time.Second,
-	Timeout:         30 * time.Second,
-	RetryMax:        5,
-	RespReadLimit:   4096,
-	KillIdleConn:    true,
-	NoAdjustTimeout: true,
+	RetryWaitMin:        1 * time.Second,
+	RetryWaitMax:        30 * time.Second,
+	Timeout:             30 * time.Second,
+	RetryMax:            5,
+	RespReadLimit:       4096,
+	KillIdleConn:        true,
+	NoAdjustTimeout:     true,
+	TLSSessionCacheSize: 1024,
 }
 
 // DefaultOptionsSingle contains the default options for host bruteforce
 // scenarios where lots of requests need to be sent to a single host.
 var DefaultOptionsSingle = Options{
-	RetryWaitMin:    1 * time.Second,
-	RetryWaitMax:    30 * time.Second,
-	Timeout:         30 * time.Second,
-	RetryMax:        5,
-	RespReadLimit:   4096,
-	KillIdleConn:    false,
-	NoAdjustTimeout: true,
+	RetryWaitMin:        1 * time.Second,
+	RetryWaitMax:        30 * time.Second,
+	Timeout:             30 * time.Second,
+	RetryMax:            5,
+	RespReadLimit:       4096,
+	KillIdleConn:        false,
+	NoAdjustTimeout:     true,
+	TLSSessionCacheSize: 1024,
 }
 
 // NewClient creates a new Client with default settings.
@@ -98,9 +109,22 @@ func NewClient(options Options) *Client {
 		httpclient = DefaultPooledClient()
 	}
 
-	httpclient2 := DefaultClient()
-	if err := http2.ConfigureTransport(httpclient2.Transport.(*http.Transport)); err != nil {
+	if options.HttpClient == nil && options.TLSSessionCacheSize > 0 {
+		applyTLSSessionCache(httpclient, options.TLSSessionCacheSize)
+	}
+
+	// Derive the HTTP/2 fallback client from httpclient so both send requests
+	// the same way. This must happen before WrapTransport hides the
+	// *http.Transport that newHTTP2Client clones.
+	httpclient2, err := newHTTP2Client(httpclient)
+	if err != nil {
 		return nil
+	}
+
+	// Apply transport wrapper if provided
+	if options.WrapTransport != nil {
+		httpclient.Transport = options.WrapTransport(httpclient.Transport)
+		httpclient2.Transport = options.WrapTransport(httpclient2.Transport)
 	}
 
 	var retryPolicy CheckRetry

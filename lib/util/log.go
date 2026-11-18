@@ -8,6 +8,7 @@ import (
 	"os"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 const Scan4all = "scan4all"
@@ -75,6 +76,9 @@ func SendEngineLog4Url(Url string, nCurType int64, data ...interface{}) {
 	}
 }
 
+// writeMu 保证多协程并发写同一输出文件时记录不交错
+var writeMu sync.Mutex
+
 func Writeoutput(v interface{}) {
 	if 1 > len(Output) {
 		return
@@ -82,16 +86,31 @@ func Writeoutput(v interface{}) {
 	var szLog string
 	if strings.HasSuffix(Output, ".csv") {
 		data, _ := json.Marshal(v)
-		szLog = string(data)
+		szLog = string(data) + "\n"
 	} else {
-		szLog = fmt.Sprintf("%+v", v)
+		szLog = fmt.Sprintf("%+v\n", v)
 	}
+	writeMu.Lock()
+	defer writeMu.Unlock()
 	f, err := os.OpenFile(Output, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0644)
 	if err != nil {
 		log.Printf("Could not create output fiale '%s': %s\n", Output, err)
 		return
 	}
 	defer f.Close() //nolint
-	f.WriteString(szLog)
+	if _, err = f.WriteString(szLog); nil != err {
+		log.Printf("write output '%s' error: %s\n", Output, err)
+	}
+}
 
+// logOnceMap 用于 LogOnce 的 key 去重
+var logOnceMap sync.Map
+
+// LogOnce 相同 key 的日志只输出一次，避免批量扫描时同类错误刷屏。
+// msg 为已格式化好的文本，调用方自行使用 fmt.Sprintf 拼装，避免 printf 包装歧义。
+func LogOnce(key string, msg string) {
+	if _, loaded := logOnceMap.LoadOrStore(key, struct{}{}); loaded {
+		return
+	}
+	log.Print(msg)
 }

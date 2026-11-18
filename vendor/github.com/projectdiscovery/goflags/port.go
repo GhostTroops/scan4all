@@ -2,14 +2,13 @@ package goflags
 
 import (
 	"encoding/json"
-	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 
 	_ "embed"
 
 	mapsutil "github.com/projectdiscovery/utils/maps"
-	stringsutil "github.com/projectdiscovery/utils/strings"
 	"golang.org/x/exp/maps"
 )
 
@@ -37,14 +36,27 @@ type Port struct {
 
 func (port Port) String() string {
 	defaultBuilder := &strings.Builder{}
+	defaultBuilder.Grow(len(port.kv)*6 + 2)
 	defaultBuilder.WriteString("(")
 
-	var items string
-	for k := range port.kv {
-		items += fmt.Sprintf("%d,", k)
+	keys := make([]int, 0, len(port.kv))
+	for key := range port.kv {
+		keys = append(keys, key)
 	}
-	defaultBuilder.WriteString(stringsutil.TrimSuffixAny(items, ",", "="))
+
+	sort.Ints(keys)
+	var number [20]byte
+
+	for i, key := range keys {
+		if i > 0 {
+			defaultBuilder.WriteByte(',')
+		}
+
+		defaultBuilder.Write(strconv.AppendInt(number[:0], int64(key), 10))
+	}
+
 	defaultBuilder.WriteString(")")
+
 	return defaultBuilder.String()
 }
 

@@ -114,7 +114,7 @@ func ReadInteger(r io.Reader) (int, error) {
 	case 3:
 		integer1, _ := core.ReadUInt8(r)
 		integer2, _ := core.ReadUint16BE(r)
-		return int(integer2) + int(integer1<<16), nil
+		return int(integer2) + (int(integer1) << 16), nil
 	case 4:
 		num, _ := core.ReadUInt32BE(r)
 		return int(num), nil

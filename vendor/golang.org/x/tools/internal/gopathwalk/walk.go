@@ -9,20 +9,28 @@ package gopathwalk
 import (
 	"bufio"
 	"bytes"
+	"io"
 	"io/fs"
-	"log"
 	"os"
 	"path/filepath"
+	"runtime"
+	"slices"
 	"strings"
+	"sync"
 	"time"
 )
 
 // Options controls the behavior of a Walk call.
 type Options struct {
 	// If Logf is non-nil, debug logging is enabled through this function.
-	Logf func(format string, args ...interface{})
+	Logf func(format string, args ...any)
+
 	// Search module caches. Also disables legacy goimports ignore rules.
 	ModulesEnabled bool
+
+	// Maximum number of concurrent calls to user-provided callbacks,
+	// or 0 for GOMAXPROCS.
+	Concurrency int
 }
 
 // RootType indicates the type of a Root.
@@ -43,22 +51,28 @@ type Root struct {
 	Type RootType
 }
 
-// Walk walks Go source directories ($GOROOT, $GOPATH, etc) to find packages.
-// For each package found, add will be called (concurrently) with the absolute
+// Walk concurrently walks Go source directories ($GOROOT, $GOPATH, etc) to find packages.
+//
+// For each package found, add will be called with the absolute
 // paths of the containing source directory and the package directory.
-// add will be called concurrently.
+//
+// Unlike filepath.WalkDir, Walk follows symbolic links
+// (while guarding against cycles).
 func Walk(roots []Root, add func(root Root, dir string), opts Options) {
 	WalkSkip(roots, add, func(Root, string) bool { return false }, opts)
 }
 
-// WalkSkip walks Go source directories ($GOROOT, $GOPATH, etc) to find packages.
-// For each package found, add will be called (concurrently) with the absolute
+// WalkSkip concurrently walks Go source directories ($GOROOT, $GOPATH, etc) to
+// find packages.
+//
+// For each package found, add will be called with the absolute
 // paths of the containing source directory and the package directory.
-// For each directory that will be scanned, skip will be called (concurrently)
+// For each directory that will be scanned, skip will be called
 // with the absolute paths of the containing source directory and the directory.
 // If skip returns false on a directory it will be processed.
-// add will be called concurrently.
-// skip will be called concurrently.
+//
+// Unlike filepath.WalkDir, WalkSkip follows symbolic links
+// (while guarding against cycles).
 func WalkSkip(roots []Root, add func(root Root, dir string), skip func(root Root, dir string) bool, opts Options) {
 	for _, root := range roots {
 		walkDir(root, add, skip, opts)
@@ -67,45 +81,51 @@ func WalkSkip(roots []Root, add func(root Root, dir string), skip func(root Root
 
 // walkDir creates a walker and starts fastwalk with this walker.
 func walkDir(root Root, add func(Root, string), skip func(root Root, dir string) bool, opts Options) {
+	if opts.Logf == nil {
+		opts.Logf = func(format string, args ...any) {}
+	}
 	if _, err := os.Stat(root.Path); os.IsNotExist(err) {
-		if opts.Logf != nil {
-			opts.Logf("skipping nonexistent directory: %v", root.Path)
-		}
+		opts.Logf("skipping nonexistent directory: %v", root.Path)
 		return
 	}
 	start := time.Now()
-	if opts.Logf != nil {
-		opts.Logf("scanning %s", root.Path)
-	}
+	opts.Logf("scanning %s", root.Path)
 
+	concurrency := opts.Concurrency
+	if concurrency == 0 {
+		// The walk be either CPU-bound or I/O-bound, depending on what the
+		// caller-supplied add function does and the details of the user's platform
+		// and machine. Rather than trying to fine-tune the concurrency level for a
+		// specific environment, we default to GOMAXPROCS: it is likely to be a good
+		// choice for a CPU-bound add function, and if it is instead I/O-bound, then
+		// dealing with I/O saturation is arguably the job of the kernel and/or
+		// runtime. (Oversaturating I/O seems unlikely to harm performance as badly
+		// as failing to saturate would.)
+		concurrency = runtime.GOMAXPROCS(0)
+	}
 	w := &walker{
-		root:  root,
-		add:   add,
-		skip:  skip,
-		opts:  opts,
-		added: make(map[string]bool),
+		root: root,
+		add:  add,
+		skip: skip,
+		opts: opts,
+		sem:  make(chan struct{}, concurrency),
 	}
 	w.init()
 
-	// Add a trailing path separator to cause filepath.WalkDir to traverse symlinks.
+	w.sem <- struct{}{}
 	path := root.Path
-	if len(path) == 0 {
-		path = "." + string(filepath.Separator)
-	} else if !os.IsPathSeparator(path[len(path)-1]) {
-		path = path + string(filepath.Separator)
+	if path == "" {
+		path = "."
 	}
+	if fi, err := os.Lstat(path); err == nil {
+		w.walk(path, nil, fs.FileInfoToDirEntry(fi))
+	} else {
+		w.opts.Logf("scanning directory %v: %v", root.Path, err)
+	}
+	<-w.sem
+	w.walking.Wait()
 
-	if err := filepath.WalkDir(path, w.walk); err != nil {
-		logf := opts.Logf
-		if logf == nil {
-			logf = log.Printf
-		}
-		logf("scanning directory %v: %v", root.Path, err)
-	}
-
-	if opts.Logf != nil {
-		opts.Logf("scanned %s in %v", root.Path, time.Since(start))
-	}
+	opts.Logf("scanned %s in %v", root.Path, time.Since(start))
 }
 
 // walker is the callback for fastwalk.Walk.
@@ -115,9 +135,18 @@ type walker struct {
 	skip func(Root, string) bool // The callback that will be invoked for every dir. dir is skipped if it returns true.
 	opts Options                 // Options passed to Walk by the user.
 
+	walking     sync.WaitGroup
+	sem         chan struct{} // Channel of semaphore tokens; send to acquire, receive to release.
 	ignoredDirs []string
 
-	added map[string]bool
+	added sync.Map // map[string]bool
+}
+
+// A symlinkList is a linked list of os.FileInfos for parent directories
+// reached via symlinks.
+type symlinkList struct {
+	info os.FileInfo
+	prev *symlinkList
 }
 
 // init initializes the walker based on its Options
@@ -134,9 +163,7 @@ func (w *walker) init() {
 	for _, p := range ignoredPaths {
 		full := filepath.Join(w.root.Path, p)
 		w.ignoredDirs = append(w.ignoredDirs, full)
-		if w.opts.Logf != nil {
-			w.opts.Logf("Directory added to ignore list: %s", full)
-		}
+		w.opts.Logf("Directory added to ignore list: %s", full)
 	}
 }
 
@@ -146,12 +173,10 @@ func (w *walker) init() {
 func (w *walker) getIgnoredDirs(path string) []string {
 	file := filepath.Join(path, ".goimportsignore")
 	slurp, err := os.ReadFile(file)
-	if w.opts.Logf != nil {
-		if err != nil {
-			w.opts.Logf("%v", err)
-		} else {
-			w.opts.Logf("Read %s", file)
-		}
+	if err != nil {
+		w.opts.Logf("%v", err)
+	} else {
+		w.opts.Logf("Read %s", file)
 	}
 	if err != nil {
 		return nil
@@ -171,10 +196,8 @@ func (w *walker) getIgnoredDirs(path string) []string {
 
 // shouldSkipDir reports whether the file should be skipped or not.
 func (w *walker) shouldSkipDir(dir string) bool {
-	for _, ignoredDir := range w.ignoredDirs {
-		if dir == ignoredDir {
-			return true
-		}
+	if slices.Contains(w.ignoredDirs, dir) {
+		return true
 	}
 	if w.skip != nil {
 		// Check with the user specified callback.
@@ -184,138 +207,130 @@ func (w *walker) shouldSkipDir(dir string) bool {
 }
 
 // walk walks through the given path.
-func (w *walker) walk(path string, d fs.DirEntry, err error) error {
-	typ := d.Type()
-	if typ.IsRegular() {
+//
+// Errors are logged if w.opts.Logf is non-nil, but otherwise ignored.
+func (w *walker) walk(path string, pathSymlinks *symlinkList, d fs.DirEntry) {
+	if d.Type()&os.ModeSymlink != 0 {
+		// Walk the symlink's target rather than the symlink itself.
+		//
+		// (Note that os.Stat, unlike the lower-lever os.Readlink,
+		// follows arbitrarily many layers of symlinks, so it will eventually
+		// reach either a non-symlink or a nonexistent target.)
+		//
+		// TODO(bcmills): 'go list all' itself ignores symlinks within GOROOT/src
+		// and GOPATH/src. Do we really need to traverse them here? If so, why?
+
+		fi, err := os.Stat(path)
+		if err != nil {
+			w.opts.Logf("%v", err)
+			return
+		}
+
+		// Avoid walking symlink cycles: if we have already followed a symlink to
+		// this directory as a parent of itself, don't follow it again.
+		//
+		// This doesn't catch the first time through a cycle, but it also minimizes
+		// the number of extra stat calls we make if we *don't* encounter a cycle.
+		// Since we don't actually expect to encounter symlink cycles in practice,
+		// this seems like the right tradeoff.
+		for parent := pathSymlinks; parent != nil; parent = parent.prev {
+			if os.SameFile(fi, parent.info) {
+				return
+			}
+		}
+
+		pathSymlinks = &symlinkList{
+			info: fi,
+			prev: pathSymlinks,
+		}
+		d = fs.FileInfoToDirEntry(fi)
+	}
+
+	if d.Type().IsRegular() {
 		if !strings.HasSuffix(path, ".go") {
-			return nil
+			return
 		}
 
 		dir := filepath.Dir(path)
 		if dir == w.root.Path && (w.root.Type == RootGOROOT || w.root.Type == RootGOPATH) {
 			// Doesn't make sense to have regular files
 			// directly in your $GOPATH/src or $GOROOT/src.
-			return nil
+			//
+			// TODO(bcmills): there are many levels of directory within
+			// RootModuleCache where this also wouldn't make sense,
+			// Can we generalize this to any directory without a corresponding
+			// import path?
+			return
 		}
 
-		if !w.added[dir] {
+		if _, dup := w.added.LoadOrStore(dir, true); !dup {
 			w.add(w.root, dir)
-			w.added[dir] = true
-		}
-		return nil
-	}
-	if typ == os.ModeDir {
-		base := filepath.Base(path)
-		if base == "" || base[0] == '.' || base[0] == '_' ||
-			base == "testdata" ||
-			(w.root.Type == RootGOROOT && w.opts.ModulesEnabled && base == "vendor") ||
-			(!w.opts.ModulesEnabled && base == "node_modules") {
-			return filepath.SkipDir
-		}
-		if w.shouldSkipDir(path) {
-			return filepath.SkipDir
-		}
-		return nil
-	}
-	if typ == os.ModeSymlink && err == nil {
-		// TODO(bcmills): 'go list all' itself ignores symlinks within GOROOT/src
-		// and GOPATH/src. Do we really need to traverse them here? If so, why?
-
-		if os.IsPathSeparator(path[len(path)-1]) {
-			// The OS was supposed to resolve a directory symlink but didn't.
-			//
-			// On macOS this may be caused by a known libc/kernel bug;
-			// see https://go.dev/issue/59586.
-			//
-			// On Windows before Go 1.21, this may be caused by a bug in
-			// os.Lstat (fixed in https://go.dev/cl/463177).
-			//
-			// In either case, we can work around the bug by walking this level
-			// explicitly: first the symlink target itself, then its contents.
-
-			fi, err := os.Stat(path)
-			if err != nil || !fi.IsDir() {
-				return nil
-			}
-			err = w.walk(path, fs.FileInfoToDirEntry(fi), nil)
-			if err == filepath.SkipDir {
-				return nil
-			} else if err != nil {
-				return err
-			}
-
-			ents, _ := os.ReadDir(path) // ignore error if unreadable
-			for _, d := range ents {
-				nextPath := filepath.Join(path, d.Name())
-				var err error
-				if d.IsDir() {
-					err = filepath.WalkDir(nextPath, w.walk)
-				} else {
-					err = w.walk(nextPath, d, nil)
-					if err == filepath.SkipDir {
-						break
-					}
-				}
-				if err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-
-		base := filepath.Base(path)
-		if strings.HasPrefix(base, ".#") {
-			// Emacs noise.
-			return nil
-		}
-		if w.shouldTraverse(path) {
-			// Add a trailing separator to traverse the symlink.
-			nextPath := path + string(filepath.Separator)
-			return filepath.WalkDir(nextPath, w.walk)
 		}
 	}
-	return nil
-}
 
-// shouldTraverse reports whether the symlink fi, found in dir,
-// should be followed.  It makes sure symlinks were never visited
-// before to avoid symlink loops.
-func (w *walker) shouldTraverse(path string) bool {
-	if w.shouldSkipDir(path) {
-		return false
+	if !d.IsDir() {
+		return
 	}
 
-	ts, err := os.Stat(path)
+	base := filepath.Base(path)
+	if base == "" || base[0] == '.' || base[0] == '_' ||
+		base == "testdata" ||
+		(w.root.Type == RootGOROOT && w.opts.ModulesEnabled && base == "vendor") ||
+		(!w.opts.ModulesEnabled && base == "node_modules") ||
+		w.shouldSkipDir(path) {
+		return
+	}
+
+	// Read the directory and walk its entries.
+
+	f, err := os.Open(path)
 	if err != nil {
-		logf := w.opts.Logf
-		if logf == nil {
-			logf = log.Printf
-		}
-		logf("%v", err)
-		return false
+		w.opts.Logf("%v", err)
+		return
 	}
-	if !ts.IsDir() {
-		return false
-	}
+	defer f.Close()
 
-	// Check for symlink loops by statting each directory component
-	// and seeing if any are the same file as ts.
 	for {
-		parent := filepath.Dir(path)
-		if parent == path {
-			// Made it to the root without seeing a cycle.
-			// Use this symlink.
-			return true
-		}
-		parentInfo, err := os.Stat(parent)
+		// We impose an arbitrary limit on the number of ReadDir results per
+		// directory to limit the amount of memory consumed for stale or upcoming
+		// directory entries. The limit trades off CPU (number of syscalls to read
+		// the whole directory) against RAM (reachable directory entries other than
+		// the one currently being processed).
+		//
+		// Since we process the directories recursively, we will end up maintaining
+		// a slice of entries for each level of the directory tree.
+		// (Compare https://go.dev/issue/36197.)
+		ents, err := f.ReadDir(1024)
 		if err != nil {
-			return false
+			if err != io.EOF {
+				w.opts.Logf("%v", err)
+			}
+			break
 		}
-		if os.SameFile(ts, parentInfo) {
-			// Cycle. Don't traverse.
-			return false
-		}
-		path = parent
-	}
 
+		for _, d := range ents {
+			nextPath := filepath.Join(path, d.Name())
+			if d.IsDir() {
+				select {
+				case w.sem <- struct{}{}:
+					// Got a new semaphore token, so we can traverse the directory concurrently.
+					d := d
+					w.walking.Add(1)
+					go func() {
+						defer func() {
+							<-w.sem
+							w.walking.Done()
+						}()
+						w.walk(nextPath, pathSymlinks, d)
+					}()
+					continue
+
+				default:
+					// No tokens available, so traverse serially.
+				}
+			}
+
+			w.walk(nextPath, pathSymlinks, d)
+		}
+	}
 }

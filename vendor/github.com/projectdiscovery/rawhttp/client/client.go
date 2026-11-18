@@ -18,7 +18,10 @@ type Version struct {
 }
 
 func (v *Version) String() string {
-	return fmt.Sprintf("HTTP/%d.%d", v.Major, v.Minor)
+	if v.Major < 2 {
+		return fmt.Sprintf("HTTP/%d.%d", v.Major, v.Minor)
+	}
+	return fmt.Sprintf("HTTP/%d", v.Major)
 }
 
 var (
@@ -121,6 +124,18 @@ func (c *client) WriteRequest(req *Request) error {
 	return c.WriteBody(req.Body)
 }
 
+// maxDuplicateStatusLines bounds how many repeated status lines we are willing
+// to discard, so a misbehaving (or malicious) server streaming "HTTP/..." lines
+// indefinitely cannot keep us looping.
+const maxDuplicateStatusLines = 8
+
+// isStatusLine reports whether line looks like an HTTP status line
+// (e.g. "HTTP/1.0 200 OK"). It is used to skip duplicate status lines
+// emitted by some non-compliant servers.
+func isStatusLine(line []byte) bool {
+	return bytes.HasPrefix(line, []byte("HTTP/"))
+}
+
 // ReadResponse unmarshalls a HTTP response.
 func (c *client) ReadResponse(forceReadAll bool) (*Response, error) {
 	version, code, msg, err := c.ReadStatusLine()
@@ -128,10 +143,25 @@ func (c *client) ReadResponse(forceReadAll bool) (*Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("ReadStatusLine: %v", err)
 	}
+	// Some non-compliant servers (e.g. certain embedded devices) repeat the
+	// status line one or more times before the actual headers. Read the
+	// header section line by line and skip any such duplicate status lines.
+	// Peeking ahead is avoided: a response without headers has no more bytes
+	// after the status line, and Peek would block waiting for them.
+	skippedStatusLines := 0
 	for {
+		line, readErr := c.readLine()
+		if readErr != nil {
+			err = readErr
+			break
+		}
+		if len(headers) == 0 && isStatusLine(line) && skippedStatusLines < maxDuplicateStatusLines {
+			skippedStatusLines++
+			continue
+		}
 		var key, value string
 		var done bool
-		key, value, done, err = c.ReadHeader()
+		key, value, done, err = parseHeaderLine(line)
 		if err != nil || done {
 			break
 		}

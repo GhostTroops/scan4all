@@ -153,11 +153,32 @@ func (p Params) Decode(raw string) {
 	}
 }
 
+// PathMustEscapeCharSet are characters that must be escaped in URL paths
+// Different from query params: & = don't need escaping, but / # ? do need escaping
+var PathMustEscapeCharSet []rune = []rune{'?', '#', '@', ';', ',', '[', ']', '^'}
+
 // ParamEncode  encodes Key characters only. key characters include
 // whitespaces + non printable chars + non-ascii
 // also this does not double encode encoded characters
 func ParamEncode(data string) string {
 	return URLEncodeWithEscapes(data)
+}
+
+// PathEncode encodes path segments with path-specific rules
+// Key differences from ParamEncode:
+// 1. Always uses %20 for spaces (never +)
+// 2. & and = don't need escaping in paths
+// 3. / # ? must be escaped as they have special meaning in paths
+func PathEncode(data string) string {
+	return pathEncodeWithEscapes(data)
+}
+
+// PathDecode decodes path segments with path-specific rules
+// Key differences from param decoding:
+// 1. + is treated as literal + character (not space)
+// 2. Only %20 decodes to space
+func PathDecode(data string) (string, error) {
+	return pathDecode(data)
 }
 
 // URLEncodeWithEscapes URL encodes data with given special characters escaped (similar to burpsuite intruder)
@@ -175,9 +196,8 @@ func URLEncodeWithEscapes(data string, charset ...rune) string {
 			buff.WriteRune('%')
 			buff.WriteString(getasciihex(r)) // 2 digit hex
 		case r == ' ':
-			// prefer using + when space
+			// Query parameters always use + for spaces
 			buff.WriteRune('+')
-			// case
 		case r < rune(127):
 			if _, ok := mustescape[r]; ok {
 				// reserved char must escape
@@ -264,4 +284,65 @@ func getasciihex(r rune) string {
 		val = "0" + val
 	}
 	return strings.ToUpper(val)
+}
+
+// pathEncodeWithEscapes encodes path segments with path-specific rules
+func pathEncodeWithEscapes(data string) string {
+	mustescape := getrunemap(PathMustEscapeCharSet)
+	var buff bytes.Buffer
+	buff.Grow(len(data))
+
+	for _, r := range data {
+		switch {
+		case r < rune(20):
+			// control character
+			buff.WriteRune('%')
+			buff.WriteString(getasciihex(r))
+		case r == ' ':
+			// Always use %20 for spaces in paths (never +)
+			buff.WriteRune('%')
+			buff.WriteRune('2')
+			buff.WriteRune('0')
+		case r < rune(127):
+			if _, ok := mustescape[r]; ok {
+				// reserved char must escape
+				buff.WriteRune('%')
+				buff.WriteString(getasciihex(r))
+			} else {
+				// do not percent encode
+				buff.WriteRune(r)
+			}
+		case r == rune(127):
+			// [DEL] char should be encoded
+			buff.WriteRune('%')
+			buff.WriteString(getasciihex(r))
+		case r > rune(128):
+			// non-ascii characters
+			buff.WriteRune('%')
+			buff.WriteString(getutf8hex(r))
+		}
+	}
+	return buff.String()
+}
+
+// pathDecode decodes path segments treating + as literal
+func pathDecode(data string) (string, error) {
+	var buff bytes.Buffer
+	buff.Grow(len(data))
+	
+	for i := 0; i < len(data); {
+		if data[i] == '%' && i+2 < len(data) {
+			// Try to decode hex sequence
+			hexStr := data[i+1 : i+3]
+			if decoded, err := hex.DecodeString(hexStr); err == nil && len(decoded) == 1 {
+				buff.WriteByte(decoded[0])
+				i += 3
+				continue
+			}
+		}
+		// + is treated as literal in paths (unlike query params)
+		buff.WriteByte(data[i])
+		i++
+	}
+	return buff.String(), nil
 }

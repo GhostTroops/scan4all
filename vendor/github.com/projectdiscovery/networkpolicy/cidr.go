@@ -19,7 +19,9 @@ var DefaultIPv4DenylistRanges = []string{
 }
 
 var DefaultIPv6DenylistRanges = []string{
+	"::/128",        // Unspecified address (dials the local host)
 	"::1/128",       // Loopback
+	"::/96",         // IPv4-compatible addresses (deprecated, RFC 4291)
 	"64:ff9b::/96",  // IPv4/IPv6 translation (RFC 6052)
 	"100::/64",      // Discard prefix (RFC 6666)
 	"2001::/32",     // Teredo tunneling

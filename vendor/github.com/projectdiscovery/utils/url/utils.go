@@ -1,15 +1,20 @@
 package urlutil
 
 import (
-	"os"
 	"strings"
-
-	errorutil "github.com/projectdiscovery/utils/errors"
 )
 
 const (
-	HTTP             = "http"
-	HTTPS            = "https"
+	HTTP  = "http"
+	HTTPS = "https"
+
+	// Deny all protocols
+	// Allow:
+	// websocket + websocket over ssl
+	WEBSOCKET     = "ws"
+	WEBSOCKET_SSL = "wss"
+	FTP           = "ftp"
+
 	SchemeSeparator  = "://"
 	DefaultHTTPPort  = "80"
 	DefaultHTTPSPort = "443"
@@ -91,8 +96,3 @@ func shouldEscape(ss string) bool {
 	return false
 }
 
-func init() {
-	if os.Getenv("DEBUG") != "" {
-		errorutil.ShowStackTrace = true
-	}
-}

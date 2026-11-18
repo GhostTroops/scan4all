@@ -27,7 +27,7 @@ func doUpdate(url string) error {
         return err
     }
     defer resp.Body.Close()
-    err := selfupdate.Apply(resp.Body, update.Options{})
+    err = selfupdate.Apply(resp.Body, selfupdate.Options{})
     if err != nil {
         // error handling
     }

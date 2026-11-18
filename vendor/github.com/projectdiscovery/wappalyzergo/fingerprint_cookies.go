@@ -6,7 +6,7 @@ import (
 
 // checkCookies checks if the cookies for a target match the fingerprints
 // and returns the matched IDs if any.
-func (s *Wappalyze) checkCookies(cookies []string) []string {
+func (s *Wappalyze) checkCookies(cookies []string) []matchPartResult {
 	// Normalize the cookies for further processing
 	normalized := s.normalizeCookies(cookies)
 

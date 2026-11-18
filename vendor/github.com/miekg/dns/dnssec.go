@@ -12,7 +12,6 @@ import (
 	_ "crypto/sha256" // need its init function
 	_ "crypto/sha512" // need its init function
 	"encoding/asn1"
-	"encoding/binary"
 	"encoding/hex"
 	"math/big"
 	"sort"
@@ -134,38 +133,27 @@ func (k *DNSKEY) KeyTag() uint16 {
 		return 0
 	}
 	var keytag int
-	switch k.Algorithm {
-	case RSAMD5:
-		// This algorithm has been deprecated, but keep this key-tag calculation.
-		// Look at the bottom two bytes of the modules, which the last item in the pubkey.
-		// See https://www.rfc-editor.org/errata/eid193 .
-		modulus, _ := fromBase64([]byte(k.PublicKey))
-		if len(modulus) > 1 {
-			x := binary.BigEndian.Uint16(modulus[len(modulus)-3:])
-			keytag = int(x)
-		}
-	default:
-		keywire := new(dnskeyWireFmt)
-		keywire.Flags = k.Flags
-		keywire.Protocol = k.Protocol
-		keywire.Algorithm = k.Algorithm
-		keywire.PublicKey = k.PublicKey
-		wire := make([]byte, DefaultMsgSize)
-		n, err := packKeyWire(keywire, wire)
-		if err != nil {
-			return 0
-		}
-		wire = wire[:n]
-		for i, v := range wire {
-			if i&1 != 0 {
-				keytag += int(v) // must be larger than uint32
-			} else {
-				keytag += int(v) << 8
-			}
-		}
-		keytag += keytag >> 16 & 0xFFFF
-		keytag &= 0xFFFF
+	keywire := new(dnskeyWireFmt)
+	keywire.Flags = k.Flags
+	keywire.Protocol = k.Protocol
+	keywire.Algorithm = k.Algorithm
+	keywire.PublicKey = k.PublicKey
+	wire := make([]byte, DefaultMsgSize)
+	n, err := packKeyWire(keywire, wire)
+	if err != nil {
+		return 0
 	}
+	wire = wire[:n]
+	for i, v := range wire {
+		if i&1 != 0 {
+			keytag += int(v) // must be larger than uint32
+		} else {
+			keytag += int(v) << 8
+		}
+	}
+	keytag += keytag >> 16 & 0xFFFF
+	keytag &= 0xFFFF
+
 	return uint16(keytag)
 }
 
@@ -250,14 +238,6 @@ func (d *DS) ToCDS() *CDS {
 // zero, it is used as-is, otherwise the TTL of the RRset is used as the
 // OrigTTL.
 func (rr *RRSIG) Sign(k crypto.Signer, rrset []RR) error {
-	if k == nil {
-		return ErrPrivKey
-	}
-	// s.Inception and s.Expiration may be 0 (rollover etc.), the rest must be set
-	if rr.KeyTag == 0 || len(rr.SignerName) == 0 || rr.Algorithm == 0 {
-		return ErrKey
-	}
-
 	h0 := rrset[0].Header()
 	rr.Hdr.Rrtype = TypeRRSIG
 	rr.Hdr.Name = h0.Name
@@ -270,6 +250,18 @@ func (rr *RRSIG) Sign(k crypto.Signer, rrset []RR) error {
 
 	if strings.HasPrefix(h0.Name, "*") {
 		rr.Labels-- // wildcard, remove from label count
+	}
+
+	return rr.signAsIs(k, rrset)
+}
+
+func (rr *RRSIG) signAsIs(k crypto.Signer, rrset []RR) error {
+	if k == nil {
+		return ErrPrivKey
+	}
+	// s.Inception and s.Expiration may be 0 (rollover etc.), the rest must be set
+	if rr.KeyTag == 0 || len(rr.SignerName) == 0 || rr.Algorithm == 0 {
+		return ErrKey
 	}
 
 	sigwire := new(rrsigWireFmt)
@@ -370,9 +362,12 @@ func (rr *RRSIG) Verify(k *DNSKEY, rrset []RR) error {
 	if rr.Algorithm != k.Algorithm {
 		return ErrKey
 	}
-	if !strings.EqualFold(rr.SignerName, k.Hdr.Name) {
+
+	signerName := CanonicalName(rr.SignerName)
+	if !equal(signerName, k.Hdr.Name) {
 		return ErrKey
 	}
+
 	if k.Protocol != 3 {
 		return ErrKey
 	}
@@ -384,9 +379,18 @@ func (rr *RRSIG) Verify(k *DNSKEY, rrset []RR) error {
 	}
 
 	// IsRRset checked that we have at least one RR and that the RRs in
-	// the set have consistent type, class, and name. Also check that type and
-	// class matches the RRSIG record.
-	if h0 := rrset[0].Header(); h0.Class != rr.Hdr.Class || h0.Rrtype != rr.TypeCovered {
+	// the set have consistent type, class, and name. Also check that type,
+	// class and name matches the RRSIG record.
+	// Also checks RFC 4035 5.3.1 the number of labels in the RRset owner
+	// name MUST be greater than or equal to the value in the RRSIG RR's Labels field.
+	// RFC 4035 5.3.1 Signer's Name MUST be the name of the zone that [contains the RRset].
+	// Since we don't have SOA info, checking suffix may be the best we can do...?
+	if h0 := rrset[0].Header(); h0.Class != rr.Hdr.Class ||
+		h0.Rrtype != rr.TypeCovered ||
+		uint8(CountLabel(h0.Name)) < rr.Labels ||
+		!equal(h0.Name, rr.Hdr.Name) ||
+		!strings.HasSuffix(CanonicalName(h0.Name), signerName) {
+
 		return ErrRRset
 	}
 
@@ -400,7 +404,7 @@ func (rr *RRSIG) Verify(k *DNSKEY, rrset []RR) error {
 	sigwire.Expiration = rr.Expiration
 	sigwire.Inception = rr.Inception
 	sigwire.KeyTag = rr.KeyTag
-	sigwire.SignerName = CanonicalName(rr.SignerName)
+	sigwire.SignerName = signerName
 	// Create the desired binary blob
 	signeddata := make([]byte, DefaultMsgSize)
 	n, err := packSigWire(sigwire, signeddata)

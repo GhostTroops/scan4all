@@ -12,15 +12,30 @@ import (
 type Profile int
 
 const (
-	// TrueColor, 24-bit color profile
+	// TrueColor, 24-bit color profile.
 	TrueColor = Profile(iota)
-	// ANSI256, 8-bit color profile
+	// ANSI256, 8-bit color profile.
 	ANSI256
-	// ANSI, 4-bit color profile
+	// ANSI, 4-bit color profile.
 	ANSI
-	// Ascii, uncolored profile
+	// Ascii, uncolored profile.
 	Ascii //nolint:revive
 )
+
+// Name returns the profile name as a string.
+func (p Profile) Name() string {
+	switch p {
+	case Ascii:
+		return "Ascii"
+	case ANSI:
+		return "ANSI"
+	case ANSI256:
+		return "ANSI256"
+	case TrueColor:
+		return "TrueColor"
+	}
+	return "Unknown"
+}
 
 // String returns a new Style.
 func (p Profile) String(s ...string) Style {

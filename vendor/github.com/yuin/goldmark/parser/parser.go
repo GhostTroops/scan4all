@@ -37,6 +37,10 @@ func NewReference(label, destination, title []byte) Reference {
 	return &reference{label, destination, title}
 }
 
+func newASTReference(v *ast.LinkReferenceDefinition) Reference {
+	return &astReference{v}
+}
+
 func (r *reference) Label() []byte {
 	return r.label
 }
@@ -51,6 +55,26 @@ func (r *reference) Title() []byte {
 
 func (r *reference) String() string {
 	return fmt.Sprintf("Reference{Label:%s, Destination:%s, Title:%s}", r.label, r.destination, r.title)
+}
+
+type astReference struct {
+	v *ast.LinkReferenceDefinition
+}
+
+func (r *astReference) Label() []byte {
+	return r.v.Label
+}
+
+func (r *astReference) Destination() []byte {
+	return r.v.Destination
+}
+
+func (r *astReference) Title() []byte {
+	return r.v.Title
+}
+
+func (r *astReference) String() string {
+	return fmt.Sprintf("Reference{Label:%s, Destination:%s, Title:%s}", r.Label(), r.Destination(), r.Title())
 }
 
 // An IDs interface is a collection of the element ids.
@@ -136,13 +160,13 @@ type Context interface {
 	String() string
 
 	// Get returns a value associated with the given key.
-	Get(ContextKey) interface{}
+	Get(ContextKey) any
 
 	// ComputeIfAbsent computes a value if a value associated with the given key is absent and returns the value.
-	ComputeIfAbsent(ContextKey, func() interface{}) interface{}
+	ComputeIfAbsent(ContextKey, func() any) any
 
 	// Set sets the given value to the context.
-	Set(ContextKey, interface{})
+	Set(ContextKey, any)
 
 	// AddReference adds the given reference to this context.
 	AddReference(Reference)
@@ -220,7 +244,7 @@ func WithIDs(ids IDs) ContextOption {
 }
 
 type parseContext struct {
-	store         []interface{}
+	store         []any
 	ids           IDs
 	refs          map[string]Reference
 	blockOffset   int
@@ -240,7 +264,7 @@ func NewContext(options ...ContextOption) Context {
 	}
 
 	return &parseContext{
-		store:         make([]interface{}, ContextKeyMax+1),
+		store:         make([]any, ContextKeyMax+1),
 		refs:          map[string]Reference{},
 		ids:           cfg.IDs,
 		blockOffset:   -1,
@@ -251,11 +275,11 @@ func NewContext(options ...ContextOption) Context {
 	}
 }
 
-func (p *parseContext) Get(key ContextKey) interface{} {
+func (p *parseContext) Get(key ContextKey) any {
 	return p.store[key]
 }
 
-func (p *parseContext) ComputeIfAbsent(key ContextKey, f func() interface{}) interface{} {
+func (p *parseContext) ComputeIfAbsent(key ContextKey, f func() any) any {
 	v := p.store[key]
 	if v == nil {
 		v = f()
@@ -264,7 +288,7 @@ func (p *parseContext) ComputeIfAbsent(key ContextKey, f func() interface{}) int
 	return v
 }
 
-func (p *parseContext) Set(key ContextKey, value interface{}) {
+func (p *parseContext) Set(key ContextKey, value any) {
 	p.store[key] = value
 }
 
@@ -426,7 +450,7 @@ const (
 
 // A Config struct is a data structure that holds configuration of the Parser.
 type Config struct {
-	Options               map[OptionName]interface{}
+	Options               map[OptionName]any
 	BlockParsers          util.PrioritizedSlice /*<BlockParser>*/
 	InlineParsers         util.PrioritizedSlice /*<InlineParser>*/
 	ParagraphTransformers util.PrioritizedSlice /*<ParagraphTransformer>*/
@@ -437,7 +461,7 @@ type Config struct {
 // NewConfig returns a new Config.
 func NewConfig() *Config {
 	return &Config{
-		Options:               map[OptionName]interface{}{},
+		Options:               map[OptionName]any{},
 		BlockParsers:          util.PrioritizedSlice{},
 		InlineParsers:         util.PrioritizedSlice{},
 		ParagraphTransformers: util.PrioritizedSlice{},
@@ -482,7 +506,7 @@ type SetOptioner interface {
 	// SetOption sets the given option to the object.
 	// Unacceptable options may be passed.
 	// Thus implementations must ignore unacceptable options.
-	SetOption(name OptionName, value interface{})
+	SetOption(name OptionName, value any)
 }
 
 // A BlockParser interface parses a block level element like Paragraph, List,
@@ -630,7 +654,7 @@ type Block struct {
 }
 
 type parser struct {
-	options               map[OptionName]interface{}
+	options               map[OptionName]any
 	blockParsers          [256][]BlockParser
 	freeBlockParsers      []BlockParser
 	inlineParsers         [256][]InlineParser
@@ -712,7 +736,7 @@ func WithEscapedSpace() Option {
 
 type withOption struct {
 	name  OptionName
-	value interface{}
+	value any
 }
 
 func (o *withOption) SetParserOption(c *Config) {
@@ -721,7 +745,7 @@ func (o *withOption) SetParserOption(c *Config) {
 
 // WithOption is a functional option that allow you to set
 // an arbitrary option to the parser.
-func WithOption(name OptionName, value interface{}) Option {
+func WithOption(name OptionName, value any) Option {
 	return &withOption{name, value}
 }
 
@@ -733,7 +757,7 @@ func NewParser(options ...Option) Parser {
 	}
 
 	p := &parser{
-		options: map[OptionName]interface{}{},
+		options: map[OptionName]any{},
 		config:  config,
 	}
 
@@ -746,7 +770,7 @@ func (p *parser) AddOptions(opts ...Option) {
 	}
 }
 
-func (p *parser) addBlockParser(v util.PrioritizedValue, options map[OptionName]interface{}) {
+func (p *parser) addBlockParser(v util.PrioritizedValue, options map[OptionName]any) {
 	bp, ok := v.Value.(BlockParser)
 	if !ok {
 		panic(fmt.Sprintf("%v is not a BlockParser", v.Value))
@@ -770,7 +794,7 @@ func (p *parser) addBlockParser(v util.PrioritizedValue, options map[OptionName]
 	}
 }
 
-func (p *parser) addInlineParser(v util.PrioritizedValue, options map[OptionName]interface{}) {
+func (p *parser) addInlineParser(v util.PrioritizedValue, options map[OptionName]any) {
 	ip, ok := v.Value.(InlineParser)
 	if !ok {
 		panic(fmt.Sprintf("%v is not a InlineParser", v.Value))
@@ -793,7 +817,7 @@ func (p *parser) addInlineParser(v util.PrioritizedValue, options map[OptionName
 	}
 }
 
-func (p *parser) addParagraphTransformer(v util.PrioritizedValue, options map[OptionName]interface{}) {
+func (p *parser) addParagraphTransformer(v util.PrioritizedValue, options map[OptionName]any) {
 	pt, ok := v.Value.(ParagraphTransformer)
 	if !ok {
 		panic(fmt.Sprintf("%v is not a ParagraphTransformer", v.Value))
@@ -807,7 +831,7 @@ func (p *parser) addParagraphTransformer(v util.PrioritizedValue, options map[Op
 	p.paragraphTransformers = append(p.paragraphTransformers, pt)
 }
 
-func (p *parser) addASTTransformer(v util.PrioritizedValue, options map[OptionName]interface{}) {
+func (p *parser) addASTTransformer(v util.PrioritizedValue, options map[OptionName]any) {
 	at, ok := v.Value.(ASTTransformer)
 	if !ok {
 		panic(fmt.Sprintf("%v is not a ASTTransformer", v.Value))
@@ -882,6 +906,7 @@ func (p *parser) Parse(reader text.Reader, opts ...ParseOption) ast.Node {
 	for _, at := range p.astTransformers {
 		at.Transform(root, reader, pc)
 	}
+
 	// root.Dump(reader.Source(), 0)
 	return root
 }
@@ -960,13 +985,17 @@ retry:
 		if continuable && result == noBlocksOpened && !bp.CanInterruptParagraph() {
 			continue
 		}
+
 		if w > 3 && !bp.CanAcceptIndentedLine() {
 			continue
 		}
 		lastBlock = pc.LastOpenedBlock()
 		last := lastBlock.Node
+		_, blockPos := reader.Position()
 		node, state := bp.Open(parent, reader, pc)
 		if node != nil {
+			node.SetPos(blockPos.Start + max(pc.BlockOffset(), 0))
+
 			// Parser requires last node to be a paragraph.
 			// With table extension:
 			//
@@ -1029,47 +1058,35 @@ type lineStat struct {
 }
 
 func isBlankLine(lineNum, level int, stats []lineStat) bool {
-	ret := true
-	for i := len(stats) - 1 - level; i >= 0; i-- {
-		ret = false
+	l := len(stats)
+	if l == 0 {
+		return true
+	}
+	for i := l - 1 - level; i >= 0; i-- {
 		s := stats[i]
-		if s.lineNum == lineNum {
-			if s.level < level && s.isBlank {
-				return true
-			} else if s.level == level {
-				return s.isBlank
-			}
-		}
-		if s.lineNum < lineNum {
-			return ret
+		if s.lineNum == lineNum && s.level <= level {
+			return s.isBlank
+		} else if s.lineNum < lineNum {
+			break
 		}
 	}
-	return ret
+	return false
 }
 
 func (p *parser) parseBlocks(parent ast.Node, reader text.Reader, pc Context) {
-	pc.SetOpenedBlocks([]Block{})
+	pc.SetOpenedBlocks(nil)
 	blankLines := make([]lineStat, 0, 128)
-	var isBlank bool
 	for { // process blocks separated by blank lines
-		_, lines, ok := reader.SkipBlankLines()
+		_, _, ok := reader.SkipBlankLines()
 		if !ok {
 			return
 		}
-		lineNum, _ := reader.Position()
-		if lines != 0 {
-			blankLines = blankLines[0:0]
-			l := len(pc.OpenedBlocks())
-			for i := 0; i < l; i++ {
-				blankLines = append(blankLines, lineStat{lineNum - 1, i, lines != 0})
-			}
-		}
-		isBlank = isBlankLine(lineNum-1, 0, blankLines)
 		// first, we try to open blocks
-		if p.openBlocks(parent, isBlank, reader, pc) != newBlocksOpened {
+		if p.openBlocks(parent, true, reader, pc) != newBlocksOpened {
 			return
 		}
 		reader.AdvanceLine()
+		blankLines = blankLines[0:0]
 		for { // process opened blocks line by line
 			openedBlocks := pc.OpenedBlocks()
 			l := len(openedBlocks)
@@ -1077,7 +1094,7 @@ func (p *parser) parseBlocks(parent ast.Node, reader text.Reader, pc Context) {
 				break
 			}
 			lastIndex := l - 1
-			for i := 0; i < l; i++ {
+			for i := range l {
 				be := openedBlocks[i]
 				line, _ := reader.PeekLine()
 				if line == nil {
@@ -1095,7 +1112,7 @@ func (p *parser) parseBlocks(parent ast.Node, reader text.Reader, pc Context) {
 						// When current node is a container block and has no children,
 						// we try to open new child nodes
 						if state&HasChildren != 0 && i == lastIndex {
-							isBlank = isBlankLine(lineNum-1, i, blankLines)
+							isBlank := isBlankLine(lineNum-1, i+1, blankLines)
 							p.openBlocks(be.Node, isBlank, reader, pc)
 							break
 						}
@@ -1103,7 +1120,7 @@ func (p *parser) parseBlocks(parent ast.Node, reader text.Reader, pc Context) {
 					}
 				}
 				// current node may be closed or lazy continuation
-				isBlank = isBlankLine(lineNum-1, i, blankLines)
+				isBlank := isBlankLine(lineNum-1, i, blankLines)
 				thisParent := parent
 				if i != 0 {
 					thisParent = openedBlocks[i-1].Node
@@ -1181,7 +1198,7 @@ func (p *parser) parseBlock(block text.BlockReader, parent ast.Node, pc Context)
 
 		l, startPosition := block.Position()
 		n := 0
-		for i := 0; i < lineLength; i++ {
+		for i := range lineLength {
 			c := line[i]
 			if c == '\n' {
 				break
@@ -1207,6 +1224,9 @@ func (p *parser) parseBlock(block text.BlockReader, parent ast.Node, pc Context)
 					for _, ip := range ips {
 						inlineNode = ip.Parse(parent, block, pc)
 						if inlineNode != nil {
+							if inlineNode.Pos() < 0 {
+								inlineNode.(interface{ SetPos(int) }).SetPos(startPosition.Start)
+							}
 							break
 						}
 						block.SetPosition(savedLine, savedPosition)
@@ -1256,4 +1276,5 @@ func (p *parser) parseBlock(block text.BlockReader, parent ast.Node, pc Context)
 	for _, ip := range p.closeBlockers {
 		ip.CloseBlock(parent, block, pc)
 	}
+
 }

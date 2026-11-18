@@ -70,6 +70,8 @@ type Options struct {
 	NoPOC      bool
 	// 更新
 	Update bool
+	// 集成 cve-scanner 的指纹驱动 CVE 扫描/利用
+	EnableCveScan bool
 }
 
 // OnResultCallback (hostname, ip, ports)
@@ -142,6 +144,10 @@ func ParseOptions() *Options {
 		flagSet.BoolVar(&options.Stream, "stream", false, "stream mode (disables resume, nmap, verify, retries, shuffling, etc)"),
 		flagSet.BoolVar(&options.Passive, "passive", false, "display passive open ports using shodan internetdb api"),
 		flagSet.BoolVar(&options.Update, "update", false, "update scan4all to latest version"),
+	)
+
+	flagSet.CreateGroup("cve-scan", "CVE Scan",
+		flagSet.BoolVar(&options.EnableCveScan, "cve", false, "enable fingerprint-driven CVE scan/exploit (integrated cve-scanner), verification cmd via config cveScanCmd"),
 	)
 
 	flagSet.CreateGroup("optimization", "Optimization",

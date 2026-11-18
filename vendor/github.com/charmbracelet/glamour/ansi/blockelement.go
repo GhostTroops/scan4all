@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"io"
 
-	"github.com/muesli/reflow/wordwrap"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // BlockElement provides a render buffer for children of a block element.
@@ -30,16 +30,19 @@ func (e *BlockElement) Finish(w io.Writer, ctx RenderContext) error {
 	bs := ctx.blockStack
 
 	if e.Margin {
+		s := ansi.Wordwrap(
+			bs.Current().Block.String(),
+			int(bs.Width(ctx)),
+			" ,.;-+|",
+		)
+
 		mw := NewMarginWriter(ctx, w, bs.Current().Style)
-		_, err := mw.Write(
-			wordwrap.Bytes(bs.Current().Block.Bytes(), int(bs.Width(ctx))))
-		if err != nil {
+		if _, err := io.WriteString(mw, s); err != nil {
 			return err
 		}
 
 		if e.Newline {
-			_, err = mw.Write([]byte("\n"))
-			if err != nil {
+			if _, err := io.WriteString(mw, "\n"); err != nil {
 				return err
 			}
 		}

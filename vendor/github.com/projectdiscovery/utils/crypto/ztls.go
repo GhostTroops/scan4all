@@ -50,14 +50,11 @@ func ZTLSGrab(conn *ztls.Conn) *ZTLSData {
 			ztlsdata.FingerprintSHA256 = asHex(fingerprintSHA256)
 			ztlsdata.FingerprintSHA256OpenSSL = asOpenSSL(fingerprintSHA256)
 		}
-		if clienthello, err := json.Marshal(conn.ClientHelloRaw()); err == nil {
+		if clienthello, err := json.Marshal(conn.GetHandshakeLog().ClientHello); err == nil {
 			ztlsdata.ClientHello = clienthello
 		}
 		if handshakeLog, err := json.Marshal(conn.GetHandshakeLog()); err == nil {
 			ztlsdata.HandshakeLog = handshakeLog
-		}
-		if heartBleedLog, err := json.Marshal(conn.GetHeartbleedLog()); err == nil {
-			ztlsdata.HeartBleedLog = heartBleedLog
 		}
 		return &ztlsdata
 	}

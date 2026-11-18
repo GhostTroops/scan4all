@@ -37,7 +37,9 @@ func NewClient(options *Options) *Client {
 	}
 	if options.FastDialer == nil {
 		var err error
-		options.FastDialer, err = fastdialer.NewDialer(fastdialer.DefaultOptions)
+		opts := fastdialer.DefaultOptions
+		opts.DialerTimeout = options.Timeout
+		options.FastDialer, err = fastdialer.NewDialer(opts)
 		if err != nil {
 			gologger.Error().Msgf("Could not create fast dialer: %s\n", err)
 		}
@@ -122,11 +124,6 @@ func (c *Client) getConn(protocol, host string, options *Options) (Conn, error) 
 }
 
 func (c *Client) do(method, url, uripath string, headers map[string][]string, body io.Reader, redirectstatus *RedirectStatus, options *Options) (*http.Response, error) {
-	protocol := "http"
-	if strings.HasPrefix(strings.ToLower(url), "https://") {
-		protocol = "https"
-	}
-
 	if headers == nil {
 		headers = make(map[string][]string)
 	}
@@ -135,19 +132,12 @@ func (c *Client) do(method, url, uripath string, headers map[string][]string, bo
 		return nil, err
 	}
 
-	host := u.Host
 	if options.AutomaticHostHeader {
 		// add automatic space
-		headers["Host"] = []string{fmt.Sprintf(" %s", host)}
+		headers["Host"] = []string{" " + u.Host}
 	}
 
-	if !strings.Contains(host, ":") {
-		if protocol == "https" {
-			host += ":443"
-		} else {
-			host += ":80"
-		}
-	}
+	protocol, host := dialTarget(url, u.Host)
 
 	// standard path
 	path := u.Path
@@ -160,10 +150,6 @@ func (c *Client) do(method, url, uripath string, headers map[string][]string, bo
 	// override if custom one is specified
 	if uripath != "" {
 		path = uripath
-	}
-
-	if strings.HasPrefix(url, "https://") {
-		protocol = "https"
 	}
 
 	conn, err := c.getConn(protocol, host, options)
@@ -181,33 +167,70 @@ func (c *Client) do(method, url, uripath string, headers map[string][]string, bo
 	}
 
 	if err := conn.WriteRequest(req); err != nil {
+		_ = conn.Close()
 		return nil, err
 	}
 	resp, err := conn.ReadResponse(options.ForceReadAllBody)
 	if err != nil {
+		_ = conn.Close()
 		return nil, err
 	}
 
 	r, err := toHTTPResponse(conn, resp)
 	if err != nil {
+		_ = conn.Close()
 		return nil, err
 	}
 
-	if resp.Status.IsRedirect() && redirectstatus.FollowRedirects && redirectstatus.Current <= redirectstatus.MaxRedirects {
+	follow := redirectstatus.FollowRedirects || options.FollowHostRedirects
+	if resp.Status.IsRedirect() && follow && redirectstatus.Current <= redirectstatus.MaxRedirects {
+		loc := headerValue(r.Header, "Location")
+		if strings.HasPrefix(loc, "/") {
+			loc = fmt.Sprintf("%s://%s%s", protocol, host, loc)
+		}
+
+		if options.FollowHostRedirects && !dialsTo(loc, protocol, host) {
+			return r, nil
+		}
 		// consume the response body
 		_, err := io.Copy(io.Discard, r.Body)
 		if err := firstErr(err, r.Body.Close()); err != nil {
 			return nil, err
-		}
-		loc := headerValue(r.Header, "Location")
-		if strings.HasPrefix(loc, "/") {
-			loc = fmt.Sprintf("%s://%s%s", protocol, host, loc)
 		}
 		redirectstatus.Current++
 		return c.do(method, loc, uripath, headers, body, redirectstatus, options)
 	}
 
 	return r, err
+}
+
+// dialTarget returns the protocol and the host:port address that a request
+// to rawURL connects to, given host, the host parsed from rawURL.
+func dialTarget(rawURL, host string) (string, string) {
+	protocol, port := "http", ":80"
+	if strings.HasPrefix(strings.ToLower(rawURL), "https://") {
+		protocol, port = "https", ":443"
+	}
+
+	if strings.Contains(host, ":") {
+		return protocol, host
+	}
+
+	return protocol, host + port
+}
+
+// dialsTo reports whether a request to rawURL connects to addr over protocol.
+// The address must match exactly: case folding would also equate distinct
+// hostnames, such as "ſecret.com" and "secret.com".
+func dialsTo(rawURL, protocol, addr string) bool {
+	u, err := urlutil.ParseURL(rawURL, true)
+	if err != nil {
+		return false
+	}
+
+	p, a := dialTarget(rawURL, u.Host)
+
+	return p == protocol && a == addr
 }
 
 // RedirectStatus is the current redirect status for the request

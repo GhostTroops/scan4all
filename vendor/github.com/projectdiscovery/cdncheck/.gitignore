@@ -3,3 +3,5 @@ cmd/cdncheck/cdncheck
 cmd/functional-test/cdncheck_dev
 cmd/functional-test/functional-test
 dist/
+
+.devcontainer

@@ -61,3 +61,46 @@ func main() {
 	log.Println(resp)
 }
 ```
+
+## ASN-based allow/deny
+
+`networkpolicy` intentionally does not perform ASN→CIDR resolution itself — that responsibility belongs to [`asnmap`](https://github.com/projectdiscovery/asnmap), where BGP data, caching, and network errors are already handled. To restrict (or allow) traffic by ASN, expand it to CIDRs upstream and feed them into the existing `AllowList`/`DenyList`:
+
+```go
+package main
+
+import (
+	"log"
+
+	asnmap "github.com/projectdiscovery/asnmap/libs"
+	"github.com/projectdiscovery/networkpolicy"
+)
+
+func main() {
+	client, err := asnmap.NewClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var denyCIDRs []string
+	for _, asn := range []string{"AS13335", "AS15169"} {
+		resp, err := client.GetData(asn)
+		if err != nil {
+			log.Fatal(err)
+		}
+		nets, err := asnmap.GetCIDR(resp)
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, n := range nets {
+			denyCIDRs = append(denyCIDRs, n.String())
+		}
+	}
+
+	np, err := networkpolicy.New(networkpolicy.Options{DenyList: denyCIDRs})
+	if err != nil {
+		log.Fatal(err)
+	}
+	_ = np
+}
+```

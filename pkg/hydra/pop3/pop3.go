@@ -70,7 +70,7 @@ func New(opt Opt) *Client {
 // NewConn creates and returns live POP3 server connection.
 func (c *Client) NewConn() (*Conn, error) {
 	var (
-		addr = fmt.Sprintf("%s:%d", c.opt.Host, c.opt.Port)
+		addr = net.JoinHostPort(c.opt.Host, fmt.Sprintf("%d", c.opt.Port))
 	)
 
 	conn, err := net.DialTimeout("tcp", addr, c.opt.DialTimeout)

@@ -55,6 +55,7 @@ func StartScan(oOpts *map[string]interface{}) {
 			"Silent":            options.Silent,
 			"Debug":             options.Debug,
 			"EnableProgressBar": options.EnableProgressBar, // 开启进度条
+			"EnableCveScan":     options.EnableCveScan,     // cve-scanner 集成开关
 		}
 
 		if runtime.GOOS == "windows" {

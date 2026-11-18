@@ -103,7 +103,7 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 			writeTo = io.Writer(bs.Current().Block)
 		}
 
-		_, _ = writeTo.Write([]byte(e.Entering))
+		_, _ = io.WriteString(writeTo, e.Entering)
 		if e.Renderer != nil {
 			err := e.Renderer.Render(writeTo, r.context)
 			if err != nil {
@@ -128,21 +128,18 @@ func (r *ANSIRenderer) renderNode(w util.BufWriter, source []byte, node ast.Node
 				return ast.WalkStop, err
 			}
 		}
-		_, _ = bs.Current().Block.Write([]byte(e.Exiting))
+
+		_, _ = io.WriteString(bs.Current().Block, e.Exiting)
 	}
 
 	return ast.WalkContinue, nil
 }
 
 func isChild(node ast.Node) bool {
-	if node.Parent() != nil && node.Parent().Kind() == ast.KindBlockquote {
-		// skip paragraph within blockquote to avoid reflowing text
-		return true
-	}
 	for n := node.Parent(); n != nil; n = n.Parent() {
 		// These types are already rendered by their parent
 		switch n.Kind() {
-		case ast.KindLink, ast.KindImage, ast.KindEmphasis, astext.KindStrikethrough, astext.KindTableCell:
+		case ast.KindCodeSpan, ast.KindAutoLink, ast.KindLink, ast.KindImage, ast.KindEmphasis, astext.KindStrikethrough, astext.KindTableCell:
 			return true
 		}
 	}

