@@ -31,11 +31,14 @@ var (
 )
 
 // 异常、404、500、505 标题、内容 存在到信息库
-//  允许正则表达式
+//
+//	允许正则表达式
+//
 //go:embed dicts/fuzz404.txt
 var fuzz404 string
 
 // 常见404 url 列表,智能学习
+//
 //go:embed dicts/404url.txt
 var sz404Url string
 
@@ -61,10 +64,11 @@ func init() {
 
 // 智能学习: 非正常页面，并记录到库中永久使用,使用该方法到页面
 // 要么是异常页面，要么是需要学习到指纹，带标记带
-//  0、识别学习过的url就跳过
-//  1、body 学习
-//  2、标题 学习
-//  3、url 去重记录
+//
+//	0、识别学习过的url就跳过
+//	1、body 学习
+//	2、标题 学习
+//	3、url 去重记录
 func StudyErrPageAI(req *util.Response, page *util.Page, fingerprintsTag string) {
 	if nil == req || nil == page || "" == req.Body {
 		return

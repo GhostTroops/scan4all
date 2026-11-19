@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-//go:embed goby_pocs
+//go:embed goby_pocs.zip
 var GobyPocs embed.FS
 
 // 驱动 Goby PoCs

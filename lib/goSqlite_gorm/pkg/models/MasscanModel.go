@@ -40,8 +40,9 @@ type Nmaprun struct {
 }
 
 // 主机信息
-//  foreignKey should name the model-local key field that joins to the foreign entity.
-//  references should name the foreign entity's primary or unique key.
+//
+//	foreignKey should name the model-local key field that joins to the foreign entity.
+//	references should name the foreign entity's primary or unique key.
 type Host struct {
 	Address Address `json:"address" xml:"address" gorm:"embedded;"`
 	// association_autoupdate:true;association_autocreate:true;constraint:OnUpdate:CASCADE,OnDelete:SET NULL;
@@ -99,7 +100,8 @@ func init() {
 }
 
 // 目标：url、dns（域名）、ip
-//  转换、输出ip
+//
+//	转换、输出ip
 func (r *EventData) Target2Ip() []string {
 	var a []string
 	t := r.Task.ScanWeb

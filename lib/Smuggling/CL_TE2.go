@@ -4,8 +4,8 @@ import (
 	"strings"
 )
 
-//  1 CL-TE
-//  2 CL-TE-TE HTTP request smuggling, obfuscating the TE header
+// 1 CL-TE
+// 2 CL-TE-TE HTTP request smuggling, obfuscating the TE header
 var ClTePayload2 = []string{`POST %s HTTP/1.1
 Host: %s
 Content-Type: application/x-www-form-urlencoded%s
