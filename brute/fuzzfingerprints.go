@@ -53,7 +53,7 @@ func Addfingerprints404(technologies []string, req *util.Response, oPage *util.P
 func Addfingerprintsnormal(payload string, technologies []string, req *util.Response, fuzzPage *util.Page) []string {
 	a := Addfingerprintsnormal1(payload, []string{}, req, fuzzPage)
 	if 0 < len(a) {
-		util.PocCheck_pipe <- &util.PocCheck{Wappalyzertechnologies: &a, URL: req.RequestUrl, FinalURL: req.RequestUrl, Checklog4j: false}
+		util.SendPocCheck(&util.PocCheck{Wappalyzertechnologies: &a, URL: req.RequestUrl, FinalURL: req.RequestUrl, Checklog4j: false})
 	}
 	return append(technologies, a...)
 }

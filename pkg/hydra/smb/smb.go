@@ -9,7 +9,7 @@ import (
 )
 
 func Check(Host, Username, Domain, Password string, Port int) (bool, error) {
-	status := make(chan error)
+	status := make(chan error, 1)
 	ctx, cancel := context.WithTimeout(util.Ctx_global, time.Second*5)
 	defer cancel()
 	options := smb.Options{
@@ -29,7 +29,7 @@ func Check(Host, Username, Domain, Password string, Port int) (bool, error) {
 		}
 		defer session.Close()
 		if session.IsAuthenticated == false {
-			status <- err
+			status <- errors.New("authentication failed")
 			return
 		}
 		status <- nil
@@ -37,9 +37,12 @@ func Check(Host, Username, Domain, Password string, Port int) (bool, error) {
 
 	select {
 	case <-ctx.Done():
+		if err := util.Ctx_global.Err(); err != nil {
+			return false, err
+		}
 		return false, errors.New("timeout")
 	case err := <-status:
-		if status != nil {
+		if err != nil {
 			return false, err
 		}
 		return true, nil

@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"errors"
 	"github.com/GhostTroops/scan4all/lib/goSqlite_gorm/lib"
 	"github.com/GhostTroops/scan4all/lib/goSqlite_gorm/pkg/models"
 	"github.com/GhostTroops/scan4all/lib/util"
@@ -35,6 +36,9 @@ func NewEngine(c *context.Context, pool int) *Engine {
 	if nil != util.G_Engine {
 		return util.G_Engine.(*Engine)
 	}
+	if pool < 1 {
+		pool = 1
+	}
 	x1 := &Engine{Context: c, Wg: &sync.WaitGroup{}, Pool: pool, EventData: make(chan *models.EventData, pool)}
 	p, err := ants.NewPoolWithFunc(pool, func(i interface{}) {
 		defer x1.Wg.Done()
@@ -66,8 +70,9 @@ func (r *Engine) GetCaseScanFunc() *sync.Map {
 
 // 释放资源
 func (e *Engine) Close() {
-	defer ants.Release()
-	e.PoolFunc.Release()
+	if e.PoolFunc != nil {
+		e.PoolFunc.Release()
+	}
 	e.Wg.Wait()
 }
 
@@ -85,7 +90,11 @@ func (e *Engine) SendEvent(evt *models.EventData, argsTypes ...int64) {
 		var n1 = models.EventData{}
 		util.DeepCopy(evt, &n1)
 		n1.EventType = i
-		e.EventData <- &n1
+		select {
+		case <-util.Ctx_global.Done():
+			return
+		case e.EventData <- &n1:
+		}
 	}
 }
 
@@ -106,50 +115,53 @@ func (e *Engine) DoEvent(ed *models.EventData) {
 }
 
 func (x1 *Engine) Running() {
-	// 异步启动一个线程处理检测，避免
-	go func() {
-		defer func() {
-			x1.Close()
-		}()
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, os.Interrupt)
-		tK := time.NewTicker(2 * time.Second)
-		defer tK.Stop()
-		//nMax := 120 // 等xxx秒都没有消息进入就退出
-		//nCnt := 0
-		for {
-			select {
-			case <-util.Ctx_global.Done():
-				close(util.PocCheck_pipe)
+	defer x1.Close()
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	defer signal.Stop(c)
+	tK := time.NewTicker(2 * time.Second)
+	defer tK.Stop()
+	for {
+		select {
+		case <-util.Ctx_global.Done():
+			return
+		case <-c:
+			util.DoCbk("exit")
+			util.StopAll()
+			return
+		case x2, ok := <-x1.EventData: // 各种扫描的控制
+			if !ok {
 				return
-			case <-c:
-				util.DoCbk("exit")
-				os.Exit(1)
-			case x2 := <-x1.EventData: // 各种扫描的控制
-				if nil != x2 && nil != x2.EventData {
-					x1.Wg.Add(1)
-					x1.PoolFunc.Invoke(x2)
-				}
-			case x1, ok := <-util.PocCheck_pipe:
-				if util.GetValAsBool("NoPOC") || nil == x1 || !ok {
-					//close(util.PocCheck_pipe) // 这行会在 NoPOC该标志开启时，其他进程无法传递过来而出错
-					log.Println("go_poc_checkout is over")
-					continue
-				}
-				//nCnt = 0
-				if !util.TestRepeat(x1, *x1.Wappalyzertechnologies, x1.URL) {
-					log.Printf("<-util.PocCheck_pipe: %+v  %s", *x1.Wappalyzertechnologies, x1.URL)
-					func(x99 *util.PocCheck) {
-						util.DoSyncFunc(func() {
-							pocs_go.POCcheck(*x99.Wappalyzertechnologies, x99.URL, x99.FinalURL, x99.Checklog4j)
-						})
-					}(x1)
-				}
-			case <-tK.C:
-				util.DoDelayClear(x1.Wg) // panic: sync: WaitGroup misuse: Add called concurrently with Wait
 			}
+			if nil != x2 && nil != x2.EventData {
+				x1.Wg.Add(1)
+				if err := x1.PoolFunc.Invoke(x2); err != nil {
+					x1.Wg.Done()
+					if !errors.Is(err, ants.ErrPoolClosed) {
+						log.Printf("submit event failed: %v", err)
+					}
+				}
+			}
+		case x1, ok := <-util.PocCheck_pipe:
+			if !ok {
+				return
+			}
+			if util.GetValAsBool("NoPOC") || nil == x1 || nil == x1.Wappalyzertechnologies {
+				log.Println("go_poc_checkout is over")
+				continue
+			}
+			if !util.TestRepeat(x1, *x1.Wappalyzertechnologies, x1.URL) {
+				log.Printf("<-util.PocCheck_pipe: %+v  %s", *x1.Wappalyzertechnologies, x1.URL)
+				func(x99 *util.PocCheck) {
+					util.DoSyncFunc(func() {
+						pocs_go.POCcheck(*x99.Wappalyzertechnologies, x99.URL, x99.FinalURL, x99.Checklog4j)
+					})
+				}(x1)
+			}
+		case <-tK.C:
+			util.DoDelayClear(x1.Wg)
 		}
-	}()
+	}
 }
 
 // 引擎总入口

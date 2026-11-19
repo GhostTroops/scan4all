@@ -4,8 +4,6 @@ go mod tidy
 go mod verify
 go mod vendor
 go vet
-git checkout vendor/github.com/projectdiscovery/nuclei/v2/pkg/protocols/http/request.go
-git checkout vendor/github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/interactsh/interactsh.go
 git checkout vendor/github.com/projectdiscovery/naabu/v2/pkg/scan/scan.go
 git checkout vendor/github.com/projectdiscovery/naabu/v2/pkg/runner/options.go
 echo "test build"

@@ -10,6 +10,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -41,13 +42,14 @@ func url_handle(url []string) (urls []string) { //对原始url进行处理，判
 }
 func GetUrlTitle() {
 	fp_succ, err := os.OpenFile("url_title.txt", os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
-	fp_succ.WriteString("\n")
-	fp_succ.WriteString("GetTitle is start........" + "\n")
-	fp_succ.WriteString("\n")
 	if err != nil {
 		fmt.Println("GetUrlTitle open file err", err)
 		return
 	}
+	defer fp_succ.Close()
+	fp_succ.WriteString("\n")
+	fp_succ.WriteString("GetTitle is start........" + "\n")
+	fp_succ.WriteString("\n")
 	var filename string
 	if Configs.UserObject.File != "" {
 		filename = Configs.UserObject.File
@@ -59,26 +61,33 @@ func GetUrlTitle() {
 	jobs_url := make(chan string, size+1)
 	jobs_result := make(chan Gettitle_result, size+1)
 
-	for i := 0; i < Configs.UserObject.ThreadNum; i++ {
-
-		go GetUrlTitle_handle(jobs_url, jobs_result)
-
+	workers := Configs.UserObject.ThreadNum
+	if workers < 1 {
+		workers = 1
+	}
+	var wg sync.WaitGroup
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			GetUrlTitle_handle(jobs_url, jobs_result)
+		}()
 	}
 	for i := 0; i < size; i++ {
 		jobs_url <- title_urllist[i]
 		fmt.Println(title_urllist[i])
 	}
-	for i := 0; i < size; i++ {
+	close(jobs_url)
+	go func() {
+		wg.Wait()
+		close(jobs_result)
+	}()
 
-		res := <-jobs_result
-
+	for res := range jobs_result {
 		content := res.url + "\t" + res.title_name + "\t" + strconv.Itoa(res.rescode) + "\n"
 		fmt.Println(content)
 		fp_succ.WriteString(content)
-
 	}
-
-	defer fp_succ.Close()
 }
 
 // geg title
@@ -130,9 +139,13 @@ func GetUrlTitle_handle(urls <-chan string, Get_title_res chan<- Gettitle_result
 
 func GetTitleRequest(url string, timeout time.Duration, fnCbk func(resp *http.Response, str string)) {
 	client := util.GetClient(url)
+	if client == nil || client.Client == nil {
+		fnCbk(nil, "HTTP client is unavailable")
+		return
+	}
 	var str string = ""
-	client.Client.Timeout = time.Second * timeout
-	client.DoGetWithClient4SetHd(client.Client, url, http.MethodPost, nil, func(resp *http.Response, err error, szU string) {
+	httpClient := &http.Client{Transport: client.Client.Transport, Timeout: time.Second * timeout}
+	client.DoGetWithClient4SetHd(httpClient, url, http.MethodPost, nil, func(resp *http.Response, err error, szU string) {
 		if err != nil {
 			str = err.Error()
 		}

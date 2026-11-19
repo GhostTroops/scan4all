@@ -105,7 +105,11 @@ func (s *Scanner) scan(nmapScanner *nmap.Scanner, fnCbk func(*Stream)) ([]*Strea
 	// Get streams from nmap results.
 	var streams []*Stream
 	x3 := nmapScanner.GetStderr()
-	go io.Copy(io.Discard, util.ScannerToReader(&x3))
+	stderrDone := make(chan error, 1)
+	go func() {
+		_, err := io.Copy(io.Discard, util.ScannerToReader(&x3))
+		stderrDone <- err
+	}()
 	scanner1 := nmapScanner.GetStdout()
 	for scanner1.Scan() {
 		s091 := scanner1.Text()
@@ -136,6 +140,13 @@ func (s *Scanner) scan(nmapScanner *nmap.Scanner, fnCbk func(*Stream)) ([]*Strea
 		} else {
 			//log.Println(err)
 		}
+	}
+	if err := scanner1.Err(); err != nil {
+		<-stderrDone
+		return streams, err
+	}
+	if err := <-stderrDone; err != nil {
+		return streams, err
 	}
 	log.Printf("Found %d  Real Time Streaming Protocol (RTSP)\n", len(streams))
 
