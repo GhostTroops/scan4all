@@ -2,6 +2,7 @@ package pool
 
 import (
 	"testing"
+	"time"
 )
 
 func TestName(t *testing.T) {
@@ -18,4 +19,52 @@ func TestName(t *testing.T) {
 	//}()
 	//p.Run()
 
+}
+
+func TestStopUnblocksInputSender(t *testing.T) {
+	p := NewPool(2)
+	p.Function = func(value interface{}) interface{} {
+		return value
+	}
+	p.RunBack()
+
+	outDone := make(chan struct{})
+	go func() {
+		defer close(outDone)
+		for range p.Out {
+		}
+	}()
+
+	senderDone := make(chan struct{})
+	go func() {
+		defer close(senderDone)
+		for i := 0; i < 10; i++ {
+			select {
+			case <-p.Stopped():
+				p.InDone()
+				return
+			case p.In <- i:
+			}
+		}
+		p.InDone()
+	}()
+
+	p.Stop()
+	select {
+	case <-senderDone:
+	case <-time.After(time.Second):
+		t.Fatal("input sender remained blocked after stop")
+	}
+
+	waitDone := make(chan struct{})
+	go func() {
+		p.Wait()
+		close(waitDone)
+	}()
+	select {
+	case <-waitDone:
+	case <-time.After(time.Second):
+		t.Fatal("workers did not stop")
+	}
+	<-outDone
 }

@@ -7,6 +7,7 @@ import (
 
 // 延时自动初对象
 type delayClearObj struct {
+	mu          sync.Mutex
 	GetCacheObj func() interface{} // 返回缓存对象
 	FnCbk       func()             // 回调函数
 	Time        int64              // 开始及时的时间
@@ -23,15 +24,21 @@ var delayClear sync.Map
 //
 //	n0 0表示60秒后执行
 func RegDelayCbk(szKey string, fnCbk func(), cache func() interface{}, n0 int64, DelayCall int64) {
-	delayClear.Store(szKey, &delayClearObj{Time: time.Now().Unix() - n0, FnCbk: fnCbk, GetCacheObj: cache})
+	delayClear.Store(szKey, &delayClearObj{
+		Time:        time.Now().Unix() - n0,
+		DelayCall:   DelayCall,
+		FnCbk:       fnCbk,
+		GetCacheObj: cache,
+	})
 }
 
 // 重时间计数器
 func UpTime(szKey string) {
 	if o, ok := delayClear.Load(szKey); ok {
 		x1 := o.(*delayClearObj)
+		x1.mu.Lock()
 		x1.Time = time.Now().Unix()
-		delayClear.Store(szKey, x1)
+		x1.mu.Unlock()
 	}
 }
 
@@ -51,8 +58,9 @@ func GetCache(szKey string, bUpTime bool) interface{} {
 func DoNow(szKey string) {
 	if o, ok := delayClear.Load(szKey); ok {
 		x1 := o.(*delayClearObj)
-		x1.FnCbk()
-		delayClear.Delete(szKey)
+		if delayClear.CompareAndDelete(szKey, x1) {
+			x1.FnCbk()
+		}
 	}
 }
 
@@ -71,7 +79,11 @@ func DoDelayClear(Wg1 ...*sync.WaitGroup) {
 	} else {
 		wg2 = Wg
 	}
-	IsDo <- struct{}{}
+	select {
+	case IsDo <- struct{}{}:
+	default:
+		return
+	}
 	wg2.Add(1)
 	go func() {
 		defer func() {
@@ -85,11 +97,13 @@ func DoDelayClear(Wg1 ...*sync.WaitGroup) {
 				return true
 			}
 			x1 := value.(*delayClearObj)
+			x1.mu.Lock()
 			n09 := nN - x1.Time
+			expired := n09 >= x1.DelayCall
+			x1.mu.Unlock()
 			//log.Printf("n09 = %d, now = %d, x1.Time = %d", n09, nN, x1.Time)
-			if n09 >= x1.DelayCall {
+			if expired && delayClear.CompareAndDelete(key, x1) {
 				x1.FnCbk()
-				delayClear.Delete(key)
 				//log.Println("nuclei is closed : ", key)
 			}
 			return true

@@ -6,6 +6,7 @@ import (
 	"github.com/GhostTroops/scan4all/lib/util"
 	Configs "github.com/GhostTroops/scan4all/webScan/config"
 	"log"
+	"sync"
 )
 
 type results struct {
@@ -85,24 +86,34 @@ func final_ALLurl_OneJson(timeout_count map[string]int) {
 
 	urllist := GetUrlFile(filename)
 	size := len(urllist)
-	result := make(chan results, size+1)
+	result := make(chan results, size)
 
-	//results := make(chan bool, size+1)
-	jobs_url := make(chan string, size+1)
+	jobs_url := make(chan string, size)
 	var oneExpjson Configs.ExpJson
 	LoadOneExpJson(Configs.UserObject.JsonFile, &oneExpjson) //载入一个expjson
-	for i := 0; i < Configs.UserObject.ThreadNum; i++ {
-		go All_url_one_Json(oneExpjson, jobs_url, result, timeout_count)
+	workers := Configs.UserObject.ThreadNum
+	if workers < 1 {
+		workers = 1
+	}
+	var wg sync.WaitGroup
+	for i := 0; i < workers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			All_url_one_Json(oneExpjson, jobs_url, result, timeout_count)
+		}()
 	}
 
 	for i := 0; i < size; i++ {
 		jobs_url <- urllist[i]
 	}
+	close(jobs_url)
+	go func() {
+		wg.Wait()
+		close(result)
+	}()
 
-	for i := 0; i < size; i++ {
-
-		res := <-result
-
+	for res := range result {
 		if res.res == true {
 			util.SendLog(res.url, "webScan", oneExpjson.Name, "")
 		}
@@ -130,29 +141,33 @@ func All_url_ALLjson(urls <-chan string, allresult chan<- all_result) {
 func final_ALLurl_ALLJson(urllist *[]string) {
 	if Configs.UserObject.AllJson == true {
 		size := len(*urllist)
-		allresult := make(chan all_result)
-		//results := make(chan bool, size+1)
-		jobs_url := make(chan string)
-		for i := 0; i < Configs.UserObject.ThreadNum; i++ {
-			util.DoSyncFunc(func() {
+		allresult := make(chan all_result, size)
+		jobs_url := make(chan string, size)
+		workers := Configs.UserObject.ThreadNum
+		if workers < 1 {
+			workers = 1
+		}
+		var wg sync.WaitGroup
+		for i := 0; i < workers; i++ {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
 				All_url_ALLjson(jobs_url, allresult)
-			})
+			}()
 		}
 		for i := 0; i < size; i++ {
 			jobs_url <- (*urllist)[i]
 		}
 		close(jobs_url) // send over close
-		i := 0
+		go func() {
+			wg.Wait()
+			close(allresult)
+		}()
 		for res := range allresult {
-			i++
 			for key, res_tmp := range res.res {
 				if res_tmp == true {
 					util.SendLog(res.url, "webScan", res.exp_name[key], "")
 				}
-			}
-			if i >= size {
-				close(allresult)
-				break
 			}
 		}
 	}

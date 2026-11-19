@@ -70,21 +70,26 @@ type Pool struct {
 	//jobs表示执行任务的通道用于作为队列，我们将任务从切片当中取出来，然后存放到通道当中，再从通道当中取出任务并执行。
 	Jobs chan *Worker
 	//用于阻塞
-	wg *sync.WaitGroup
-	//提前结束标识符
-	Done bool
+	wg          *sync.WaitGroup
+	stopCh      chan struct{}
+	stopOnce    sync.Once
+	inDoneOnce  sync.Once
+	outDoneOnce sync.Once
 }
 
 // 实例化工作池使用
 func NewPool(threads int) *Pool {
+	if threads < 1 {
+		threads = 1
+	}
 	return &Pool{
 		threads:  threads,
 		JobsList: smap.New(),
 		wg:       &sync.WaitGroup{},
+		stopCh:   make(chan struct{}),
 		Out:      make(chan interface{}),
 		In:       make(chan interface{}),
 		Function: nil,
-		Done:     false,
 		Interval: time.Duration(0),
 	}
 }
@@ -95,9 +100,21 @@ func (p *Pool) work() {
 	defer func() {
 		p.wg.Done()
 	}()
-	for param := range p.In {
-		if p.Done {
+	for {
+		var param interface{}
+		select {
+		case <-p.stopCh:
 			return
+		case value, ok := <-p.In:
+			if !ok {
+				return
+			}
+			param = value
+		}
+		select {
+		case <-p.stopCh:
+			return
+		default:
 		}
 		//获取任务唯一票据
 		Tick := p.NewTick()
@@ -148,17 +165,27 @@ func (p *Pool) Wait() {
 
 // 结束输入信道
 func (p *Pool) InDone() {
-	close(p.In)
+	p.inDoneOnce.Do(func() {
+		close(p.In)
+	})
 }
 
 // 结束输出信道
 func (p *Pool) OutDone() {
-	close(p.Out)
+	p.outDoneOnce.Do(func() {
+		close(p.Out)
+	})
 }
 
 // 向各工作协程发送提前结束指令
 func (p *Pool) Stop() {
-	p.Done = true
+	p.stopOnce.Do(func() {
+		close(p.stopCh)
+	})
+}
+
+func (p *Pool) Stopped() <-chan struct{} {
+	return p.stopCh
 }
 
 // 生成工作票据

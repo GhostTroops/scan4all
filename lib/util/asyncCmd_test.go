@@ -1,18 +1,35 @@
 package util
 
 import (
-	"log"
+	"os"
+	"reflect"
+	"strings"
 	"testing"
 )
 
 func TestAsynCmd(t *testing.T) {
-	t.Run("async cmd", func(t *testing.T) {
-		if err := AsynCmd(func(line string) {
-			log.Println(line)
-			// }, "/usr/local/bin/masscan", "--max-rate", "5000", "--rate", "5000", "-p", "0-65535", "-oX", "-", "127.0.0.1"); err != nil {
-			// }, "/bin/bash", "-i", "/Users/51pwn/MyWork/scan4all/doNmapScan.sh", "127.0.0.1"); err != nil {
-		}, "/bin/bash", "-i", "/Users/51pwn/MyWork/scan4all/doNmapScan.sh", "127.0.0.1"); err != nil {
-			log.Println("err ", err)
-		}
-	})
+	t.Setenv("ASYNC_CMD_HELPER", "1")
+	var lines []string
+	executable, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = AsynCmd(func(line string) {
+		lines = append(lines, line)
+	}, executable, "-test.run=^TestAsynCmdHelper$")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{"stdout one", "stdout two"}; !reflect.DeepEqual(lines, want) {
+		t.Fatalf("stdout lines = %q, want %q", lines, want)
+	}
+}
+
+func TestAsynCmdHelper(t *testing.T) {
+	if os.Getenv("ASYNC_CMD_HELPER") != "1" {
+		return
+	}
+	_, _ = os.Stdout.WriteString("stdout one\nstdout two\n")
+	_, _ = os.Stderr.WriteString(strings.Repeat("stderr output\n", 10000))
+	os.Exit(0)
 }

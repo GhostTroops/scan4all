@@ -5,15 +5,13 @@ go get "github.com/projectdiscovery/stringsutil@v0.0.0-20220612082425-0037ce9f89
 go get "github.com/projectdiscovery/ipranger@v0.0.3-0.20210831161617-ac80efae0961"
 go get "github.com/go-rod/rod/lib/proto"
 
-go get "github.com/projectdiscovery/nuclei/v2@v2.7.8"
+go install github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest
 
-go mod tidy;go mod vendor
+go mod tidy
+go mod vendor
 
-git checkout vendor/github.com/projectdiscovery/nuclei/v2/pkg/protocols/http/request.go
-git checkout vendor/github.com/projectdiscovery/nuclei/v2/pkg/protocols/common/interactsh/interactsh.go
 git checkout vendor/github.com/projectdiscovery/naabu/v2/pkg/scan/scan.go
 git checkout vendor/github.com/projectdiscovery/naabu/v2/pkg/runner/options.go
-git checkout vendor/github.com/projectdiscovery/nuclei/v2
 
 go build
 

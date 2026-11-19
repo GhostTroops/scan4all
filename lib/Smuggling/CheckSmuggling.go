@@ -53,12 +53,12 @@ func checkSmuggling4Poc(ClTePayload *[]string, nTimes int, r1 *Smuggling, r *soc
 	  szBody 是为了 相同url 相同payload 的情况下，只发一次请求，进行多次判断而设计，Smuggling 的场景通常不存在
 
 	 做一次 http
-		util.PocCheck_pipe <- &util.PocCheck{
+		util.SendPocCheck(&util.PocCheck{
 			Wappalyzertechnologies: &[]string{"httpCheckSmuggling"},
 			URL:                    finalURL,
 			FinalURL:               finalURL,
 			Checklog4j:             false,
-		}
+		})
 */
 func DoCheckSmuggling(szUrl string, szBody string) {
 	for _, x := range payload {

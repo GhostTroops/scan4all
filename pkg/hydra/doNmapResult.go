@@ -94,26 +94,26 @@ func DoParseXml(s string, bf *bytes.Buffer) {
 						bf.Write([]byte(szUlr + "\n"))
 						if os.Getenv("NoPOC") != "true" {
 							if "445" == szPort && service == "microsoft-ds" || "135" == szPort && service == "msrpc" {
-								util.PocCheck_pipe <- &util.PocCheck{
+								util.SendPocCheck(&util.PocCheck{
 									Wappalyzertechnologies: &[]string{service},
 									URL:                    szUlr,
 									FinalURL:               szUlr,
 									Checklog4j:             false,
-								}
+								})
 							} else if "8291" == szPort { // CVE_2018_14847
-								util.PocCheck_pipe <- &util.PocCheck{
+								util.SendPocCheck(&util.PocCheck{
 									Wappalyzertechnologies: &[]string{"RouterOS"},
 									URL:                    szUlr,
 									FinalURL:               szUlr,
 									Checklog4j:             false,
-								}
+								})
 							} else if "2181" == szPort {
-								util.PocCheck_pipe <- &util.PocCheck{
+								util.SendPocCheck(&util.PocCheck{
 									Wappalyzertechnologies: &[]string{"ZookeeperUnauthority"},
 									URL:                    szUlr,
 									FinalURL:               szUlr,
 									Checklog4j:             false,
-								}
+								})
 							}
 						}
 					}
