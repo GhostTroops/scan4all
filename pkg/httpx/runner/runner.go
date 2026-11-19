@@ -655,12 +655,12 @@ func (r *Runner) RunEnumeration() {
 		// 绝对404先测试
 		if _, _, ok := util.TestIs404(k); ok {
 			// 做一次 http
-			util.PocCheck_pipe <- &util.PocCheck{
+			util.SendPocCheck(&util.PocCheck{
 				Wappalyzertechnologies: &[]string{"httpCheckSmuggling"},
 				URL:                    k,
 				FinalURL:               k,
 				Checklog4j:             false,
-			}
+			})
 			if len(r.options.requestURIs) > 0 {
 				for _, p := range r.options.requestURIs {
 					scanopts := r.scanopts.Clone()
@@ -1281,12 +1281,12 @@ retry:
 		if brute.CheckLoginPage(finalURL, resp) {
 			technologies = append(technologies, "登陆页面")
 			// 做一次 http
-			util.PocCheck_pipe <- &util.PocCheck{
+			util.SendPocCheck(&util.PocCheck{
 				Wappalyzertechnologies: &[]string{"httpCheckSmuggling"},
 				URL:                    finalURL,
 				FinalURL:               finalURL,
 				Checklog4j:             false,
-			}
+			})
 		}
 		// 指纹去重
 		technologies = SliceRemoveDuplicates(technologies)

@@ -112,6 +112,18 @@ type PocCheck struct {
 // go POC 检测管道，避免循环引用
 var PocCheck_pipe = make(chan *PocCheck, 64)
 
+func SendPocCheck(check *PocCheck) bool {
+	if check == nil {
+		return false
+	}
+	select {
+	case <-Ctx_global.Done():
+		return false
+	case PocCheck_pipe <- check:
+		return true
+	}
+}
+
 // 头信息同一检查，并调用合适到go poc进一步爆破、检测
 //
 //	1、需要认证
@@ -130,7 +142,7 @@ func CheckHeader(header *http.Header, szUrl string) {
 			}
 			if 0 < len(a1) && os.Getenv("NoPOC") != "true" {
 				if !TestRepeat(a1, szUrl, szUrl, "header") {
-					PocCheck_pipe <- &PocCheck{Wappalyzertechnologies: &a1, URL: szUrl, FinalURL: szUrl, Checklog4j: false}
+					SendPocCheck(&PocCheck{Wappalyzertechnologies: &a1, URL: szUrl, FinalURL: szUrl, Checklog4j: false})
 				}
 			}
 		}

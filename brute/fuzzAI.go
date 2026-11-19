@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 // 异常页面数据库
@@ -28,6 +29,7 @@ type ErrPage struct {
 var (
 	page404Title []string // 404 标题库、正文库
 	asz404Url    []string // 404url,智能学习
+	asz404UrlMu  sync.RWMutex
 )
 
 // 异常、404、500、505 标题、内容 存在到信息库
@@ -135,15 +137,24 @@ func CheckIsErrPageAI(req *util.Response, page *util.Page) bool {
 			u01, err := url.Parse(strings.TrimSpace(*page.Url))
 			if nil == err && 2 < len(u01.Path) {
 				// 加 404 url判断
-				if pkg.Contains4sub[string](asz404Url, u01.Path) {
+				asz404UrlMu.RLock()
+				knownPath := pkg.Contains4sub[string](asz404Url, u01.Path)
+				asz404UrlMu.RUnlock()
+				if knownPath {
 					return true
 				}
 				// 添加到 asz404Url, 保存到库中
 				if 404 == req.StatusCode {
-					go func() {
-						asz404Url = append(asz404Url, u01.Path)
-						util.PutAny[[]string](asz404UrlKey, asz404Url) // 404 path 缓存起来，永久复用
-					}()
+					go func(path string) {
+						asz404UrlMu.Lock()
+						defer asz404UrlMu.Unlock()
+						if pkg.Contains4sub[string](asz404Url, path) {
+							return
+						}
+						asz404Url = append(asz404Url, path)
+						paths := append([]string(nil), asz404Url...)
+						util.PutAny[[]string](asz404UrlKey, paths) // 404 path 缓存起来，永久复用
+					}(u01.Path)
 				}
 			}
 		}

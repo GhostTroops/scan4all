@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"sync"
 	"time"
 )
 
@@ -75,58 +76,50 @@ func (r *Cmd) WriteInput(args ...string) {
 }
 
 func (r *Cmd) AsynCmd(fnCbk func(line string), szCmd string, args ...string) error {
-	cmd := r.Command(szCmd, args...)
-	//log.Println(cmd.Args)
-	var err error
-	cmdReader, err := cmd.StdoutPipe()
+	cmd := exec.CommandContext(Ctx_global, szCmd, args...)
+	cmd.WaitDelay = KillTimeout
+
+	stdout, err := cmd.StdoutPipe()
 	if nil != err {
 		return err
 	}
-	done := make(chan struct{}, 2)
-	var fnSc1 = func(bs *bufio.Scanner) {
-		defer func() {
-			done <- struct{}{}
-		}()
-		for bs.Scan() {
-			select {
-			case <-Ctx_global.Done():
-				cmd.Exit()
-				return
-			default:
-				fnCbk(bs.Text())
-			}
-
-		}
-	}
-	var bDoErr = false
-	if bDoErr {
-		stderr, err := cmd.StderrPipe()
-		if err != nil {
-			return err
-		}
-		scanner1 := bufio.NewScanner(stderr)
-		go fnSc1(scanner1)
-	}
-	//cmd.stdin.Close()
-	//go io.Copy(io.Discard, stderr)
-	scanner := bufio.NewScanner(cmdReader)
-	go fnSc1(scanner)
-	err = cmd.Start()
+	stderr, err := cmd.StderrPipe()
 	if err != nil {
 		return err
 	}
-	err = cmd.Wait()
-	<-done
-	if bDoErr {
-		<-done
+	if err := cmd.Start(); err != nil {
+		return err
 	}
-	return err
+
+	var readers sync.WaitGroup
+	readers.Add(2)
+	var scanErr, stderrErr error
+	go func() {
+		defer readers.Done()
+		scanner := bufio.NewScanner(stdout)
+		scanner.Buffer(make([]byte, 64*1024), 1024*1024)
+		for scanner.Scan() {
+			fnCbk(scanner.Text())
+		}
+		scanErr = scanner.Err()
+	}()
+	go func() {
+		defer readers.Done()
+		_, stderrErr = io.Copy(io.Discard, stderr)
+	}()
+
+	waitErr := cmd.Wait()
+	readers.Wait()
+	if waitErr != nil {
+		return waitErr
+	}
+	if scanErr != nil {
+		return scanErr
+	}
+	return stderrErr
 }
 
 // 异步执行命令
 func AsynCmd(fnCbk func(line string), szCmd string, args ...string) error {
-	c1 := new(Cmd)
-	err := c1.AsynCmd(fnCbk, szCmd, args...)
-	c1.Exit()
-	return err
+	return new(Cmd).AsynCmd(fnCbk, szCmd, args...)
 }

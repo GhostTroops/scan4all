@@ -35,25 +35,38 @@ func NewCracker(info *AuthInfo, isAuthUpdate bool, threads int) *Cracker {
 
 	c.Pool = pool.NewPool(threads)
 	c.authInfo = info
-	c.authList = func() *AuthList {
-		list := DefaultAuthMap[c.authInfo.Protocol]
-		if c.onlyPassword {
-			CustomAuthMap.Username = []string{}
-		}
-		if isAuthUpdate {
-			list.Merge(CustomAuthMap)
-			return list
-		}
-		if CustomAuthMap.IsEmpty() == false {
-			list.Replace(CustomAuthMap)
-			return list
-		}
-		return list
-	}()
+	c.authList = cloneAuthList(DefaultAuthMap[c.authInfo.Protocol])
+	customAuthList := cloneAuthList(CustomAuthMap)
+	if c.onlyPassword {
+		customAuthList.Username = nil
+	}
+	if isAuthUpdate {
+		c.authList.Merge(customAuthList)
+	} else if !customAuthList.IsEmpty() {
+		c.authList.Replace(customAuthList)
+	}
 	c.Out = make(chan AuthInfo)
 	c.Pool.Interval = time.Microsecond * 13
 
 	return c
+}
+
+func cloneAuthList(src *AuthList) *AuthList {
+	dst := NewAuthList()
+	if src == nil {
+		return dst
+	}
+	dst.Username = append([]string(nil), src.Username...)
+	dst.Password = append([]string(nil), src.Password...)
+	dst.Special = make([]Auth, len(src.Special))
+	for i, auth := range src.Special {
+		auth.Other = make(map[string]string, len(auth.Other))
+		for key, value := range src.Special[i].Other {
+			auth.Other[key] = value
+		}
+		dst.Special[i] = auth
+	}
+	return dst
 }
 
 func (c *Cracker) Run() {
@@ -128,13 +141,14 @@ func (c *Cracker) Run() {
 		x1 := c.authList.Dict(c.onlyPassword)
 		//fmt.Println("破解任务下发器：", len(x1))
 		for _, a := range x1 {
-			if c.Pool.Done {
+			c.authInfo.Auth = a
+			select {
+			case <-c.Pool.Stopped():
 				c.Pool.InDone()
 				//fmt.Println("hydra 1：线程结束")
 				return
+			case c.Pool.In <- *c.authInfo:
 			}
-			c.authInfo.Auth = a
-			c.Pool.In <- *c.authInfo
 		}
 		//关闭信道
 		c.Pool.InDone()
