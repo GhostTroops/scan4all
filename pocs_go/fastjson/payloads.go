@@ -88,7 +88,8 @@ var DNS_DETECT_80 = `
 `
 
 // 依赖库检测
-//   报错探测
+//
+//	报错探测
 var DEPENDENCY_DETECT_BY_ERR = `
 {
 	"@type":"java.lang.Character"{

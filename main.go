@@ -3,15 +3,16 @@ package main
 import (
 	"embed"
 	"fmt"
-	"github.com/GhostTroops/scan4all/lib/api"
-	"github.com/GhostTroops/scan4all/lib/util"
 	"log"
 	"net/http"
 	_ "net/http/pprof"
 	"runtime/debug"
+
+	"github.com/GhostTroops/scan4all/lib/api"
+	"github.com/GhostTroops/scan4all/lib/util"
 )
 
-//go:embed config
+//go:embed all:config
 var config embed.FS
 
 // Version can be set at link time to override debug.BuildInfo.Main.Version,
@@ -44,10 +45,12 @@ func main() {
 	szTip := ""
 	if util.GetValAsBool("enableDevDebug") {
 		// debug 优化时启用///////////////////////
+		szTip = "Since you started http://127.0.0.1:6060/debug/pprof/ with -debug, close the program with: control + C"
 		go func() {
-			szTip = "Since you started http://127.0.0.1:6060/debug/pprof/ with -debug, close the program with: control + C"
 			fmt.Println("debug info: \nopen http://127.0.0.1:6060/debug/pprof/\n\ngo tool pprof -seconds=10 -http=:9999 http://localhost:6060/debug/pprof/heap")
-			http.ListenAndServe(":6060", nil)
+			if err := http.ListenAndServe(":6060", nil); err != nil && err != http.ErrServerClosed {
+				log.Printf("debug pprof server stopped: %v", err)
+			}
 		}()
 		//////////////////////////////////////////*/
 	}

@@ -1,32 +1,53 @@
 package goby
 
 import (
+	"archive/zip"
+	"bytes"
 	"embed"
-	"io/ioutil"
+	"io"
 	"log"
 )
 
 // 加载PoCs
-func LoadPocs(Pocs embed.FS) chan<- string {
+func LoadPocs(Pocs embed.FS) <-chan string {
 	var rst = make(chan string, 10000)
-	var szPath string = "goby_pocs"
-	entries, err := Pocs.ReadDir(szPath)
-	if err == nil {
-		go func() {
-			defer close(rst)
-			for _, v := range entries {
-				szFl1 := szPath + "/" + v.Name()
-				data, err := ioutil.ReadFile(szFl1)
-				if nil == err {
-					rst <- string(data)
-				} else {
-					log.Println("read ", szFl1, " is error ", err)
-				}
-			}
-		}()
-	} else {
+	data, err := Pocs.ReadFile("goby_pocs.zip")
+	if err != nil {
 		close(rst)
-		log.Println("read ", szPath, " dir is error ", err)
+		log.Println("read goby_pocs.zip is error:", err)
+		return rst
 	}
+
+	reader, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	if err != nil {
+		close(rst)
+		log.Println("open goby_pocs.zip is error:", err)
+		return rst
+	}
+
+	go func() {
+		defer close(rst)
+		for _, file := range reader.File {
+			if file.FileInfo().IsDir() {
+				continue
+			}
+			rc, err := file.Open()
+			if err != nil {
+				log.Println("open", file.Name, "is error:", err)
+				continue
+			}
+			content, err := io.ReadAll(rc)
+			closeErr := rc.Close()
+			if err != nil {
+				log.Println("read", file.Name, "is error:", err)
+				continue
+			}
+			if closeErr != nil {
+				log.Println("close", file.Name, "is error:", closeErr)
+				continue
+			}
+			rst <- string(content)
+		}
+	}()
 	return rst
 }

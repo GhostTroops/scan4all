@@ -6,7 +6,8 @@ import (
 )
 
 // 当前位置 Wi-fi 列表
-//  SSID BSSID             RSSI CHANNEL HT CC SECURITY (auth/unicast/group)
+//
+//	SSID BSSID             RSSI CHANNEL HT CC SECURITY (auth/unicast/group)
 type WifiInfo struct {
 	gorm.Model
 	SSID     string `json:"ssid" jsonschema:"title=AP唯一的ID码,description=是你给自己的无线网络所取的名字"`

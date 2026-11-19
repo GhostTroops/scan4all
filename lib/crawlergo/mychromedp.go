@@ -51,9 +51,10 @@ func (r *MyChromedp) DisableImageLoad(ctx context.Context) func(event interface{
 }
 
 // 获取值
-//  输入框最后追加值
-//  发送键盘
-//  download: https://github.com/chromedp/examples/blob/2f7adc7ded326214db81cc6c13d48ecd31af8d31/download_file/main.go
+//
+//	输入框最后追加值
+//	发送键盘
+//	download: https://github.com/chromedp/examples/blob/2f7adc7ded326214db81cc6c13d48ecd31af8d31/download_file/main.go
 func (r *MyChromedp) sendkeys(host string, val1, val2, val3, val4 *string) chromedp.Tasks {
 	return chromedp.Tasks{
 		chromedp.Navigate(host),
