@@ -4,7 +4,7 @@ import (
 	_ "embed"
 )
 
-// GobyPocs 内嵌的 goby pocs 压缩包
+// GobyPocs 内嵌的 goby pocs 压缩包数据
 //
 //go:embed goby_pocs.zip
 var GobyPocs []byte

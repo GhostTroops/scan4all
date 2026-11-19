@@ -59,7 +59,6 @@ chromedp.Text(`.Documentation-overview`, &res, chromedp.NodeVisible),
 
 How to disable images and CSS in Puppeteer to speed up web scraping
 https://www.scrapehero.com/how-to-increase-web-scraping-speed-using-puppeteer/
-
 */
 func main() {
 	var szUrl = "https://www.butian.net/Reward/plan/2"

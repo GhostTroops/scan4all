@@ -11,7 +11,7 @@ type SubDomain struct {
 	Tags       string   `json:"tags,omitempty"` // 标识属于那个tag，例如hackerone
 }
 
-//http://127.0.0.1:9200/domain_index/_search?q=domain:%20in%20*qianxin*
+// http://127.0.0.1:9200/domain_index/_search?q=domain:%20in%20*qianxin*
 type Domain struct {
 	Domain string   `json:"domain"`
 	Ips    []string `json:"ips"`

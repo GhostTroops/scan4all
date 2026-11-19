@@ -26,42 +26,42 @@ const (
 
 const (
 // 任务类型
-//TaskType_Subdomain   uint64 = 1 << iota // 任务类型：子域名
-//TaskType_PortScan    uint64 = 1 << iota // 任务类型：端口扫描
-//TaskType_UrlScan     uint64 = 1 << iota // 任务类型：url扫描
-//TaskType_Fingerprint uint64 = 1 << iota // 任务类型：指纹识别
-//TaskType_VulsScan    uint64 = 1 << iota // 任务类型：漏洞扫描
+// TaskType_Subdomain   uint64 = 1 << iota // 任务类型：子域名
+// TaskType_PortScan    uint64 = 1 << iota // 任务类型：端口扫描
+// TaskType_UrlScan     uint64 = 1 << iota // 任务类型：url扫描
+// TaskType_Fingerprint uint64 = 1 << iota // 任务类型：指纹识别
+// TaskType_VulsScan    uint64 = 1 << iota // 任务类型：漏洞扫描
 //
-//// 任务状态
-//Task_Status_Pending     uint64 = 1 << iota // 任务状态：待执行
-//Task_Status_InExecution uint64 = 1 << iota // 任务状态：执行中
-//Task_Status_Completed   uint64 = 1 << iota // 任务状态：已完成
+// // 任务状态
+// Task_Status_Pending     uint64 = 1 << iota // 任务状态：待执行
+// Task_Status_InExecution uint64 = 1 << iota // 任务状态：执行中
+// Task_Status_Completed   uint64 = 1 << iota // 任务状态：已完成
 //
-//// 子域名遍历
-//SubDomains_Amass     uint64 = 1 << iota // 子域名：amass 7.2k
-//SubDomains_Subfinder uint64 = 1 << iota // 子域名：Subfinder 5.6k,https://github.com/projectdiscovery/subfinder
-//SubDomains_Sublist3r uint64 = 1 << iota // 子域名：Sublist3r 7.1k
-//SubDomains_Gobuster  uint64 = 1 << iota // 服务、目录发现：gobuster 6k,https://github.com/OJ/gobuster// gobuster dns -d google.com -w ~/wordlists/subdomains.txt
+// // 子域名遍历
+// SubDomains_Amass     uint64 = 1 << iota // 子域名：amass 7.2k
+// SubDomains_Subfinder uint64 = 1 << iota // 子域名：Subfinder 5.6k,https://github.com/projectdiscovery/subfinder
+// SubDomains_Sublist3r uint64 = 1 << iota // 子域名：Sublist3r 7.1k
+// SubDomains_Gobuster  uint64 = 1 << iota // 服务、目录发现：gobuster 6k,https://github.com/OJ/gobuster// gobuster dns -d google.com -w ~/wordlists/subdomains.txt
 //
-//// 端口扫描
-//Ip2Ports_VulsCheckFlag_Masscan  uint64 = 1 << iota // 端口扫描工具：masscan 19.1k, https://github.com/robertdavidgraham/masscan
-//Ip2Ports_VulsCheckFlag_RustScan uint64 = 1 << iota // 端口扫描工具：RustScan 6.3k,https://github.com/RustScan/RustScan
-//Ip2Ports_VulsCheckFlag_Nmap     uint64 = 1 << iota // 端口扫描工具：Nmap, https://github.com/vulnersCom/nmap-vulners
+// // 端口扫描
+// Ip2Ports_VulsCheckFlag_Masscan  uint64 = 1 << iota // 端口扫描工具：masscan 19.1k, https://github.com/robertdavidgraham/masscan
+// Ip2Ports_VulsCheckFlag_RustScan uint64 = 1 << iota // 端口扫描工具：RustScan 6.3k,https://github.com/RustScan/RustScan
+// Ip2Ports_VulsCheckFlag_Nmap     uint64 = 1 << iota // 端口扫描工具：Nmap, https://github.com/vulnersCom/nmap-vulners
 //
-//// 指纹
-//ScanType_Fingerprint_Wappalyzer uint64 = 1 << iota // 指纹:wappalyzer 7.5k, https://github.com/wappalyzer/wappalyzer
-//ScanType_Fingerprint_WhatWeb    uint64 = 1 << iota // 指纹: WhatWeb 3.8k,https://github.com/urbanadventurer/WhatWeb
-//ScanType_Fingerprint_EHole      uint64 = 1 << iota // 指纹:EHole 1.4k,https://github.com/EdgeSecurityTeam/EHole
+// // 指纹
+// ScanType_Fingerprint_Wappalyzer uint64 = 1 << iota // 指纹:wappalyzer 7.5k, https://github.com/wappalyzer/wappalyzer
+// ScanType_Fingerprint_WhatWeb    uint64 = 1 << iota // 指纹: WhatWeb 3.8k,https://github.com/urbanadventurer/WhatWeb
+// ScanType_Fingerprint_EHole      uint64 = 1 << iota // 指纹:EHole 1.4k,https://github.com/EdgeSecurityTeam/EHole
 //
-//// 服务、目录发现
-//ScanType_Discovery_Gobuster uint64 = 1 << iota // 服务、目录发现：gobuster 6k,https://github.com/OJ/gobuster
-//ScanType_Discovery_Fscan    uint64 = 1 << iota // 服务、目录发现：fscan 3.6k,https://github.com/shadow1ng/fscan
-//ScanType_Discovery_Httpx    uint64 = 1 << iota // 服务、目录发现：httpx 3.2k,https://github.com/projectdiscovery/httpx
-//ScanType_Discovery_Naabu    uint64 = 1 << iota // 服务、目录发现：naabu 2.1k,https://github.com/projectdiscovery/naabu
-////  Others
-//// https://github.com/NVIDIA/NeMo
-//// https://github.com/veo/vscan
+// // 服务、目录发现
+// ScanType_Discovery_Gobuster uint64 = 1 << iota // 服务、目录发现：gobuster 6k,https://github.com/OJ/gobuster
+// ScanType_Discovery_Fscan    uint64 = 1 << iota // 服务、目录发现：fscan 3.6k,https://github.com/shadow1ng/fscan
+// ScanType_Discovery_Httpx    uint64 = 1 << iota // 服务、目录发现：httpx 3.2k,https://github.com/projectdiscovery/httpx
+// ScanType_Discovery_Naabu    uint64 = 1 << iota // 服务、目录发现：naabu 2.1k,https://github.com/projectdiscovery/naabu
+// //  Others
+// // https://github.com/NVIDIA/NeMo
+// // https://github.com/veo/vscan
 //
-//// 漏洞扫描
-//ScanType_Nuclei uint64 = 1 << iota // 漏洞扫描：nuclei 8.4k，https://github.com/projectdiscovery/nuclei
+// // 漏洞扫描
+// ScanType_Nuclei uint64 = 1 << iota // 漏洞扫描：nuclei 8.4k，https://github.com/projectdiscovery/nuclei
 )
