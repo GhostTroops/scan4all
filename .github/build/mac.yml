@@ -1,3 +1,5 @@
+version: 2
+
 env:
   - GO111MODULE=on
 
@@ -25,5 +27,5 @@ archives:
       - LICENSE*
       - README*
       - config/**/*
-checksums:
+checksum:
   name_template: "{{ .ProjectName }}-mac-checksums.txt"

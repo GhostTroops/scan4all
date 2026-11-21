@@ -1,5 +1,7 @@
+version: 2
+
 # goreleaser v2 配置
-# 注意：v2 已移除 archives.replacements / snapshot.name_template，checksum 更名为 checksums
+# 注意：v2 已移除 archives.replacements / snapshot.name_template；顶层校验文件键仍是 checksum
 release:
   # Repo in which the release will be created.
   # Default is extracted from the origin remote URL or empty if its private hosted.
@@ -45,7 +47,7 @@ archives:
       - LICENSE*
       - README*
       - config/**/*
-checksums:
+checksum:
   name_template: 'checksums.txt'
 snapshot:
   version_template: "{{ incpatch .Version }}-next"

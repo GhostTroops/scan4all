@@ -17,7 +17,7 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
@@ -26,9 +26,9 @@ jobs:
           brew install libpcap upx
 #          git submodule update --init --recursive --remote
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
-          version: latest
+          version: '~> v2'
           args: release -f .github/build/mac.yml --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -44,7 +44,7 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
@@ -53,9 +53,9 @@ jobs:
           sudo apt install -yy --fix-missing libpcap-dev upx
 #          git submodule update --init --recursive --remote
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
-          version: latest
+          version: '~> v2'
           args: release -f .github/build/linux.yml --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -78,14 +78,14 @@ jobs:
 #          Expand-Archive upx.zip -DestinationPath upx
 #          setx PATH "$env:PATH;$(Get-Location)/upx/x86_64-w64-mingw32"
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
           cache: true
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
-          version: latest
+          version: '~> v2'
           args: release -f .github/build/windows.yml --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
