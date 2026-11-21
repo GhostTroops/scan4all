@@ -2,7 +2,7 @@
   "ldapServer": "ldap://docker.for.mac.localhost:1389/%s/#UpX34defineClass",
   "LimitReader": 819200,
   "OnClient": true,
-  "ScanPoolSize":5000,
+  "ScanPoolSize": 5000,
   "MaxErrorTimes": 100,
   "JndiAddress": "docker.for.mac.localhost:1389",
   "CeyeDomain": "scan4all.51pwn.com",
@@ -73,7 +73,12 @@
   "EnableKsubdomain": true,
   "KsubdomainRegxp": "([0-9a-zA-Z\\-]+\\.[0-9a-zA-Z\\-]+)$",
   "naabu_dns": {},
-  "naabu": {"TopPorts": "http","ScanAllIPS": true,"Threads": 50,"EnableProgressBar": false},
+  "naabu": {
+    "TopPorts": "http",
+    "ScanAllIPS": true,
+    "Threads": 50,
+    "EnableProgressBar": false
+  },
   "priorityNmap": true,
   "noScan": false,
   "enableMultNuclei": false,
@@ -100,7 +105,7 @@
   "enableFingerTitleHeaderMd5Hex": false,
   "Cookie": "",
   "esUrl": "https://127.0.0.1:8081/%s_index/_doc/%s",
-  "Exploit":{
+  "Exploit": {
     "Path": "./config/poc/",
     "Logs": "./logs/errror.log"
   },
@@ -113,5 +118,6 @@
   "cveScanWls": true,
   "cveScanPhp": true,
   "cveScanWeb": true,
-  "cveScanApps": true
+  "cveScanApps": true,
+  "cveScanBounty": true
 }

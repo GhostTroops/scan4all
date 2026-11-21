@@ -19,6 +19,18 @@ type Finding = capture.Finding
 // when nothing succeeds, replayed through a smuggling channel.
 var recorder = capture.NewRecorder(&http.Transport{Proxy: nil, DisableKeepAlives: true})
 
+// logf 是包级输出点，宿主可替换它把进度信息并入自己的日志体系（或直接静默）。
+var logf = func(format string, a ...interface{}) { fmt.Printf(format, a...) }
+
+// SetLogf 替换包内输出函数；传 nil 恢复默认（直接打印到 stdout）。
+func SetLogf(f func(format string, a ...interface{})) {
+	if f == nil {
+		logf = func(format string, a ...interface{}) { fmt.Printf(format, a...) }
+		return
+	}
+	logf = f
+}
+
 var client = &http.Client{
 	Timeout:   10 * time.Second,
 	Transport: recorder,
@@ -136,9 +148,9 @@ func ScanTarget(target string, results chan<- *Finding, wg *sync.WaitGroup) {
 		// Fingerprint first: only run probes belonging to detected components.
 		fpr := fingerprint.QuickDetect(base, 8*time.Second)
 		if fpr.HasFingerprint() {
-			fmt.Printf("[FP] %s → %s\n", base, fpr.Summary())
+			logf("[FP] %s → %s\n", base, fpr.Summary())
 		} else {
-			fmt.Printf("[FP] %s → none (%s), full blind set\n", base, fpr.Summary())
+			logf("[FP] %s → none (%s), full blind set\n", base, fpr.Summary())
 		}
 
 		st := &scanState{
@@ -188,7 +200,7 @@ func expandFingerprint(st *scanState, emit func(*Finding)) {
 	if len(added) == 0 {
 		return
 	}
-	fmt.Printf("[FP+] %s → new fingerprint: %s; running mapped probes\n", st.base, matchSummary(added))
+	logf("[FP+] %s → new fingerprint: %s; running mapped probes\n", st.base, matchSummary(added))
 	runProbes(st, emit, added)
 }
 
@@ -228,6 +240,9 @@ func tagsHit(matches []fingerprint.Match, tags []string) bool {
 }
 
 func RunScan(targets []string, concurrency int) []*Finding {
+	if concurrency <= 0 {
+		concurrency = 8
+	}
 	resetScanStates()
 
 	results := make(chan *Finding, len(targets)*10)
@@ -246,7 +261,7 @@ func RunScan(targets []string, concurrency int) []*Finding {
 
 	var findings []*Finding
 	for f := range results {
-		fmt.Printf("[%s] %s → %s\n", f.Severity, f.Vuln, f.URL)
+		logf("[%s] %s → %s\n", f.Severity, f.Vuln, f.URL)
 		findings = append(findings, f)
 	}
 
@@ -256,9 +271,9 @@ func RunScan(targets []string, concurrency int) []*Finding {
 	if len(findings) == 0 {
 		buckets := recorder.TakeAll()
 		if len(buckets) > 0 {
-			fmt.Println("[*] No findings in the normal pass — replaying captured exp payloads through HTTP smuggling...")
+			logf("[*] No findings in the normal pass — replaying captured exp payloads through HTTP smuggling...\n")
 			for _, f := range recorder.ReplayAll(buckets, 5*time.Second) {
-				fmt.Printf("[%s] %s → %s\n", f.Severity, f.Vuln, f.URL)
+				logf("[%s] %s → %s\n", f.Severity, f.Vuln, f.URL)
 				findings = append(findings, f)
 			}
 			replayed = true
@@ -271,11 +286,11 @@ func RunScan(targets []string, concurrency int) []*Finding {
 		for _, st := range snapshotStates() {
 			before := len(findings)
 			expandFingerprint(st, func(f *Finding) {
-				fmt.Printf("[%s] %s → %s\n", f.Severity, f.Vuln, f.URL)
+				logf("[%s] %s → %s\n", f.Severity, f.Vuln, f.URL)
 				findings = append(findings, f)
 			})
 			if len(findings) > before {
-				fmt.Printf("[+] New fingerprint on %s added %d finding(s)\n", st.base, len(findings)-before)
+				logf("[+] New fingerprint on %s added %d finding(s)\n", st.base, len(findings)-before)
 			}
 		}
 	}

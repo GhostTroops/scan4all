@@ -41,6 +41,8 @@ type Options struct {
 	ScanPHP     bool
 	ScanWeb     bool
 	ScanApps    bool
+	// Bounty 交给宿主使用：是否额外跑指纹定向的 PoC 集（bugbounty 包）
+	Bounty bool
 }
 
 // Run 执行扫描

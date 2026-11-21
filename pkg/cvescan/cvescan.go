@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/GhostTroops/scan4all/lib/util"
+	"github.com/GhostTroops/scan4all/pkg/cvecore/bugbounty"
 	"github.com/GhostTroops/scan4all/pkg/cvecore/scanner"
 	"github.com/projectdiscovery/gologger"
 )
@@ -45,6 +46,19 @@ func Enabled() bool {
 	return false
 }
 
+// bountyEnabled 判断是否跑指纹定向 PoC 集：配置文件 cveScanBounty 默认 true，命令行 -bounty 可强制开启
+func bountyEnabled() bool {
+	if util.GetValByDefault("cveScanBounty", "true") == "true" {
+		return true
+	}
+	if m, ok := util.G_Options.(map[string]interface{}); ok {
+		if b, ok2 := m["CveScanBounty"].(bool); ok2 && b {
+			return true
+		}
+	}
+	return false
+}
+
 // Options 从 scan4all 配置读取的 CVE 扫描参数
 func Options() scanner.Options {
 	return scanner.Options{
@@ -56,6 +70,7 @@ func Options() scanner.Options {
 		ScanPHP:  util.GetValByDefault("cveScanPhp", "true") == "true",
 		ScanWeb:  util.GetValByDefault("cveScanWeb", "true") == "true",
 		ScanApps: util.GetValByDefault("cveScanApps", "true") == "true",
+		Bounty:   bountyEnabled(),
 	}
 }
 
@@ -97,6 +112,36 @@ func TargetsFromBuffer(buf *bytes.Buffer) []string {
 	return out
 }
 
+// RunBounty 跑 cve-scanner 里按指纹定向的 PoC 集（shiro/struts2/fastjson/tomcat/weblogic…），
+// 结果同样是「PoC 自身回显或可验证证据」，与 cve 核心互补，不会重复上报。
+func RunBounty(targets []string, opt scanner.Options) (high, low int) {
+	// PoC 包默认直接打印到 stdout，这里接管为 verbose 级别，避免污染统一输出
+	bountyLog := func(format string, a ...interface{}) {
+		if util.GetValAsBool("verbose") {
+			gologger.Debug().Msgf(format, a...)
+		}
+	}
+	bugbounty.SetLogf(bountyLog)
+	defer bugbounty.SetLogf(nil)
+
+	for _, f := range bugbounty.RunScan(targets, opt.Threads) {
+		if nil == f || "" == f.URL {
+			continue
+		}
+		switch strings.ToUpper(f.Severity) {
+		case "CRITICAL", "HIGH":
+			high++
+			util.SendLog(f.URL, "CVE", fmt.Sprintf("%s | %s", f.Vuln, f.Detail), "")
+		default:
+			low++
+			if util.GetValAsBool("verbose") {
+				gologger.Info().Msgf("[bounty:%s] %s %s", f.Severity, f.Vuln, f.URL)
+			}
+		}
+	}
+	return high, low
+}
+
 // Run 对缓冲区中的目标执行指纹驱动的 CVE 扫描，结果并入 scan4all 统一输出
 func Run(buf *bytes.Buffer) {
 	if !Enabled() {
@@ -135,4 +180,9 @@ func Run(buf *bytes.Buffer) {
 		}
 	}
 	gologger.Info().Msgf("CVE 扫描完成：目标 %d，已验证 %d，待人工确认 %d", len(targets), verified, blind)
+
+	if opt.Bounty {
+		bh, bl := RunBounty(targets, opt)
+		gologger.Info().Msgf("指纹定向 PoC 扫描完成：高危 %d，其余 %d", bh, bl)
+	}
 }

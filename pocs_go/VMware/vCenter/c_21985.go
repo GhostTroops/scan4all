@@ -106,7 +106,7 @@ func CheckVul002(szUrl string) (string, bool) {
 	t2 := Zip_file("offline_bundle.xml", t1)
 	t3 := util.To_b64(t2)
 	Upload(szUrl, t3)
-	time.Sleep(1)
+	time.Sleep(time.Second) // 原为 time.Sleep(1)（1 纳秒），等待离线包落地
 	szRst := Execute(szUrl)
 	return szRst, "" != szRst
 }

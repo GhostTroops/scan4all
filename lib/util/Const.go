@@ -132,7 +132,7 @@ func CheckHeader(header *http.Header, szUrl string) {
 	DoSyncFunc(func() {
 		if nil != header {
 			a1 := []string{}
-			if v := (*header)["www-Authenticate"]; 0 < len(v) {
+			if v := (*header)[http.CanonicalHeaderKey("www-authenticate")]; 0 < len(v) {
 				if 0 < len(BaseReg.FindAll([]byte(v[0]), -1)) {
 					a1 = append(a1, "basic")
 				}

@@ -82,11 +82,12 @@ func New(options *Options) (*Runner, error) {
 	}
 	var err error
 	if options.TechDetect {
-		runner.wappalyzer, err = wappalyzer.New()
-		err = fingerprint.New()
-	}
-	if err != nil {
-		return nil, errors.Wrap(err, "could not create wappalyzer client")
+		if runner.wappalyzer, err = wappalyzer.New(); err != nil {
+			return nil, errors.Wrap(err, "could not create wappalyzer client")
+		}
+		if err = fingerprint.New(); err != nil {
+			return nil, errors.Wrap(err, "could not load fingerprint rules")
+		}
 	}
 
 	httpxOptions := httpx.DefaultOptions

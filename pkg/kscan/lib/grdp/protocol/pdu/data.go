@@ -145,8 +145,12 @@ func readDemandActivePDU(r io.Reader) (*DemandActivePDU, error) {
 	if err != nil {
 		return nil, err
 	}
-	d.LengthSourceDescriptor, err = core.ReadUint16LE(r)
-	d.LengthCombinedCapabilities, err = core.ReadUint16LE(r)
+	if d.LengthSourceDescriptor, err = core.ReadUint16LE(r); err != nil {
+		return nil, err
+	}
+	if d.LengthCombinedCapabilities, err = core.ReadUint16LE(r); err != nil {
+		return nil, err
+	}
 	sourceDescriptorBytes, err := core.ReadBytes(int(d.LengthSourceDescriptor), r)
 	if err != nil {
 		return nil, err
@@ -680,7 +684,7 @@ func readFastPathUpdatePDU(r io.Reader) (*FastPathUpdatePDU, error) {
 
 	default:
 		glog.Debugf("Unknown Fast Path PDU type 0x%x", f.UpdateHeader)
-		return f, errors.New(fmt.Sprintf("Unknown Fast Path PDU type 0x%x", f.UpdateHeader))
+		return f, fmt.Errorf("unknown Fast Path PDU type 0x%x", f.UpdateHeader)
 		//d = nil
 	}
 	if d != nil {

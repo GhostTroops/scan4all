@@ -72,6 +72,8 @@ type Options struct {
 	Update bool
 	// 集成 cve-scanner 的指纹驱动 CVE 扫描/利用
 	EnableCveScan bool
+	// 在 -cve 基础上追加指纹定向 PoC 集（cve-scanner/bugbounty）
+	CveScanBounty bool
 }
 
 // OnResultCallback (hostname, ip, ports)
@@ -148,6 +150,7 @@ func ParseOptions() *Options {
 
 	flagSet.CreateGroup("cve-scan", "CVE Scan",
 		flagSet.BoolVar(&options.EnableCveScan, "cve", false, "enable fingerprint-driven CVE scan/exploit (integrated cve-scanner), verification cmd via config cveScanCmd"),
+		flagSet.BoolVar(&options.CveScanBounty, "bounty", false, "with -cve: also run fingerprint-targeted PoC set (shiro/struts2/fastjson/tomcat/weblogic...)"),
 	)
 
 	flagSet.CreateGroup("optimization", "Optimization",

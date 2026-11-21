@@ -158,8 +158,7 @@ func (c *Cracker) Run() {
 }
 
 func InitDefaultAuthMap() {
-	m := make(map[string]*AuthList)
-	m = map[string]*AuthList{}
+	m := map[string]*AuthList{}
 	for _, x := range ProtocolList {
 		m[x] = GetDefaultFtpList(x)
 	}
